@@ -2,14 +2,10 @@ package Disilon;
 
 import java.util.Map;
 
-// The old implementation seemed to call remove stats every time setequipemnt was called.
-// This kept adding paramenters to the hashmap, instead or removing or over-riding them.
-// Looked like it would be error prone. To me it would be better to create all types of equipment, and then point to them.
-// Quality and upgrade can be done seperately.
-
 public class Equipment {
     String name;
     String slot;
+    String displayName;
     String quality;
     int upgrade = 0;
 
@@ -30,8 +26,8 @@ public class Equipment {
     double light = 0;
 
     //Damage Mit
-    double phy_res = 0;
-    double mag_res = 0;
+    double phys_res = 0;
+    double magic_res = 0;
     double fire_res = 0;
     double water_res = 0;
     double wind_res = 0;
@@ -44,24 +40,24 @@ public class Equipment {
     double crit = 0;
     double stun = 0;
 
-    //Set
-    String setType = "NONE";
-    double setBonus = 0;
+    Map equipStats;
 
-    public Equipment(Map equipStats) {
+    public Equipment(String name, String slot, Map equipStats) {
+        this.name = name;
+        this.slot = slot;
         quality = "normal";
         upgrade = 0;
-        calcStats(equipStats);
+        this.equipStats = equipStats;
+        calcStats();
     }
-
-    public Equipment(Map equipStats, String quality, int upgrade) {
+    
+    public void setQualityLvl(String quality, int lvl) {
         this.quality = quality;
-        this.upgrade = upgrade;
-        calcStats(equipStats);
+        this.upgrade = lvl;
+        calcStats();
     }
 
-    public void calcStats(Map equipStats) {
-        this.slot = equipStats.containsKey("SLOT") ? (String) equipStats.get("SLOT") : "NONE";
+    public void calcStats() {
         // Stats
         double mult = multiplier(quality, upgrade, 1);
         this.atk = equipStats.containsKey("ATK") ? (double) equipStats.get("ATK") * mult : 0;
@@ -80,8 +76,9 @@ public class Equipment {
         this.light = equipStats.containsKey("LIGHT") ? (double) equipStats.get("LIGHT") * mult : 0;
 
         //Damage Mit
-        this.phy_res = equipStats.containsKey("PHY_RES") ? (double) equipStats.get("PHY_RES") * mult : 0;
-        this.mag_res = equipStats.containsKey("MAG_RES") ? (double) equipStats.get("MAG_RES") * mult : 0;
+        mult = multiplier(quality, upgrade, 2);
+        this.phys_res = equipStats.containsKey("PHY_RES") ? (double) equipStats.get("PHY_RES") * mult : 0;
+        this.magic_res = equipStats.containsKey("MAG_RES") ? (double) equipStats.get("MAG_RES") * mult : 0;
         this.fire_res = equipStats.containsKey("FIRE_RES") ? (double) equipStats.get("FIRE_RES") * mult : 0;
         this.water_res = equipStats.containsKey("WATER_RES") ? (double) equipStats.get("WATER_RES") * mult : 0;
         this.wind_res = equipStats.containsKey("WND_RES") ? (double) equipStats.get("WIND_RES") * mult : 0;
@@ -95,12 +92,8 @@ public class Equipment {
         this.crit = equipStats.containsKey("CRIT") ? (double) equipStats.get("CRIT") * mult : 0;
         this.stun = equipStats.containsKey("STUN") ? (double) equipStats.get("STUN") * mult : 0;
 
-        // SetBonus
-        if (equipStats.containsKey("SET")) {
-            this.setType = (String) equipStats.get("SET"); // Not sure if this works
-            //this.setBonus = calcSetBonus(this.setType, quality, upgrade);
-
-        }
+        // Set name
+        if (equipStats.containsKey("SET")) this.displayName = (String) equipStats.get("SET");
     }
 
     public static double multiplier(String quality, int upgrade, int scaling_type) {
@@ -129,7 +122,7 @@ public class Equipment {
             case "legendary" -> 3;
             case "mythic" -> 4;
             case "godly" -> 5;
-            default -> 1;
+            default -> -1;
         };
     }
 }

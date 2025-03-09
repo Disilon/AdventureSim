@@ -1,7 +1,9 @@
 package Disilon;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -10,8 +12,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class UserForm extends JFrame {
@@ -96,7 +102,18 @@ public class UserForm extends JFrame {
     public Enemy enemy;
     public Simulation simulation;
     public Setup setup;
+    public LinkedHashMap<String, Equipment> mh = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> oh = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> helmet = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> chest = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> pants = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> bracers = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> boots = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> acc1 = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> acc2 = new LinkedHashMap<>();
+    public LinkedHashMap<String, Equipment> neck = new LinkedHashMap<>();
     ObjectMapper objectMapper = new ObjectMapper();
+    Gson gson = new Gson();
 
     public UserForm() {
         player = new Player();
@@ -1338,7 +1355,7 @@ public class UserForm extends JFrame {
     }
 
     private void clearSelections() {
-        Skill1.setSelectedIndex(0);
+        Skill1.setSelectedIndex(1);
         Skill2.setSelectedIndex(0);
         Skill3.setSelectedIndex(0);
         Pskill1.setSelectedIndex(0);
@@ -1414,6 +1431,40 @@ public class UserForm extends JFrame {
         player.enablePassives(passives);
     }
 
+    private void loadEquipment() {
+        try {
+            JsonReader reader = new JsonReader(new FileReader("data/Weapons.json"));
+            Map<String, Map> weaponDataMap = gson.fromJson(reader, Map.class);
+            mh.clear();
+            oh.clear();
+            clearSlot(MH_name);
+            clearSlot(OH_name);
+
+            weaponDataMap.forEach((slot, value) -> {
+                for (Object item : value.entrySet()) {
+                    String name = ((Map.Entry<String, Map>) item).getKey();
+                    if (slot.equals("MH") || slot.equals("2H")) {
+                        mh.put(name, new Equipment(name, slot,
+                                ((Map.Entry<String, Map>) item).getValue()));
+                        MH_name.addItem(name);
+                    }
+                    if (slot.equals("MH") || slot.equals("OH")) {
+                        oh.put(name, new Equipment(name, slot,
+                                ((Map.Entry<String, Map>) item).getValue()));
+                        OH_name.addItem(name);
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void clearSlot(JComboBox slot) {
+        MH_name.removeAllItems();
+        MH_name.addItem("None");
+    }
+
     private void saveSetup() {
         setup.accessory1_lvl = Integer.parseInt(Accessory1_lvl.getValue().toString());
         setup.accessory1_name = Accessory1_name.getSelectedItem().toString();
@@ -1486,8 +1537,9 @@ public class UserForm extends JFrame {
         setup.stats = Stats.getText();
         try {
             File pto = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            File file = new File(pto.getAbsolutePath() + "/default.json");
-            objectMapper.writeValue(file, setup);
+            JsonWriter writer = new JsonWriter(new FileWriter(pto.getAbsolutePath() + "/default.json"));
+            gson.toJson(setup, Setup.class, writer);
+            writer.close();
         } catch (URISyntaxException | IOException ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
@@ -1496,10 +1548,11 @@ public class UserForm extends JFrame {
     }
 
     private void loadSetup() {
+        loadEquipment();
         try {
             File pto = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            File file = new File(pto.getAbsolutePath() + "/default.json");
-            setup = objectMapper.readValue(file, Setup.class);
+            JsonReader reader = new JsonReader(new FileReader(pto.getAbsolutePath() + "/default.json"));
+            setup = gson.fromJson(reader, Setup.class);
         } catch (URISyntaxException | IOException ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);

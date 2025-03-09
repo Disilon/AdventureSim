@@ -2,84 +2,84 @@
     "HEADGEAR":{
         "CLOTH_HOOD": {
             "RES": 6,
-            "SET": "MAG_DAM"
+            "SET": "Cloth"
         }, "BLAZING_HOOD": {
             "DEF": 4,
             "INT": 2,
             "RES": 8,
             "WATER_RES": -2,
             "FIRE_RES": 4,
-            "SET": "MAG_DAM"
+            "SET": "Blazing"
         }, "LEATHER_HELMET": {
             "DEF": 6,
             "RES": 4,
-            "SET": "HIT"
+            "SET": "Leather"
         }, "WINDY_HAT": {
             "DEF": 6,
             "RES": 6,
             "HIT": 2,
             "FIRE_RES": -2,
             "WIND_RES": 4,
-            "SET": "HIT"
+            "SET": "Windy"
         }, "DARK_LEATHER_HOOD": {
             "ATK": 2,
             "DEF": 6,
             "RES": 6,
             "LIGHT_RES": -2,
             "DARK_RES": 4,
-            "SET": "PHY_DAM"
+            "SET": "Dark"
         }, "METAL_HELMET": {
             "DEF": 7,
             "RES": 4,
             "HIT": -4,
             "SPD": -2,
             "PHY_RES": 1,
-            "SET": "DAM_MIT"
+            "SET": "Metal"
         }, "IRON_HELMET": {
             "DEF": 11,
             "RES": 6,
             "HIT": -6,
             "SPD": -2,
             "PHY_RES": 1.5,
-            "SET": "DAM_MIT2"
+            "SET": "Iron"
         }
     }, "BOOTS":{
         "CLOTH_BOOTS": {
             "SPD": 6,
-            "SET": "MAG_DAM"
+            "SET": "Cloth"
         }, "BLAZING_BOOTS": {
             "INT": 2,
             "SPD": 14,
             "FIRE": 10,
             "FIRE_RES": 2,
-            "SET": "MAG_DAM"
+            "SET": "Blazing"
         }, "LEATHER_BOOTS": {
             "SPD": 10,
-            "SET": "HIT"
+            "SET": "Leather"
         }, "WINDY_BOOTS": {
             "DEF": 2,
             "HIT": 2,
             "SPD": 12,
             "WIND": 10,
             "WIND_RES": 2,
-            "SET": "HIT"
+            "SET": "Windy"
         }, "DARK_LEATHER_BOOTS": {
             "ATK": 2,
             "DEF": 4,
             "SPD": 10,
             "DARK": 10,
             "DARK_RES": 2,
-            "SET": "PHY_DAM"
+            "SET": "Dark"
         }, "METAL_BOOTS": {
             "DEF": 2,
             "RES": 2,
             "SPD": 2,
-            "SET": "DAM_MIT"
+            "SET": "Metal"
         }, "IRON_BOOTS": {
             "DEF": 4,
             "RES": 4,
             "SPD": 2,
-            "SET": "DAM_MIT2"
+            "SET": "Iron"
         }
     }
 }

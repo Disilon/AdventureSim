@@ -30,4 +30,8 @@ public class PassiveSkill {
             this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
         }
     }
+
+    public double bonus() {
+        return enabled ? bonus : 0;
+    }
 }
