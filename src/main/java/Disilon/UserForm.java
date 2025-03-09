@@ -115,7 +115,7 @@ public class UserForm extends JFrame {
 
     public UserForm() {
         player = new Player();
-        enemy = new Enemy("Devil");
+        enemy = new Enemy();
         simulation = new Simulation();
         setup = new Setup();
         rootPanel = new JPanel();
