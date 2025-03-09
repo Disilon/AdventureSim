@@ -1252,7 +1252,6 @@ public class UserForm extends JFrame {
                     simulation.enemy = enemy;
                     setupEquipment();
                     setupPassives();
-                    Stats.setText(player.getAllStats());
                     simulation.run(Skill1.getSelectedItem().toString(), (int) Skill1_lvl.getValue(),
                             (SkillMod) Skill1_mod.getSelectedItem(), (int) Skill1_s.getValue(),
                             Skill2.getSelectedItem().toString(),
@@ -1264,6 +1263,7 @@ public class UserForm extends JFrame {
                     } else {
                         Result.setText(simulation.essential_result);
                     }
+                    Stats.setText(player.getAllStats());
                 }
             }
         });
@@ -1611,15 +1611,15 @@ public class UserForm extends JFrame {
         setup.simulations = Integer.parseInt(Simulations.getValue().toString());
         setup.skill1 = Skill1.getSelectedItem().toString();
         setup.skill1_lvl = Integer.parseInt(Skill1_lvl.getValue().toString());
-        setup.skill1_mod = Skill1_mod.getSelectedItem().toString();
+        setup.skill1_mod = (SkillMod) Skill1_mod.getSelectedItem();
         setup.skill1_s = Integer.parseInt(Skill1_s.getValue().toString());
         setup.skill2 = Skill2.getSelectedItem().toString();
         setup.skill2_lvl = Integer.parseInt(Skill2_lvl.getValue().toString());
-        setup.skill2_mod = Skill2_mod.getSelectedItem().toString();
+        setup.skill2_mod = (SkillMod) Skill2_mod.getSelectedItem();
         setup.skill2_s = Integer.parseInt(Skill2_s.getValue().toString());
         setup.skill3 = Skill3.getSelectedItem().toString();
         setup.skill3_lvl = Integer.parseInt(Skill3_lvl.getValue().toString());
-        setup.skill3_mod = Skill3_mod.getSelectedItem().toString();
+        setup.skill3_mod = (SkillMod) Skill3_mod.getSelectedItem();
         setup.skill3_s = Integer.parseInt(Skill3_s.getValue().toString());
         setup.stats = Stats.getText();
         try {
@@ -1670,6 +1670,7 @@ public class UserForm extends JFrame {
         MH_lvl.setValue(setup.mh_lvl);
         MH_name.setSelectedItem(setup.mh_name);
         MH_tier.setSelectedItem(setup.mh_tier);
+        Milestone.setValue(setup.milestone);
         ML.setValue(setup.ml);
         Necklace_lvl.setValue(setup.necklace_lvl);
         Necklace_name.setSelectedItem(setup.necklace_name);
