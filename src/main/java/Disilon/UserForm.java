@@ -1221,6 +1221,18 @@ public class UserForm extends JFrame {
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+//        System.out.println(MH_name.getSelectedItem().toString());
+//        MH_name.setSelectedIndex(0);
+//        System.out.println(MH_name.getSelectedItem().toString());
+//        OH_name.setSelectedIndex(0);
+//        Helmet_name.setSelectedIndex(0);
+//        Chest_name.setSelectedIndex(0);
+//        Pants_name.setSelectedIndex(0);
+//        Boots_name.setSelectedIndex(0);
+//        Bracer_name.setSelectedIndex(0);
+//        Accessory1_name.setSelectedIndex(0);
+//        Accessory2_name.setSelectedIndex(0);
+//        Necklace_name.setSelectedIndex(0);
         Save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1333,7 +1345,7 @@ public class UserForm extends JFrame {
         loadSetup();
     }
 
-    private String findItemFromSet(String name,LinkedHashMap<String, Equipment> set) {
+    private String findItemFromSet(String name, LinkedHashMap<String, Equipment> set) {
         for (Equipment e : set.values()) {
             if (e.displayName.equals(name)) {
                 return e.name;
@@ -1462,26 +1474,16 @@ public class UserForm extends JFrame {
             Map<String, Map> armorDataMap = gson.fromJson(armorReader, Map.class);
             JsonReader accessoryReader = new JsonReader(new FileReader("data/Accessories.json"));
             Map<String, Map> accessoryDataMap = gson.fromJson(accessoryReader, Map.class);
-            mh.clear();
-            oh.clear();
-            helmet.clear();
-            chest.clear();
-            pants.clear();
-            bracers.clear();
-            boots.clear();
-            acc1.clear();
-            acc2.clear();
-            neck.clear();
-            clearSlot(MH_name);
-            clearSlot(OH_name);
-            clearSlot(Helmet_name);
-            clearSlot(Chest_name);
-            clearSlot(Pants_name);
-            clearSlot(Bracer_name);
-            clearSlot(Boots_name);
-            clearSlot(Accessory1_name);
-            clearSlot(Accessory2_name);
-            clearSlot(Necklace_name);
+            clearSlot(MH_name, mh);
+            clearSlot(OH_name, oh);
+            clearSlot(Helmet_name, helmet);
+            clearSlot(Chest_name, chest);
+            clearSlot(Pants_name, pants);
+            clearSlot(Bracer_name, bracers);
+            clearSlot(Boots_name, boots);
+            clearSlot(Accessory1_name, acc1);
+            clearSlot(Accessory2_name, acc2);
+            clearSlot(Necklace_name, neck);
             weaponDataMap.forEach((slot, value) -> {
                 for (Object item : value.entrySet()) {
                     String name = ((Map.Entry<String, Map>) item).getKey();
@@ -1505,22 +1507,27 @@ public class UserForm extends JFrame {
                     if (slot.equals("HEADGEAR")) {
                         helmet.put(name, e);
                         Helmet_name.addItem(name);
+                        if (e.displayName.equals("Leather")) Helmet_name.setSelectedItem(name);
                     }
                     if (slot.equals("BOOTS")) {
                         boots.put(name, e);
                         Boots_name.addItem(name);
+                        if (e.displayName.equals("Leather")) Boots_name.setSelectedItem(name);
                     }
                     if (slot.equals("BRACERS")) {
                         bracers.put(name, e);
                         Bracer_name.addItem(name);
+                        if (e.displayName.equals("Leather")) Bracer_name.setSelectedItem(name);
                     }
                     if (slot.equals("PANTS")) {
                         pants.put(name, e);
                         Pants_name.addItem(name);
+                        if (e.displayName.equals("Leather")) Pants_name.setSelectedItem(name);
                     }
                     if (slot.equals("CHEST")) {
                         chest.put(name, e);
                         Chest_name.addItem(name);
+                        if (e.displayName.equals("Leather")) Chest_name.setSelectedItem(name);
                     }
                 }
             });
@@ -1531,14 +1538,17 @@ public class UserForm extends JFrame {
                         neck.put(name, new Equipment(name, slot,
                                 ((Map.Entry<String, Map>) item).getValue()));
                         Necklace_name.addItem(name);
+                        if (name.equals("Metal Necklace")) Necklace_name.setSelectedItem(name);
                     }
                     if (slot.equals("RING")) {
                         acc1.put(name, new Equipment(name, slot,
                                 ((Map.Entry<String, Map>) item).getValue()));
                         Accessory1_name.addItem(name);
+                        if (name.equals("Golden Belt")) Accessory1_name.setSelectedItem(name);
                         acc2.put(name, new Equipment(name, slot,
                                 ((Map.Entry<String, Map>) item).getValue()));
                         Accessory2_name.addItem(name);
+                        if (name.equals("Metal Ring")) Accessory2_name.setSelectedItem(name);
                     }
                 }
             });
@@ -1547,9 +1557,11 @@ public class UserForm extends JFrame {
         }
     }
 
-    private void clearSlot(JComboBox slot) {
+    private void clearSlot(JComboBox slot, LinkedHashMap<String, Equipment> hm) {
         slot.removeAllItems();
         slot.addItem("None");
+        hm.clear();
+        hm.put("None", new Equipment("None", "None"));
     }
 
     private void saveSetup() {
@@ -1638,81 +1650,86 @@ public class UserForm extends JFrame {
         loadEquipment();
         try {
             File pto = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            JsonReader reader = new JsonReader(new FileReader(pto.getAbsolutePath() + "/default.json"));
-            setup = gson.fromJson(reader, Setup.class);
+            File def = new File(pto.getAbsolutePath() + "/default.json");
+            if (def.exists()) {
+                JsonReader reader = new JsonReader(new FileReader(def));
+                setup = gson.fromJson(reader, Setup.class);
+                Accessory1_lvl.setValue(setup.accessory1_lvl);
+                Accessory1_name.setSelectedItem(setup.accessory1_name);
+                Accessory1_tier.setSelectedItem(setup.accessory1_tier);
+                Accessory2_lvl.setValue(setup.accessory2_lvl);
+                Accessory2_name.setSelectedItem(setup.accessory2_name);
+                Accessory2_tier.setSelectedItem(setup.accessory2_tier);
+                Boots_lvl.setValue(setup.boots_lvl);
+                Boots_name.setSelectedItem(setup.boots_name);
+                Boots_tier.setSelectedItem(setup.boots_tier);
+                Bracer_lvl.setValue(setup.bracer_lvl);
+                Bracer_name.setSelectedItem(setup.bracer_name);
+                Bracer_tier.setSelectedItem(setup.bracer_tier);
+                Chest_lvl.setValue(setup.chest_lvl);
+                Chest_name.setSelectedItem(setup.chest_name);
+                Chest_tier.setSelectedItem(setup.chest_tier);
+                CL.setValue(setup.cl);
+                Crafting_lvl.setValue(setup.crafting_lvl);
+                Enemy.setSelectedItem(setup.enemy);
+                GameVersion.setSelectedItem(setup.gameversion);
+                Helmet_lvl.setValue(setup.helmet_lvl);
+                Helmet_name.setSelectedItem(setup.helmet_name);
+                Helmet_tier.setSelectedItem(setup.helmet_tier);
+                MH_lvl.setValue(setup.mh_lvl);
+                MH_name.setSelectedItem(setup.mh_name);
+                MH_tier.setSelectedItem(setup.mh_tier);
+                Milestone.setValue(setup.milestone);
+                ML.setValue(setup.ml);
+                Necklace_lvl.setValue(setup.necklace_lvl);
+                Necklace_name.setSelectedItem(setup.necklace_name);
+                Necklace_tier.setSelectedItem(setup.necklace_tier);
+                OH_lvl.setValue(setup.oh_lvl);
+                OH_name.setSelectedItem(setup.oh_name);
+                OH_tier.setSelectedItem(setup.oh_tier);
+                Pants_lvl.setValue(setup.pants_lvl);
+                Pants_name.setSelectedItem(setup.pants_name);
+                Pants_tier.setSelectedItem(setup.pants_tier);
+                PlayerClass.setSelectedItem(setup.playerclass);
+                Potion1.setSelectedItem(setup.potion1);
+                Potion1_t.setValue(setup.potion1_t);
+                Potion2.setSelectedItem(setup.potion2);
+                Potion2_t.setValue(setup.potion2_t);
+                Potion3.setSelectedItem(setup.potion3);
+                Potion3_t.setValue(setup.potion3_t);
+                Pskill1.setSelectedItem(setup.pskill1);
+                Pskill1_lvl.setValue(setup.pskill1_lvl);
+                Pskill2.setSelectedItem(setup.pskill2);
+                Pskill2_lvl.setValue(setup.pskill2_lvl);
+                Pskill3.setSelectedItem(setup.pskill3);
+                Pskill3_lvl.setValue(setup.pskill3_lvl);
+                Reroll.setValue(setup.reroll);
+                simulation.essential_result = setup.result_essential;
+                simulation.full_result = setup.result_full;
+                SetSetup.setSelected(setup.setsetup);
+                SetupInfo.setSelected(setup.setupinfo);
+                Simulations.setValue(setup.simulations);
+                Skill1.setSelectedItem(setup.skill1);
+                Skill1_lvl.setValue(setup.skill1_lvl);
+                Skill1_mod.setSelectedItem(setup.skill1_mod);
+                Skill1_s.setValue(setup.skill1_s);
+                Skill2.setSelectedItem(setup.skill2);
+                Skill2_lvl.setValue(setup.skill2_lvl);
+                Skill2_mod.setSelectedItem(setup.skill2_mod);
+                Skill2_s.setValue(setup.skill2_s);
+                Skill3.setSelectedItem(setup.skill3);
+                Skill3_lvl.setValue(setup.skill3_lvl);
+                Skill3_mod.setSelectedItem(setup.skill3_mod);
+                Skill3_s.setValue(setup.skill3_s);
+                Stats.setText(setup.stats);
+            }
+
         } catch (URISyntaxException | IOException ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
             throw new RuntimeException(ex);
         }
-        Accessory1_lvl.setValue(setup.accessory1_lvl);
-        Accessory1_name.setSelectedItem(setup.accessory1_name);
-        Accessory1_tier.setSelectedItem(setup.accessory1_tier);
-        Accessory2_lvl.setValue(setup.accessory2_lvl);
-        Accessory2_name.setSelectedItem(setup.accessory2_name);
-        Accessory2_tier.setSelectedItem(setup.accessory2_tier);
-        Boots_lvl.setValue(setup.boots_lvl);
-        Boots_name.setSelectedItem(setup.boots_name);
-        Boots_tier.setSelectedItem(setup.boots_tier);
-        Bracer_lvl.setValue(setup.bracer_lvl);
-        Bracer_name.setSelectedItem(setup.bracer_name);
-        Bracer_tier.setSelectedItem(setup.bracer_tier);
-        Chest_lvl.setValue(setup.chest_lvl);
-        Chest_name.setSelectedItem(setup.chest_name);
-        Chest_tier.setSelectedItem(setup.chest_tier);
-        CL.setValue(setup.cl);
-        Crafting_lvl.setValue(setup.crafting_lvl);
-        Enemy.setSelectedItem(setup.enemy);
-        GameVersion.setSelectedItem(setup.gameversion);
-        Helmet_lvl.setValue(setup.helmet_lvl);
-        Helmet_name.setSelectedItem(setup.helmet_name);
-        Helmet_tier.setSelectedItem(setup.helmet_tier);
-        MH_lvl.setValue(setup.mh_lvl);
-        MH_name.setSelectedItem(setup.mh_name);
-        MH_tier.setSelectedItem(setup.mh_tier);
-        Milestone.setValue(setup.milestone);
-        ML.setValue(setup.ml);
-        Necklace_lvl.setValue(setup.necklace_lvl);
-        Necklace_name.setSelectedItem(setup.necklace_name);
-        Necklace_tier.setSelectedItem(setup.necklace_tier);
-        OH_lvl.setValue(setup.oh_lvl);
-        OH_name.setSelectedItem(setup.oh_name);
-        OH_tier.setSelectedItem(setup.oh_tier);
-        Pants_lvl.setValue(setup.pants_lvl);
-        Pants_name.setSelectedItem(setup.pants_name);
-        Pants_tier.setSelectedItem(setup.pants_tier);
-        PlayerClass.setSelectedItem(setup.playerclass);
-        Potion1.setSelectedItem(setup.potion1);
-        Potion1_t.setValue(setup.potion1_t);
-        Potion2.setSelectedItem(setup.potion2);
-        Potion2_t.setValue(setup.potion2_t);
-        Potion3.setSelectedItem(setup.potion3);
-        Potion3_t.setValue(setup.potion3_t);
-        Pskill1.setSelectedItem(setup.pskill1);
-        Pskill1_lvl.setValue(setup.pskill1_lvl);
-        Pskill2.setSelectedItem(setup.pskill2);
-        Pskill2_lvl.setValue(setup.pskill2_lvl);
-        Pskill3.setSelectedItem(setup.pskill3);
-        Pskill3_lvl.setValue(setup.pskill3_lvl);
-        Reroll.setValue(setup.reroll);
-        simulation.essential_result = setup.result_essential;
-        simulation.full_result = setup.result_full;
-        SetSetup.setSelected(setup.setsetup);
-        SetupInfo.setSelected(setup.setupinfo);
-        Simulations.setValue(setup.simulations);
-        Skill1.setSelectedItem(setup.skill1);
-        Skill1_lvl.setValue(setup.skill1_lvl);
-        Skill1_mod.setSelectedItem(setup.skill1_mod);
-        Skill1_s.setValue(setup.skill1_s);
-        Skill2.setSelectedItem(setup.skill2);
-        Skill2_lvl.setValue(setup.skill2_lvl);
-        Skill2_mod.setSelectedItem(setup.skill2_mod);
-        Skill2_s.setValue(setup.skill2_s);
-        Skill3.setSelectedItem(setup.skill3);
-        Skill3_lvl.setValue(setup.skill3_lvl);
-        Skill3_mod.setSelectedItem(setup.skill3_mod);
-        Skill3_s.setValue(setup.skill3_s);
-        Stats.setText(setup.stats);
+
         showResult();
     }
 

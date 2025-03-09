@@ -5,7 +5,7 @@ import java.util.Map;
 public class Equipment {
     String name;
     String slot;
-    String displayName;
+    String displayName = "None";
     String quality;
     int upgrade = 0;
 
@@ -42,6 +42,13 @@ public class Equipment {
 
     Map equipStats;
 
+    public Equipment(String name, String slot) {
+        this.name = name;
+        this.slot = slot;
+        quality = "normal";
+        upgrade = 0;
+    }
+
     public Equipment(String name, String slot, Map equipStats) {
         this.name = name;
         this.slot = slot;
@@ -58,6 +65,7 @@ public class Equipment {
     }
 
     public void calcStats() {
+        if (equipStats == null) return;
         // Stats
         double mult = multiplier(quality, upgrade, 1);
         this.atk = equipStats.containsKey("ATK") ? (double) equipStats.get("ATK") * mult : 0;

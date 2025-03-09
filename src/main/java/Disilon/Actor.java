@@ -463,7 +463,7 @@ public class Actor {
     }
 
     public double getAtk() {
-        return atk + (base_def + gear_def) * blessed;
+        return atk + (base_atk + gear_atk) * blessed;
     }
 
     public void setAtk(double atk) {
@@ -479,7 +479,7 @@ public class Actor {
     }
 
     public double getIntel() {
-        return intel  + (base_def + gear_def) * blessed;
+        return intel  + (base_int + gear_int) * blessed;
     }
 
     public void setIntel(double intel) {
@@ -487,7 +487,7 @@ public class Actor {
     }
 
     public double getResist() {
-        return resist * (1.0 - mark) + (base_def + gear_def) * blessed;
+        return resist * (1.0 - mark) + (base_res + gear_res) * blessed;
     }
 
     public void setResist(double resist) {
