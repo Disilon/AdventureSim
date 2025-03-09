@@ -22,4 +22,73 @@
       <scope>compile</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>Disilon.Main</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.akathist.maven.plugins.launch4j</groupId>
+        <artifactId>launch4j-maven-plugin</artifactId>
+        <version>2.5.3</version>
+        <executions>
+          <execution>
+            <id>l4j-clui</id>
+            <phase>package</phase>
+            <goals>
+              <goal>launch4j</goal>
+            </goals>
+            <configuration>
+              <headerType>gui</headerType>
+              <outfile>${project.build.directory}/${project.build.finalName}.exe</outfile>
+              <jar>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar>
+              <errTitle>App Error</errTitle>
+              <classPath>
+                <mainClass>Disilon.Main</mainClass>
+                <addDependencies>
+                  true
+                </addDependencies>
+                <preCp>anything</preCp>
+              </classPath>
+              <jre>
+                <path>C:\Program Files\Java\jre1.8.0_441\bin</path>
+                <minVersion>1.5.0</minVersion>
+              </jre>
+              <versionInfo>
+                <fileVersion>1.0.0.0</fileVersion>
+                <txtFileVersion>1.0.0.0</txtFileVersion>
+                <fileDescription>des</fileDescription>
+                <copyright>Copyright (c) 2025 </copyright>
+                <companyName>comp</companyName>
+                <productVersion>1.0.0.0</productVersion>
+                <txtProductVersion>${project.version}</txtProductVersion>
+                <productName>AdventureSim</productName>
+                <internalName>AdventureSim</internalName>
+                <originalFilename>AdventureSim.exe</originalFilename>
+              </versionInfo>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
