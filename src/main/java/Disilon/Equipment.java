@@ -1,233 +1,99 @@
 package Disilon;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class Equipment {
     String name;
+    String slot;
+    String displayName;
     String quality;
     int upgrade = 0;
+
+    // Stats
     double atk = 0;
     double def = 0;
     double intel = 0;
     double resist = 0;
     double hit = 0;
     double speed = 0;
+
+    //Elements
     double fire = 0;
     double water = 0;
     double wind = 0;
     double earth = 0;
     double dark = 0;
     double light = 0;
+
+    //Damage Mit
+    double phys_res = 0;
+    double magic_res = 0;
+    double fire_res = 0;
+    double water_res = 0;
+    double wind_res = 0;
+    double earth_res = 0;
+    double light_res = 0;
+    double dark_res = 0;
+
+    //Special
     double burn = 0;
     double crit = 0;
     double stun = 0;
-    HashMap <String, Double> resists = new HashMap<>();
 
-    public Equipment() {
-        name = "None";
-        removeStats();
-    }
+    Map equipStats;
 
-    public void setEquipment(String name, String quality, int upgrade) {
+    public Equipment(String name, String slot, Map equipStats) {
         this.name = name;
+        this.slot = slot;
+        quality = "normal";
+        upgrade = 0;
+        this.equipStats = equipStats;
+        calcStats();
+    }
+    
+    public void setQualityLvl(String quality, int lvl) {
         this.quality = quality;
-        this.upgrade = upgrade;
-        removeStats();
-        switch (name) {
-            case "Beech Bow" -> setStats(16, 0, 0, 0, 16, 0);
-            case "Oak Bow" -> {
-                setStats(32, 0, 0, 0, 32, 0);
-                stun = 0.05; //todo:add scaling and functionality
-            }
-            case "Iron Wand" -> setStats(0, 12, 24, 0, 0, 0);
-            case "Blazing Wand" -> {
-                setStats(0, 0, 40, 0, 0, 0);
-                setAttribute("Fire", 36);
-                burn = 0.05; //todo:add scaling
-            }
-            case "Hidden Book" -> setStats(0, 0, 10, 6, 0, 0);
-            case "Iron Knuckles" -> setStats(16, 0, 0, 0, 0, 16);
-            case "Iron Sword" -> setStats(16, 0, 0, 0, 2, 0);
-            case "Iron Shield" -> setStats(0, 12, 0, 8, 0, -4);
-            case "Iron Dagger" -> setStats(6, 0, 0, 0, 4, 6);
-            case "Bronze Dagger" -> {
-                setStats(12, 0, 0, 0, 8, 12);
-                crit = 0.02;//todo:add scaling
-            }
-            case "Golden Belt" -> setStats(3, 3, 3, 3, 3, 3);
-            case "Metal Ring" -> setStats(3, 3, 0, 0, 0, 0);
-            case "Bronze Ring" -> setStats(8, 4, 0, 0, 0, 0);
-            case "Metal Necklace" -> setStats(0, 0, 3, 3, 0, 0);
-            case "Bronze Necklace" -> setStats(0, 0, 6, 4, 0, 0);
-            case "Cloth Helmet" -> setStats(0, 0, 0, 6, 0, 0);
-            case "Cloth Bracers" -> setStats(0, 0, 0, 0, 6, 0);
-            case "Cloth Pants" -> setStats(0, 8, 0, 0, 0, 0);
-            case "Cloth Boots" -> setStats(0, 0, 0, 0, 0, 6);
-            case "Cloth Chest" -> setStats(0, 4, 0, 6, 0, 0);
-            case "Leather Helmet" -> setStats(0, 6, 0, 4, 0, 0);
-            case "Leather Bracers" -> setStats(0, 0, 0, 0, 10, 0);
-            case "Leather Pants" -> setStats(0, 10, 0, 0, 0, 0);
-            case "Leather Boots" -> setStats(0, 0, 0, 0, 0, 10);
-            case "Leather Chest" -> setStats(0, 12, 0, 6, 0, 0);
-            case "Iron Helmet" -> {
-                setStats(0, 11, 0, 6, -6, -2);
-                setResist("Physical", 1.5);
-            }
-            case "Iron Bracers" -> {
-                setStats(0, 5, 0, 4, 6, -4);
-                setResist("Physical", 1.5);
-            }
-            case "Iron Pants" -> {
-                setStats(0, 9, 0, 6, 0, -6);
-                setResist("Physical", 1.5);
-            }
-            case "Iron Boots" -> {
-                setStats(0, 4, 0, 4, 0, 2);
-            }
-            case "Iron Chest" -> {
-                setStats(0, 20, 0, 8, -6, -6);
-                setResist("Physical", 5);
-            }
-            case "Blazing Helmet" -> {
-                setStats(0, 4, 2, 8, 0, 0);
-                setResist("Fire", 4);
-                setResist("Water", -2);
-            }
-            case "Blazing Bracers" -> {
-                setStats(0, 0, 6, 0, 6, 0);
-                setAttribute("Fire", 60);
-                setResist("Water", -4);
-            }
-            case "Blazing Pants" -> {
-                setStats(0, 6, 2, 10, 0, 0);
-                setAttribute("Fire", 20);
-                setResist("Fire", 2);
-            }
-            case "Blazing Boots" -> {
-                setStats(0, 4, 0, 4, 0, 2);
-                setAttribute("Fire", 10);
-                setResist("Fire", 2);
-            }
-            case "Blazing Chest" -> {
-                setStats(0, 8, 4, 14, 0, 0);
-                setAttribute("Fire", 30);
-                setResist("Fire", 6);
-                setResist("Water", -6);
-            }
-            case "Windy Helmet" -> {
-                setStats(0, 6, 0, 6, 2, 0);
-                setResist("Wind", 4);
-                setResist("Fire", -2);
-            }
-            case "Windy Bracers" -> {
-                setStats(0, 0, 0, 0, 12, 0);
-                setAttribute("Wind", 60);
-                setResist("Fire", -4);
-            }
-            case "Windy Pants" -> {
-                setStats(0, 10, 0, 6, 2, 0);
-                setAttribute("Wind", 20);
-                setResist("Wind", 2);
-            }
-            case "Windy Boots" -> {
-                setStats(0, 2, 0, 0, 2, 12);
-                setAttribute("Wind", 10);
-                setResist("Wind", 2);
-            }
-            case "Windy Chest" -> {
-                setStats(0, 14, 0, 8, 4, 0);
-                setAttribute("Wind", 30);
-                setResist("Wind", 6);
-                setResist("Fire", -6);
-            }
-            case "Dark Helmet" -> {
-                setStats(0, 6, 0, 6, 2, 0);
-                setResist("Dark", 4);
-                setResist("Light", -2);
-            }
-            case "Dark Bracers" -> {
-                setStats(6, 0, 0, 0, 6, 0);
-                setAttribute("Dark", 60);
-                setResist("Light", -4);
-            }
-            case "Dark Pants" -> {
-                setStats(2, 10, 0, 6, 0, 0);
-                setAttribute("Dark", 20);
-                setResist("Dark", 2);
-            }
-            case "Dark Boots" -> {
-                setStats(2, 2, 0, 0, 0, 12);
-                setAttribute("Dark", 10);
-                setResist("Dark", 2);
-            }
-            case "Dark Chest" -> {
-                setStats(4, 14, 0, 8, 0, 0);
-                setAttribute("Dark", 30);
-                setResist("Dark", 6);
-                setResist("Light", -6);
-            }
-        }
+        this.upgrade = lvl;
+        calcStats();
     }
 
-    public void removeStats() {
-        atk = 0;
-        def = 0;
-        intel = 0;
-        resist = 0;
-        hit = 0;
-        speed = 0;
-        fire = 0;
-        water = 0;
-        wind = 0;
-        earth = 0;
-        dark = 0;
-        light = 0;
-        resists.put("Physical", 0.0);
-        resists.put("Magic", 0.0);
-        resists.put("Fire", 0.0);
-        resists.put("Water", 0.0);
-        resists.put("Wind", 0.0);
-        resists.put("Earth", 0.0);
-        resists.put("Light", 0.0);
-        resists.put("Dark", 0.0);
-    }
-
-    public void setStats(double atk, double def, double intel, double resist, double hit, double speed) {
+    public void calcStats() {
+        // Stats
         double mult = multiplier(quality, upgrade, 1);
-        this.atk = atk * mult;
-        this.def = def * mult;
-        this.intel = intel * mult;
-        this.resist = resist * mult;
-        this.hit = hit * mult;
-        this.speed = speed * mult;
-    }
+        this.atk = equipStats.containsKey("ATK") ? (double) equipStats.get("ATK") * mult : 0;
+        this.def = equipStats.containsKey("DEF") ? (double) equipStats.get("DEF") * mult : 0;
+        this.intel = equipStats.containsKey("INT") ? (double) equipStats.get("INT") * mult : 0;
+        this.resist = equipStats.containsKey("RES") ? (double) equipStats.get("RES") * mult : 0;
+        this.hit = equipStats.containsKey("HIT") ? (double) equipStats.get("HIT") * mult : 0;
+        this.speed = equipStats.containsKey("SPD") ? (double) equipStats.get("SPD") * mult : 0;
 
-    public void setAttribute(String type, double value) {
-        double value_m = value * multiplier(quality, upgrade, 1);
-        switch (type) {
-            case "Fire" -> {
-                fire = value_m;
-            }
-            case "Water" -> {
-                water = value_m;
-            }
-            case "Wind" -> {
-                wind = value_m;
-            }
-            case "Earth" -> {
-                earth = value_m;
-            }
-            case "Light" -> {
-                light = value_m;
-            }
-            case "Dark" -> {
-                dark = value_m;
-            }
-        }
-    }
+        // Elements
+        this.fire = equipStats.containsKey("FIRE") ? (double) equipStats.get("FIRE") * mult : 0;
+        this.water = equipStats.containsKey("WATER") ? (double) equipStats.get("WATER") * mult : 0;
+        this.wind = equipStats.containsKey("WND") ? (double) equipStats.get("WIND") * mult : 0;
+        this.earth = equipStats.containsKey("EARTH") ? (double) equipStats.get("EARTH") * mult : 0;
+        this.dark = equipStats.containsKey("DARK") ? (double) equipStats.get("DARK") * mult : 0;
+        this.light = equipStats.containsKey("LIGHT") ? (double) equipStats.get("LIGHT") * mult : 0;
 
-    public void setResist(String type, double value) {
-        resists.put(type, value * multiplier(quality, upgrade, 2));
+        //Damage Mit
+        mult = multiplier(quality, upgrade, 2);
+        this.phys_res = equipStats.containsKey("PHY_RES") ? (double) equipStats.get("PHY_RES") * mult : 0;
+        this.magic_res = equipStats.containsKey("MAG_RES") ? (double) equipStats.get("MAG_RES") * mult : 0;
+        this.fire_res = equipStats.containsKey("FIRE_RES") ? (double) equipStats.get("FIRE_RES") * mult : 0;
+        this.water_res = equipStats.containsKey("WATER_RES") ? (double) equipStats.get("WATER_RES") * mult : 0;
+        this.wind_res = equipStats.containsKey("WND_RES") ? (double) equipStats.get("WIND_RES") * mult : 0;
+        this.earth_res = equipStats.containsKey("EARTH_RES") ? (double) equipStats.get("EARTH_RES") * mult : 0;
+        this.dark_res = equipStats.containsKey("DARK_RES") ? (double) equipStats.get("DARK_RES") * mult : 0;
+        this.light_res = equipStats.containsKey("LIGHT_RES") ? (double) equipStats.get("LIGHT_RES") * mult : 0;
+
+        // Special
+        mult = 1.0;
+        this.burn = equipStats.containsKey("BURN") ? (double) equipStats.get("BURN") * mult : 0;
+        this.crit = equipStats.containsKey("CRIT") ? (double) equipStats.get("CRIT") * mult : 0;
+        this.stun = equipStats.containsKey("STUN") ? (double) equipStats.get("STUN") * mult : 0;
+
+        // Set name
+        if (equipStats.containsKey("SET")) this.displayName = (String) equipStats.get("SET");
     }
 
     public static double multiplier(String quality, int upgrade, int scaling_type) {
@@ -256,7 +122,7 @@ public class Equipment {
             case "legendary" -> 3;
             case "mythic" -> 4;
             case "godly" -> 5;
-            default -> 1;
+            default -> -1;
         };
     }
 }

@@ -151,6 +151,8 @@ public class Simulation {
             setup.append(potion3.type.toUpperCase()).append(" potion tier: ").append(potion3.tier).append(", threshold: ").append(potion3.threshold).append(
                     "\n");
         player.refreshStats();
+        player.debuffs.clear();
+        player.buffs.clear();
         for (int i = 0; i < simulations; i++) {
             double time = 0;
             double delta;

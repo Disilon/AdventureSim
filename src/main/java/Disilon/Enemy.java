@@ -27,14 +27,40 @@ public class Enemy extends Actor {
     ActiveSkill poison = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 0, 0.4, 0.9, Scaling.atk, Element.phys,
             false, false);
 
-    public Enemy() {}
-
-    public Enemy(String name) {
-        setEnemy(name);
+    public Enemy() {
+        ball.addDebuff("Burn", 3, 1);
+        pillar.addDebuff("Burn", 3, 1);
+        explosion.addDebuff("Burn", 3, 1);
+        poison.addDebuff("Poison", 3, 0.1);
+        tsunami.addDebuff("Poison", 3, 0.1);
     }
 
     public void setEnemy(String name) {
         this.name = name;
+        skills.clear();
+        counter_dodge = false;
+        fire_res = 0;
+        water_res = 0;
+        wind_res = 0;
+        earth_res = 0;
+        light_res = 0;
+        dark_res = 0;
+        phys_res = 0;
+        magic_res = 0;
+        base_hp_max = 0;
+        base_exp = 0;
+        base_atk = 0;
+        base_def = 0;
+        base_int = 0;
+        base_res = 0;
+        base_hit = 0;
+        base_speed = 0;
+        base_fire = 0;
+        base_water = 0;
+        base_wind = 0;
+        base_earth = 0;
+        base_light = 0;
+        base_dark = 0;
         switch (name) {
             case "Dagon" -> {
                 base_hp_max = 16000;
@@ -51,7 +77,6 @@ public class Enemy extends Actor {
                 skills.add(waterpunch);
                 skills.add(killingstrike);
                 skills.add(tsunami);
-                tsunami.addDebuff("Poison", 3, 0.1);
             }
             case "Lamia" -> {
                 base_hp_max = 48000;
@@ -68,9 +93,6 @@ public class Enemy extends Actor {
                 skills.add(ball);
                 skills.add(pillar);
                 skills.add(explosion);
-                ball.addDebuff("Burn", 3, 1);
-                pillar.addDebuff("Burn", 3, 1);
-                explosion.addDebuff("Burn", 3, 1);
             }
             case "Shax" -> {
                 base_hp_max = 19200;
@@ -101,7 +123,6 @@ public class Enemy extends Actor {
                 dark_res = 0.5;
                 light_res = -0.5;
                 skills.add(poison);
-                poison.addDebuff("Poison", 3, 0.1);
                 skills.add(slash);
             }
         }

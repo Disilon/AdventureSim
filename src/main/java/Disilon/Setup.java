@@ -15,9 +15,9 @@ public class Setup implements Serializable {
     String skill1;
     String skill2;
     String skill3;
-    String skill1_mod;
-    String skill2_mod;
-    String skill3_mod;
+    SkillMod skill1_mod;
+    SkillMod skill2_mod;
+    SkillMod skill3_mod;
     int skill1_s;
     int skill2_s;
     int skill3_s;
@@ -170,27 +170,27 @@ public class Setup implements Serializable {
         this.skill3 = skill3;
     }
 
-    public String getSkill1_mod() {
+    public SkillMod getSkill1_mod() {
         return skill1_mod;
     }
 
-    public void setSkill1_mod(String skill1_mod) {
+    public void setSkill1_mod(SkillMod skill1_mod) {
         this.skill1_mod = skill1_mod;
     }
 
-    public String getSkill2_mod() {
+    public SkillMod getSkill2_mod() {
         return skill2_mod;
     }
 
-    public void setSkill2_mod(String skill2_mod) {
+    public void setSkill2_mod(SkillMod skill2_mod) {
         this.skill2_mod = skill2_mod;
     }
 
-    public String getSkill3_mod() {
+    public SkillMod getSkill3_mod() {
         return skill3_mod;
     }
 
-    public void setSkill3_mod(String skill3_mod) {
+    public void setSkill3_mod(SkillMod skill3_mod) {
         this.skill3_mod = skill3_mod;
     }
 

@@ -64,27 +64,7 @@ public class Player extends Actor {
 
     public Player() {
         addSkillEffects();
-        addEquipment();
-    }
-
-    public Player(String name, int ml, int cl) {
-        setClass(name);
-        setCLML(cl, ml);
-        addSkillEffects();
-        addEquipment();
-    }
-
-    public void addEquipment() {
-        equipment.put("Helmet", new Equipment());
-        equipment.put("Chest", new Equipment());
-        equipment.put("Bracers", new Equipment());
-        equipment.put("Pants", new Equipment());
-        equipment.put("Boots", new Equipment());
-        equipment.put("MH", new Equipment());
-        equipment.put("OH", new Equipment());
-        equipment.put("Accessory1", new Equipment());
-        equipment.put("Accessory2", new Equipment());
-        equipment.put("Necklace", new Equipment());
+        initializeSets();
     }
 
     public void addSkillEffects() {
@@ -98,6 +78,17 @@ public class Player extends Actor {
         fpillar1537.addDebuff("Burn", 3, 1);
         explosion.addDebuff("Burn", 3, 1);
         bless.addBuff("Bless", 2, 0.3);
+    }
+
+    public void initializeSets() {
+        sets.put("Cloth", new EquipmentSet("magicdmg", 5));
+        sets.put("Blazing", new EquipmentSet("magicdmg", 5));
+        sets.put("Leather", new EquipmentSet("hit", 5));
+        sets.put("Windy", new EquipmentSet("hit", 5));
+        sets.put("Dark", new EquipmentSet("physdmg", 5));
+        sets.put("Metal", new EquipmentSet("mit1", 5));
+        sets.put("Iron", new EquipmentSet("mit2", 5));
+        sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
     }
 
     public void setClass(String name) {
@@ -322,25 +313,6 @@ public class Player extends Actor {
         passives.get(passive).setLvl(lvl);
     }
 
-    public void add_stats(double atk, double def, double intel, double resist, double hit, double speed,
-                          double attribute) {
-        add_stats(atk, def, intel, resist, hit, speed);
-        switch (name) {
-            case "Assassin" -> {
-                gear_dark += attribute;
-            }
-            case "Pyromancer" -> {
-                gear_fire += attribute;
-            }
-            case "Sniper" -> {
-                gear_wind += attribute;
-            }
-            case "Cleric" -> {
-                gear_light += attribute;
-            }
-        }
-    }
-
     public double getEblast() {
         return eblast_enabled ? getIntel() * 0.05 : 0;
     }
@@ -425,8 +397,8 @@ public class Player extends Actor {
 
     public String getAllStats() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HP = ").append(Math.round(getHp())).append("\n");
-        sb.append("MP = ").append(Math.round(getMp())).append("\n");
+        sb.append("HP = ").append(Math.round(getHp_max())).append("\n");
+        sb.append("MP = ").append(Math.round(getMp_max())).append("\n");
         sb.append("ATK = ").append(Math.round(getAtk())).append(" (").append(Math.round(gear_atk)).append(")\n");
         sb.append("DEF = ").append(Math.round(getDef())).append(" (").append(Math.round(gear_def)).append(")\n");
         sb.append("INT = ").append(Math.round(getIntel())).append(" (").append(Math.round(gear_int)).append(")\n");

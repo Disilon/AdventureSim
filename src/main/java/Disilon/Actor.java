@@ -1,8 +1,8 @@
 package Disilon;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -117,9 +117,10 @@ public class Actor {
     public boolean lvling = false;
     public boolean counter_dodge = false;
 
-    protected HashMap<String, PassiveSkill> passives = new HashMap<String, PassiveSkill>();
-    protected HashMap<String, ActiveSkill> active_skills = new HashMap<String, ActiveSkill>();
-    protected HashMap<String, Equipment> equipment = new HashMap<String, Equipment>();
+    protected LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
+    protected LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
+    protected LinkedHashMap<String, Equipment> equipment = new LinkedHashMap<String, Equipment>();
+    protected LinkedHashMap<String, EquipmentSet> sets = new LinkedHashMap<String, EquipmentSet>();
 
     protected PassiveSkill attackBoost = new PassiveSkill("Attack Boost", 0.2, 10, 0.1);
     protected PassiveSkill dropBoost = new PassiveSkill("Drop Boost", 0.15, 10, 0.1);
@@ -197,28 +198,8 @@ public class Actor {
             case "hit" -> set_hit = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "magicdmg" -> set_magicdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "physdmg" -> set_physdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
-            case "mit1" -> set_mit1 = 1 + Math.clamp((5 + upgrade / 6.0) * (0.5 + tier / 2.0), 5, 50) / 100.0;
-            case "mit2" -> set_mit2 = 1 + Math.clamp((10 + upgrade / 5.0) * (0.5 + tier / 2.0), 10, 55) / 100.0;
-        }
-    }
-
-    public void disableSet(String bonus) {
-        switch (bonus.toLowerCase()) {
-            case "hit":
-                set_hit = 1;
-                break;
-            case "magicdmg":
-                set_magicdmg = 1;
-                break;
-            case "physdmg":
-                set_physdmg = 1;
-                break;
-            case "mit1":
-                set_mit1 = 1;
-                break;
-            case "mit2":
-                set_mit2 = 1;
-                break;
+            case "mit1" -> set_mit1 = Math.clamp((5 + upgrade / 6.0) * (0.5 + tier / 2.0), 5, 50) / 100.0;
+            case "mit2" -> set_mit2 = Math.clamp((10 + upgrade / 5.0) * (0.5 + tier / 2.0), 10, 55) / 100.0;
         }
     }
 
@@ -226,12 +207,11 @@ public class Actor {
         set_hit = 1;
         set_magicdmg = 1;
         set_physdmg = 1;
-        set_mit1 = 1;
-        set_mit2 = 1;
-    }
-
-    public void add_crit(double chance) {
-        gear_crit += chance;
+        set_mit1 = 0;
+        set_mit2 = 0;
+        for(EquipmentSet set : sets.values()) {
+            set.current_items = 0;
+        }
     }
 
     public void checkAmbush() {
@@ -266,32 +246,32 @@ public class Actor {
                 passives.get(name).enabled = true;
             }
         }
-        poison_mult *= 1.0 + (poisonBoost.enabled ? poisonBoost.bonus : 0);
-        dmg_mult *= 1.0 + (daggerMastery.enabled ? daggerMastery.bonus : 0);
-        dmg_mult *= 1.0 + (bowMastery.enabled ? bowMastery.bonus : 0);
-        dmg_mult *= 1.0 + (wandMastery.enabled ? wandMastery.bonus : 0);
-        dmg_mult *= 1.0 + (bookMastery.enabled ? bookMastery.bonus : 0);
-        dmg_mult *= 1.0 + (concentration.enabled ? concentration.bonus : 0);
+        poison_mult *= 1.0 + poisonBoost.bonus();
+        dmg_mult *= 1.0 + daggerMastery.bonus();
+        dmg_mult *= 1.0 + bowMastery.bonus();
+        dmg_mult *= 1.0 + wandMastery.bonus();
+        dmg_mult *= 1.0 + bookMastery.bonus();
+        dmg_mult *= 1.0 + concentration.bonus();
         if (Main.game_version >= 1534) {
-            dmg_mult *= 1.0 + (stealth.enabled ? stealth.bonus : 0);
-            poison_mult *= 1.0 + (stealth.enabled ? stealth.bonus : 0);
+            dmg_mult *= 1.0 + stealth.bonus();
+            poison_mult *= 1.0 + stealth.bonus();
         } else {
-            atk_mult *= 1.0 + (stealth.enabled ? stealth.bonus : 0);
+            atk_mult *= 1.0 + stealth.bonus();
         }
-        speed_mult *= 1.0 + (speedBoost.enabled ? speedBoost.bonus : 0);
-        exp_mult *= 1.0 + (dropBoost.enabled ? dropBoost.bonus : 0);
-        atk_mult *= 1.0 + (attackBoost.enabled ? attackBoost.bonus : 0);
-        def_mult *= 1.0 + (defenseBoost.enabled ? defenseBoost.bonus : 0);
-        dodge_mult *= 1.0 + (dodge.enabled ? dodge.bonus : 0);
-        hit_mult *= 1.0 + (hitBoost.enabled ? hitBoost.bonus : 0);
-        hit_mult *= 1.0 + (concentration.enabled ? concentration.bonus : 0);
-        int_mult *= 1.0 + (intBoost.enabled ? intBoost.bonus : 0);
-        res_mult *= 1.0 + (resBoost.enabled ? resBoost.bonus : 0);
-        ailment_res *= 1.0 + (ailmentRes.enabled ? ailmentRes.bonus : 0);
-        cast_speed_mult /= 1.0 + (castBoost.enabled ? castBoost.bonus : 0);
+        speed_mult *= 1.0 + speedBoost.bonus();
+        exp_mult *= 1.0 + dropBoost.bonus();
+        atk_mult *= 1.0 + attackBoost.bonus();
+        def_mult *= 1.0 + defenseBoost.bonus();
+        dodge_mult *= 1.0 + dodge.bonus();
+        hit_mult *= 1.0 + hitBoost.bonus();
+        hit_mult *= 1.0 + concentration.bonus();
+        int_mult *= 1.0 + intBoost.bonus();
+        res_mult *= 1.0 + resBoost.bonus();
+        ailment_res *= 1.0 + ailmentRes.bonus();
+        cast_speed_mult /= 1.0 + castBoost.bonus();
         cast_speed_mult *= 1.0 + (concentration.enabled ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (concentration.enabled ? 0.25 : 0);
-        hp_regen = hpRegen.enabled ? hpRegen.bonus : 0;
+        hp_regen = hpRegen.bonus();
         if (fireResist.enabled) {
             add_resist("Fire", fireResist.bonus);
         }
@@ -301,6 +281,87 @@ public class Actor {
     public void refreshStats() {
         mp_cost_add = 0;
         mp_cost_mult = 1;
+        clear_gear_stats();
+        for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
+            Equipment item = slot.getValue();
+            if (item.name != null && !item.name.equals("None")) {
+                gear_atk += item.atk;
+                gear_def += item.def;
+                gear_hit += item.hit;
+                gear_speed += item.speed;
+                gear_int += item.intel;
+                gear_res += item.resist;
+                gear_water += item.water;
+                gear_fire += item.fire;
+                gear_earth += item.earth;
+                gear_wind += item.wind;
+                gear_light += item.light;
+                gear_dark += item.dark;
+                gear_crit += item.crit;
+                gear_burn *= 1 + item.burn;
+                add_resist("Fire", item.fire_res * 0.01);
+                add_resist("Water", item.water_res * 0.01);
+                add_resist("Wind", item.wind_res * 0.01);
+                add_resist("Earth", item.earth_res * 0.01);
+                add_resist("Light", item.light_res * 0.01);
+                add_resist("Dark", item.dark_res * 0.01);
+                add_resist("Magic", item.magic_res * 0.01);
+                add_resist("Physical", item.phys_res * 0.01);
+                if (sets.containsKey(item.displayName)) {
+                    sets.get(item.displayName).addItem(item.quality, item.upgrade);
+                }
+            }
+        }
+        for(EquipmentSet set : sets.values()) {
+            if (set.completed()) {
+                    enableSet(set.bonus, set.min_quality, set.min_upgrade);
+            }
+        }
+        for (Map.Entry<String, PassiveSkill> passive : passives.entrySet()) {
+            if (passive.getValue().enabled) {
+                mp_cost_add += passive.getValue().mp_add;
+                mp_cost_mult *= 1 + passive.getValue().mp_mult;
+            }
+        }
+        atk = (base_atk + gear_atk) * getAtk_mult();
+        def = (base_def + gear_def) * getDef_mult();
+        intel = (base_int + gear_int) * getInt_mult();
+        resist = (base_res + gear_res) * getRes_mult();
+        hit = (base_hit + gear_hit) * getHit_mult() * set_hit;
+        speed = (base_speed + gear_speed) * getSpeed_mult();
+        hp_max = (base_hp_max) * getHp_mult();
+        mp_max = (resist * 3 + intel) * getMp_mult();
+        hp = hp_max;
+        mp = mp_max;
+        burn = gear_burn;
+        if (set_mit1 > 0) add_resist("All", set_mit1);
+        if (set_mit2 > 0) add_resist("All", set_mit2);
+    }
+
+    public void add_resist(String type, double value) {
+        switch (type) {
+            case "Physical" -> phys_res = 1.0 - (1.0 - phys_res) * (1.0 - value);
+            case "Magic" -> magic_res = 1.0 - (1.0 - magic_res) * (1.0 - value);
+            case "Fire" -> fire_res = 1.0 - (1.0 - fire_res) * (1.0 - value);
+            case "Water" -> water_res = 1.0 - (1.0 - water_res) * (1.0 - value);
+            case "Earth" -> earth_res = 1.0 - (1.0 - earth_res) * (1.0 - value);
+            case "Wind" -> wind_res = 1.0 - (1.0 - wind_res) * (1.0 - value);
+            case "Light" -> light_res = 1.0 - (1.0 - light_res) * (1.0 - value);
+            case "Dark" -> dark_res = 1.0 - (1.0 - dark_res) * (1.0 - value);
+            case "All" -> {
+                phys_res = 1.0 - (1.0 - phys_res) * (1.0 - value);
+                magic_res = 1.0 - (1.0 - magic_res) * (1.0 - value);
+                fire_res = 1.0 - (1.0 - fire_res) * (1.0 - value);
+                water_res = 1.0 - (1.0 - water_res) * (1.0 - value);
+                earth_res = 1.0 - (1.0 - earth_res) * (1.0 - value);
+                wind_res = 1.0 - (1.0 - wind_res) * (1.0 - value);
+                light_res = 1.0 - (1.0 - light_res) * (1.0 - value);
+                dark_res = 1.0 - (1.0 - dark_res) * (1.0 - value);
+            }
+        }
+    }
+
+    public void clear_gear_stats() {
         gear_atk = 0;
         gear_def = 0;
         gear_hit = 0;
@@ -323,100 +384,6 @@ public class Actor {
         wind_res = base_wind_res;
         light_res = base_light_res;
         dark_res = base_dark_res;
-        for (Map.Entry<String, Equipment> item : equipment.entrySet()) {
-            if (item.getValue().name != null && item.getValue().name != "None") {
-                gear_atk += item.getValue().atk;
-                gear_def += item.getValue().def;
-                gear_hit += item.getValue().hit;
-                gear_speed += item.getValue().speed;
-                gear_int += item.getValue().intel;
-                gear_res += item.getValue().resist;
-                gear_water += item.getValue().water;
-                gear_fire += item.getValue().fire;
-                gear_earth += item.getValue().earth;
-                gear_wind += item.getValue().wind;
-                gear_light += item.getValue().light;
-                gear_dark += item.getValue().dark;
-                gear_crit += item.getValue().crit;
-                gear_burn *= 1 + item.getValue().burn;
-                Set<String> types = item.getValue().resists.keySet();
-                for (String key : types) {
-                    if (item.getValue().resists.get(key) != 0) {
-                        add_resist(key, item.getValue().resists.get(key) / 100);
-                    }
-                }
-            }
-        }
-        for (Map.Entry<String, PassiveSkill> passive : passives.entrySet()) {
-            if (passive.getValue().enabled) {
-                mp_cost_add += passive.getValue().mp_add;
-                mp_cost_mult *= 1 + passive.getValue().mp_mult;
-            }
-        }
-        atk = (base_atk + gear_atk) * getAtk_mult();
-        def = (base_def + gear_def) * getDef_mult();
-        intel = (base_int + gear_int) * getInt_mult();
-        resist = (base_res + gear_res) * getRes_mult();
-        hit = (base_hit + gear_hit) * getHit_mult() * set_hit;
-        speed = (base_speed + gear_speed) * getSpeed_mult();
-        hp_max = (base_hp_max) * getHp_mult();
-        mp_max = (resist * 3 + intel) * getMp_mult();
-        hp = hp_max;
-        mp = mp_max;
-        burn = gear_burn;
-    }
-
-    public void add_resist(String type, double value) {
-        switch (type) {
-            case "Physical" -> {
-                phys_res = 1.0 - (1.0 - phys_res) * (1.0 - value);
-            }
-            case "Magic" -> {
-                magic_res = 1.0 - (1.0 - magic_res) * (1.0 - value);
-            }
-            case "Fire" -> {
-                fire_res = 1.0 - (1.0 - fire_res) * (1.0 - value);
-            }
-            case "Water" -> {
-                water_res = 1.0 - (1.0 - water_res) * (1.0 - value);
-            }
-            case "Earth" -> {
-                earth_res = 1.0 - (1.0 - earth_res) * (1.0 - value);
-            }
-            case "Wind" -> {
-                wind_res = 1.0 - (1.0 - wind_res) * (1.0 - value);
-            }
-            case "Light" -> {
-                light_res = 1.0 - (1.0 - light_res) * (1.0 - value);
-            }
-            case "Dark" -> {
-                dark_res = 1.0 - (1.0 - dark_res) * (1.0 - value);
-            }
-        }
-    }
-
-    public void add_stats(double atk, double def, double intel, double resist, double hit, double speed) {
-        gear_atk += atk;
-        gear_def += def;
-        gear_int += intel;
-        gear_res += resist;
-        gear_hit += hit;
-        gear_speed += speed;
-    }
-
-    public void clear_gear_stats() {
-        gear_atk = 0;
-        gear_def = 0;
-        gear_int = 0;
-        gear_res = 0;
-        gear_hit = 0;
-        gear_speed = 0;
-        gear_wind = 0;
-        gear_light = 0;
-        gear_dark = 0;
-        gear_fire = 0;
-        gear_water = 0;
-        gear_earth = 0;
         disableSet();
     }
 
@@ -496,7 +463,7 @@ public class Actor {
     }
 
     public double getAtk() {
-        return atk * (1 + blessed);
+        return atk + (base_def + gear_def) * blessed;
     }
 
     public void setAtk(double atk) {
@@ -504,7 +471,7 @@ public class Actor {
     }
 
     public double getDef() {
-        return def * (1.0 - def_break) * (1.0 - mark) * (1 + blessed);
+        return def * (1.0 - def_break) * (1.0 - mark) + (base_def + gear_def) * blessed;
     }
 
     public void setDef(double def) {
@@ -512,7 +479,7 @@ public class Actor {
     }
 
     public double getIntel() {
-        return intel * (1 + blessed);
+        return intel  + (base_def + gear_def) * blessed;
     }
 
     public void setIntel(double intel) {
@@ -520,7 +487,7 @@ public class Actor {
     }
 
     public double getResist() {
-        return resist * (1.0 - mark) * (1 + blessed);
+        return resist * (1.0 - mark) + (base_def + gear_def) * blessed;
     }
 
     public void setResist(double resist) {
