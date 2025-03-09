@@ -35,6 +35,7 @@
           </execution>
         </executions>
         <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>

@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonWriter;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -95,6 +96,7 @@ public class UserForm extends JFrame {
     private JButton Run;
     private JCheckBox SetSetup;
     private JCheckBox SetupInfo;
+    private  JFileChooser fileChooser = null;
     GridBagConstraints gbc = new GridBagConstraints();
 
     public Player player;
@@ -113,7 +115,11 @@ public class UserForm extends JFrame {
     public LinkedHashMap<String, Equipment> neck = new LinkedHashMap<>();
     Gson gson = new Gson();
 
-    public UserForm() {
+    public UserForm() throws URISyntaxException {
+        fileChooser = new JFileChooser(Main.getJarPath());
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "json", "json");
+        fileChooser.setFileFilter(filter);
         player = new Player();
         enemy = new Enemy();
         simulation = new Simulation();
@@ -1221,28 +1227,23 @@ public class UserForm extends JFrame {
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
-//        System.out.println(MH_name.getSelectedItem().toString());
-//        MH_name.setSelectedIndex(0);
-//        System.out.println(MH_name.getSelectedItem().toString());
-//        OH_name.setSelectedIndex(0);
-//        Helmet_name.setSelectedIndex(0);
-//        Chest_name.setSelectedIndex(0);
-//        Pants_name.setSelectedIndex(0);
-//        Boots_name.setSelectedIndex(0);
-//        Bracer_name.setSelectedIndex(0);
-//        Accessory1_name.setSelectedIndex(0);
-//        Accessory2_name.setSelectedIndex(0);
-//        Necklace_name.setSelectedIndex(0);
         Save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveSetup();
+                fileChooser.setDialogTitle("Save setup to json file");
+                fileChooser.setSelectedFile(new File(Main.getJarPath() + "/default.json"));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int result = fileChooser.showSaveDialog(UserForm.this);
+                if (result == JFileChooser.APPROVE_OPTION ) saveSetup(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
         Load.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                loadSetup();
+                fileChooser.setDialogTitle("Load setup from json file");
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int result = fileChooser.showOpenDialog(UserForm.this);
+                if (result == JFileChooser.APPROVE_OPTION ) loadSetup(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
         Run.addActionListener(new ActionListener() {
@@ -1262,6 +1263,7 @@ public class UserForm extends JFrame {
                     simulation.simulations = (int) Simulations.getValue();
                     simulation.player = player;
                     simulation.enemy = enemy;
+                    simulation.time_to_respawn = simulation.getTime_to_respawn();
                     setupEquipment();
                     setupPassives();
                     simulation.run(Skill1.getSelectedItem().toString(), (int) Skill1_lvl.getValue(),
@@ -1342,7 +1344,7 @@ public class UserForm extends JFrame {
             }
         });
         PlayerClass.setSelectedIndex(0);
-        loadSetup();
+        loadSetup(Main.getJarPath() + "/default.json");
     }
 
     private String findItemFromSet(String name, LinkedHashMap<String, Equipment> set) {
@@ -1564,7 +1566,7 @@ public class UserForm extends JFrame {
         hm.put("None", new Equipment("None", "None"));
     }
 
-    private void saveSetup() {
+    private void saveSetup(String path) {
         setup.accessory1_lvl = Integer.parseInt(Accessory1_lvl.getValue().toString());
         setup.accessory1_name = Accessory1_name.getSelectedItem().toString();
         setup.accessory1_tier = Accessory1_tier.getSelectedItem().toString();
@@ -1635,22 +1637,20 @@ public class UserForm extends JFrame {
         setup.skill3_s = Integer.parseInt(Skill3_s.getValue().toString());
         setup.stats = Stats.getText();
         try {
-            File pto = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            JsonWriter writer = new JsonWriter(new FileWriter(pto.getAbsolutePath() + "/default.json"));
+            JsonWriter writer = new JsonWriter(new FileWriter(path));
             gson.toJson(setup, Setup.class, writer);
             writer.close();
-        } catch (URISyntaxException | IOException ex) {
+        } catch (IOException ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
             throw new RuntimeException(ex);
         }
     }
 
-    private void loadSetup() {
+    private void loadSetup(String path) {
         loadEquipment();
         try {
-            File pto = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            File def = new File(pto.getAbsolutePath() + "/default.json");
+            File def = new File(path);
             if (def.exists()) {
                 JsonReader reader = new JsonReader(new FileReader(def));
                 setup = gson.fromJson(reader, Setup.class);
@@ -1724,7 +1724,7 @@ public class UserForm extends JFrame {
                 Stats.setText(setup.stats);
             }
 
-        } catch (URISyntaxException | IOException ex) {
+        } catch (Exception ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
             throw new RuntimeException(ex);

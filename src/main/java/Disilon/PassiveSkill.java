@@ -1,5 +1,7 @@
 package Disilon;
 
+import java.util.Map;
+
 public class PassiveSkill {
     public int lvl;
     public String name;
@@ -31,7 +33,10 @@ public class PassiveSkill {
         }
     }
 
-    public double bonus() {
+    public double bonus(Map passives) {
+        if (!passives.containsValue(this)) {
+            return 0;
+        }
         return enabled ? bonus : 0;
     }
 }

@@ -1,5 +1,7 @@
 package Disilon;
 
+import java.io.File;
+
 public class Main {
     public static int game_version = 1531;
 
@@ -10,5 +12,12 @@ public class Main {
             e.printStackTrace();
         }
     }
-
+    public static String getJarPath() {
+        try {
+            return new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

@@ -1,0 +1,31 @@
+{
+	"NECK": {
+		"Metal Necklace": {
+			"INT": 3,
+			"RES": 3
+		}, "Bronze Necklace": {
+			"INT": 8,
+			"RES": 4,
+			"SET": "BronzeAcc"
+		}
+	}, "RING": {
+		"Metal Ring": {
+			"ATK": 3,
+			"DEF": 3
+		}, "Bronze Ring": {
+			"ATK": 8,
+			"DEF": 4,
+			"SET": "BronzeAcc"
+		}, "Leather Belt": {
+			"DEF": 6
+		}, "Golden Belt": {
+			"ATK": 3,
+			"DEF": 3,
+			"INT": 3,
+			"RES": 3,
+			"SPD": 3,
+			"HIT": 3,
+			"SET": "BronzeAcc"
+		}
+	}
+}

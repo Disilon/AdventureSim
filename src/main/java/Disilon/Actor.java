@@ -246,34 +246,34 @@ public class Actor {
                 passives.get(name).enabled = true;
             }
         }
-        poison_mult *= 1.0 + poisonBoost.bonus();
-        dmg_mult *= 1.0 + daggerMastery.bonus();
-        dmg_mult *= 1.0 + bowMastery.bonus();
-        dmg_mult *= 1.0 + wandMastery.bonus();
-        dmg_mult *= 1.0 + bookMastery.bonus();
-        dmg_mult *= 1.0 + concentration.bonus();
+        poison_mult *= 1.0 + poisonBoost.bonus(passives);
+        dmg_mult *= 1.0 + daggerMastery.bonus(passives);
+        dmg_mult *= 1.0 + bowMastery.bonus(passives);
+        dmg_mult *= 1.0 + wandMastery.bonus(passives);
+        dmg_mult *= 1.0 + bookMastery.bonus(passives);
+        dmg_mult *= 1.0 + concentration.bonus(passives);
         if (Main.game_version >= 1534) {
-            dmg_mult *= 1.0 + stealth.bonus();
-            poison_mult *= 1.0 + stealth.bonus();
+            dmg_mult *= 1.0 + stealth.bonus(passives);
+            poison_mult *= 1.0 + stealth.bonus(passives);
         } else {
-            atk_mult *= 1.0 + stealth.bonus();
+            atk_mult *= 1.0 + stealth.bonus(passives);
         }
-        speed_mult *= 1.0 + speedBoost.bonus();
-        exp_mult *= 1.0 + dropBoost.bonus();
-        atk_mult *= 1.0 + attackBoost.bonus();
-        def_mult *= 1.0 + defenseBoost.bonus();
-        dodge_mult *= 1.0 + dodge.bonus();
-        hit_mult *= 1.0 + hitBoost.bonus();
-        hit_mult *= 1.0 + concentration.bonus();
-        int_mult *= 1.0 + intBoost.bonus();
-        res_mult *= 1.0 + resBoost.bonus();
-        ailment_res *= 1.0 + ailmentRes.bonus();
-        cast_speed_mult /= 1.0 + castBoost.bonus();
-        cast_speed_mult *= 1.0 + (concentration.enabled ? 0.25 : 0);
-        delay_speed_mult *= 1.0 + (concentration.enabled ? 0.25 : 0);
-        hp_regen = hpRegen.bonus();
+        speed_mult *= 1.0 + speedBoost.bonus(passives);
+        exp_mult *= 1.0 + dropBoost.bonus(passives);
+        atk_mult *= 1.0 + attackBoost.bonus(passives);
+        def_mult *= 1.0 + defenseBoost.bonus(passives);
+        dodge_mult *= 1.0 + dodge.bonus(passives);
+        hit_mult *= 1.0 + hitBoost.bonus(passives);
+        hit_mult *= 1.0 + concentration.bonus(passives);
+        int_mult *= 1.0 + intBoost.bonus(passives);
+        res_mult *= 1.0 + resBoost.bonus(passives);
+        ailment_res *= 1.0 + ailmentRes.bonus(passives);
+        cast_speed_mult /= 1.0 + castBoost.bonus(passives);
+        cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
+        delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
+        hp_regen = hpRegen.bonus(passives);
         if (fireResist.enabled) {
-            add_resist("Fire", fireResist.bonus);
+            add_resist("Fire", fireResist.bonus(passives));
         }
         refreshStats();
     }
