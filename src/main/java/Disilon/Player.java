@@ -397,8 +397,8 @@ public class Player extends Actor {
 
     public String getAllStats() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HP = ").append(Math.round(getHp())).append("\n");
-        sb.append("MP = ").append(Math.round(getMp())).append("\n");
+        sb.append("HP = ").append(Math.round(getHp_max())).append("\n");
+        sb.append("MP = ").append(Math.round(getMp_max())).append("\n");
         sb.append("ATK = ").append(Math.round(getAtk())).append(" (").append(Math.round(gear_atk)).append(")\n");
         sb.append("DEF = ").append(Math.round(getDef())).append(" (").append(Math.round(gear_def)).append(")\n");
         sb.append("INT = ").append(Math.round(getIntel())).append(" (").append(Math.round(gear_int)).append(")\n");

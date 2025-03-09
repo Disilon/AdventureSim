@@ -299,14 +299,14 @@ public class Actor {
                 gear_dark += item.dark;
                 gear_crit += item.crit;
                 gear_burn *= 1 + item.burn;
-                add_resist("Fire", item.fire_res);
-                add_resist("Water", item.water_res);
-                add_resist("Wind", item.wind_res);
-                add_resist("Earth", item.earth_res);
-                add_resist("Light", item.light_res);
-                add_resist("Dark", item.dark_res);
-                add_resist("Magic", item.magic_res);
-                add_resist("Physical", item.phys_res);
+                add_resist("Fire", item.fire_res * 0.01);
+                add_resist("Water", item.water_res * 0.01);
+                add_resist("Wind", item.wind_res * 0.01);
+                add_resist("Earth", item.earth_res * 0.01);
+                add_resist("Light", item.light_res * 0.01);
+                add_resist("Dark", item.dark_res * 0.01);
+                add_resist("Magic", item.magic_res * 0.01);
+                add_resist("Physical", item.phys_res * 0.01);
                 if (sets.containsKey(item.displayName)) {
                     sets.get(item.displayName).addItem(item.quality, item.upgrade);
                 }

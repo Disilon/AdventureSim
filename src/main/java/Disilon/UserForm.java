@@ -1,6 +1,5 @@
 package Disilon;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -112,7 +111,6 @@ public class UserForm extends JFrame {
     public LinkedHashMap<String, Equipment> acc1 = new LinkedHashMap<>();
     public LinkedHashMap<String, Equipment> acc2 = new LinkedHashMap<>();
     public LinkedHashMap<String, Equipment> neck = new LinkedHashMap<>();
-    ObjectMapper objectMapper = new ObjectMapper();
     Gson gson = new Gson();
 
     public UserForm() {
@@ -1254,6 +1252,7 @@ public class UserForm extends JFrame {
                     simulation.enemy = enemy;
                     setupEquipment();
                     setupPassives();
+                    Stats.setText(player.getAllStats());
                     simulation.run(Skill1.getSelectedItem().toString(), (int) Skill1_lvl.getValue(),
                             (SkillMod) Skill1_mod.getSelectedItem(), (int) Skill1_s.getValue(),
                             Skill2.getSelectedItem().toString(),
@@ -1265,7 +1264,6 @@ public class UserForm extends JFrame {
                     } else {
                         Result.setText(simulation.essential_result);
                     }
-                    Stats.setText(player.getAllStats());
                 }
             }
         });
@@ -1297,11 +1295,15 @@ public class UserForm extends JFrame {
         Helmet_name.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (SetSetup.isSelected()) {
-                    Chest_name.setSelectedItem(Helmet_name.getSelectedItem());
-                    Pants_name.setSelectedItem(Helmet_name.getSelectedItem());
-                    Bracer_name.setSelectedItem(Helmet_name.getSelectedItem());
-                    Boots_name.setSelectedItem(Helmet_name.getSelectedItem());
+                if (SetSetup.isSelected() && Helmet_name.getSelectedItem() != null && Helmet_name.getSelectedItem() != "None") {
+                    Equipment eq = helmet.get(Helmet_name.getSelectedItem().toString());
+                    if (eq != null) {
+                        String set = eq.displayName;
+                        Chest_name.setSelectedItem(findItemFromSet(set, chest));
+                        Pants_name.setSelectedItem(findItemFromSet(set, pants));
+                        Bracer_name.setSelectedItem(findItemFromSet(set, bracers));
+                        Boots_name.setSelectedItem(findItemFromSet(set, boots));
+                    }
                 }
             }
         });
@@ -1329,6 +1331,15 @@ public class UserForm extends JFrame {
         });
         PlayerClass.setSelectedIndex(0);
         loadSetup();
+    }
+
+    private String findItemFromSet(String name,LinkedHashMap<String, Equipment> set) {
+        for (Equipment e : set.values()) {
+            if (e.displayName.equals(name)) {
+                return e.name;
+            }
+        }
+        return "None";
     }
 
     private void selectClass(String name) {
@@ -1391,27 +1402,39 @@ public class UserForm extends JFrame {
         simulation.setupPotions(type1, tier1, threshold1, type2, tier2, threshold2, type3, tier3, threshold3);
     }
 
-    private void setupEquipment() { // This function parses the equipment. Probably best place to do set bonuses.
-//        player.equipment.get("MH").setEquipment(MH_name.getSelectedItem().toString(),
-//                MH_tier.getSelectedItem().toString(), Integer.parseInt(MH_lvl.getValue().toString()));
-//        player.equipment.get("OH").setEquipment(OH_name.getSelectedItem().toString(),
-//                OH_tier.getSelectedItem().toString(), Integer.parseInt(OH_lvl.getValue().toString()));
-//        player.equipment.get("Helmet").setEquipment(Helmet_name.getSelectedItem().toString() + " Helmet",
-//                Helmet_tier.getSelectedItem().toString(), Integer.parseInt(Helmet_lvl.getValue().toString()));
-//        player.equipment.get("Chest").setEquipment(Chest_name.getSelectedItem().toString() + " Chest",
-//                Chest_tier.getSelectedItem().toString(), Integer.parseInt(Chest_lvl.getValue().toString()));
-//        player.equipment.get("Pants").setEquipment(Pants_name.getSelectedItem().toString() + " Pants",
-//                Pants_tier.getSelectedItem().toString(), Integer.parseInt(Pants_lvl.getValue().toString()));
-//        player.equipment.get("Bracers").setEquipment(Bracer_name.getSelectedItem().toString() + " Bracers",
-//                Bracer_tier.getSelectedItem().toString(), Integer.parseInt(Bracer_lvl.getValue().toString()));
-//        player.equipment.get("Boots").setEquipment(Boots_name.getSelectedItem().toString() + " Boots",
-//                Boots_tier.getSelectedItem().toString(), Integer.parseInt(Boots_lvl.getValue().toString()));
-//        player.equipment.get("Accessory1").setEquipment(Accessory1_name.getSelectedItem().toString(),
-//                Accessory1_tier.getSelectedItem().toString(), Integer.parseInt(Accessory1_lvl.getValue().toString()));
-//        player.equipment.get("Accessory2").setEquipment(Accessory2_name.getSelectedItem().toString(),
-//                Accessory2_tier.getSelectedItem().toString(), Integer.parseInt(Accessory2_lvl.getValue().toString()));
-//        player.equipment.get("Necklace").setEquipment(Necklace_name.getSelectedItem().toString(),
-//                Necklace_tier.getSelectedItem().toString(), Integer.parseInt(Necklace_lvl.getValue().toString()));
+    private void setupEquipment() {
+        // This function parses the equipment. Probably best place to do set bonuses.
+        player.equipment.clear();
+        player.equipment.put("MH", mh.get(MH_name.getSelectedItem().toString()));
+        player.equipment.put("OH", oh.get(OH_name.getSelectedItem().toString()));
+        player.equipment.put("Helmet", helmet.get(Helmet_name.getSelectedItem().toString()));
+        player.equipment.put("Chest", chest.get(Chest_name.getSelectedItem().toString()));
+        player.equipment.put("Pants", pants.get(Pants_name.getSelectedItem().toString()));
+        player.equipment.put("Bracer", bracers.get(Bracer_name.getSelectedItem().toString()));
+        player.equipment.put("Boots", boots.get(Boots_name.getSelectedItem().toString()));
+        player.equipment.put("Accessory1", acc1.get(Accessory1_name.getSelectedItem().toString()));
+        player.equipment.put("Accessory2", acc2.get(Accessory2_name.getSelectedItem().toString()));
+        player.equipment.put("Necklace", neck.get(Necklace_name.getSelectedItem().toString()));
+        mh.get(MH_name.getSelectedItem().toString()).setQualityLvl(MH_tier.getSelectedItem().toString(),
+                Integer.parseInt(MH_lvl.getValue().toString()));
+        oh.get(OH_name.getSelectedItem().toString()).setQualityLvl(OH_tier.getSelectedItem().toString(),
+                Integer.parseInt(OH_lvl.getValue().toString()));
+        helmet.get(Helmet_name.getSelectedItem().toString()).setQualityLvl(Helmet_tier.getSelectedItem().toString(),
+                Integer.parseInt(Helmet_lvl.getValue().toString()));
+        chest.get(Chest_name.getSelectedItem().toString()).setQualityLvl(Chest_tier.getSelectedItem().toString(),
+                Integer.parseInt(Chest_lvl.getValue().toString()));
+        pants.get(Pants_name.getSelectedItem().toString()).setQualityLvl(Pants_tier.getSelectedItem().toString(),
+                Integer.parseInt(Pants_lvl.getValue().toString()));
+        bracers.get(Bracer_name.getSelectedItem().toString()).setQualityLvl(Bracer_tier.getSelectedItem().toString(),
+                Integer.parseInt(Bracer_lvl.getValue().toString()));
+        boots.get(Boots_name.getSelectedItem().toString()).setQualityLvl(Boots_tier.getSelectedItem().toString(),
+                Integer.parseInt(Boots_lvl.getValue().toString()));
+        acc1.get(Accessory1_name.getSelectedItem().toString()).setQualityLvl(Accessory1_tier.getSelectedItem().toString(),
+                Integer.parseInt(Accessory1_lvl.getValue().toString()));
+        acc2.get(Accessory2_name.getSelectedItem().toString()).setQualityLvl(Accessory2_tier.getSelectedItem().toString(),
+                Integer.parseInt(Accessory2_lvl.getValue().toString()));
+        neck.get(Necklace_name.getSelectedItem().toString()).setQualityLvl(Necklace_tier.getSelectedItem().toString(),
+                Integer.parseInt(Necklace_lvl.getValue().toString()));
     }
 
     private void setupPassives() {
@@ -1433,13 +1456,32 @@ public class UserForm extends JFrame {
 
     private void loadEquipment() {
         try {
-            JsonReader reader = new JsonReader(new FileReader("data/Weapons.json"));
-            Map<String, Map> weaponDataMap = gson.fromJson(reader, Map.class);
+            JsonReader weaponReader = new JsonReader(new FileReader("data/Weapons.json"));
+            Map<String, Map> weaponDataMap = gson.fromJson(weaponReader, Map.class);
+            JsonReader armorReader = new JsonReader(new FileReader("data/Armor.json"));
+            Map<String, Map> armorDataMap = gson.fromJson(armorReader, Map.class);
+            JsonReader accessoryReader = new JsonReader(new FileReader("data/Accessories.json"));
+            Map<String, Map> accessoryDataMap = gson.fromJson(accessoryReader, Map.class);
             mh.clear();
             oh.clear();
+            helmet.clear();
+            chest.clear();
+            pants.clear();
+            bracers.clear();
+            boots.clear();
+            acc1.clear();
+            acc2.clear();
+            neck.clear();
             clearSlot(MH_name);
             clearSlot(OH_name);
-
+            clearSlot(Helmet_name);
+            clearSlot(Chest_name);
+            clearSlot(Pants_name);
+            clearSlot(Bracer_name);
+            clearSlot(Boots_name);
+            clearSlot(Accessory1_name);
+            clearSlot(Accessory2_name);
+            clearSlot(Necklace_name);
             weaponDataMap.forEach((slot, value) -> {
                 for (Object item : value.entrySet()) {
                     String name = ((Map.Entry<String, Map>) item).getKey();
@@ -1455,14 +1497,59 @@ public class UserForm extends JFrame {
                     }
                 }
             });
+            armorDataMap.forEach((slot, value) -> {
+                for (Object item : value.entrySet()) {
+                    String name = ((Map.Entry<String, Map>) item).getKey();
+                    Equipment e = new Equipment(name, slot,
+                            ((Map.Entry<String, Map>) item).getValue());
+                    if (slot.equals("HEADGEAR")) {
+                        helmet.put(name, e);
+                        Helmet_name.addItem(name);
+                    }
+                    if (slot.equals("BOOTS")) {
+                        boots.put(name, e);
+                        Boots_name.addItem(name);
+                    }
+                    if (slot.equals("BRACERS")) {
+                        bracers.put(name, e);
+                        Bracer_name.addItem(name);
+                    }
+                    if (slot.equals("PANTS")) {
+                        pants.put(name, e);
+                        Pants_name.addItem(name);
+                    }
+                    if (slot.equals("CHEST")) {
+                        chest.put(name, e);
+                        Chest_name.addItem(name);
+                    }
+                }
+            });
+            accessoryDataMap.forEach((slot, value) -> {
+                for (Object item : value.entrySet()) {
+                    String name = ((Map.Entry<String, Map>) item).getKey();
+                    if (slot.equals("NECK")) {
+                        neck.put(name, new Equipment(name, slot,
+                                ((Map.Entry<String, Map>) item).getValue()));
+                        Necklace_name.addItem(name);
+                    }
+                    if (slot.equals("RING")) {
+                        acc1.put(name, new Equipment(name, slot,
+                                ((Map.Entry<String, Map>) item).getValue()));
+                        Accessory1_name.addItem(name);
+                        acc2.put(name, new Equipment(name, slot,
+                                ((Map.Entry<String, Map>) item).getValue()));
+                        Accessory2_name.addItem(name);
+                    }
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void clearSlot(JComboBox slot) {
-        MH_name.removeAllItems();
-        MH_name.addItem("None");
+        slot.removeAllItems();
+        slot.addItem("None");
     }
 
     private void saveSetup() {
