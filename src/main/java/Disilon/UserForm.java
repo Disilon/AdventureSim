@@ -1375,26 +1375,26 @@ public class UserForm extends JFrame {
     }
 
     private void setupEquipment() { // This function parses the equipment. Probably best place to do set bonuses.
-        player.equipment.get("MH").setEquipment(MH_name.getSelectedItem().toString(),
-                MH_tier.getSelectedItem().toString(), Integer.parseInt(MH_lvl.getValue().toString()));
-        player.equipment.get("OH").setEquipment(OH_name.getSelectedItem().toString(),
-                OH_tier.getSelectedItem().toString(), Integer.parseInt(OH_lvl.getValue().toString()));
-        player.equipment.get("Helmet").setEquipment(Helmet_name.getSelectedItem().toString() + " Helmet",
-                Helmet_tier.getSelectedItem().toString(), Integer.parseInt(Helmet_lvl.getValue().toString()));
-        player.equipment.get("Chest").setEquipment(Chest_name.getSelectedItem().toString() + " Chest",
-                Chest_tier.getSelectedItem().toString(), Integer.parseInt(Chest_lvl.getValue().toString()));
-        player.equipment.get("Pants").setEquipment(Pants_name.getSelectedItem().toString() + " Pants",
-                Pants_tier.getSelectedItem().toString(), Integer.parseInt(Pants_lvl.getValue().toString()));
-        player.equipment.get("Bracers").setEquipment(Bracer_name.getSelectedItem().toString() + " Bracers",
-                Bracer_tier.getSelectedItem().toString(), Integer.parseInt(Bracer_lvl.getValue().toString()));
-        player.equipment.get("Boots").setEquipment(Boots_name.getSelectedItem().toString() + " Boots",
-                Boots_tier.getSelectedItem().toString(), Integer.parseInt(Boots_lvl.getValue().toString()));
-        player.equipment.get("Accessory1").setEquipment(Accessory1_name.getSelectedItem().toString(),
-                Accessory1_tier.getSelectedItem().toString(), Integer.parseInt(Accessory1_lvl.getValue().toString()));
-        player.equipment.get("Accessory2").setEquipment(Accessory2_name.getSelectedItem().toString(),
-                Accessory2_tier.getSelectedItem().toString(), Integer.parseInt(Accessory2_lvl.getValue().toString()));
-        player.equipment.get("Necklace").setEquipment(Necklace_name.getSelectedItem().toString(),
-                Necklace_tier.getSelectedItem().toString(), Integer.parseInt(Necklace_lvl.getValue().toString()));
+//        player.equipment.get("MH").setEquipment(MH_name.getSelectedItem().toString(),
+//                MH_tier.getSelectedItem().toString(), Integer.parseInt(MH_lvl.getValue().toString()));
+//        player.equipment.get("OH").setEquipment(OH_name.getSelectedItem().toString(),
+//                OH_tier.getSelectedItem().toString(), Integer.parseInt(OH_lvl.getValue().toString()));
+//        player.equipment.get("Helmet").setEquipment(Helmet_name.getSelectedItem().toString() + " Helmet",
+//                Helmet_tier.getSelectedItem().toString(), Integer.parseInt(Helmet_lvl.getValue().toString()));
+//        player.equipment.get("Chest").setEquipment(Chest_name.getSelectedItem().toString() + " Chest",
+//                Chest_tier.getSelectedItem().toString(), Integer.parseInt(Chest_lvl.getValue().toString()));
+//        player.equipment.get("Pants").setEquipment(Pants_name.getSelectedItem().toString() + " Pants",
+//                Pants_tier.getSelectedItem().toString(), Integer.parseInt(Pants_lvl.getValue().toString()));
+//        player.equipment.get("Bracers").setEquipment(Bracer_name.getSelectedItem().toString() + " Bracers",
+//                Bracer_tier.getSelectedItem().toString(), Integer.parseInt(Bracer_lvl.getValue().toString()));
+//        player.equipment.get("Boots").setEquipment(Boots_name.getSelectedItem().toString() + " Boots",
+//                Boots_tier.getSelectedItem().toString(), Integer.parseInt(Boots_lvl.getValue().toString()));
+//        player.equipment.get("Accessory1").setEquipment(Accessory1_name.getSelectedItem().toString(),
+//                Accessory1_tier.getSelectedItem().toString(), Integer.parseInt(Accessory1_lvl.getValue().toString()));
+//        player.equipment.get("Accessory2").setEquipment(Accessory2_name.getSelectedItem().toString(),
+//                Accessory2_tier.getSelectedItem().toString(), Integer.parseInt(Accessory2_lvl.getValue().toString()));
+//        player.equipment.get("Necklace").setEquipment(Necklace_name.getSelectedItem().toString(),
+//                Necklace_tier.getSelectedItem().toString(), Integer.parseInt(Necklace_lvl.getValue().toString()));
     }
 
     private void setupPassives() {

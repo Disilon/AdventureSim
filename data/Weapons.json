@@ -1,65 +1,84 @@
 {
     "SHORT_BOW": {
+		"SLOT": "2H",
         "ATK": 8,
         "HIT": 8
     },"BEECH_BOW": {
+		"SLOT": "2H",
         "ATK": 16,
         "HIT": 16
     },"OAK_BOW": {
+		"SLOT": "2H",
         "ATK": 32,
         "HIT": 32,
         "STUN": 0.05
     },"WOODEN_WAND": {
+		"SLOT": "2H",
         "INT": 20
     },"IRON_WAND": {
+		"SLOT": "2H",
         "DEF": 12,
         "INT": 24
     },"BLAZING_WAND": {
+		"SLOT": "2H",
         "INT": 40,
         "FIRE": 36,
         "BURN": 0.05
     },"MAGIC_BOOK": {
+		"SLOT": "MH",
         "INT": 6,
         "RES": 2
     },"HIDDEN_BOOK": {
+		"SLOT": "MH",
         "INT": 10,
         "RES": 6
     },"METAL_KNUCKLES": {
+		"SLOT": "2H",
         "ATK": 8,
         "SPD": 8
     },"IRON_KNUCKLES": {
+		"SLOT": "2H",
         "ATK": 16,
         "SPD": 16
     },"METAL_DAGGER": {
+		"SLOT": "MH",
         "ATK": 4,
         "HIT": 2,
         "SPD": 2
     },"IRON_DAGGER": {
+		"SLOT": "MH",
         "ATK": 6,
         "HIT": 4,
         "SPD": 6
     },"BRONZE_DAGGER": {
+		"SLOT": "MH",
         "ATK": 12,
         "HIT": 8,
         "SPD": 12,
         "CRIT": 0.02
     },"METAL_SWORD": {
+		"SLOT": "MH",
         "ATK": 10
     },"IRON_SWORD": {
+		"SLOT": "MH",
         "ATK": 16,
         "HIT": 2
     },"METAL_SPEAR": {
+		"SLOT": "2H",
         "ATK": 16,
         "HIT": 4
     },"IRON_SPEAR": {
+		"SLOT": "2H",
         "ATK": 20,
         "DEF": 8,
         "HIT": 8
     },"WOODEN_SHIELD": {
+		"SLOT": "OH",
         "DEF": 7,
         "RES": 3,
         "SPD": -2
     },"IRON_SHIELD": {
+		"SLOT": "OH",
         "DEF": 12,
         "RES": 8,
         "SPD": -4

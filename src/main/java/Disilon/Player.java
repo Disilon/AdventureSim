@@ -75,16 +75,16 @@ public class Player extends Actor {
     }
 
     public void addEquipment() {
-        equipment.put("Helmet", new Equipment());
-        equipment.put("Chest", new Equipment());
-        equipment.put("Bracers", new Equipment());
-        equipment.put("Pants", new Equipment());
-        equipment.put("Boots", new Equipment());
-        equipment.put("MH", new Equipment());
-        equipment.put("OH", new Equipment());
-        equipment.put("Accessory1", new Equipment());
-        equipment.put("Accessory2", new Equipment());
-        equipment.put("Necklace", new Equipment());
+//        equipment.put("Helmet", new Equipment());
+//        equipment.put("Chest", new Equipment());
+//        equipment.put("Bracers", new Equipment());
+//        equipment.put("Pants", new Equipment());
+//        equipment.put("Boots", new Equipment());
+//        equipment.put("MH", new Equipment());
+//        equipment.put("OH", new Equipment());
+//        equipment.put("Accessory1", new Equipment());
+//        equipment.put("Accessory2", new Equipment());
+//        equipment.put("Necklace", new Equipment());
     }
 
     public void addSkillEffects() {

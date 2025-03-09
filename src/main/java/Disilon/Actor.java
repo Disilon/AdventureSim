@@ -339,12 +339,12 @@ public class Actor {
                 gear_dark += item.getValue().dark;
                 gear_crit += item.getValue().crit;
                 gear_burn *= 1 + item.getValue().burn;
-                Set<String> types = item.getValue().resists.keySet();
-                for (String key : types) {
-                    if (item.getValue().resists.get(key) != 0) {
-                        add_resist(key, item.getValue().resists.get(key) / 100);
-                    }
-                }
+//                Set<String> types = item.getValue().resists.keySet();
+//                for (String key : types) {
+//                    if (item.getValue().resists.get(key) != 0) {
+//                        add_resist(key, item.getValue().resists.get(key) / 100);
+//                    }
+//                }
             }
         }
         for (Map.Entry<String, PassiveSkill> passive : passives.entrySet()) {

@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class Equipment {
     String name;
+    String slot;
     String quality;
     int upgrade = 0;
 
@@ -47,46 +48,56 @@ public class Equipment {
     String setType = "NONE";
     double setBonus = 0;
 
+    public Equipment(Map equipStats) {
+        quality = "normal";
+        upgrade = 0;
+        calcStats(equipStats);
+    }
+
     public Equipment(Map equipStats, String quality, int upgrade) {
         this.quality = quality;
         this.upgrade = upgrade;
+        calcStats(equipStats);
+    }
 
+    public void calcStats(Map equipStats) {
+        this.slot = equipStats.containsKey("SLOT") ? (String) equipStats.get("SLOT") : "NONE";
         // Stats
         double mult = multiplier(quality, upgrade, 1);
-        this.atk = equipStats.containsKey("ATK") ? (double)equipStats.get("ATK") * mult : 0;
-        this.def = equipStats.containsKey("DEF") ? (double)equipStats.get("DEF") * mult : 0;
-        this.intel = equipStats.containsKey("INT") ? (double)equipStats.get("INT") * mult : 0;
-        this.resist = equipStats.containsKey("RES") ? (double)equipStats.get("RES") * mult : 0;
-        this.hit = equipStats.containsKey("HIT") ? (double)equipStats.get("HIT") * mult : 0;
-        this.speed = equipStats.containsKey("SPD") ? (double)equipStats.get("SPD") * mult : 0;
+        this.atk = equipStats.containsKey("ATK") ? (double) equipStats.get("ATK") * mult : 0;
+        this.def = equipStats.containsKey("DEF") ? (double) equipStats.get("DEF") * mult : 0;
+        this.intel = equipStats.containsKey("INT") ? (double) equipStats.get("INT") * mult : 0;
+        this.resist = equipStats.containsKey("RES") ? (double) equipStats.get("RES") * mult : 0;
+        this.hit = equipStats.containsKey("HIT") ? (double) equipStats.get("HIT") * mult : 0;
+        this.speed = equipStats.containsKey("SPD") ? (double) equipStats.get("SPD") * mult : 0;
 
         // Elements
-        this.fire = equipStats.containsKey("FIRE") ? (double)equipStats.get("FIRE") * mult : 0;
-        this.water = equipStats.containsKey("WATER") ? (double)equipStats.get("WATER") * mult : 0;
-        this.wind = equipStats.containsKey("WND") ? (double)equipStats.get("WIND") * mult : 0;
-        this.earth = equipStats.containsKey("EARTH") ? (double)equipStats.get("EARTH") * mult : 0;
-        this.dark = equipStats.containsKey("DARK") ? (double)equipStats.get("DARK") * mult : 0;
-        this.light = equipStats.containsKey("LIGHT") ? (double)equipStats.get("LIGHT") * mult : 0;
+        this.fire = equipStats.containsKey("FIRE") ? (double) equipStats.get("FIRE") * mult : 0;
+        this.water = equipStats.containsKey("WATER") ? (double) equipStats.get("WATER") * mult : 0;
+        this.wind = equipStats.containsKey("WND") ? (double) equipStats.get("WIND") * mult : 0;
+        this.earth = equipStats.containsKey("EARTH") ? (double) equipStats.get("EARTH") * mult : 0;
+        this.dark = equipStats.containsKey("DARK") ? (double) equipStats.get("DARK") * mult : 0;
+        this.light = equipStats.containsKey("LIGHT") ? (double) equipStats.get("LIGHT") * mult : 0;
 
         //Damage Mit
-        this.phy_res = equipStats.containsKey("PHY_RES") ? (double)equipStats.get("PHY_RES") * mult : 0;
-        this.mag_res = equipStats.containsKey("MAG_RES") ? (double)equipStats.get("MAG_RES") * mult : 0;
-        this.fire = equipStats.containsKey("FIRE_RES") ? (double)equipStats.get("FIRE_RES") * mult : 0;
-        this.water = equipStats.containsKey("WATER_RES") ? (double)equipStats.get("WATER_RES") * mult : 0;
-        this.wind = equipStats.containsKey("WND_RES") ? (double)equipStats.get("WIND_RES") * mult : 0;
-        this.earth = equipStats.containsKey("EARTH_RES") ? (double)equipStats.get("EARTH_RES") * mult : 0;
-        this.dark = equipStats.containsKey("DARK_RES") ? (double)equipStats.get("DARK_RES") * mult : 0;
-        this.light = equipStats.containsKey("LIGHT_RES") ? (double)equipStats.get("LIGHT_RES") * mult : 0;
+        this.phy_res = equipStats.containsKey("PHY_RES") ? (double) equipStats.get("PHY_RES") * mult : 0;
+        this.mag_res = equipStats.containsKey("MAG_RES") ? (double) equipStats.get("MAG_RES") * mult : 0;
+        this.fire_res = equipStats.containsKey("FIRE_RES") ? (double) equipStats.get("FIRE_RES") * mult : 0;
+        this.water_res = equipStats.containsKey("WATER_RES") ? (double) equipStats.get("WATER_RES") * mult : 0;
+        this.wind_res = equipStats.containsKey("WND_RES") ? (double) equipStats.get("WIND_RES") * mult : 0;
+        this.earth_res = equipStats.containsKey("EARTH_RES") ? (double) equipStats.get("EARTH_RES") * mult : 0;
+        this.dark_res = equipStats.containsKey("DARK_RES") ? (double) equipStats.get("DARK_RES") * mult : 0;
+        this.light_res = equipStats.containsKey("LIGHT_RES") ? (double) equipStats.get("LIGHT_RES") * mult : 0;
 
         // Special
         mult = 1.0;
-        this.burn = equipStats.containsKey("BURN") ? (double)equipStats.get("BURN") * mult : 0;
-        this.crit = equipStats.containsKey("CRIT") ? (double)equipStats.get("CRIT") * mult : 0;
-        this.stun = equipStats.containsKey("STUN") ? (double)equipStats.get("STUN") * mult : 0;
+        this.burn = equipStats.containsKey("BURN") ? (double) equipStats.get("BURN") * mult : 0;
+        this.crit = equipStats.containsKey("CRIT") ? (double) equipStats.get("CRIT") * mult : 0;
+        this.stun = equipStats.containsKey("STUN") ? (double) equipStats.get("STUN") * mult : 0;
 
         // SetBonus
-        if(equipStats.containsKey("SET")) {
-            this.setType = (String)equipStats.get("SET"); // Not sure if this works
+        if (equipStats.containsKey("SET")) {
+            this.setType = (String) equipStats.get("SET"); // Not sure if this works
             //this.setBonus = calcSetBonus(this.setType, quality, upgrade);
 
         }
