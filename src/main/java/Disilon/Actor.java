@@ -130,12 +130,14 @@ public class Actor {
     protected PassiveSkill poisonBoost = new PassiveSkill("Poison Boost", 0.5, 10, 0.1);
     protected PassiveSkill defenseBoost = new PassiveSkill("Defense Boost", 0.2, 5, 0.2);
     protected PassiveSkill dodge = new PassiveSkill("Dodge", 0.25, 10, 0.1);
+    protected PassiveSkill fistMastery = new PassiveSkill("Fist Mastery", 0.2, 0, 0);
 
     protected PassiveSkill bowMastery = new PassiveSkill("Bow Mastery", 0.2, 0, 0);
     protected PassiveSkill ambush = new PassiveSkill("Ambush", 0.2, 15, 0.25);
     protected PassiveSkill hpRegen = new PassiveSkill("HP Regen", 0.02, 5, 0.2);
     protected PassiveSkill concentration = new PassiveSkill("Concentration", 0.3, 15, 0.15);
     protected PassiveSkill hitBoost = new PassiveSkill("Hit Boost", 0.2, 10, 0.1);
+    protected PassiveSkill swordMastery = new PassiveSkill("Sword Mastery", 0.2, 0, 0);
 
     protected PassiveSkill intBoost = new PassiveSkill("Int Boost", 0.2, 5, 0.3);
     protected PassiveSkill resBoost = new PassiveSkill("Res Boost", 0.2, 5, 0.3);
@@ -248,6 +250,8 @@ public class Actor {
         }
         poison_mult *= 1.0 + poisonBoost.bonus(passives);
         dmg_mult *= 1.0 + daggerMastery.bonus(passives);
+        dmg_mult *= 1.0 + fistMastery.bonus(passives);
+        dmg_mult *= 1.0 + swordMastery.bonus(passives);
         dmg_mult *= 1.0 + bowMastery.bonus(passives);
         dmg_mult *= 1.0 + wandMastery.bonus(passives);
         dmg_mult *= 1.0 + bookMastery.bonus(passives);
@@ -307,8 +311,11 @@ public class Actor {
                 add_resist("Dark", item.dark_res * 0.01);
                 add_resist("Magic", item.magic_res * 0.01);
                 add_resist("Physical", item.phys_res * 0.01);
-                if (sets.containsKey(item.displayName)) {
-                    sets.get(item.displayName).addItem(item.quality, item.upgrade);
+                String set_type = item.displayName;
+                if (set_type.equals("Blazing")) set_type = "Cloth";
+                if (set_type.equals("Windy")) set_type = "Leather";
+                if (sets.containsKey(set_type)) {
+                    sets.get(set_type).addItem(item.quality, item.upgrade);
                 }
             }
         }

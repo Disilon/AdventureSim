@@ -28,6 +28,11 @@ public class Player extends Actor {
             false);
     ActiveSkill db = new ActiveSkill("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
             false);
+    ActiveSkill qh = new ActiveSkill("Quick Hit", 1, 76.5, 93.5, 1, 10, 0.7, 0.7, Scaling.atk, Element.phys, false,
+            false);
+    ActiveSkill ab = new ActiveSkill("Aura Blade", 1, 121.5, 148.5, 1, 15, 1.3, 1.3, Scaling.atk, Element.light,
+            false,
+            false);
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
             false,
             false);
@@ -59,6 +64,7 @@ public class Player extends Actor {
             Element.magic, true, false);
 
     protected boolean holylight_enabled;
+    protected boolean aurablade_enabled;
     protected boolean eblast_enabled;
     DecimalFormat df2 = new DecimalFormat("#.##");
 
@@ -82,9 +88,7 @@ public class Player extends Actor {
 
     public void initializeSets() {
         sets.put("Cloth", new EquipmentSet("magicdmg", 5));
-        sets.put("Blazing", new EquipmentSet("magicdmg", 5));
         sets.put("Leather", new EquipmentSet("hit", 5));
-        sets.put("Windy", new EquipmentSet("hit", 5));
         sets.put("Dark", new EquipmentSet("physdmg", 5));
         sets.put("Metal", new EquipmentSet("mit1", 5));
         sets.put("Iron", new EquipmentSet("mit2", 5));
@@ -115,6 +119,7 @@ public class Player extends Actor {
                 passives.put("Poison Boost", poisonBoost);
                 passives.put("Defense Boost", defenseBoost);
                 passives.put("Dodge", dodge);
+                passives.put("Fist Mastery", fistMastery);
                 active_skills.put("Killing Strike", ks);
                 active_skills.put("Hide", hide);
                 active_skills.put("Dragon Punch", dp);
@@ -122,6 +127,14 @@ public class Player extends Actor {
                 active_skills.put("Smoke Screen", smoke);
                 active_skills.put("First Aid", fa);
                 active_skills.put("Prepare", null);
+            }
+            case "Fighter" -> {
+                passives.put("Attack Boost", attackBoost);
+                passives.put("Defense Boost", defenseBoost);
+                passives.put("Fist Mastery", fistMastery);
+                active_skills.put("Quick Hit", qh);
+                active_skills.put("Dragon Punch", dp);
+                active_skills.put("First Aid", fa);
             }
             case "Pyromancer" -> {
                 base_fire_res = 0.5;
@@ -175,6 +188,16 @@ public class Player extends Actor {
                 active_skills.put("Defense Break", db);
                 active_skills.put("First Aid", fa);
                 active_skills.put("Prepare", null);
+            }
+            case "Warrior" -> {
+                passives.put("Attack Boost", attackBoost);
+                passives.put("Defense Boost", defenseBoost);
+                passives.put("HP Regen", hpRegen);
+                passives.put("Sword Mastery", swordMastery);
+                active_skills.put("Quick Hit", qh);
+                active_skills.put("Aura Blade", ab);
+                active_skills.put("Defense Break", db);
+                active_skills.put("First Aid", fa);
             }
             case "Cleric" -> {
                 passives.put("Int Boost", intBoost);
@@ -269,6 +292,12 @@ public class Player extends Actor {
             case "First Aid" -> {
                 return fa;
             }
+            case "Aura Blade" -> {
+                return ab;
+            }
+            case "Quick Hit" -> {
+                return qh;
+            }
         }
         return null;
     }
@@ -286,6 +315,24 @@ public class Player extends Actor {
                 base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Fighter" -> {
+                base_hp_max = (double) (100 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Warrior" -> {
+                base_hp_max = (double) (110 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (140 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Pyromancer" -> {
                 base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;
@@ -408,13 +455,13 @@ public class Player extends Actor {
     public double getLight() {
         switch (name) {
             case "Assassin", "Sniper" -> {
-                return (atk + intel) / -2 + gear_light;
+                return (atk + intel) / -2 + gear_light + (aurablade_enabled ? getAtk() * 0.1 : 0);
             }
             case "Cleric" -> {
                 return gear_light + (holylight_enabled ? getResist() * 0.25 : 0);
             }
             default -> {
-                return gear_light;
+                return gear_light + (aurablade_enabled ? getAtk() * 0.1 : 0);
             }
         }
     }
