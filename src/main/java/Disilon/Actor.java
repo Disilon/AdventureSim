@@ -272,10 +272,10 @@ public class Actor {
         cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         hp_regen = hpRegen.bonus(passives);
+        refreshStats();
         if (fireResist.enabled) {
             add_resist("Fire", fireResist.bonus(passives));
         }
-        refreshStats();
     }
 
     public void refreshStats() {

@@ -61,18 +61,16 @@
             <configuration>
               <headerType>gui</headerType>
               <outfile>${project.build.directory}/${project.build.finalName}.exe</outfile>
-              <jar>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar>
+              <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
               <errTitle>App Error</errTitle>
               <classPath>
                 <mainClass>Disilon.Main</mainClass>
-                <addDependencies>
-                  true
-                </addDependencies>
+                <addDependencies>true</addDependencies>
                 <preCp>anything</preCp>
               </classPath>
               <jre>
-                <path>C:\Program Files\Java\jre1.8.0_441\bin</path>
-                <minVersion>1.5.0</minVersion>
+                <minVersion>1.8.0</minVersion>
+                <jdkPreference>preferJre</jdkPreference>
               </jre>
               <versionInfo>
                 <fileVersion>1.0.0.0</fileVersion>

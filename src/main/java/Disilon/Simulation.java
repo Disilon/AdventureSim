@@ -81,22 +81,31 @@ public class Simulation {
     public void run(String skill1, int lvl1, SkillMod mod1, int setting1, String skill2, int lvl2, SkillMod mod2,
                     int setting2, String skill3, int lvl3, SkillMod mod3,
                     int setting3, double reroll) {
+        boolean prepare = false;
+        int prepare_threshold = 0;
         Player pl = (Player) player;
         pl.eblast_enabled = skill1.equals("Elemental Blast") || skill2.equals("Elemental Blast") || skill3.equals("Elemental Blast");
         pl.holylight_enabled = skill1.equals("Holy Light") || skill2.equals("Holy Light") || skill3.equals("Holy Light");
         ActiveSkill s1 = pl.getSkill(skill1);
         s1.setSkill(lvl1, mod1);
-        ActiveSkill s2 = pl.getSkill(skill2);
-        if (s2 != null) s2.setSkill(lvl2, mod2);
-        ActiveSkill s3;
+        ActiveSkill s2 = null;
+        if (!skill2.equals("Prepare")) {
+            s2 = pl.getSkill(skill2);
+            if (s2 != null) s2.setSkill(lvl2, mod2);
+        } else {
+            prepare = true;
+            prepare_threshold = setting2;
+        }
+        ActiveSkill s3 = null;
         if (!skill3.equals("Prepare")) {
             s3 = pl.getSkill(skill3);
             if (s3 != null) s3.setSkill(lvl3, mod3);
-            run(s1, setting1, s2, setting2, s3, setting3, false, 0,
-                    reroll);
         } else {
-            run(s1, setting1, s2, setting2, null, 0, true, setting3, reroll);
+            prepare = true;
+            prepare_threshold = setting3;
         }
+        run(s1, setting1, s2, setting2, s3, setting3, prepare, prepare_threshold,
+                reroll);
     }
 
     public void run(ActiveSkill skill1, int setting1, ActiveSkill skill2, int setting2, ActiveSkill skill3,
@@ -120,6 +129,7 @@ public class Simulation {
         int enemy_hits = 0;
         double healed = 0;
         int kills = 0;
+        double oom_time = 0;
         title = enemy.getName();
         if (time_to_respawn == -1) time_to_respawn = getTime_to_respawn();
         if (potion1 != null) potion1.used = 0;
@@ -150,7 +160,6 @@ public class Simulation {
         if (potion3 != null)
             setup.append(potion3.type.toUpperCase()).append(" potion tier: ").append(potion3.tier).append(", threshold: ").append(potion3.threshold).append(
                     "\n");
-        player.refreshStats();
         player.debuffs.clear();
         player.buffs.clear();
         for (int i = 0; i < simulations; i++) {
@@ -211,7 +220,7 @@ public class Simulation {
                 }
                 if (skill3 != null && skill3.used_in_rotation >= setting3) {
                     skill1.used_in_rotation = 0;
-                    skill2.used_in_rotation = 0;
+                    if (skill2 != null) skill2.used_in_rotation = 0;
                     skill3.used_in_rotation = 0;
                 }
                 if (skill3 == null && skill2 != null && skill2.used_in_rotation >= setting2) {
@@ -278,6 +287,8 @@ public class Simulation {
                             player.casting = null;
                         }
                     }
+                } else {
+                    oom_time += delta;
                 }
                 if (enemy.casting != null) {
                     if (enemy.casting.cast > 0) {
@@ -293,12 +304,12 @@ public class Simulation {
 //                                    System.out.println("Enemy missed with " + enemy.casting.name);
                                 }
 //                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
-                                enemy.setMp(enemy.getMp() - enemy.casting.calculate_manacost(enemy));
-                                enemy.tick_debuffs();
-                                enemy.tick_buffs();
                             } else {
                                 enemy.casting.use(enemy, player);
                             }
+                            enemy.setMp(enemy.getMp() - enemy.casting.calculate_manacost(enemy));
+                            enemy.tick_debuffs();
+                            enemy.tick_buffs();
                         }
                     } else if (enemy.casting.delay > 0) {
                         if (enemy.casting.progressDelay(delta)) {
@@ -400,6 +411,10 @@ public class Simulation {
             result.append("Time dead %: ").append(df2.format(death_time / (total_time + death_time) * 100)).append("% \n");
             //sb.append("Spawning time: ").append(df2.format(respawning_time)).append("s \n");
             result.append("Exp/h without deaths: ").append((int) (exp * milestone_exp_mult / (total_time - ignore_deaths) * 3600)).append(
+                    "\n");
+        }
+        if (oom_time > 0) {
+            result.append("Time oom %: ").append(df2.format(oom_time / total_time  * 100)).append("% " +
                     "\n");
         }
         result.append("Kills/h without deaths: ").append(df2.format(kills / (total_time - ignore_deaths) * 3600)).append(

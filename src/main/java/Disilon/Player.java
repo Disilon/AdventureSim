@@ -131,7 +131,7 @@ public class Player extends Actor {
                 passives.put("Wand Mastery", wandMastery);
                 passives.put("Casting Boost", castBoost);
                 passives.put("Fire Boost", fireBoost);
-                passives.put("Fire Resist", fireResist);
+                passives.put("Fire Resistance", fireResist);
                 if (Main.game_version >= 1537) {
                     active_skills.put("Fire Pillar", fpillar);
                 } else {
@@ -139,6 +139,15 @@ public class Player extends Actor {
                 }
                 active_skills.put("Fireball", fball);
                 active_skills.put("Explosion", explosion);
+                active_skills.put("Elemental Blast", eblast);
+                active_skills.put("Push Blast", push);
+                active_skills.put("First Aid", fa);
+            }
+            case "Mage" -> {
+                passives.put("Int Boost", intBoost);
+                passives.put("Res Boost", resBoost);
+                passives.put("Wand Mastery", wandMastery);
+                passives.put("Casting Boost", castBoost);
                 active_skills.put("Elemental Blast", eblast);
                 active_skills.put("Push Blast", push);
                 active_skills.put("First Aid", fa);
@@ -287,6 +296,15 @@ public class Player extends Actor {
                 base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "Mage" -> {
+                base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (140 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
             case "Sniper" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
                 base_atk = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
@@ -323,6 +341,9 @@ public class Player extends Actor {
             case "Pyromancer" -> {
                 return (getAtk() + getIntel()) * (fireBoost.enabled ? 0.5 + fireBoost.bonus : 0.5) + gear_fire + getEblast();
             }
+            case "Mage" -> {
+                return gear_fire + getEblast();
+            }
             default -> {
                 return gear_fire;
             }
@@ -334,6 +355,9 @@ public class Player extends Actor {
         switch (name) {
             case "Pyromancer" -> {
                 return (getAtk() + getIntel()) / -2 + gear_water + getEblast();
+            }
+            case "Mage" -> {
+                return gear_water + getEblast();
             }
             default -> {
                 return gear_water;
@@ -347,7 +371,7 @@ public class Player extends Actor {
             case "Sniper" -> {
                 return (atk + intel) / 2 + gear_wind;
             }
-            case "Pyromancer" -> {
+            case "Mage", "Pyromancer" -> {
                 return gear_wind + getEblast();
             }
             default -> {
@@ -359,7 +383,7 @@ public class Player extends Actor {
     @Override
     public double getEarth() {
         switch (name) {
-            case "Pyromancer" -> {
+            case "Mage", "Pyromancer" -> {
                 return gear_earth + getEblast();
             }
             default -> {

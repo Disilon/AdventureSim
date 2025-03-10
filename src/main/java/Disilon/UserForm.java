@@ -166,6 +166,7 @@ public class UserForm extends JFrame {
         defaultComboBoxModel1.addElement("Assassin");
         defaultComboBoxModel1.addElement("Pyromancer");
         defaultComboBoxModel1.addElement("Cleric");
+        defaultComboBoxModel1.addElement("Mage");
         PlayerClass.setModel(defaultComboBoxModel1);
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
