@@ -150,7 +150,7 @@ public class Actor {
     protected PassiveSkill ailmentRes = new PassiveSkill("Ailment Res", 0.75, 10, 0.2);
 
     protected ActiveSkill casting;
-    protected ArrayList<ActiveSkill> skills = new ArrayList<ActiveSkill>();
+    protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
 
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
@@ -392,6 +392,23 @@ public class Actor {
         light_res = base_light_res;
         dark_res = base_dark_res;
         disableSet();
+    }
+
+    public void clear_skills_recorded_data() {
+        for (ActiveSkill skill : enemy_skills) {
+            if (skill != null) {
+                skill.used = 0;
+                skill.chance_sum = 0;
+                skill.used_debuffed = 0;
+            }
+        }
+        for(ActiveSkill skill : active_skills.values()) {
+            if (skill != null) {
+                skill.used = 0;
+                skill.chance_sum = 0;
+                skill.used_debuffed = 0;
+            }
+        }
     }
 
     public void increment_exp(double exp) {

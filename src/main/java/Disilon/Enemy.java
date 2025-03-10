@@ -39,7 +39,7 @@ public class Enemy extends Actor {
 
     public void setEnemy(String name) {
         this.name = name;
-        skills.clear();
+        enemy_skills.clear();
         counter_dodge = false;
         fire_res = 0;
         water_res = 0;
@@ -76,9 +76,9 @@ public class Enemy extends Actor {
                 base_water = 400;
                 fire_res = 0.5;
                 wind_res = 0.5;
-                skills.add(waterpunch);
-                skills.add(killingstrike);
-                skills.add(tsunami);
+                enemy_skills.add(waterpunch);
+                enemy_skills.add(killingstrike);
+                enemy_skills.add(tsunami);
             }
             case "Lamia" -> {
                 base_hp_max = 48000;
@@ -92,9 +92,9 @@ public class Enemy extends Actor {
                 base_fire = 400;
                 earth_res = 0.5;
                 wind_res = 0.5;
-                skills.add(ball);
-                skills.add(pillar);
-                skills.add(explosion);
+                enemy_skills.add(ball);
+                enemy_skills.add(pillar);
+                enemy_skills.add(explosion);
             }
             case "Shax" -> {
                 base_hp_max = 19200;
@@ -108,8 +108,8 @@ public class Enemy extends Actor {
                 base_wind = 100;
                 earth_res = 0.5;
                 wind_res = -0.5;
-                skills.add(gust);
-                skills.add(compression);
+                enemy_skills.add(gust);
+                enemy_skills.add(compression);
                 counter_dodge = true;
             }
             case "Devil" -> {
@@ -124,8 +124,8 @@ public class Enemy extends Actor {
                 base_dark = 180;
                 dark_res = 0.5;
                 light_res = -0.5;
-                skills.add(poison);
-                skills.add(slash);
+                enemy_skills.add(poison);
+                enemy_skills.add(slash);
             }
         }
         reroll();

@@ -46,7 +46,7 @@ public class Simulation {
                     int setting3, double reroll) {
         boolean prepare = false;
         int prepare_threshold = 0;
-        Player pl = (Player) player;
+        Player pl = player;
         pl.eblast_enabled = skill1.equals("Elemental Blast") || skill2.equals("Elemental Blast") || skill3.equals("Elemental Blast");
         pl.holylight_enabled = skill1.equals("Holy Light") || skill2.equals("Holy Light") || skill3.equals("Holy Light");
         pl.aurablade_enabled = skill1.equals("Aura Blade") || skill2.equals("Aura Blade") || skill3.equals("Aura Blade");
@@ -412,8 +412,8 @@ public class Simulation {
         if (healed > 0) {
             result.append("Average heal per fight: ").append(df2.format(healed / kills)).append(" \n");
         }
-        if (enemy.skills != null) {
-            for (ActiveSkill s : enemy.skills) {
+        if (enemy.enemy_skills != null) {
+            for (ActiveSkill s : enemy.enemy_skills) {
 //                sb.append(s.name).append(" used with smoke: ").append(df2.format((double) s.used_debuffed / s.used_in_rotation * 100.0)).append("% \n");
             }
         }

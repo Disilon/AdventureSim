@@ -148,6 +148,9 @@ public class ActiveSkill {
         this.cast_mult = this.base_cast;
         this.delay_mult = this.base_delay;
         this.mp = this.base_mp;
+        this.dmg_mult = 1;
+        this.mp_additive = 0;
+        this.mp_mult = 1;
         this.skillMod = type;
         switch (type) {
             case basic:

@@ -1263,6 +1263,8 @@ public class UserForm extends JFrame {
                     simulation.milestone_exp_mult = (double) Milestone.getValue() / 100;
                     player.setCLML((int) CL.getValue(), (int) ML.getValue());
                     enemy.setEnemy(Enemy.getSelectedItem().toString());
+                    player.clear_skills_recorded_data();
+                    enemy.clear_skills_recorded_data();
                     simulation.simulations = (int) Simulations.getValue();
                     simulation.player = player;
                     simulation.enemy = enemy;
