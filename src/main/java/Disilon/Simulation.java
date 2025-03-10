@@ -7,8 +7,8 @@ public class Simulation {
     enum StatusType {death, respawn, combat, prepare, rerolling, delay}
 
     int simulations;
-    Actor player;
-    Actor enemy;
+    Player player;
+    Enemy enemy;
     Potion potion1;
     Potion potion2;
     Potion potion3;
@@ -26,42 +26,11 @@ public class Simulation {
     public Simulation() {
     }
 
-    public Simulation(int simulations, Actor player, Actor enemy) {
-        this.simulations = simulations;
-        this.player = player;
-        this.enemy = enemy;
-        time_to_respawn = getTime_to_respawn();
-    }
-
-    public Simulation(int simulations, Actor player, Actor enemy, double time_to_respawn) {
-        this.simulations = simulations;
-        this.player = player;
-        this.enemy = enemy;
-        this.time_to_respawn = time_to_respawn;
-    }
-
-    public void setupPotions(String type1, int tier1, int threshold1, String type2, int tier2, int threshold2) {
-        if (type1 != null) potion1 = new Potion(type1, tier1, threshold1);
-        if (type2 != null) potion2 = new Potion(type2, tier2, threshold2);
-    }
-
     public void setupPotions(String type1, int tier1, int threshold1, String type2, int tier2, int threshold2,
                              String type3, int tier3, int threshold3) {
         if (type1 != null) potion1 = new Potion(type1, tier1, threshold1);
         if (type2 != null) potion2 = new Potion(type2, tier2, threshold2);
         if (type3 != null) potion3 = new Potion(type3, tier3, threshold3);
-    }
-
-    public void setupPotions(String type1, int tier1, int threshold1, String type2, int tier2, int threshold2,
-                             int count1, int count2) {
-        if (type1 != null) potion1 = new Potion(type1, tier1, threshold1, count1);
-        if (type2 != null) potion2 = new Potion(type2, tier2, threshold2, count2);
-    }
-
-    public void run(ActiveSkill skill1, int setting1, ActiveSkill skill2, int setting2, ActiveSkill skill3,
-                    int setting3, boolean prepare,
-                    double prepare_threshold) {
-        this.run(skill1, setting1, skill2, setting2, skill3, setting3, prepare, prepare_threshold, Double.MAX_VALUE);
     }
 
     public double getTime_to_respawn() {
@@ -70,12 +39,6 @@ public class Simulation {
             case "Shax", "Dagon", "Lamia" -> 6;
             default -> 5;
         };
-    }
-
-    public void run(String skill1, int lvl1, SkillMod mod1, int setting1, String skill2, int lvl2, SkillMod mod2,
-                    int setting2, String skill3, int lvl3, SkillMod mod3,
-                    int setting3) {
-        run(skill1, lvl1, mod1, setting1, skill2, lvl2, mod2, setting2, skill3, lvl3, mod3, setting3, 0);
     }
 
     public void run(String skill1, int lvl1, SkillMod mod1, int setting1, String skill2, int lvl2, SkillMod mod2,
@@ -173,6 +136,7 @@ public class Simulation {
             player.checkAmbush();
             if (Main.game_version < 1535 && reroll >= 1) {
                 while (enemy.getHp_max() >= reroll) {
+                    enemy.rollStrength();
                     enemy.reroll();
                     delta = time_to_respawn;
                     time += delta;
@@ -332,6 +296,11 @@ public class Simulation {
                     if (player.casting != null) {
                         delay_left = player.casting.delay;
                         player.casting = null;
+                    }
+                    if (Main.game_version < 1535) {
+                        enemy.rollStrength();
+                    } else {
+                        enemy.incrementStrength();
                     }
                 }
                 if (player.getHp() <= 0) {

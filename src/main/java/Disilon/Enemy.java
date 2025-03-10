@@ -27,6 +27,8 @@ public class Enemy extends Actor {
     ActiveSkill poison = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 0, 0.4, 0.9, Scaling.atk, Element.phys,
             false, false);
 
+    double strength = 0.9;
+
     public Enemy() {
         ball.addDebuff("Burn", 3, 1);
         pillar.addDebuff("Burn", 3, 1);
@@ -131,7 +133,6 @@ public class Enemy extends Actor {
 
     @Override
     public void reroll() {
-        double strength = (this.random.nextInt(21) + 90) / 100.0;
         this.hp_max = base_hp_max * strength;
         this.hp = this.hp_max;
         this.exp = base_exp * strength;
@@ -151,6 +152,15 @@ public class Enemy extends Actor {
 
         this.debuffs.clear();
         this.casting = null;
+    }
+
+    public void rollStrength() {
+        strength = (this.random.nextInt(21) + 90) / 100.0;
+    }
+
+    public void incrementStrength() {
+        strength += 0.01;
+        if (strength > 1.1) strength = 0.9;
     }
 
     public ActiveSkill rollAttack() {
