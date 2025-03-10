@@ -80,7 +80,7 @@ public class ActiveSkill {
 
     public boolean canCast(Actor actor) {
         boolean enough_mana = actor.getMp() >= calculate_manacost(actor);
-        if (!enough_mana) System.out.println("OOM");
+//        if (!enough_mana) System.out.println("OOM");
         return enough_mana;
     }
 

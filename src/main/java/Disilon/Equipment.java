@@ -78,7 +78,7 @@ public class Equipment {
         // Elements
         this.fire = equipStats.containsKey("FIRE") ? (double) equipStats.get("FIRE") * mult : 0;
         this.water = equipStats.containsKey("WATER") ? (double) equipStats.get("WATER") * mult : 0;
-        this.wind = equipStats.containsKey("WND") ? (double) equipStats.get("WIND") * mult : 0;
+        this.wind = equipStats.containsKey("WIND") ? (double) equipStats.get("WIND") * mult : 0;
         this.earth = equipStats.containsKey("EARTH") ? (double) equipStats.get("EARTH") * mult : 0;
         this.dark = equipStats.containsKey("DARK") ? (double) equipStats.get("DARK") * mult : 0;
         this.light = equipStats.containsKey("LIGHT") ? (double) equipStats.get("LIGHT") * mult : 0;
@@ -89,7 +89,7 @@ public class Equipment {
         this.magic_res = equipStats.containsKey("MAG_RES") ? (double) equipStats.get("MAG_RES") * mult : 0;
         this.fire_res = equipStats.containsKey("FIRE_RES") ? (double) equipStats.get("FIRE_RES") * mult : 0;
         this.water_res = equipStats.containsKey("WATER_RES") ? (double) equipStats.get("WATER_RES") * mult : 0;
-        this.wind_res = equipStats.containsKey("WND_RES") ? (double) equipStats.get("WIND_RES") * mult : 0;
+        this.wind_res = equipStats.containsKey("WIND_RES") ? (double) equipStats.get("WIND_RES") * mult : 0;
         this.earth_res = equipStats.containsKey("EARTH_RES") ? (double) equipStats.get("EARTH_RES") * mult : 0;
         this.dark_res = equipStats.containsKey("DARK_RES") ? (double) equipStats.get("DARK_RES") * mult : 0;
         this.light_res = equipStats.containsKey("LIGHT_RES") ? (double) equipStats.get("LIGHT_RES") * mult : 0;
