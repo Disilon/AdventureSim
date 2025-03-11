@@ -27,6 +27,8 @@ public class Enemy extends Actor {
     ActiveSkill poison = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 0, 0.4, 0.9, Scaling.atk, Element.phys,
             false, false);
 
+    public static String[] availableEnemies = {"Devil", "Shax", "Dagon", "Lamia"};
+
     double strength = 0.9;
 
     public Enemy() {

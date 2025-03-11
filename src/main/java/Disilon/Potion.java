@@ -1,5 +1,7 @@
 package Disilon;
 
+import java.util.Vector;
+
 public class Potion {
     String type;
     int tier;
@@ -46,11 +48,13 @@ public class Potion {
             }
         }
     }
+
     public void tickPotion(Actor player, double time) {
         if (cooldown > 0) {
             cooldown -= time;
         }
     }
+
     private int hp_gain() {
         return switch (tier) {
             case 1 -> 200;
@@ -61,6 +65,7 @@ public class Potion {
             default -> 0;
         };
     }
+
     private int mp_gain() {
         return switch (tier) {
             case 1 -> 125;
@@ -71,6 +76,7 @@ public class Potion {
             default -> 0;
         };
     }
+
     private int hp_cd() {
         return switch (tier) {
             case 1 -> 15;
@@ -81,6 +87,7 @@ public class Potion {
             default -> 0;
         };
     }
+
     private int mp_cd() {
         return switch (tier) {
             case 1 -> 15;
@@ -91,14 +98,27 @@ public class Potion {
             default -> 0;
         };
     }
+
     public double craft_time(int crafting, int alchemy) {
         return switch (tier) {
-            case 1 -> 200.0/(100+crafting) + 300.0/(100+alchemy);
-            case 2 -> 400.0/(100+crafting) + 600.0 /(100+alchemy);
-            case 3 -> 600.0/(100+crafting) + 900.0/(100+alchemy);
-            case 4 -> 800.0/(100+crafting) + 1200.0/(100+alchemy);
-            case 5 -> 1000.0/(100+crafting) + 1500.0/(100+alchemy);
+            case 1 -> 200.0 / (100 + crafting) + 300.0 / (100 + alchemy);
+            case 2 -> 400.0 / (100 + crafting) + 600.0 / (100 + alchemy);
+            case 3 -> 600.0 / (100 + crafting) + 900.0 / (100 + alchemy);
+            case 4 -> 800.0 / (100 + crafting) + 1200.0 / (100 + alchemy);
+            case 5 -> 1000.0 / (100 + crafting) + 1500.0 / (100 + alchemy);
             default -> 0;
         };
+    }
+
+    public static Vector<String> getAvailablePotions() {
+        Vector<String> result = new Vector<>();
+        result.add("None");
+        for (int i = 1; i < 6; i++) {
+            result.add("HP T" + i);
+        }
+        for (int i = 1; i < 6; i++) {
+            result.add("MP T" + i);
+        }
+        return result;
     }
 }

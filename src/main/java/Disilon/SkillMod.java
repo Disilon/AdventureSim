@@ -1,3 +1,8 @@
 package Disilon;
 
-public enum SkillMod {basic, pow, hit, cheap, fast, powpow, hithit, enemy, damage}
+public enum SkillMod {
+    Basic, Pow, Hit, Cheap, Fast, PowPow, Damage, SlowHit, Enemy;
+    public static SkillMod[] getAvailableMods() {
+        return new SkillMod[]{Basic, Pow, Hit, Cheap, Fast, PowPow, Damage, SlowHit};
+    }
+}

@@ -194,8 +194,8 @@ public class Actor {
         }
     }
 
-    public void enableSet(String bonus, String quality, int upgrade) {
-        double tier = Equipment.multiplier_from_tier(quality);
+    public void enableSet(String bonus, Equipment.Quality quality, int upgrade) {
+        double tier = quality.getMult();
         switch (bonus.toLowerCase()) {
             case "hit" -> set_hit = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "magicdmg" -> set_magicdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
@@ -409,31 +409,6 @@ public class Actor {
                 skill.used_debuffed = 0;
             }
         }
-    }
-
-    public void increment_exp(double exp) {
-        cl_exp += exp;
-        ml_exp += exp;
-        double need_cl = exp_to_cl(cl, 3);
-        double need_ml = exp_to_ml(ml);
-        if (cl_exp >= need_cl && cl < 100) {
-            cl += 1;
-            cl_exp -= need_cl;
-            setCLML(cl, ml);
-        }
-        if (ml_exp >= need_ml) {
-            ml += 1;
-            ml_exp -= need_ml;
-            setCLML(cl, ml);
-        }
-    }
-
-    public double exp_to_cl(int lvl, int tier) {
-        return (Math.pow(lvl, 5) / 340 + Math.pow(lvl, 2) * 50 + 10) * Math.pow(2, tier - 1);
-    }
-
-    public double exp_to_ml(int lvl) {
-        return (Math.pow(lvl, 4) / 10 + Math.pow(lvl, 1.9) * 40 + 10);
     }
 
     public void setCLML(int cl, int ml) {

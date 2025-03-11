@@ -4,7 +4,7 @@ public class EquipmentSet {
     String bonus;
     int required_items;
     int current_items;
-    String min_quality;
+    Equipment.Quality min_quality;
     int min_upgrade = -1;
 
     public EquipmentSet(String bonus, int required_items) {
@@ -12,12 +12,12 @@ public class EquipmentSet {
         this.required_items = required_items;
     }
 
-    public void addItem(String quality, int upgrade) {
+    public void addItem(Equipment.Quality quality, int upgrade) {
         current_items++;
         if (min_upgrade == -1 || upgrade < min_upgrade) {
             min_upgrade = upgrade;
         }
-        if (min_quality == null || Equipment.multiplier_from_tier(quality) < Equipment.multiplier_from_tier(min_quality)) {
+        if (min_quality == null || quality.getMult() < min_quality.getMult()) {
             min_quality = quality;
         }
     }

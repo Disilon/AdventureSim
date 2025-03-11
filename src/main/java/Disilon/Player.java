@@ -67,6 +67,8 @@ public class Player extends Actor {
     protected boolean aurablade_enabled;
     protected boolean eblast_enabled;
     DecimalFormat df2 = new DecimalFormat("#.##");
+    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Cleric", "Mage", "Fighter",
+            "Warrior"};
 
     public Player() {
         addSkillEffects();
@@ -523,5 +525,30 @@ public class Player extends Actor {
             sb.append("Dark mitigation = ").append(df2.format(getDark_res() * 100)).append("%\n");
         }
         return sb.toString();
+    }
+
+    public void increment_exp(double exp) {
+        cl_exp += exp;
+        ml_exp += exp;
+        double need_cl = exp_to_cl(cl, 3);
+        double need_ml = exp_to_ml(ml);
+        if (cl_exp >= need_cl && cl < 100) {
+            cl += 1;
+            cl_exp -= need_cl;
+            setCLML(cl, ml);
+        }
+        if (ml_exp >= need_ml) {
+            ml += 1;
+            ml_exp -= need_ml;
+            setCLML(cl, ml);
+        }
+    }
+
+    public double exp_to_cl(int lvl, int tier) {
+        return (Math.pow(lvl, 5) / 340 + Math.pow(lvl, 2) * 50 + 10) * Math.pow(2, tier - 1);
+    }
+
+    public double exp_to_ml(int lvl) {
+        return (Math.pow(lvl, 4) / 10 + Math.pow(lvl, 1.9) * 40 + 10);
     }
 }

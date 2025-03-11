@@ -6,7 +6,7 @@ public class Equipment {
     String name;
     String slot;
     String displayName = "None";
-    String quality;
+    Quality quality;
     int upgrade = 0;
     boolean mh_only = false;
 
@@ -46,20 +46,20 @@ public class Equipment {
     public Equipment(String name, String slot) {
         this.name = name;
         this.slot = slot;
-        quality = "normal";
+        quality = Quality.Normal;
         upgrade = 0;
     }
 
     public Equipment(String name, String slot, Map equipStats) {
         this.name = name;
         this.slot = slot;
-        quality = "normal";
+        quality = Quality.Normal;
         upgrade = 0;
         this.equipStats = equipStats;
         calcStats();
     }
     
-    public void setQualityLvl(String quality, int lvl) {
+    public void setQualityLvl(Quality quality, int lvl) {
         this.quality = quality;
         this.upgrade = lvl;
         calcStats();
@@ -108,13 +108,13 @@ public class Equipment {
         if (equipStats.containsKey("MH_ONLY")) this.mh_only = (boolean) equipStats.get("MH_ONLY");
     }
 
-    public static double multiplier(String quality, int upgrade, int scaling_type) {
+    public static double multiplier(Quality quality, int upgrade, int scaling_type) {
         switch (scaling_type) {
             case 1 -> {
-                return multiplier_from_tier(quality) * (1 + upgrade * 0.1);
+                return quality.getMult() * (1 + upgrade * 0.1);
             }
             case 2 -> {
-                return (0.5 + multiplier_from_tier(quality) * 0.5) * (1 + upgrade * 0.025);
+                return (0.5 + quality.getMult() * 0.5) * (1 + upgrade * 0.025);
             }
             default -> {
                 return 1;
@@ -122,19 +122,25 @@ public class Equipment {
         }
     }
 
-    public static double multiplier_from_tier(String quality) {
-        return switch (quality.toLowerCase()) {
-            case "poor" -> 0.5;
-            case "flawed" -> 0.75;
-            case "normal" -> 1;
-            case "good" -> 1.25;
-            case "superior" -> 1.5;
-            case "exceptional" -> 2;
-            case "divine" -> 2.5;
-            case "legendary" -> 3;
-            case "mythic" -> 4;
-            case "godly" -> 5;
-            default -> -1;
-        };
+    public enum Quality {
+        Poor(0.5),
+        Flawed(0.75),
+        Normal(1),
+        Good(1.25),
+        Superior(1.5),
+        Exceptional(2),
+        Divine(2.5),
+        Legendary(3),
+        Mythic(4),
+        Godly(5);
+
+        private final double mult;
+        Quality(double mult) {
+            this.mult = mult;
+        }
+
+        public double getMult() {
+            return mult;
+        }
     }
 }

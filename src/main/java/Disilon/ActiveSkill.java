@@ -21,7 +21,7 @@ public class ActiveSkill {
     public double mp_additive;
     private double base_cast;
     private double base_delay;
-    public SkillMod skillMod = SkillMod.enemy;
+    public SkillMod skillMod = SkillMod.Enemy;
     public Scaling scaling;
     public Element element;
     public boolean aoe;
@@ -62,7 +62,7 @@ public class ActiveSkill {
         this.element = element;
         this.aoe = aoe;
         this.heal = heal;
-        setSkill(lvl, SkillMod.enemy);
+        setSkill(lvl, SkillMod.Enemy);
     }
 
     public boolean shouldUse(Actor actor, int setting) {
@@ -130,14 +130,14 @@ public class ActiveSkill {
         this.debuff_name = name;
         this.base_debuff_duration = duration;
         this.base_debuff_dmg = dmg;
-        setSkill(lvl, SkillMod.enemy);
+        setSkill(lvl, SkillMod.Enemy);
     }
 
     public void addBuff(String name, double duration, double bonus) {
         this.buff_name = name;
         this.base_buff_duration = duration;
         this.base_buff_bonus = bonus;
-        setSkill(lvl, SkillMod.enemy);
+        setSkill(lvl, SkillMod.Enemy);
     }
 
     public void setSkill(int lvl, SkillMod type) {
@@ -153,7 +153,7 @@ public class ActiveSkill {
         this.mp_mult = 1;
         this.skillMod = type;
         switch (type) {
-            case basic:
+            case Basic:
                 this.min = this.base_min * (1 + 0.02 * lvl);
                 this.max = this.base_max * (1 + 0.02 * lvl);
                 this.hit = this.base_hit * (1 + 0.01 * lvl);
@@ -161,36 +161,36 @@ public class ActiveSkill {
                 this.cast_mult = this.base_cast * (1 + 0.01 * lvl);
                 this.delay_mult = this.base_delay * (1 + 0.01 * lvl);
                 break;
-            case pow:
+            case Pow:
                 this.min = this.base_min * (1 + 0.01 * lvl);
                 this.max = this.base_max * (1 + 0.01 * lvl);
                 break;
-            case hit:
+            case Hit:
                 this.hit = this.base_hit * (1 + 0.01 * lvl);
                 break;
-            case cheap:
+            case Cheap:
                 this.min = this.base_min * (1 - 0.01 * lvl);
                 this.max = this.base_max * (1 - 0.01 * lvl);
                 this.mp_mult = (1 - 0.02 * lvl);
                 break;
-            case fast:
+            case Fast:
                 this.mp_mult = (1 + 0.02 * lvl);
                 this.cast_mult = this.base_cast * (1 - 0.01 * lvl);
                 this.delay_mult = this.base_delay * (1 - 0.01 * lvl);
                 break;
-            case powpow:
+            case PowPow:
                 this.min = this.base_min * (1 + 0.05 * lvl);
                 this.max = this.base_max * (1 + 0.05 * lvl);
                 this.hit = this.base_hit * (1 + 0.02 * lvl);
                 this.mp_mult = (1 + 0.1 * lvl);
                 this.mp = this.base_mp + lvl;
                 break;
-            case damage:
+            case Damage:
                 this.dmg_mult = (1 + 0.05 * lvl);
                 this.mp_mult = (1 + 0.05 * lvl);
                 this.mp_additive = lvl;
                 break;
-            case hithit:
+            case SlowHit:
                 this.hit = this.base_hit * (1 + 0.05 * lvl);
                 this.cast_mult = this.base_cast * (1 + 0.02 * lvl);
                 this.delay_mult = this.base_delay * (1 + 0.02 * lvl);
@@ -203,12 +203,12 @@ public class ActiveSkill {
                 case "Burn":
                 case "Poison":
                     this.debuff_duration = switch (this.skillMod) {
-                        case SkillMod.basic -> base_debuff_duration * (1 + 0.02 * lvl);
-                        case SkillMod.pow -> base_debuff_duration * (1 + 0.01 * lvl);
-                        case SkillMod.powpow -> base_debuff_duration * (1 + 0.05 * lvl);
-                        case SkillMod.cheap -> base_debuff_duration * (1 - 0.01 * lvl);
-                        case SkillMod.enemy -> base_debuff_duration;
-                        case SkillMod.damage -> base_debuff_duration;
+                        case SkillMod.Basic -> base_debuff_duration * (1 + 0.02 * lvl);
+                        case SkillMod.Pow -> base_debuff_duration * (1 + 0.01 * lvl);
+                        case SkillMod.PowPow -> base_debuff_duration * (1 + 0.05 * lvl);
+                        case SkillMod.Cheap -> base_debuff_duration * (1 - 0.01 * lvl);
+                        case SkillMod.Enemy -> base_debuff_duration;
+                        case SkillMod.Damage -> base_debuff_duration;
                         default -> base_debuff_duration;
                     };
                     this.debuff_dmg = base_debuff_dmg * (1 + 0.02 * this.lvl);
@@ -216,17 +216,17 @@ public class ActiveSkill {
                 case "Mark":
                 case "Defense Break":
                     this.debuff_duration = switch (this.skillMod) {
-                        case SkillMod.basic -> base_debuff_duration * (1 + 0.02 * lvl);
-                        case SkillMod.pow -> base_debuff_duration * (1 + 0.01 * lvl);
-                        case SkillMod.powpow -> base_debuff_duration * (1 + 0.05 * lvl);
-                        case SkillMod.cheap -> base_debuff_duration * (1 - 0.01 * lvl);
+                        case SkillMod.Basic -> base_debuff_duration * (1 + 0.02 * lvl);
+                        case SkillMod.Pow -> base_debuff_duration * (1 + 0.01 * lvl);
+                        case SkillMod.PowPow -> base_debuff_duration * (1 + 0.05 * lvl);
+                        case SkillMod.Cheap -> base_debuff_duration * (1 - 0.01 * lvl);
                         default -> base_debuff_duration;
                     };
                     this.debuff_effect = switch (this.skillMod) {
-                        case SkillMod.basic -> base_debuff_dmg * (1 + 0.02 * lvl);
-                        case SkillMod.pow -> base_debuff_dmg * (1 + 0.01 * lvl);
-                        case SkillMod.powpow -> base_debuff_dmg * (1 + 0.05 * lvl);
-                        case SkillMod.cheap -> base_debuff_dmg * (1 - 0.01 * lvl);
+                        case SkillMod.Basic -> base_debuff_dmg * (1 + 0.02 * lvl);
+                        case SkillMod.Pow -> base_debuff_dmg * (1 + 0.01 * lvl);
+                        case SkillMod.PowPow -> base_debuff_dmg * (1 + 0.05 * lvl);
+                        case SkillMod.Cheap -> base_debuff_dmg * (1 - 0.01 * lvl);
                         default -> base_debuff_dmg;
                     };
                     this.debuff_dmg = 0;
@@ -240,10 +240,10 @@ public class ActiveSkill {
         }
         if (buff_name != null) {
             this.buff_bonus = switch (this.skillMod) {
-                case SkillMod.basic -> base_buff_bonus * (1 + 0.02 * lvl);
-                case SkillMod.pow -> base_buff_bonus * (1 + 0.01 * lvl);
-                case SkillMod.powpow -> base_buff_bonus * (1 + 0.05 * lvl);
-                case SkillMod.cheap -> base_buff_bonus * (1 - 0.01 * lvl);
+                case SkillMod.Basic -> base_buff_bonus * (1 + 0.02 * lvl);
+                case SkillMod.Pow -> base_buff_bonus * (1 + 0.01 * lvl);
+                case SkillMod.PowPow -> base_buff_bonus * (1 + 0.05 * lvl);
+                case SkillMod.Cheap -> base_buff_bonus * (1 - 0.01 * lvl);
                 default -> base_buff_bonus;
             };
             this.buff_duration = base_buff_duration;
@@ -457,7 +457,7 @@ public class ActiveSkill {
     }
 
     public void increment_uses() {
-        if (skillMod != SkillMod.enemy && lvling) {
+        if (skillMod != SkillMod.Enemy && lvling) {
             uses_this_lvl++;
             int need = need_for_lvl(lvl);
             if (uses_this_lvl >= need && lvl < 20) {
