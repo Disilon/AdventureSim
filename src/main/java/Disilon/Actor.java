@@ -109,6 +109,7 @@ public class Actor {
     protected boolean ambushing = false;
     protected double charge;
     protected double def_break = 0;
+    protected double res_break = 0;
     protected double mark = 0;
     protected double hp_regen = 0;
     protected double blessed = 0;
@@ -165,6 +166,7 @@ public class Actor {
             if (!Objects.equals(d.name, "Mark")) d.duration--;
             if (Objects.equals(d.name, "Smoke") && d.duration > 0) smoked = true;
             if (Objects.equals(d.name, "Defense Break") && d.duration > 0) def_break = d.effect;
+            if (Objects.equals(d.name, "Res Break") && d.duration > 0) res_break = d.effect;
             if (Objects.equals(d.name, "Mark") && d.duration > 0) mark = d.effect;
             this.hp -= d.dmg;
 //            if (d.dmg > 0) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
@@ -486,7 +488,7 @@ public class Actor {
     }
 
     public double getResist() {
-        return resist * (1.0 - mark) + (base_res + gear_res) * blessed;
+        return resist * (1.0 - mark) * (1.0 - res_break) + (base_res + gear_res) * blessed;
     }
 
     public void setResist(double resist) {

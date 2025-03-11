@@ -52,6 +52,8 @@ public class Player extends Actor {
             Element.fire, true, false);
     ActiveSkill eblast = new ActiveSkill("Elemental Blast", 1, 117, 143, 1.0, 20, 1.2, 1.2, Scaling.intel,
             Element.magic, false, false);
+    ActiveSkill mm = new ActiveSkill("Magic Missile", 1, 148.5, 181.5, 1.5, 25, 1.5, 1.5, Scaling.intel,
+            Element.magic, false, false);
     ActiveSkill ma = new ActiveSkill("Magic Arrow", 1, 90, 110, 1, 15, 1, 1, Scaling.intel,
             Element.magic, false, false);
     ActiveSkill hlight = new ActiveSkill("Holy Light", 1, 112.5, 137.5, 1.0, 25, 1, 1.1, Scaling.resint,
@@ -79,6 +81,7 @@ public class Player extends Actor {
         pa.addDebuff("Poison", 3, 0.1);
         smoke.addDebuff("Smoke", 3, 0);
         db.addDebuff("Defense Break", 3, 0.25);
+        mm.addDebuff("Resist Break", 3, 0.25);
         mark.addDebuff("Mark", 1, 0.2);
         charge.addBuff("Charge Up", 1, 1.5);
         fball.addDebuff("Burn", 3, 1);
@@ -165,6 +168,8 @@ public class Player extends Actor {
                 passives.put("Casting Boost", castBoost);
                 active_skills.put("Elemental Blast", eblast);
                 active_skills.put("Push Blast", push);
+                active_skills.put("Magic Arrow", ma);
+                active_skills.put("Magic Missile", mm);
                 active_skills.put("First Aid", fa);
             }
             case "Sniper" -> {
