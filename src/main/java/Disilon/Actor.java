@@ -149,6 +149,7 @@ public class Actor {
 
     protected PassiveSkill bookMastery = new PassiveSkill("Book Mastery", 0.2, 0, 0.0);
     protected PassiveSkill ailmentRes = new PassiveSkill("Ailment Res", 0.75, 10, 0.2);
+    protected PassiveSkill holyBoost = new PassiveSkill("Holy Boost", 0.3, 10, 0.3);
 
     protected ActiveSkill casting;
     protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();

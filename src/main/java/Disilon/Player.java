@@ -70,7 +70,7 @@ public class Player extends Actor {
     protected boolean eblast_enabled;
     DecimalFormat df2 = new DecimalFormat("#.##");
     public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Cleric", "Mage", "Fighter",
-            "Warrior"};
+            "Warrior", "Priest"};
 
     public Player() {
         addSkillEffects();
@@ -211,6 +211,18 @@ public class Player extends Actor {
                 passives.put("Res Boost", resBoost);
                 passives.put("Book Mastery", bookMastery);
                 passives.put("Ailment Res", ailmentRes);
+                active_skills.put("Holy Light", hlight);
+                active_skills.put("Magic Arrow", ma);
+                active_skills.put("Heal", heal);
+                active_skills.put("First Aid", fa);
+                active_skills.put("Bless", bless);
+            }
+            case "Priest" -> {
+                passives.put("Int Boost", intBoost);
+                passives.put("Res Boost", resBoost);
+                passives.put("Book Mastery", bookMastery);
+                passives.put("Ailment Res", ailmentRes);
+                passives.put("Holy Boost", holyBoost);
                 active_skills.put("Holy Light", hlight);
                 active_skills.put("Magic Arrow", ma);
                 active_skills.put("Heal", heal);
@@ -377,6 +389,15 @@ public class Player extends Actor {
                 base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "Priest" -> {
+                base_hp_max = (double) (80 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (160 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
         }
         refreshStats();
     }
@@ -466,6 +487,9 @@ public class Player extends Actor {
             }
             case "Cleric" -> {
                 return gear_light + (holylight_enabled ? getResist() * 0.25 : 0);
+            }
+            case "Priest" -> {
+                return (getAtk() + getIntel()) * (holyBoost.enabled ? 0.5 + holyBoost.bonus : 0.5) + gear_light + (holylight_enabled ? getResist() * 0.25 : 0);
             }
             default -> {
                 return gear_light + (aurablade_enabled ? getAtk() * 0.1 : 0);
