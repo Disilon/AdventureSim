@@ -15,7 +15,7 @@ public enum Zone {
 
     final String display_name;
     final String[] possible_enemies;
-    public ArrayList<Enemy> enemies = new ArrayList<>(1);
+    public final ArrayList<Enemy> enemies = new ArrayList<>(1);
     final int max_enemies;
     private final Random random = new Random();
     public double strength;
@@ -55,12 +55,15 @@ public enum Zone {
                 incrementStrength();
             }
         }
-        System.out.println(enemies.stream().map(Enemy::getName).collect(Collectors.joining(", ")));
-        System.out.println(getAvgSpeed());
+//        System.out.println(enemies.stream().map(Enemy::getName).collect(Collectors.joining(", ")));
     }
 
     public double getAvgSpeed() {
         return enemies.stream().mapToDouble(Enemy::getSpeed).average().getAsDouble();
+    }
+
+    public double stealthDelay() {
+        return enemies.stream().mapToDouble(Enemy::stealthDelay).max().getAsDouble();
     }
 
     public void incrementStrength() {
@@ -70,13 +73,21 @@ public enum Zone {
 
     public double getTime_to_respawn() {
         return switch (this) {
-            case z6 -> 5;
-            case z7 -> 5;
-            case z8 -> 5;
-            case z9 -> 5;
-            case z10 -> 6;
-            case z11 -> 6;
-            case z12 -> 6;
+            case z6, z7, z8, z9 -> 5;
+            case z10, z11, z12 -> 6;
         };
+    }
+
+    public Enemy getRandomEnemy() {
+        int index = random.nextInt(enemies.size());
+        return enemies.get(index);
+    }
+
+    public double calculateDelta() {
+        double delta = 3600;
+        for (Enemy enemy : enemies) {
+            if (enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta());
+        }
+        return delta;
     }
 }

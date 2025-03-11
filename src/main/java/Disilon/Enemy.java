@@ -246,6 +246,15 @@ public class Enemy extends Actor {
             case "Devil" -> {
                 return roll < 70 ? slash : poison; //Chances to select skills were calculated empirically
             }
+            case "Tengu" -> {
+                return roll < 50 ? bash : da;
+            }
+            case "Amon" -> {
+                return roll < 50 ? mm : eblast;
+            }
+            case "Akuma" -> {
+                return roll < 50 ? dp : as;
+            }
             default -> {
                 return null;
             }

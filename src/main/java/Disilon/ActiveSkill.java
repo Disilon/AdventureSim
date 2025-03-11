@@ -94,6 +94,14 @@ public class ActiveSkill {
         //" delay: " + delay);
     }
 
+    public void startCastPlayer(Actor attacker, Zone zone) {
+        double speed_mult = Math.clamp((zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
+        cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + zone.stealthDelay();
+        if (attacker.isAmbushing()) cast = Math.max(0.01, cast - 5);
+        delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
+        used_in_rotation++;
+    }
+
     public boolean progressCast(double delta) {
         cast -= delta;
         if (cast <= 0) {

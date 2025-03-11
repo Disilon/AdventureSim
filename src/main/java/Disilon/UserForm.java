@@ -958,40 +958,37 @@ public class UserForm extends JFrame {
         Run.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                if (Skill1.getSelectedIndex() == 0) {
-//                    JOptionPane.showMessageDialog(rootPanel, "You need to setup first active skill", "Warning",
-//                            JOptionPane.WARNING_MESSAGE);
-//                } else {
-//                    Main.game_version = Integer.parseInt(GameVersion.getSelectedItem().toString());
-//                    setupPotions();
-//                    simulation.alchemy_lvl = (int) Alchemy_lvl.getValue();
-//                    simulation.crafting_lvl = (int) Crafting_lvl.getValue();
-//                    simulation.milestone_exp_mult = (double) Milestone.getValue() / 100;
-//                    player.setCLML((int) CL.getValue(), (int) ML.getValue());
-//                    enemy.setEnemy(Enemy.getSelectedItem().toString());
-//                    player.clear_skills_recorded_data();
-//                    enemy.clear_skills_recorded_data();
-//                    simulation.simulations = (int) Simulations.getValue();
-//                    simulation.player = player;
-//                    simulation.enemy = enemy;
-//                    simulation.time_to_respawn = simulation.getTime_to_respawn();
-//                    setupEquipment();
-//                    setupPassives();
-//                    simulation.run(Skill1.getSelectedItem().toString(), (int) Skill1_lvl.getValue(),
-//                            (SkillMod) Skill1_mod.getSelectedItem(), (int) Skill1_s.getValue(),
-//                            Skill2.getSelectedItem().toString(),
-//                            (int) Skill2_lvl.getValue(), (SkillMod) Skill2_mod.getSelectedItem(), (int) Skill2_s.getValue(),
-//                            Skill3.getSelectedItem().toString(), (int) Skill3_lvl.getValue(),
-//                            (SkillMod) Skill3_mod.getSelectedItem(), (int) Skill3_s.getValue(), (int) Reroll.getValue());
-//                    if (SetupInfo.isSelected()) {
-//                        Result.setText(simulation.full_result);
-//                    } else {
-//                        Result.setText(simulation.essential_result);
-//                    }
-//                    Stats.setText(player.getAllStats());
-//                }
-                Zone z = (Zone) Enemy.getSelectedItem();
-                z.respawn();
+                if (Skill1.getSelectedIndex() == 0) {
+                    JOptionPane.showMessageDialog(rootPanel, "You need to setup first active skill", "Warning",
+                            JOptionPane.WARNING_MESSAGE);
+                } else {
+                    Main.game_version = Integer.parseInt(GameVersion.getSelectedItem().toString());
+                    setupPotions();
+                    simulation.alchemy_lvl = (int) Alchemy_lvl.getValue();
+                    simulation.crafting_lvl = (int) Crafting_lvl.getValue();
+                    simulation.milestone_exp_mult = (double) Milestone.getValue() / 100;
+                    player.setCLML((int) CL.getValue(), (int) ML.getValue());
+                    player.clear_skills_recorded_data();
+                    simulation.simulations = (int) Simulations.getValue();
+                    simulation.player = player;
+                    Zone z = (Zone) Enemy.getSelectedItem();
+                    simulation.zone = z;
+                    setupEquipment();
+                    setupPassives();
+                    simulation.run(Skill1.getSelectedItem().toString(), (int) Skill1_lvl.getValue(),
+                            (SkillMod) Skill1_mod.getSelectedItem(), (int) Skill1_s.getValue(),
+                            Skill2.getSelectedItem().toString(),
+                            (int) Skill2_lvl.getValue(), (SkillMod) Skill2_mod.getSelectedItem(), (int) Skill2_s.getValue(),
+                            Skill3.getSelectedItem().toString(), (int) Skill3_lvl.getValue(),
+                            (SkillMod) Skill3_mod.getSelectedItem(), (int) Skill3_s.getValue(), (int) Reroll.getValue());
+                    if (SetupInfo.isSelected()) {
+                        Result.setText(simulation.full_result);
+                    } else {
+                        Result.setText(simulation.essential_result);
+                    }
+                    Stats.setText(player.getAllStats());
+                }
+
             }
         });
         SetupInfo.addActionListener(new ActionListener() {

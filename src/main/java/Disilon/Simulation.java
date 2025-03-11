@@ -1,6 +1,7 @@
 package Disilon;
 
 import java.text.DecimalFormat;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Simulation {
@@ -8,7 +9,6 @@ public class Simulation {
 
     int simulations;
     Player player;
-    Enemy enemy;
     Zone zone;
     Potion potion1;
     Potion potion2;
@@ -86,8 +86,9 @@ public class Simulation {
         int enemy_hits = 0;
         double healed = 0;
         int kills = 0;
+        int cleared = 0;
         double oom_time = 0;
-        title = enemy.getName();
+        title = zone.toString();
         if (time_to_respawn == -1) time_to_respawn = zone.getTime_to_respawn();
         if (potion1 != null) potion1.used = 0;
         if (potion2 != null) potion2.used = 0;
@@ -120,18 +121,17 @@ public class Simulation {
         player.debuffs.clear();
         player.buffs.clear();
         for (int i = 0; i < simulations; i++) {
+            Enemy target = null;
             double time = 0;
             double delta;
             int casts = 0;
             double delay_left = 0;
             status = StatusType.respawn;
-            enemy.reroll();
+            zone.respawn();
             player.checkAmbush();
             if (Main.game_version < 1535 && reroll >= 1) {
-                while (enemy.getHp_max() >= reroll) {
-                    enemy.rollStrength();
-                    enemy.reroll();
-                    //TODO: zone respawn here
+                while (zone.getRandomEnemy().getHp_max() >= reroll) { //won't work properly with multiple enemies
+                    zone.respawn();
                     delta = time_to_respawn;
                     time += delta;
                     total_time += delta;
@@ -157,23 +157,26 @@ public class Simulation {
                 status = StatusType.combat;
             }
             while (status == StatusType.combat && time < 3600) {
+                if (player.casting == null) {
+                    target = zone.getRandomEnemy();
+                }
                 if (player.casting == null && skill1.canCast(player) && ((skill3 == null && skill2 == null) || skill1.shouldUse(player,
                         setting1))) {
                     player.casting = skill1;
-                    player.casting.startCast(player, enemy);
+                    player.casting.startCastPlayer(player, zone);
                     if (skill2 != null) skill2.used_in_rotation = 0;
                     if (skill3 != null) skill3.used_in_rotation = 0;
                 }
                 if (player.casting == null && skill2 != null && skill2.canCast(player) && skill2.shouldUse(player,
                         setting2)) {
                     player.casting = skill2;
-                    player.casting.startCast(player, enemy);
+                    player.casting.startCastPlayer(player, zone);
                     //skill1.used_in_rotation = 0;
                 }
                 if (player.casting == null && skill3 != null && skill3.canCast(player) && skill3.shouldUse(player,
                         setting3)) {
                     player.casting = skill3;
-                    player.casting.startCast(player, enemy);
+                    player.casting.startCastPlayer(player, zone);
                     //skill1.used_in_rotation = 0;
 
                 }
@@ -190,48 +193,68 @@ public class Simulation {
 //                    System.out.println(time + " " + player.getName() + " casting " + player.casting.name + " at " +
 //                            enemy.getName() + " cast time: " + player.casting.cast + " delay: " + player.casting.delay);
                 }
-
-                if (enemy.casting == null) {
-                    ActiveSkill enemyCast = enemy.getCasting();
-                    enemyCast.startCast(enemy, player);
-                    if (player.name.equals("Assassin1") &&
-                            enemy.name.equals("Lamia") && enemyCast.name.equals("Explosion") && enemy.getHp() > enemy.getHp_max() * 0.4) {
-                        enemy.reroll(); //todo: add user option to run away from lamia explosion
-                        player.casting = null;
-                        status = StatusType.rerolling;
-                        break;
+                for (Iterator<Enemy> iterator = zone.enemies.iterator(); iterator.hasNext(); ) {
+                    Enemy enemy = iterator.next();
+                    if (enemy.casting == null) {
+                        ActiveSkill enemyCast = enemy.getCasting();
+                        enemyCast.startCast(enemy, player);
+                        if (player.name.equals("Assassin1") &&
+                                enemy.name.equals("Lamia") && enemyCast.name.equals("Explosion") && enemy.getHp() > enemy.getHp_max() * 0.4) {
+                            enemy.reroll(); //todo: add user option to run away from lamia explosion
+                            player.casting = null;
+                            status = StatusType.rerolling;
+                            break;
+                        }
                     }
                 }
                 delta = 0.1;
                 if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta());
-                if (enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta());
+                delta = Math.min(delta, zone.calculateDelta());
                 time += delta;
                 total_time += delta;
                 player.setMp(player.getMp() + player.getMp_regen() * delta);
-                enemy.setMp(enemy.getMp() + enemy.getMp_regen() * delta);
+                target.setMp(target.getMp() + target.getMp_regen() * delta); //todo: implement mana properly for enemies
                 if (potion1 != null) potion1.checkPotion(player, delta);
                 if (potion2 != null) potion2.checkPotion(player, delta);
                 if (potion3 != null) potion3.checkPotion(player, delta);
                 if (player.casting != null) {
                     if (player.casting.cast > 0) {
                         if (player.casting.progressCast(delta)) {
+
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
-                                double dmg = player.casting.attack(player, enemy);
-                                if (dmg > 0) {
-                                    if (dmg > hard_dmg_min_detect) {
-                                        hard_hits++;
-                                        hard_dmg += dmg;
-                                    }
-                                    enemy.setHp(enemy.getHp() - dmg);
+                                if (player.casting.aoe) {
+                                    for (Enemy enemy : zone.enemies) {
+                                        double dmg = player.casting.attack(player, enemy);
+                                        if (dmg > 0) {
+                                            if (dmg > hard_dmg_min_detect) {
+                                                hard_hits++;
+                                                hard_dmg += dmg;
+                                            }
+                                            enemy.setHp(enemy.getHp() - dmg);
 //                                    System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name);
-                                } else {
+                                        } else {
 //                                    System.out.println("Player missed with " + player.casting.name);
+                                        }
+                                    }
+
+                                } else {
+                                    double dmg = player.casting.attack(player, target);
+                                    if (dmg > 0) {
+                                        if (dmg > hard_dmg_min_detect) {
+                                            hard_hits++;
+                                            hard_dmg += dmg;
+                                        }
+                                        target.setHp(target.getHp() - dmg);
+//                                    System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name);
+                                    } else {
+//                                    System.out.println("Player missed with " + player.casting.name);
+                                    }
                                 }
                             } else {
                                 double previous_hp = player.getHp();
-                                player.casting.use(player, enemy);
+                                player.casting.use(player, target);
                                 if (player.casting.heal) {
                                     healed += player.getHp() - previous_hp;
                                 }
@@ -249,49 +272,56 @@ public class Simulation {
                 } else {
                     oom_time += delta;
                 }
-                if (enemy.casting != null) {
-                    if (enemy.casting.cast > 0) {
-                        if (enemy.casting.progressCast(delta)) {
-                            if (enemy.casting.hit > 0) {
-                                double dmg = enemy.casting.attack(enemy, player);
-                                if (dmg > 0) {
-                                    player.setHp(player.getHp() - dmg);
-                                    enemy_hits++;
-                                    enemy_dmg += dmg;
+                Iterator<Enemy> iterator = zone.enemies.iterator();
+                while (iterator.hasNext()) {
+                    Enemy enemy = iterator.next();
+                    if (enemy.casting != null) {
+                        if (enemy.casting.cast > 0) {
+                            if (enemy.casting.progressCast(delta)) {
+                                if (enemy.casting.hit > 0) {
+                                    double dmg = enemy.casting.attack(enemy, player);
+                                    if (dmg > 0) {
+                                        player.setHp(player.getHp() - dmg);
+                                        enemy_hits++;
+                                        enemy_dmg += dmg;
 //                                    System.out.println("Enemy dealt " + (int) dmg + " damage with " + enemy.casting.name);
-                                } else {
+                                    } else {
 //                                    System.out.println("Enemy missed with " + enemy.casting.name);
-                                }
+                                    }
 //                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
-                            } else {
-                                enemy.casting.use(enemy, player);
+                                } else {
+                                    enemy.casting.use(enemy, player);
+                                }
+                                enemy.setMp(enemy.getMp() - enemy.casting.calculate_manacost(enemy));
+                                enemy.tick_debuffs();
+                                enemy.tick_buffs();
                             }
-                            enemy.setMp(enemy.getMp() - enemy.casting.calculate_manacost(enemy));
-                            enemy.tick_debuffs();
-                            enemy.tick_buffs();
+                        } else if (enemy.casting.delay > 0) {
+                            if (enemy.casting.progressDelay(delta)) {
+                                enemy.casting = null;
+                            }
                         }
-                    } else if (enemy.casting.delay > 0) {
-                        if (enemy.casting.progressDelay(delta)) {
-                            enemy.casting = null;
+                    }
+                    if (enemy.getHp() <= 0) {
+                        overkill -= enemy.getHp();
+                        for (Debuff d : enemy.debuffs) {
+                            if (d.dmg > 0) overkill += d.dmg;
                         }
+                        double exp_gain = enemy.getExp() * player.getExp_mult();
+                        if (player.lvling) player.increment_exp(exp_gain * milestone_exp_mult);
+                        exp += exp_gain;
+                        kills++;
+//                    System.out.println("Enemy killed at " + df2.format(time) + " s");
+                        iterator.remove();
                     }
                 }
-                if (enemy.getHp() <= 0) {
+                if (zone.enemies.isEmpty()) {
                     status = StatusType.delay;
-                    overkill -= enemy.getHp();
-                    for (Debuff d : enemy.debuffs) {
-                        if (d.dmg > 0) overkill += d.dmg;
-                    }
-                    double exp_gain = enemy.getExp() * player.getExp_mult();
-                    if (player.lvling) player.increment_exp(exp_gain * milestone_exp_mult);
-                    exp += exp_gain;
-                    kills++;
-//                    System.out.println("Enemy killed at " + df2.format(time) + " s");
+                    cleared++;
                     if (player.casting != null) {
                         delay_left = player.casting.delay;
                         player.casting = null;
                     }
-                    //TODO: zone respawn here
                 }
                 if (player.getHp() <= 0) {
                     status = StatusType.death;
@@ -381,10 +411,10 @@ public class Simulation {
                 "\n");
         result.append("Min time: ").append(df2.format(min_time)).append("s \n");
         result.append("Max time: ").append(df2.format(max_time)).append("s \n");
-        result.append("Average time to kill + respawn: ").append(df2.format(total_time / kills)).append("s \n");
+        result.append("Average time to kill + respawn: ").append(df2.format(total_time / cleared)).append("s \n");
         result.append("Min skill casts: ").append(min_casts).append(" \n");
         result.append("Max skill casts: ").append(max_casts).append(" \n");
-        result.append("Average skill casts: ").append(df2.format((double) total_casts / kills)).append(" \n");
+        result.append("Average skill casts: ").append(df2.format((double) total_casts / cleared)).append(" \n");
         result.append("Average Overkill: ").append(df2.format(overkill / kills)).append(" \n");
         if (hard_hits > 0) {
             result.append("Average hard dmg: ").append(df2.format(hard_dmg / hard_hits)).append(" \n");
@@ -402,260 +432,16 @@ public class Simulation {
             result.append("Average enemy dmg: ").append(df2.format(enemy_dmg / enemy_hits)).append(" \n");
         }
         if (healed > 0) {
-            result.append("Average heal per fight: ").append(df2.format(healed / kills)).append(" \n");
+            result.append("Average heal per fight: ").append(df2.format(healed / cleared)).append(" \n");
         }
-        if (enemy.enemy_skills != null) {
-            for (ActiveSkill s : enemy.enemy_skills) {
+        for (Enemy enemy : zone.enemies) {
+            if (enemy.enemy_skills != null) {
+                for (ActiveSkill s : enemy.enemy_skills) {
 //                sb.append(s.name).append(" used with smoke: ").append(df2.format((double) s.used_debuffed / s.used_in_rotation * 100.0)).append("% \n");
+                }
             }
         }
         essential_result = result.toString();
         full_result = setup + result.toString();
-    }
-
-    /**
-     * Deprecated method for long-time simulations, to include CL/ML and active skills lvl-ups.
-     * Probably won't work at all now, since it wasn't updated for many versions.
-     */
-    public void run_days(ActiveSkill skill1, int setting1, ActiveSkill skill2, int setting2, ActiveSkill skill3,
-                         int setting3, boolean prepare,
-                         double prepare_threshold, int days) {
-        double total_time = 0;
-        double leftover_time = 0;
-        player.lvling = true;
-        for (int day = 0; day < days; day++) {
-
-            double exp = 0;
-
-            double death_time = 0;
-            double prepare_time = 0;
-            double crafting_time = 0;
-            double min_time = 9999;
-            double max_time = 0;
-            int total_casts = 0;
-            int min_casts = 999;
-            int max_casts = 0;
-            double overkill = 0;
-            double ignore_deaths = 0;
-            double hard_dmg = 0;
-            int hard_hits = 0;
-            potion1.used = 0;
-            potion2.used = 0;
-            System.out.println(title + " Day: " + (day + 1));
-            StringBuilder sb = new StringBuilder();
-            sb.append(player.getName()).append(" ML/CL ").append(df2.format(player.getMl() + (player.ml_exp / player.exp_to_ml(player.getMl())))).append(
-                    "/").append(df2.format(player.getCl() + (player.cl_exp / player.exp_to_cl(player.getCl(), 3)))).append("\n");
-            sb.append("Active Skills: \n").append(skill1.name).append(" lvl ").append(skill1.lvl).append(" ").append(skill1.skillMod).append(" / ").append(setting1).append("\n");
-            if (skill2 != null)
-                sb.append(skill2.name).append(" lvl ").append(skill2.lvl).append(" ").append(skill2.skillMod).append(" / ").append(setting2).append("\n");
-            if (skill3 != null)
-                sb.append(skill3.name).append(" lvl ").append(skill3.lvl).append(" ").append(skill3.skillMod).append(" / ").append(setting3).append("\n");
-//        sb.append("Passive skills:\n");
-//        for(Map.Entry<String, PassiveSkill> passive : player.passives.entrySet()) {
-//            if (passive.getValue().enabled) {
-//                sb.append(passive.getValue().name).append(" ").append(passive.getValue().lvl).append("\n");
-//            }
-//        }
-//        if (prepare) sb.append("Prepare threshold: ").append(prepare_threshold).append("\n");
-//        if (potion1 != null)
-//            sb.append(potion1.type.toUpperCase()).append(" potion tier: ").append(potion1.tier).append(", threshold: ").append(potion1.threshold).append(
-//                    "\n");
-//        if (potion2 != null)
-//            sb.append(potion2.type.toUpperCase()).append(" potion tier: ").append(potion2.tier).append(", threshold: ").append(potion2.threshold).append(
-//                    "\n");
-            player.refreshStats();
-            int sim_num = 0;
-            while (sim_num < simulations && (total_time + crafting_time + death_time) < (3600 * 24 - leftover_time)) {
-                sim_num++;
-                double time = 0;
-                double delta;
-                int casts = 0;
-                status = StatusType.respawn;
-                enemy.reroll();
-
-                skill1.used_in_rotation = 0;
-                if (skill2 != null) skill2.used_in_rotation = 0;
-                if (skill3 != null) skill3.used_in_rotation = 0;
-                while (time < time_to_respawn) {
-                    delta = Math.min(0.1, time_to_respawn - time);
-                    time += delta;
-                    total_time += delta;
-                    player.setMp(player.getMp() + player.getMp_regen() * delta);
-                    potion1.checkPotion(player, delta);
-                    potion2.checkPotion(player, delta);
-                }
-                if (time >= time_to_respawn) {
-                    status = StatusType.combat;
-                }
-                while (status == StatusType.combat && time < 3600) {
-                    if (player.casting == null && skill1.canCast(player) && ((skill3 == null && skill2 == null) || skill1.shouldUse(player,
-                            setting1))) {
-                        player.casting = skill1;
-                        player.casting.startCast(player, enemy);
-                        if (skill2 != null) skill2.used_in_rotation = 0;
-                        if (skill3 != null) skill3.used_in_rotation = 0;
-                    }
-                    if (player.casting == null && skill2 != null && skill2.canCast(player) && skill2.shouldUse(player,
-                            setting2)) {
-                        player.casting = skill2;
-                        player.casting.startCast(player, enemy);
-                    }
-                    if (player.casting == null && skill3 != null && skill3.canCast(player) && skill3.shouldUse(player,
-                            setting3)) {
-                        player.casting = skill3;
-                        player.casting.startCast(player, enemy);
-                    }
-                    if (skill3 != null && skill3.used_in_rotation >= setting3) {
-                        skill1.used_in_rotation = 0;
-                        skill2.used_in_rotation = 0;
-                        skill3.used_in_rotation = 0;
-                    }
-                    if (skill3 == null && skill2 != null && skill2.used_in_rotation >= setting2) {
-                        skill1.used_in_rotation = 0;
-                        skill2.used_in_rotation = 0;
-                    }
-
-                    if (enemy.casting == null) {
-                        ActiveSkill enemyCast = enemy.getCasting();
-                        enemyCast.startCast(enemy, player);
-                    }
-                    delta = 0.1;
-                    if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta());
-                    if (enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta());
-                    time += delta;
-                    total_time += delta;
-                    player.setMp(player.getMp() + player.getMp_regen() * delta);
-                    enemy.setMp(enemy.getMp() + enemy.getMp_regen() * delta);
-                    potion1.checkPotion(player, delta);
-                    potion2.checkPotion(player, delta);
-                    if (player.casting != null) {
-                        if (player.casting.cast > 0) {
-                            if (player.casting.progressCast(delta)) {
-                                if (player.casting.hit > 0) {
-                                    casts++;
-                                    total_casts++;
-                                    double dmg = player.casting.attack(player, enemy);
-                                    if (dmg > 0) {
-                                        if (dmg > 1200) {
-                                            hard_hits++;
-                                            hard_dmg += dmg;
-                                        }
-                                        enemy.setHp(enemy.getHp() - dmg);
-                                        //System.out.println("Player dealt " + dmg + " damage with " + player.casting.name);
-                                    } else {
-                                        //System.out.println("Player missed with " + player.casting.name);
-                                    }
-                                } else {
-                                    player.casting.use(player, enemy);
-                                    //System.out.println("Player casted " + player.casting.name);
-                                }
-                                player.setMp(player.getMp() - player.casting.calculate_manacost(player));
-                                player.tick_debuffs();
-                                enemy.tick_buffs();
-                            }
-                        } else if (player.casting.delay > 0) {
-                            if (player.casting.progressDelay(delta)) {
-                                player.casting = null;
-                            }
-                        }
-                    }
-                    if (enemy.casting != null) {
-                        if (enemy.casting.cast > 0) {
-                            if (enemy.casting.progressCast(delta)) {
-                                if (enemy.casting.hit > 0) {
-                                    double dmg = enemy.casting.attack(enemy, player);
-                                    if (dmg > 0) {
-                                        player.setHp(player.getHp() - dmg);
-                                        //System.out.println("Enemy dealt " + dmg + " damage with " + enemy.casting.name);
-                                    } else {
-                                        //System.out.println("Enemy missed with " + enemy.casting.name);
-                                    }
-                                    enemy.setMp(enemy.getMp() - enemy.casting.calculate_manacost(enemy));
-                                    enemy.tick_debuffs();
-                                    player.tick_buffs();
-                                } else {
-                                    enemy.casting.use(enemy, player);
-                                }
-                            }
-                        } else if (enemy.casting.delay > 0) {
-                            if (enemy.casting.progressDelay(delta)) {
-                                enemy.casting = null;
-                            }
-                        }
-                    }
-                    if (enemy.getHp() <= 0) {
-                        status = StatusType.respawn;
-                        overkill -= enemy.getHp();
-                        for (Debuff d : enemy.debuffs) {
-                            if (d.dmg > 0) overkill += d.dmg;
-                        }
-                        double exp_gain = enemy.getExp() * player.getExp_mult();
-                        if (player.lvling) player.increment_exp(exp_gain * milestone_exp_mult);
-                        exp += exp_gain;
-                    }
-                    if (player.getHp() <= 0) {
-                        status = StatusType.death;
-                        death_time += 15 * 60;
-                        player.setHp(player.getHp_max());
-                        player.setMp(player.getMp_max());
-                        potion1.cooldown = 0;
-                        potion2.cooldown = 0;
-                        ignore_deaths += time;
-                    }
-                }
-
-                if (status == StatusType.respawn && prepare) {
-                    delta = 0.1;
-                    while (player.getHp() / player.getHp_max() < prepare_threshold / 100 || player.getMp() / player.getMp_max() < prepare_threshold / 100) {
-                        status = StatusType.prepare;
-                        total_time += delta;
-                        prepare_time += delta;
-                        player.setHp(player.getHp() + player.getPrepare_hps() * delta);
-                        player.setMp(player.getMp() + player.getPrepare_mps() * delta);
-                    }
-                    status = StatusType.respawn;
-                }
-                min_time = Math.min(min_time, time);
-                max_time = Math.max(max_time, time);
-                min_casts = Math.min(min_casts, casts);
-                max_casts = Math.max(max_casts, casts);
-            }
-
-            sb.append("Exp/h: ").append((int) (exp * milestone_exp_mult / (total_time + death_time + crafting_time) * 3600)).append("\n");
-//        sb.append("Exp/h without milestones: ").append((int) (exp / (total_time + death_time) * 3600)).append("\n");
-            if (potion1 != null) {
-                sb.append(potion1.type.toUpperCase()).append(" potion tier: ").append(potion1.tier).append(", used: ").append(potion1.used).append(", per hour: ").append(df2.format(potion1.used / (total_time + death_time) * 3600)).append(
-                        "\n");
-                int need_to_craft = Math.max(0, potion1.used - potion1.count);
-                potion1.count = Math.max(0, potion1.count - potion1.used);
-                potion1.used = 0;
-                crafting_time += potion1.craft_time(crafting_lvl, alchemy_lvl) * need_to_craft;
-            }
-            if (potion2 != null) {
-                sb.append(potion2.type.toUpperCase()).append(" potion tier: ").append(potion2.tier).append(", used: ").append(potion2.used).append(", per hour: ").append(df2.format(potion2.used / (total_time + death_time) * 3600)).append(
-                        "\n");
-                int need_to_craft = Math.max(0, potion2.used - potion2.count);
-                potion2.count = Math.max(0, potion2.count - potion2.used);
-                potion2.used = 0;
-                crafting_time += potion2.craft_time(crafting_lvl, alchemy_lvl) * need_to_craft;
-            }
-            sb.append("Combat time: ").append((int) total_time).append(" seconds \n");
-            if (crafting_time > 0) {
-                sb.append("Crafting time: ").append((int) crafting_time).append(" seconds \n");
-                sb.append("Effective exp/h: ").append((int) (exp * milestone_exp_mult / (total_time + crafting_time + death_time) * 3600)).append("\n");
-            }
-            if (prepare) {
-                sb.append("Time preparing %: ").append(df2.format(prepare_time / total_time * 100)).append("% " +
-                        "\n");
-            }
-            sb.append("Time dead %: ").append(df2.format(death_time / (total_time + death_time) * 100)).append("% \n");
-            sb.append("Average skill casts: ").append(df2.format((double) total_casts / sim_num)).append(" \n");
-            sb.append("Kills: ").append(sim_num).append(" \n");
-            System.out.println(sb);
-            leftover_time = total_time + crafting_time + death_time + leftover_time - 3600 * 24;
-            //System.out.println(leftover_time);
-            total_time = 0;
-        }
-
     }
 }
