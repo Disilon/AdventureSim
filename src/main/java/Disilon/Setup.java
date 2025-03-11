@@ -58,6 +58,7 @@ public class Setup implements Serializable {
     String result_essential;
     String stats;
     String enemy;
+    Zone zone;
     int skill1_lvl;
     int skill2_lvl;
     int skill3_lvl;
@@ -72,7 +73,17 @@ public class Setup implements Serializable {
     int alchemy_lvl;
     boolean setsetup;
     boolean setupinfo;
-    public void setup() {}
+
+    public void setup() {
+    }
+
+    public Zone getZone() {
+        return zone;
+    }
+
+    public void setZone(Zone zone) {
+        this.zone = zone;
+    }
 
     public String getPlayerclass() {
         return playerclass;

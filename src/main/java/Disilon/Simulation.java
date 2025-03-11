@@ -212,8 +212,7 @@ public class Simulation {
                 delta = Math.min(delta, zone.calculateDelta());
                 time += delta;
                 total_time += delta;
-                player.setMp(player.getMp() + player.getMp_regen() * delta);
-                target.setMp(target.getMp() + target.getMp_regen() * delta); //todo: implement mana properly for enemies
+                player.setMp(player.getMp() + player.getMp_regen() * delta); //todo: implement mana properly for enemies
                 if (potion1 != null) potion1.checkPotion(player, delta);
                 if (potion2 != null) potion2.checkPotion(player, delta);
                 if (potion3 != null) potion3.checkPotion(player, delta);

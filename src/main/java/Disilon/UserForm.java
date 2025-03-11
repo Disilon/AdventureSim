@@ -97,7 +97,7 @@ public class UserForm extends JFrame {
     private JButton Run;
     private JCheckBox SetSetup;
     private JCheckBox SetupInfo;
-    private  JFileChooser fileChooser = null;
+    private JFileChooser fileChooser = null;
     GridBagConstraints gbc = new GridBagConstraints();
 
     public Player player;
@@ -943,7 +943,7 @@ public class UserForm extends JFrame {
                 fileChooser.setSelectedFile(new File(Main.getJarPath() + "/default.json"));
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showSaveDialog(UserForm.this);
-                if (result == JFileChooser.APPROVE_OPTION ) saveSetup(fileChooser.getSelectedFile().getAbsolutePath());
+                if (result == JFileChooser.APPROVE_OPTION) saveSetup(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
         Load.addActionListener(new ActionListener() {
@@ -952,7 +952,7 @@ public class UserForm extends JFrame {
                 fileChooser.setDialogTitle("Load setup from json file");
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showOpenDialog(UserForm.this);
-                if (result == JFileChooser.APPROVE_OPTION ) loadSetup(fileChooser.getSelectedFile().getAbsolutePath());
+                if (result == JFileChooser.APPROVE_OPTION) loadSetup(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
         Run.addActionListener(new ActionListener() {
@@ -1298,7 +1298,7 @@ public class UserForm extends JFrame {
         setup.chest_tier = Chest_tier.getSelectedItem().toString();
         setup.cl = Integer.parseInt(CL.getValue().toString());
         setup.crafting_lvl = Integer.parseInt(Crafting_lvl.getValue().toString());
-        setup.enemy = Enemy.getSelectedItem().toString();
+        setup.zone = (Zone) Enemy.getSelectedItem();
         setup.gameversion = GameVersion.getSelectedItem().toString();
         setup.helmet_lvl = Integer.parseInt(Helmet_lvl.getValue().toString());
         setup.helmet_name = Helmet_name.getSelectedItem().toString();
@@ -1389,7 +1389,16 @@ public class UserForm extends JFrame {
                 Chest_tier.setSelectedItem(setup.chest_tier);
                 CL.setValue(setup.cl);
                 Crafting_lvl.setValue(setup.crafting_lvl);
-                Enemy.setSelectedItem(setup.enemy);
+                if (setup.zone == null && setup.enemy != null) {
+                    setup.zone = switch (setup.enemy) {
+                        case "Devil" -> Zone.z9;
+                        case "Shax" -> Zone.z10;
+                        case "Dagon" -> Zone.z11;
+                        case "Lamia" -> Zone.z12;
+                        default -> Zone.z8;
+                    };
+                }
+                Enemy.setSelectedItem(setup.zone);
                 GameVersion.setSelectedItem(Integer.parseInt(setup.gameversion));
                 MH_lvl.setValue(setup.mh_lvl);
                 MH_name.setSelectedItem(setup.mh_name);
