@@ -3,7 +3,7 @@ package Disilon;
 import java.util.Random;
 
 public class Enemy extends Actor {
-    private Random random = new Random();
+    private final Random random = new Random();
     ActiveSkill waterpunch = new ActiveSkill("Water Punch", 1, 99, 121, 1, 0, 0.9, 0.9, Scaling.atkint, Element.water,
             false, false);
     ActiveSkill killingstrike = new ActiveSkill("Killing Strike", 1, 207.9, 254.1, 0.7, 0, 2, 2, Scaling.atk,
@@ -44,7 +44,7 @@ public class Enemy extends Actor {
 
     public static String[] availableEnemies = {"Devil", "Shax", "Dagon", "Lamia"};
 
-    double strength = 0.9;
+    double strength = 1;
     double base_lvl;
 
     public Enemy() {
@@ -229,11 +229,6 @@ public class Enemy extends Actor {
 
     public void rollStrength() {
         strength = (this.random.nextInt(21) + 90) / 100.0;
-    }
-
-    public void incrementStrength() {
-        strength += 0.01;
-        if (strength > 1.1) strength = 0.9;
     }
 
     public ActiveSkill rollAttack() {

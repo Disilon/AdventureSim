@@ -345,7 +345,14 @@ public class ActiveSkill {
                     yield defender.getPhys_res();
                 }
                 case Element.magic -> {
-                    yield defender.getMagic_res(); //TODO: find out how elements and resists work for ele blast
+                    yield defender.getMagic_res();
+                }
+                case Element.eleblast -> {
+                    atk += attacker.getFire() * (1 - defender.getFire_res());
+                    atk += attacker.getWind() * (1 - defender.getWind_res());
+                    atk += attacker.getWater() * (1 - defender.getWater_res());
+                    atk += attacker.getEarth() * (1 - defender.getEarth_res());
+                    yield defender.getMagic_res(); //Not sure if it's right formula
                 }
                 case Element.physmagic -> {
                     yield defender.getPhys_res() / 2 + defender.getMagic_res() / 2 * Main.game_version < 1532 ? -1 : 1;

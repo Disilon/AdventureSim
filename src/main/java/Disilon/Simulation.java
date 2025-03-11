@@ -9,6 +9,7 @@ public class Simulation {
     int simulations;
     Player player;
     Enemy enemy;
+    Zone zone;
     Potion potion1;
     Potion potion2;
     Potion potion3;
@@ -31,14 +32,6 @@ public class Simulation {
         if (type1 != null) potion1 = new Potion(type1, tier1, threshold1);
         if (type2 != null) potion2 = new Potion(type2, tier2, threshold2);
         if (type3 != null) potion3 = new Potion(type3, tier3, threshold3);
-    }
-
-    public double getTime_to_respawn() {
-        return switch (enemy.name) {
-            case "Devil" -> 5;
-            case "Shax", "Dagon", "Lamia" -> 6;
-            default -> 5;
-        };
     }
 
     public void run(String skill1, int lvl1, SkillMod mod1, int setting1, String skill2, int lvl2, SkillMod mod2,
@@ -95,7 +88,7 @@ public class Simulation {
         int kills = 0;
         double oom_time = 0;
         title = enemy.getName();
-        if (time_to_respawn == -1) time_to_respawn = getTime_to_respawn();
+        if (time_to_respawn == -1) time_to_respawn = zone.getTime_to_respawn();
         if (potion1 != null) potion1.used = 0;
         if (potion2 != null) potion2.used = 0;
         if (potion3 != null) potion3.used = 0;
@@ -138,6 +131,7 @@ public class Simulation {
                 while (enemy.getHp_max() >= reroll) {
                     enemy.rollStrength();
                     enemy.reroll();
+                    //TODO: zone respawn here
                     delta = time_to_respawn;
                     time += delta;
                     total_time += delta;
@@ -297,11 +291,7 @@ public class Simulation {
                         delay_left = player.casting.delay;
                         player.casting = null;
                     }
-                    if (Main.game_version < 1535) {
-                        enemy.rollStrength();
-                    } else {
-                        enemy.incrementStrength();
-                    }
+                    //TODO: zone respawn here
                 }
                 if (player.getHp() <= 0) {
                     status = StatusType.death;
@@ -396,7 +386,9 @@ public class Simulation {
         result.append("Max skill casts: ").append(max_casts).append(" \n");
         result.append("Average skill casts: ").append(df2.format((double) total_casts / kills)).append(" \n");
         result.append("Average Overkill: ").append(df2.format(overkill / kills)).append(" \n");
-        result.append("Average hard dmg: ").append(df2.format(hard_dmg / hard_hits)).append(" \n");
+        if (hard_hits > 0) {
+            result.append("Average hard dmg: ").append(df2.format(hard_dmg / hard_hits)).append(" \n");
+        }
         if (skill1 != null && skill1.hit > 0) {
             result.append(skill1.name).append(" average hit chance: ").append(df2.format(skill1.average_hit_chance())).append(" \n");
         }

@@ -51,7 +51,7 @@ public class Player extends Actor {
     ActiveSkill explosion = new ActiveSkill("Explosion", 1, 1350, 1650, 1.15, 500, 8, 30, Scaling.intel,
             Element.fire, true, false);
     ActiveSkill eblast = new ActiveSkill("Elemental Blast", 1, 117, 143, 1.0, 20, 1.2, 1.2, Scaling.intel,
-            Element.magic, false, false);
+            Element.eleblast, false, false);
     ActiveSkill mm = new ActiveSkill("Magic Missile", 1, 148.5, 181.5, 1.5, 25, 1.5, 1.5, Scaling.intel,
             Element.magic, false, false);
     ActiveSkill ma = new ActiveSkill("Magic Arrow", 1, 90, 110, 1, 15, 1, 1, Scaling.intel,
