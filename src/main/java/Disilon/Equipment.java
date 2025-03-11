@@ -104,6 +104,7 @@ public class Equipment {
         // Set name
         if (equipStats.containsKey("SET")) this.displayName = (String) equipStats.get("SET");
 
+        // If true, then can't be equipped in offhand slot
         if (equipStats.containsKey("MH_ONLY")) this.mh_only = (boolean) equipStats.get("MH_ONLY");
     }
 
