@@ -384,7 +384,7 @@ public class Simulation {
                     "\n");
         }
         if (oom_time > 0) {
-            result.append("Time oom %: ").append(df2.format(oom_time / total_time  * 100)).append("% " +
+            result.append("Time oom %: ").append(df2.format(oom_time / total_time * 100)).append("% " +
                     "\n");
         }
         result.append("Kills/h without deaths: ").append(df2.format(kills / (total_time - ignore_deaths) * 3600)).append(

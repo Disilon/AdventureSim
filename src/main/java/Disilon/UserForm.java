@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -113,6 +114,7 @@ public class UserForm extends JFrame {
     public LinkedHashMap<String, Equipment> acc1 = new LinkedHashMap<>();
     public LinkedHashMap<String, Equipment> acc2 = new LinkedHashMap<>();
     public LinkedHashMap<String, Equipment> neck = new LinkedHashMap<>();
+    public ArrayList<String> twohanded = new ArrayList<>();
     Gson gson = new Gson();
 
     public UserForm() throws URISyntaxException {
@@ -1303,9 +1305,7 @@ public class UserForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (MH_name.getSelectedItem() != null) {
                     String item_name = MH_name.getSelectedItem().toString();
-                    if (item_name.equals("Beech Bow") || item_name.equals("Oak Bow")
-                            || item_name.equals("Iron Knuckles") || item_name.equals("Iron Wand")
-                            || item_name.equals("Blazing Wand")) {
+                    if (twohanded.contains(item_name)) {
                         OH_name.setSelectedItem("None");
                     }
                 }
@@ -1422,7 +1422,6 @@ public class UserForm extends JFrame {
     }
 
     private void setupEquipment() {
-        // This function parses the equipment. Probably best place to do set bonuses.
         player.equipment.clear();
         player.equipment.put("MH", mh.get(MH_name.getSelectedItem().toString()));
         player.equipment.put("OH", oh.get(OH_name.getSelectedItem().toString()));
@@ -1481,6 +1480,7 @@ public class UserForm extends JFrame {
             Map<String, Map> armorDataMap = gson.fromJson(armorReader, Map.class);
             JsonReader accessoryReader = new JsonReader(new FileReader("data/Accessories.json"));
             Map<String, Map> accessoryDataMap = gson.fromJson(accessoryReader, Map.class);
+            twohanded.clear();
             clearSlot(MH_name, mh);
             clearSlot(OH_name, oh);
             clearSlot(Helmet_name, helmet);
@@ -1494,15 +1494,21 @@ public class UserForm extends JFrame {
             weaponDataMap.forEach((slot, value) -> {
                 for (Object item : value.entrySet()) {
                     String name = ((Map.Entry<String, Map>) item).getKey();
-                    if (slot.equals("MH") || slot.equals("2H")) {
-                        mh.put(name, new Equipment(name, slot,
-                                ((Map.Entry<String, Map>) item).getValue()));
+                    Map weapon_data = ((Map.Entry<String, Map>) item).getValue();
+                    if (slot.equals("MH")) {
+                        mh.put(name, new Equipment(name, slot, weapon_data));
                         MH_name.addItem(name);
                     }
+                    if (slot.equals("2H")) {
+                        mh.put(name, new Equipment(name, slot, weapon_data));
+                        MH_name.addItem(name);
+                        twohanded.add(name);
+                    }
                     if (slot.equals("MH") || slot.equals("OH")) {
-                        oh.put(name, new Equipment(name, slot,
-                                ((Map.Entry<String, Map>) item).getValue()));
-                        OH_name.addItem(name);
+                        if (!(weapon_data.containsKey("MH_ONLY") && (boolean) weapon_data.get("MH_ONLY"))) {
+                            oh.put(name, new Equipment(name, slot, weapon_data));
+                            OH_name.addItem(name);
+                        }
                     }
                 }
             });

@@ -8,6 +8,7 @@ public class Equipment {
     String displayName = "None";
     String quality;
     int upgrade = 0;
+    boolean mh_only = false;
 
     // Stats
     double atk = 0;
@@ -102,6 +103,8 @@ public class Equipment {
 
         // Set name
         if (equipStats.containsKey("SET")) this.displayName = (String) equipStats.get("SET");
+
+        if (equipStats.containsKey("MH_ONLY")) this.mh_only = (boolean) equipStats.get("MH_ONLY");
     }
 
     public static double multiplier(String quality, int upgrade, int scaling_type) {

@@ -37,10 +37,12 @@
 	"MH":{
 		"Magic Book": {
 			"INT": 6,
-			"RES": 2
+			"RES": 2,
+			"MH_ONLY": true
 		},"Hidden Book": {
 			"INT": 10,
-			"RES": 6
+			"RES": 6,
+			"MH_ONLY": true
 		},"Metal Dagger": {
 			"ATK": 4,
 			"HIT": 2,
