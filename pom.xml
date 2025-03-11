@@ -66,11 +66,11 @@
               <classPath>
                 <mainClass>Disilon.Main</mainClass>
                 <addDependencies>true</addDependencies>
-                <preCp>anything</preCp>
               </classPath>
               <jre>
-                <minVersion>1.8.0</minVersion>
-                <jdkPreference>preferJre</jdkPreference>
+                <path>C:\Users\user\.jdks\openjdk-21.0.1\bin</path>
+                <minVersion>21.0</minVersion>
+                <requiresJdk>true</requiresJdk>
               </jre>
               <versionInfo>
                 <fileVersion>1.0.0.0</fileVersion>
