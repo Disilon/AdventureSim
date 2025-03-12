@@ -2,6 +2,8 @@ package Disilon;
 
 import java.util.Objects;
 
+import static Disilon.Main.df2;
+
 public class ActiveSkill {
     public String name;
     public int lvl;
@@ -41,10 +43,20 @@ public class ActiveSkill {
     public double delay;
     public int used_in_rotation;
     public int used_debuffed;
-    public int uses_this_lvl;
-    public double chance_sum;
+    public double exp;
+    public double hit_chance_sum;
+    public double dmg_sum;
+    public double debuff_chance_sum;
     public int used;
     public boolean lvling = false;
+    public int old_lvl;
+    public double last_casted_at = 0;
+    public boolean random_targets = false;
+
+    public ActiveSkill(String name) {
+        this.name = name;
+        this.lvl = 0;
+    }
 
     public ActiveSkill(String name, int hits, double min, double max, double hit, double mp, double cast_mult, double delay_mult,
                        Scaling scaling, Element element, boolean aoe, boolean heal) {
@@ -79,9 +91,7 @@ public class ActiveSkill {
     }
 
     public boolean canCast(Actor actor) {
-        boolean enough_mana = actor.getMp() >= calculate_manacost(actor);
-//        if (!enough_mana) System.out.println("OOM");
-        return enough_mana;
+        return actor.getMp() >= calculate_manacost(actor);
     }
 
     public void startCast(Actor attacker, Actor target) {
@@ -146,6 +156,16 @@ public class ActiveSkill {
         this.base_buff_duration = duration;
         this.base_buff_bonus = bonus;
         setSkill(lvl, SkillMod.Enemy);
+    }
+
+    public void setSkill(double lvl, SkillMod type) {
+        if (name.equals("Prepare")) {
+            this.lvl = (int) lvl;
+        } else {
+            setSkill((int) lvl, type);
+        }
+        double next_lvl_exp = need_for_lvl((int) lvl);
+        exp = next_lvl_exp * (lvl - (int) lvl);
     }
 
     public void setSkill(int lvl, SkillMod type) {
@@ -223,6 +243,7 @@ public class ActiveSkill {
                     break;
                 case "Mark":
                 case "Defense Break":
+                case "Resist Break":
                     this.debuff_duration = switch (this.skillMod) {
                         case SkillMod.Basic -> base_debuff_duration * (1 + 0.02 * lvl);
                         case SkillMod.Pow -> base_debuff_duration * (1 + 0.01 * lvl);
@@ -258,8 +279,7 @@ public class ActiveSkill {
         }
     }
 
-    public void use(Actor attacker, Actor defender) {
-        if (attacker.lvling) increment_uses();
+    public void use(Actor attacker) {
         if (attacker.isHidden()) attacker.setHidden(false);
         if (attacker.isAmbushing()) attacker.setAmbushing(false);
         double gain = 0;
@@ -287,15 +307,19 @@ public class ActiveSkill {
             attacker.setHp(attacker.getHp() + gain);
             //System.out.println(attacker.name + " healed for " + (int) gain);
         }
-        if (heal && defender.counter_dodge) {
-            counter_dodge(attacker, defender);
+        Zone zone = attacker.zone;
+        if (zone != null) {
+            for(Enemy enemy : zone.enemies) {
+                if (heal && enemy.counter_heal) {
+                    counter_dodge(attacker, enemy);
+                }
+            }
         }
         attacker.setAmbushing(false);
     }
 
-    public double attack(Actor attacker, Actor defender) {
+    public double attack(Actor attacker, Actor defender, int overwrite_hits) {
         double gain = attacker.getHp_max() * attacker.hp_regen;
-        if (attacker.lvling) increment_uses();
         if (gain > 0) {
             //System.out.println(gain);
             attacker.setHp(attacker.getHp() + gain);
@@ -309,7 +333,7 @@ public class ActiveSkill {
         double hit_chance = (attacker.isSmoked() ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
         used++;
-        chance_sum += hit_chance;
+        hit_chance_sum += hit_chance;
         if (attacker.isSmoked()) used_debuffed++;
         if (hit_chance < 1 && attacker.cl > 0) {
             //System.out.println(name + " has hit chance of " + hit_chance * 100 + "%, smoked=" + attacker.isSmoked());
@@ -318,102 +342,107 @@ public class ActiveSkill {
             if (this.debuff_name != null) {
                 applyDebuff(attacker, defender);
             }
-            double enemy_resist;
-            double atk = 0;
-            double def = 0;
-            double dmg_mult = attacker.getDmg_mult();
-            dmg_mult *= attacker.isHidden() ? 1.3 : 1;
-            dmg_mult *= this.dmg_mult;
-            enemy_resist = switch (this.element) {
-                case Element.dark -> {
-                    atk = attacker.getDark();
-                    yield defender.getDark_res();
+            if (max > 0) {
+                double enemy_resist;
+                double atk = 0;
+                double def = 0;
+                double dmg_mult = attacker.getDmg_mult();
+                dmg_mult *= attacker.isHidden() ? 1.3 : 1;
+                dmg_mult *= 1.0 + (attacker.ambush_target == defender ? attacker.ambush.bonus : 0);
+                dmg_mult *= this.dmg_mult;
+                enemy_resist = switch (this.element) {
+                    case Element.dark -> {
+                        atk = attacker.getDark();
+                        yield defender.getDark_res();
+                    }
+                    case Element.fire -> {
+                        atk = attacker.getFire();
+                        yield defender.getFire_res();
+                    }
+                    case Element.light -> {
+                        atk = attacker.getLight();
+                        yield defender.getLight_res();
+                    }
+                    case Element.water -> {
+                        atk = attacker.getWater();
+                        yield defender.getWater_res();
+                    }
+                    case Element.wind -> {
+                        atk = attacker.getWind();
+                        yield defender.getWind_res();
+                    }
+                    case Element.earth -> {
+                        atk = attacker.getEarth();
+                        yield defender.getEarth_res();
+                    }
+                    case Element.phys -> {
+                        yield defender.getPhys_res();
+                    }
+                    case Element.magic -> {
+                        yield defender.getMagic_res();
+                    }
+                    case Element.eleblast -> {
+                        atk += attacker.getFire() * (1 - defender.getFire_res());
+                        atk += attacker.getWind() * (1 - defender.getWind_res());
+                        atk += attacker.getWater() * (1 - defender.getWater_res());
+                        atk += attacker.getEarth() * (1 - defender.getEarth_res());
+                        yield defender.getMagic_res(); //Not sure if it's right formula
+                    }
+                    case Element.physmagic -> {
+                        yield defender.getPhys_res() / 2 + defender.getMagic_res() / 2 * Main.game_version < 1532 ? -1 : 1;
+                    }
+                    default -> 0;
+                };
+                def = switch (this.scaling) {
+                    case Scaling.atk -> {
+                        atk += attacker.getAtk();
+                        dmg_mult *= attacker.getSet_physdmg();
+                        yield defender.getDef();
+                    }
+                    case Scaling.atkint -> {
+                        atk += attacker.getAtk() / 2 + attacker.getIntel() / 2;
+                        dmg_mult *= attacker.getSet_magicdmg();
+                        yield defender.getDef() / 2 + defender.getResist() / 2;
+                    }
+                    case Scaling.atkhit -> {
+                        atk += attacker.getAtk() / 2 + attacker.getHit() / 2;
+                        dmg_mult *= attacker.getSet_physdmg();
+                        yield defender.getDef();
+                    }
+                    case Scaling.intel -> {
+                        atk += attacker.getIntel();
+                        dmg_mult *= attacker.getSet_magicdmg();
+                        yield defender.getResist();
+                    }
+                    case Scaling.resint -> {
+                        atk += attacker.getResist() / 2 + attacker.getIntel() / 2;
+                        dmg_mult *= attacker.getSet_magicdmg();
+                        yield defender.getResist();
+                    }
+                };
+                if (attacker.gear_crit > 0 && Math.random() < attacker.gear_crit) {
+                    atk *= 1.5;
                 }
-                case Element.fire -> {
-                    atk = attacker.getFire();
-                    yield defender.getFire_res();
+                int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
+                for (int i = 0; i < calc_hits; i++) {
+                    double atk_mit = atk * (1 - enemy_resist);
+                    double dmg = Math.random() * (this.max - this.min) + this.min;
+                    dmg =
+                            ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
+                                    calc_hits) * dmg_mult;
+                    dmg = Math.max(1, dmg);
+                    total += dmg;
                 }
-                case Element.light -> {
-                    atk = attacker.getLight();
-                    yield defender.getLight_res();
-                }
-                case Element.water -> {
-                    atk = attacker.getWater();
-                    yield defender.getWater_res();
-                }
-                case Element.wind -> {
-                    atk = attacker.getWind();
-                    yield defender.getWind_res();
-                }
-                case Element.earth -> {
-                    atk = attacker.getEarth();
-                    yield defender.getEarth_res();
-                }
-                case Element.phys -> {
-                    yield defender.getPhys_res();
-                }
-                case Element.magic -> {
-                    yield defender.getMagic_res();
-                }
-                case Element.eleblast -> {
-                    atk += attacker.getFire() * (1 - defender.getFire_res());
-                    atk += attacker.getWind() * (1 - defender.getWind_res());
-                    atk += attacker.getWater() * (1 - defender.getWater_res());
-                    atk += attacker.getEarth() * (1 - defender.getEarth_res());
-                    yield defender.getMagic_res(); //Not sure if it's right formula
-                }
-                case Element.physmagic -> {
-                    yield defender.getPhys_res() / 2 + defender.getMagic_res() / 2 * Main.game_version < 1532 ? -1 : 1;
-                }
-                default -> 0;
-            };
-            def = switch (this.scaling) {
-                case Scaling.atk -> {
-                    atk += attacker.getAtk();
-                    dmg_mult *= attacker.getSet_physdmg();
-                    yield defender.getDef();
-                }
-                case Scaling.atkint -> {
-                    atk += attacker.getAtk() / 2 + attacker.getIntel() / 2;
-                    dmg_mult *= attacker.getSet_magicdmg();
-                    yield defender.getDef() / 2 + defender.getResist() / 2;
-                }
-                case Scaling.atkhit -> {
-                    atk += attacker.getAtk() / 2 + attacker.getHit() / 2;
-                    dmg_mult *= attacker.getSet_physdmg();
-                    yield defender.getDef();
-                }
-                case Scaling.intel -> {
-                    atk += attacker.getIntel();
-                    dmg_mult *= attacker.getSet_magicdmg();
-                    yield defender.getResist();
-                }
-                case Scaling.resint -> {
-                    atk += attacker.getResist() / 2 + attacker.getIntel() / 2;
-                    dmg_mult *= attacker.getSet_magicdmg();
-                    yield defender.getResist();
-                }
-            };
-            if (attacker.gear_crit > 0 && Math.random() < attacker.gear_crit) {
-                atk *= 1.5;
-            }
-            for (int i = 0; i < hits; i++) {
-                double atk_mit = atk * (1 - enemy_resist);
-                double dmg = Math.random() * (this.max - this.min) + this.min;
-                dmg =
-                        ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
-                                this.hits) * dmg_mult;
-                dmg = Math.max(1, dmg);
-                total += dmg;
             }
         } else {
-            if (defender.counter_dodge) {
+            if (defender.counter_dodge) { //todo: implement counter strike
                 counter_dodge(attacker, defender);
             }
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
         if (attacker.isHidden()) attacker.setHidden(false);
         if (attacker.isAmbushing()) attacker.setAmbushing(false);
+        dmg_sum += total;
         return total;
     }
 
@@ -441,7 +470,7 @@ public class ActiveSkill {
 //            System.out.println(name + " poison chance: " + hit_chance);
         }
         if (debuff_name.equals("Burn")) {
-           // System.out.println(attacker.name + ": " + name + " burn chance: " + hit_chance);
+            // System.out.println(attacker.name + ": " + name + " burn chance: " + hit_chance);
         }
 
         hit_chance /= defender.getAilment_res();
@@ -454,6 +483,8 @@ public class ActiveSkill {
         }
         if (hit_chance < 0.2) {
             return;
+        } else {
+            debuff_chance_sum += hit_chance;
         }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
             int duration = (int) this.debuff_duration;
@@ -471,23 +502,47 @@ public class ActiveSkill {
         }
     }
 
-    public void increment_uses() {
-        if (skillMod != SkillMod.Enemy && lvling) {
-            uses_this_lvl++;
-            int need = need_for_lvl(lvl);
-            if (uses_this_lvl >= need && lvl < 20) {
-                lvl++;
-                uses_this_lvl -= need;
-                setSkill(lvl, skillMod);
-            }
+    public void gainExp(double value) {
+        exp += value;
+        double need = need_for_lvl(lvl);
+        if (exp >= need && lvl < 20) {
+            lvl++;
+            exp -= need;
+            setSkill(lvl, skillMod);
         }
     }
 
-    public int need_for_lvl(int lvl) {
-        return (int) ((Math.pow(lvl, 2)) * 1000);
+    public void gainExp() {
+        gainExp(1);
+    }
+
+    public double need_for_lvl(int lvl) {
+        return ((Math.pow(lvl, 2)) * 1000);
     }
 
     public double average_hit_chance() {
-        return used > 0 ? chance_sum / used : 0;
+        return used > 0 ? hit_chance_sum / used : 0;
+    }
+
+    public double average_dmg() {
+        return used > 0 ? dmg_sum / used : 0;
+    }
+
+    public double average_debuff_chance() {
+        return used > 0 ? debuff_chance_sum / used : 0;
+    }
+
+    public void clear_recorded_data() {
+        used = 0;
+        hit_chance_sum = 0;
+        dmg_sum = 0;
+        debuff_chance_sum = 0;
+        used_debuffed = 0;
+    }
+
+    public String getRecordedData() {
+        return name + " hit: " + df2.format(average_hit_chance() * 100) + "%" +
+                "; dmg: " + (int) average_dmg() +
+                (debuff_name == null ? "" : " average debuff chance: " + df2.format(average_debuff_chance())) + " \n";
     }
 }

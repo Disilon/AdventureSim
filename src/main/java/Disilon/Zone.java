@@ -1,6 +1,7 @@
 package Disilon;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -79,7 +80,7 @@ public enum Zone {
     }
 
     public Enemy getRandomEnemy() {
-        int index = random.nextInt(enemies.size());
+        int index = random.nextInt(enemies.size()); //todo:implement mark for targeting
         return enemies.get(index);
     }
 
@@ -89,5 +90,14 @@ public enum Zone {
             if (enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta());
         }
         return delta;
+    }
+
+    public LinkedHashMap<Enemy, Integer> getRandomTargets(int hits) {
+        LinkedHashMap<Enemy, Integer> targets = new LinkedHashMap<>();
+        for (int i = 0; i < hits; i++) {
+            Enemy e = getRandomEnemy();
+            targets.put(e, targets.containsKey(e) ? targets.get(e) + 1 : 1);
+        }
+        return targets;
     }
 }

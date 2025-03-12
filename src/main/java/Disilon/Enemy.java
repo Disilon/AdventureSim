@@ -42,8 +42,6 @@ public class Enemy extends Actor {
     ActiveSkill da = new ActiveSkill("Double Attack", 2, 64.8, 79.2, 1, 0, 1, 1, Scaling.atk, Element.phys, false,
             false);
 
-    public static String[] availableEnemies = {"Devil", "Shax", "Dagon", "Lamia"};
-
     double strength = 1;
     double base_lvl;
 
@@ -61,6 +59,7 @@ public class Enemy extends Actor {
         this.name = name;
         enemy_skills.clear();
         counter_dodge = false;
+        counter_heal = false;
         base_lvl = 0;
         fire_res = 0;
         water_res = 0;
@@ -136,6 +135,7 @@ public class Enemy extends Actor {
                 enemy_skills.add(gust);
                 enemy_skills.add(compression);
                 counter_dodge = true;
+                counter_heal = true;
             }
             case "Devil" -> {
                 base_lvl = 90;
