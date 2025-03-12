@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class Setup implements Serializable {
     String playerclass;
-    int ml;
-    int cl;
+    double ml;
+    double cl;
     String potion1;
     int potion1_t;
     String potion2;
@@ -25,46 +25,46 @@ public class Setup implements Serializable {
     String pskill2;
     String pskill3;
     String mh_name;
-    String mh_tier;
+    Equipment.Quality mh_tier;
     int mh_lvl;
     String oh_name;
-    String oh_tier;
+    Equipment.Quality oh_tier;
     int oh_lvl;
     String helmet_name;
-    String helmet_tier;
+    Equipment.Quality helmet_tier;
     int helmet_lvl;
     String chest_name;
-    String chest_tier;
+    Equipment.Quality chest_tier;
     int chest_lvl;
     String pants_name;
-    String pants_tier;
+    Equipment.Quality pants_tier;
     int pants_lvl;
     String bracer_name;
-    String bracer_tier;
+    Equipment.Quality bracer_tier;
     int bracer_lvl;
     String boots_name;
-    String boots_tier;
+    Equipment.Quality boots_tier;
     int boots_lvl;
     String accessory1_name;
+    Equipment.Quality accessory1_tier;
     int accessory1_lvl;
-    String accessory1_tier;
     String accessory2_name;
-    String accessory2_tier;
+    Equipment.Quality accessory2_tier;
     int accessory2_lvl;
     String necklace_name;
-    String necklace_tier;
+    Equipment.Quality necklace_tier;
     int necklace_lvl;
     String result_full;
     String result_essential;
     String stats;
     String enemy;
-    int skill1_lvl;
-    int skill2_lvl;
-    int skill3_lvl;
-    int pskill1_lvl;
-    int pskill2_lvl;
-    int pskill3_lvl;
-    int simulations;
+    Zone zone;
+    double skill1_lvl;
+    double skill2_lvl;
+    double skill3_lvl;
+    double pskill1_lvl;
+    double pskill2_lvl;
+    double pskill3_lvl;
     String gameversion;
     int reroll;
     double milestone;
@@ -72,7 +72,22 @@ public class Setup implements Serializable {
     int alchemy_lvl;
     boolean setsetup;
     boolean setupinfo;
-    public void setup() {}
+    boolean leveling;
+    int sim_type;
+    int simulations;
+    double sim_hours;
+    int sim_cl;
+
+    public void setup() {
+    }
+
+    public Zone getZone() {
+        return zone;
+    }
+
+    public void setZone(Zone zone) {
+        this.zone = zone;
+    }
 
     public String getPlayerclass() {
         return playerclass;
@@ -82,19 +97,19 @@ public class Setup implements Serializable {
         this.playerclass = playerclass;
     }
 
-    public int getMl() {
+    public double getMl() {
         return ml;
     }
 
-    public void setMl(int ml) {
+    public void setMl(double ml) {
         this.ml = ml;
     }
 
-    public int getCl() {
+    public double getCl() {
         return cl;
     }
 
-    public void setCl(int cl) {
+    public void setCl(double cl) {
         this.cl = cl;
     }
 
@@ -250,11 +265,11 @@ public class Setup implements Serializable {
         this.mh_name = mh_name;
     }
 
-    public String getMh_tier() {
+    public Equipment.Quality getMh_tier() {
         return mh_tier;
     }
 
-    public void setMh_tier(String mh_tier) {
+    public void setMh_tier(Equipment.Quality mh_tier) {
         this.mh_tier = mh_tier;
     }
 
@@ -274,11 +289,11 @@ public class Setup implements Serializable {
         this.oh_name = oh_name;
     }
 
-    public String getOh_tier() {
+    public Equipment.Quality getOh_tier() {
         return oh_tier;
     }
 
-    public void setOh_tier(String oh_tier) {
+    public void setOh_tier(Equipment.Quality oh_tier) {
         this.oh_tier = oh_tier;
     }
 
@@ -298,11 +313,11 @@ public class Setup implements Serializable {
         this.helmet_name = helmet_name;
     }
 
-    public String getHelmet_tier() {
+    public Equipment.Quality getHelmet_tier() {
         return helmet_tier;
     }
 
-    public void setHelmet_tier(String helmet_tier) {
+    public void setHelmet_tier(Equipment.Quality helmet_tier) {
         this.helmet_tier = helmet_tier;
     }
 
@@ -322,11 +337,11 @@ public class Setup implements Serializable {
         this.chest_name = chest_name;
     }
 
-    public String getChest_tier() {
+    public Equipment.Quality getChest_tier() {
         return chest_tier;
     }
 
-    public void setChest_tier(String chest_tier) {
+    public void setChest_tier(Equipment.Quality chest_tier) {
         this.chest_tier = chest_tier;
     }
 
@@ -346,11 +361,11 @@ public class Setup implements Serializable {
         this.pants_name = pants_name;
     }
 
-    public String getPants_tier() {
+    public Equipment.Quality getPants_tier() {
         return pants_tier;
     }
 
-    public void setPants_tier(String pants_tier) {
+    public void setPants_tier(Equipment.Quality pants_tier) {
         this.pants_tier = pants_tier;
     }
 
@@ -370,11 +385,11 @@ public class Setup implements Serializable {
         this.bracer_name = bracer_name;
     }
 
-    public String getBracer_tier() {
+    public Equipment.Quality getBracer_tier() {
         return bracer_tier;
     }
 
-    public void setBracer_tier(String bracer_tier) {
+    public void setBracer_tier(Equipment.Quality bracer_tier) {
         this.bracer_tier = bracer_tier;
     }
 
@@ -394,11 +409,11 @@ public class Setup implements Serializable {
         this.boots_name = boots_name;
     }
 
-    public String getBoots_tier() {
+    public Equipment.Quality getBoots_tier() {
         return boots_tier;
     }
 
-    public void setBoots_tier(String boots_tier) {
+    public void setBoots_tier(Equipment.Quality boots_tier) {
         this.boots_tier = boots_tier;
     }
 
@@ -426,11 +441,11 @@ public class Setup implements Serializable {
         this.accessory1_lvl = accessory1_lvl;
     }
 
-    public String getAccessory1_tier() {
+    public Equipment.Quality getAccessory1_tier() {
         return accessory1_tier;
     }
 
-    public void setAccessory1_tier(String accessory1_tier) {
+    public void setAccessory1_tier(Equipment.Quality accessory1_tier) {
         this.accessory1_tier = accessory1_tier;
     }
 
@@ -442,11 +457,11 @@ public class Setup implements Serializable {
         this.accessory2_name = accessory2_name;
     }
 
-    public String getAccessory2_tier() {
+    public Equipment.Quality getAccessory2_tier() {
         return accessory2_tier;
     }
 
-    public void setAccessory2_tier(String accessory2_tier) {
+    public void setAccessory2_tier(Equipment.Quality accessory2_tier) {
         this.accessory2_tier = accessory2_tier;
     }
 
@@ -466,11 +481,11 @@ public class Setup implements Serializable {
         this.necklace_name = necklace_name;
     }
 
-    public String getNecklace_tier() {
+    public Equipment.Quality getNecklace_tier() {
         return necklace_tier;
     }
 
-    public void setNecklace_tier(String necklace_tier) {
+    public void setNecklace_tier(Equipment.Quality necklace_tier) {
         this.necklace_tier = necklace_tier;
     }
 
@@ -514,51 +529,51 @@ public class Setup implements Serializable {
         this.enemy = enemy;
     }
 
-    public int getSkill1_lvl() {
+    public double getSkill1_lvl() {
         return skill1_lvl;
     }
 
-    public void setSkill1_lvl(int skill1_lvl) {
+    public void setSkill1_lvl(double skill1_lvl) {
         this.skill1_lvl = skill1_lvl;
     }
 
-    public int getSkill2_lvl() {
+    public double getSkill2_lvl() {
         return skill2_lvl;
     }
 
-    public void setSkill2_lvl(int skill2_lvl) {
+    public void setSkill2_lvl(double skill2_lvl) {
         this.skill2_lvl = skill2_lvl;
     }
 
-    public int getSkill3_lvl() {
+    public double getSkill3_lvl() {
         return skill3_lvl;
     }
 
-    public void setSkill3_lvl(int skill3_lvl) {
+    public void setSkill3_lvl(double skill3_lvl) {
         this.skill3_lvl = skill3_lvl;
     }
 
-    public int getPskill1_lvl() {
+    public double getPskill1_lvl() {
         return pskill1_lvl;
     }
 
-    public void setPskill1_lvl(int pskill1_lvl) {
+    public void setPskill1_lvl(double pskill1_lvl) {
         this.pskill1_lvl = pskill1_lvl;
     }
 
-    public int getPskill2_lvl() {
+    public double getPskill2_lvl() {
         return pskill2_lvl;
     }
 
-    public void setPskill2_lvl(int pskill2_lvl) {
+    public void setPskill2_lvl(double pskill2_lvl) {
         this.pskill2_lvl = pskill2_lvl;
     }
 
-    public int getPskill3_lvl() {
+    public double getPskill3_lvl() {
         return pskill3_lvl;
     }
 
-    public void setPskill3_lvl(int pskill3_lvl) {
+    public void setPskill3_lvl(double pskill3_lvl) {
         this.pskill3_lvl = pskill3_lvl;
     }
 

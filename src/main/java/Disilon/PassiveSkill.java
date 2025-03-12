@@ -12,12 +12,20 @@ public class PassiveSkill {
     public double mp_add;
     public double mp_mult;
     public boolean enabled;
+    public double exp;
+    public int old_lvl;
 
     public PassiveSkill(String name, double base_bonus, double base_mp_add, double base_mp_mult) {
         this.name = name;
         this.base_bonus = base_bonus;
         this.base_mp_add = base_mp_add;
         this.base_mp_mult = base_mp_mult;
+    }
+
+    public void setLvl(double lvl) {
+        setLvl((int) lvl);
+        double next_lvl_exp = need_for_lvl((int) lvl);
+        exp = next_lvl_exp * (lvl - (int) lvl);
     }
 
     public void setLvl(int lvl) {
@@ -38,5 +46,21 @@ public class PassiveSkill {
             return 0;
         }
         return enabled ? bonus : 0;
+    }
+
+    public void gainExp(double time) {
+        if (enabled) {
+            exp += time;
+            int need = need_for_lvl(lvl);
+            if (exp >= need && lvl < 20) {
+                lvl++;
+                exp -= need;
+                setLvl(lvl);
+            }
+        }
+    }
+
+    public int need_for_lvl(int lvl) {
+        return (int) ((Math.pow(lvl, 2)) * 3000);
     }
 }

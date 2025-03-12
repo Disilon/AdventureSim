@@ -2,6 +2,8 @@ package Disilon;
 
 import java.util.Vector;
 
+import static Disilon.Main.df2;
+
 public class Potion {
     String type;
     int tier;
@@ -110,6 +112,17 @@ public class Potion {
         };
     }
 
+    public double calc_time(int crafting, int alchemy) {
+        int need_to_craft = 0;
+        double time = 0;
+        if (count < 0) {
+            need_to_craft = count * -1;
+            time = craft_time(crafting, alchemy) * need_to_craft;
+            count = 0;
+        }
+        return time;
+    }
+
     public static Vector<String> getAvailablePotions() {
         Vector<String> result = new Vector<>();
         result.add("None");
@@ -120,5 +133,10 @@ public class Potion {
             result.add("MP T" + i);
         }
         return result;
+    }
+
+    public String getRecordedData(double time) {
+        return type.toUpperCase() + " potion tier: " + tier + ", used: " + used + ", per hour: " + df2.format(used / time * 3600) +
+                "\n";
     }
 }

@@ -3,7 +3,7 @@ package Disilon;
 import java.util.Random;
 
 public class Enemy extends Actor {
-    private Random random = new Random();
+    private final Random random = new Random();
     ActiveSkill waterpunch = new ActiveSkill("Water Punch", 1, 99, 121, 1, 0, 0.9, 0.9, Scaling.atkint, Element.water,
             false, false);
     ActiveSkill killingstrike = new ActiveSkill("Killing Strike", 1, 207.9, 254.1, 0.7, 0, 2, 2, Scaling.atk,
@@ -42,9 +42,7 @@ public class Enemy extends Actor {
     ActiveSkill da = new ActiveSkill("Double Attack", 2, 64.8, 79.2, 1, 0, 1, 1, Scaling.atk, Element.phys, false,
             false);
 
-    public static String[] availableEnemies = {"Devil", "Shax", "Dagon", "Lamia"};
-
-    double strength = 0.9;
+    double strength = 1;
     double base_lvl;
 
     public Enemy() {
@@ -61,6 +59,7 @@ public class Enemy extends Actor {
         this.name = name;
         enemy_skills.clear();
         counter_dodge = false;
+        counter_heal = false;
         base_lvl = 0;
         fire_res = 0;
         water_res = 0;
@@ -136,6 +135,7 @@ public class Enemy extends Actor {
                 enemy_skills.add(gust);
                 enemy_skills.add(compression);
                 counter_dodge = true;
+                counter_heal = true;
             }
             case "Devil" -> {
                 base_lvl = 90;
@@ -231,11 +231,6 @@ public class Enemy extends Actor {
         strength = (this.random.nextInt(21) + 90) / 100.0;
     }
 
-    public void incrementStrength() {
-        strength += 0.01;
-        if (strength > 1.1) strength = 0.9;
-    }
-
     public ActiveSkill rollAttack() {
         double roll = this.random.nextDouble() * 100;
         switch (name) {
@@ -250,6 +245,15 @@ public class Enemy extends Actor {
             }
             case "Devil" -> {
                 return roll < 70 ? slash : poison; //Chances to select skills were calculated empirically
+            }
+            case "Tengu" -> {
+                return roll < 50 ? bash : da;
+            }
+            case "Amon" -> {
+                return roll < 50 ? mm : eblast;
+            }
+            case "Akuma" -> {
+                return roll < 50 ? dp : as;
             }
             default -> {
                 return null;

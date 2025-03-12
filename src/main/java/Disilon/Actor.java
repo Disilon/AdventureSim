@@ -96,7 +96,7 @@ public class Actor {
     protected double poison_mult = 1;
     protected double fire_mult = 1;
     protected double ailment_res = 1;
-    protected int prepare_lvl;
+    protected ActiveSkill prepare;
     protected double exp;
     protected double exp_mult = 1;
     protected double mp_cost_add;
@@ -107,6 +107,7 @@ public class Actor {
     protected boolean hidden = false;
     protected boolean smoked = false;
     protected boolean ambushing = false;
+    protected Actor ambush_target = null;
     protected double charge;
     protected double def_break = 0;
     protected double res_break = 0;
@@ -116,7 +117,10 @@ public class Actor {
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;
+    protected int old_ml;
+    protected int old_cl;
     public boolean counter_dodge = false;
+    public boolean counter_heal = false;
 
     protected LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
     protected LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
@@ -155,6 +159,7 @@ public class Actor {
 
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
+    public Zone zone = null;
 
     public void tick_debuffs() {
         smoked = false;
@@ -213,7 +218,7 @@ public class Actor {
         set_physdmg = 1;
         set_mit1 = 0;
         set_mit2 = 0;
-        for(EquipmentSet set : sets.values()) {
+        for (EquipmentSet set : sets.values()) {
             set.current_items = 0;
         }
     }
@@ -321,9 +326,9 @@ public class Actor {
                 }
             }
         }
-        for(EquipmentSet set : sets.values()) {
+        for (EquipmentSet set : sets.values()) {
             if (set.completed()) {
-                    enableSet(set.bonus, set.min_quality, set.min_upgrade);
+                enableSet(set.bonus, set.min_quality, set.min_upgrade);
             }
         }
         for (Map.Entry<String, PassiveSkill> passive : passives.entrySet()) {
@@ -399,16 +404,12 @@ public class Actor {
     public void clear_skills_recorded_data() {
         for (ActiveSkill skill : enemy_skills) {
             if (skill != null) {
-                skill.used = 0;
-                skill.chance_sum = 0;
-                skill.used_debuffed = 0;
+                skill.clear_recorded_data();
             }
         }
-        for(ActiveSkill skill : active_skills.values()) {
+        for (ActiveSkill skill : active_skills.values()) {
             if (skill != null) {
-                skill.used = 0;
-                skill.chance_sum = 0;
-                skill.used_debuffed = 0;
+                skill.clear_recorded_data();
             }
         }
     }
@@ -420,11 +421,11 @@ public class Actor {
     }
 
     public double getPrepare_hps() {
-        return getHp_max() * (0.011 + 0.000225 * prepare_lvl);
+        return getHp_max() * (0.011 + 0.000225 * prepare.lvl);
     }
 
     public double getPrepare_mps() {
-        return getMp_regen() + getMp_max() * (0.0056 + 0.0001 * prepare_lvl);
+        return getMp_regen() + getMp_max() * (0.0056 + 0.0001 * prepare.lvl);
     }
 
     public double getMp_regen() {
@@ -480,7 +481,7 @@ public class Actor {
     }
 
     public double getIntel() {
-        return intel  + (base_int + gear_int) * blessed;
+        return intel + (base_int + gear_int) * blessed;
     }
 
     public void setIntel(double intel) {
@@ -625,7 +626,6 @@ public class Actor {
 
     public double getDmg_mult() {
         double mult = 1.0;
-        mult *= 1.0 + (ambushing ? ambush.bonus : 0);
         mult *= 1.0 + charge;
         return dmg_mult * mult;
     }
@@ -756,14 +756,6 @@ public class Actor {
 
     public void setDef_break(double def_break) {
         this.def_break = def_break;
-    }
-
-    public int getPrepare_lvl() {
-        return prepare_lvl;
-    }
-
-    public void setPrepare_lvl(int prepare_lvl) {
-        this.prepare_lvl = prepare_lvl;
     }
 
     public double getExp() {

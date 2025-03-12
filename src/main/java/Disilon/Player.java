@@ -1,7 +1,8 @@
 package Disilon;
 
-import java.text.DecimalFormat;
 import java.util.Vector;
+
+import static Disilon.Main.df2;
 
 public class Player extends Actor {
     ActiveSkill hide = new ActiveSkill("Hide", 1, 0, 0, 0, 5, 0.5, 0.5, Scaling.atk, Element.none, false, false);
@@ -9,6 +10,8 @@ public class Player extends Actor {
             false, false);
     ActiveSkill dp = new ActiveSkill("Dragon Punch", 3, 76.5, 93.5, 0.8, 20, 1, 3, Scaling.atk, Element.phys,
             false, false);
+    ActiveSkill wf = new ActiveSkill("Whirling Foot", 3, 49.5, 60.5, 0.8, 30, 1.2, 2, Scaling.atk, Element.phys,
+            true, false);
     ActiveSkill pa = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 4, 0.4, 0.9, Scaling.atk, Element.phys, false
             , false);
     ActiveSkill smoke = new ActiveSkill("Smoke Screen", 1, 0, 0, 0.85, 25, 0.8, 1, Scaling.atk, Element.none, true, false);
@@ -17,6 +20,8 @@ public class Player extends Actor {
     ActiveSkill ss = new ActiveSkill("Sharp Shooting", 1, 207, 253, 1.5, 80, 2, 3, Scaling.atkhit, Element.wind,
             false,
             false);
+    ActiveSkill ds = new ActiveSkill("Double Shot", 2, 76.5, 93.5, 1, 12, 1.1, 1.1, Scaling.atkhit, Element.phys,
+            false, false);
     ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 20, 1.5, 1.5,
             Scaling.atkhit, Element.phys,
             false,
@@ -51,7 +56,7 @@ public class Player extends Actor {
     ActiveSkill explosion = new ActiveSkill("Explosion", 1, 1350, 1650, 1.15, 500, 8, 30, Scaling.intel,
             Element.fire, true, false);
     ActiveSkill eblast = new ActiveSkill("Elemental Blast", 1, 117, 143, 1.0, 20, 1.2, 1.2, Scaling.intel,
-            Element.magic, false, false);
+            Element.eleblast, false, false);
     ActiveSkill mm = new ActiveSkill("Magic Missile", 1, 148.5, 181.5, 1.5, 25, 1.5, 1.5, Scaling.intel,
             Element.magic, false, false);
     ActiveSkill ma = new ActiveSkill("Magic Arrow", 1, 90, 110, 1, 15, 1, 1, Scaling.intel,
@@ -64,13 +69,16 @@ public class Player extends Actor {
             false);
     ActiveSkill push = new ActiveSkill("Push Blast", 1, 99, 121, 0.9, 30, 1.3, 1.3, Scaling.intel,
             Element.magic, true, false);
+    ActiveSkill prep = new ActiveSkill("Prepare");
 
     protected boolean holylight_enabled;
     protected boolean aurablade_enabled;
     protected boolean eblast_enabled;
-    DecimalFormat df2 = new DecimalFormat("#.##");
     public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Cleric", "Mage", "Fighter",
-            "Warrior"};
+            "Warrior", "Archer", "Student"};
+    public int tier = 3;
+    public double milestone_exp_mult = 1;
+    public double old_milestone_exp_mult = 1;
 
     public Player() {
         addSkillEffects();
@@ -89,6 +97,7 @@ public class Player extends Actor {
         fpillar1537.addDebuff("Burn", 3, 1);
         explosion.addDebuff("Burn", 3, 1);
         bless.addBuff("Bless", 2, 0.3);
+        ar.random_targets = true;
     }
 
     public void initializeSets() {
@@ -114,6 +123,7 @@ public class Player extends Actor {
         base_dark_res = 0;
         switch (name) {
             case "Assassin" -> {
+                tier = 3;
                 base_dark_res = 0.5;
                 base_light_res = -0.5;
                 passives.put("Attack Boost", attackBoost);
@@ -128,20 +138,24 @@ public class Player extends Actor {
                 active_skills.put("Killing Strike", ks);
                 active_skills.put("Hide", hide);
                 active_skills.put("Dragon Punch", dp);
+                active_skills.put("Whirling Foot", wf);
                 active_skills.put("Poison Attack", pa);
                 active_skills.put("Smoke Screen", smoke);
                 active_skills.put("First Aid", fa);
-                active_skills.put("Prepare", null);
+                active_skills.put("Prepare", prep);
             }
             case "Fighter" -> {
+                tier = 2;
                 passives.put("Attack Boost", attackBoost);
                 passives.put("Defense Boost", defenseBoost);
                 passives.put("Fist Mastery", fistMastery);
                 active_skills.put("Quick Hit", qh);
                 active_skills.put("Dragon Punch", dp);
+                active_skills.put("Whirling Foot", wf);
                 active_skills.put("First Aid", fa);
             }
             case "Pyromancer" -> {
+                tier = 3;
                 base_fire_res = 0.5;
                 base_water_res = -0.5;
                 passives.put("Int Boost", intBoost);
@@ -162,6 +176,7 @@ public class Player extends Actor {
                 active_skills.put("First Aid", fa);
             }
             case "Mage" -> {
+                tier = 2;
                 passives.put("Int Boost", intBoost);
                 passives.put("Res Boost", resBoost);
                 passives.put("Wand Mastery", wandMastery);
@@ -172,7 +187,15 @@ public class Player extends Actor {
                 active_skills.put("Magic Missile", mm);
                 active_skills.put("First Aid", fa);
             }
+            case "Student" -> {
+                tier = 1;
+                passives.put("Int Boost", intBoost);
+                passives.put("Res Boost", resBoost);
+                active_skills.put("Magic Arrow", ma);
+                active_skills.put("First Aid", fa);
+            }
             case "Sniper" -> {
+                tier = 3;
                 base_wind_res = 0.5;
                 base_fire_res = -0.5;
                 passives.put("Attack Boost", attackBoost);
@@ -194,9 +217,25 @@ public class Player extends Actor {
                 active_skills.put("Charge Up", charge);
                 active_skills.put("Defense Break", db);
                 active_skills.put("First Aid", fa);
-                active_skills.put("Prepare", null);
+                active_skills.put("Prepare", prep);
+            }
+            case "Archer" -> {
+                tier = 2;
+                passives.put("Drop Boost", dropBoost);
+                passives.put("Bow Mastery", bowMastery);
+                passives.put("Speed Boost", speedBoost);
+                passives.put("Ambush", ambush);
+                active_skills.put("Double Shot", ds);
+                if (Main.game_version >= 1535) {
+                    active_skills.put("Arrow Rain", ar1535);
+                } else {
+                    active_skills.put("Arrow Rain", ar);
+                }
+                active_skills.put("First Aid", fa);
+                active_skills.put("Prepare", prep);
             }
             case "Warrior" -> {
+                tier = 2;
                 passives.put("Attack Boost", attackBoost);
                 passives.put("Defense Boost", defenseBoost);
                 passives.put("HP Regen", hpRegen);
@@ -207,6 +246,7 @@ public class Player extends Actor {
                 active_skills.put("First Aid", fa);
             }
             case "Cleric" -> {
+                tier = 2;
                 passives.put("Int Boost", intBoost);
                 passives.put("Res Boost", resBoost);
                 passives.put("Book Mastery", bookMastery);
@@ -233,80 +273,15 @@ public class Player extends Actor {
     }
 
     public ActiveSkill getSkill(String name) {
-        switch (name) {
-            case "Heal" -> {
-                return heal;
-            }
-            case "Bless" -> {
-                return bless;
-            }
-            case "Push Blast" -> {
-                return push;
-            }
-            case "Elemental Blast" -> {
-                return eblast;
-            }
-            case "Holy Light" -> {
-                return hlight;
-            }
-            case "Fireball" -> {
-                return fball;
-            }
-            case "Fire Pillar" -> {
-                if (Main.game_version >= 1537) {
-                    return fpillar1537;
-                } else {
-                    return fpillar;
-                }
-            }
-            case "Explosion" -> {
-                return explosion;
-            }
-            case "Smoke Screen" -> {
-                return smoke;
-            }
-            case "Mark" -> {
-                return mark;
-            }
-            case "Charge Up" -> {
-                return charge;
-            }
-            case "Poison Attack" -> {
-                return pa;
-            }
-            case "Defense Break" -> {
-                return db;
-            }
-            case "Arrow Rain" -> {
-                if (Main.game_version >= 1535) {
-                    return ar1535;
-                } else {
-                    return ar;
-                }
-            }
-            case "Sharpshooter" -> {
-                return ss;
-            }
-            case "Dragon Punch" -> {
-                return dp;
-            }
-            case "Hide" -> {
-                return hide;
-            }
-            case "Killing Strike" -> {
-                return ks;
-            }
-            case "First Aid" -> {
-                return fa;
-            }
-            case "Aura Blade" -> {
-                return ab;
-            }
-            case "Quick Hit" -> {
-                return qh;
-            }
-        }
-        return null;
+        return active_skills.get(name);
+    }
+
+    public void setCLML(double cl, double ml) {
+        setCLML((int) cl, (int) ml);
+        double next_cl_exp = exp_to_cl((int) cl, tier);
+        double next_ml_exp = exp_to_ml((int) ml);
+        cl_exp = next_cl_exp * (cl - (int) cl);
+        ml_exp = next_ml_exp * (ml - (int) ml);
     }
 
     @Override
@@ -359,6 +334,15 @@ public class Player extends Actor {
                 base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "Student" -> {
+                base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
             case "Sniper" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
                 base_atk = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
@@ -367,6 +351,15 @@ public class Player extends Actor {
                 base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (160 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Archer" -> {
+                base_hp_max = (double) (80 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Cleric" -> {
                 base_hp_max = (double) (80 * (cl + 100)) / 10000 * 30 * ml;
@@ -381,8 +374,9 @@ public class Player extends Actor {
         refreshStats();
     }
 
-    public void setPassiveLvl(String passive, int lvl) {
+    public void setPassiveLvl(String passive, double lvl) {
         passives.get(passive).setLvl(lvl);
+        passives.get(passive).old_lvl = (int) lvl;
     }
 
     public double getEblast() {
@@ -535,12 +529,15 @@ public class Player extends Actor {
     public void increment_exp(double exp) {
         cl_exp += exp;
         ml_exp += exp;
-        double need_cl = exp_to_cl(cl, 3);
+        double need_cl = exp_to_cl(cl, tier);
         double need_ml = exp_to_ml(ml);
-        if (cl_exp >= need_cl && cl < 100) {
+        if (cl_exp >= need_cl && cl < 120) {
             cl += 1;
             cl_exp -= need_cl;
             setCLML(cl, ml);
+            if (cl == cl_for_milestone()) {
+                milestone_exp_mult += bonus_for_milestone();
+            }
         }
         if (ml_exp >= need_ml) {
             ml += 1;
@@ -549,11 +546,39 @@ public class Player extends Actor {
         }
     }
 
+    public void levelActives() {
+        active_skills.forEach((key, value) -> value.gainExp());
+    }
+
+    public void levelPassives(double time) {
+        passives.forEach((key, value) -> value.gainExp(time));
+    }
+
     public double exp_to_cl(int lvl, int tier) {
         return (Math.pow(lvl, 5) / 340 + Math.pow(lvl, 2) * 50 + 10) * Math.pow(2, tier - 1);
     }
 
     public double exp_to_ml(int lvl) {
         return (Math.pow(lvl, 4) / 10 + Math.pow(lvl, 1.9) * 40 + 10);
+    }
+
+    public double bonus_for_milestone() {
+        return switch (tier) {
+            case 0 -> 0.25;
+            case 1 -> 0.5;
+            case 2 -> 0.75;
+            case 3 -> 0.1;
+            default -> 0;
+        };
+    }
+
+    public int cl_for_milestone() {
+        return switch (tier) {
+            case 0 -> 10;
+            case 1 -> 35;
+            case 2 -> 55;
+            case 3 -> Main.game_version >= 1532 ? 90 : 75;
+            default -> 0;
+        };
     }
 }
