@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import static Disilon.Main.df2;
 import static Disilon.Main.df2p;
 import static Disilon.Main.dfs;
 
@@ -1505,7 +1504,7 @@ public class UserForm extends JFrame {
         setup.chest_lvl = (int) Chest_lvl.getValue();
         setup.chest_name = Chest_name.getSelectedItem().toString();
         setup.chest_tier = (Equipment.Quality) Chest_tier.getSelectedItem();
-        setup.cl = (double) CL.getValue();
+        setup.cl = ((int) CL.getValue() + Double.parseDouble(CL_p.getValue().toString()) / 100);
         setup.crafting_lvl = (int) Crafting_lvl.getValue();
         setup.zone = (Zone) Enemy.getSelectedItem();
         setup.gameversion = GameVersion.getSelectedItem().toString();
@@ -1516,7 +1515,7 @@ public class UserForm extends JFrame {
         setup.mh_name = MH_name.getSelectedItem().toString();
         setup.mh_tier = (Equipment.Quality) MH_tier.getSelectedItem();
         setup.milestone = (double) Milestone.getValue();
-        setup.ml = (double) ML.getValue();
+        setup.ml = ((int) ML.getValue() + Double.parseDouble(ML_p.getValue().toString()) / 100);
         setup.necklace_lvl = (int) Necklace_lvl.getValue();
         setup.necklace_name = Necklace_name.getSelectedItem().toString();
         setup.necklace_tier = (Equipment.Quality) Necklace_tier.getSelectedItem();
@@ -1534,26 +1533,32 @@ public class UserForm extends JFrame {
         setup.potion3 = Potion3.getSelectedItem().toString();
         setup.potion3_t = (int) Potion3_t.getValue();
         setup.pskill1 = Pskill1.getSelectedItem().toString();
-        setup.pskill1_lvl = (double) Pskill1_lvl.getValue();
+        setup.pskill1_lvl = ((int) Pskill1_lvl.getValue()
+                + Double.parseDouble(Pskill1_lvl_p.getValue().toString()) / 100);
         setup.pskill2 = Pskill2.getSelectedItem().toString();
-        setup.pskill2_lvl = (double) Pskill2_lvl.getValue();
+        setup.pskill2_lvl = ((int) Pskill2_lvl.getValue()
+                + Double.parseDouble(Pskill2_lvl_p.getValue().toString()) / 100);
         setup.pskill3 = Pskill3.getSelectedItem().toString();
-        setup.pskill3_lvl = (double) Pskill3_lvl.getValue();
+        setup.pskill3_lvl = ((int) Pskill3_lvl.getValue()
+                + Double.parseDouble(Pskill3_lvl_p.getValue().toString()) / 100);
         setup.reroll = (int) Reroll.getValue();
         setup.result_essential = simulation.essential_result;
         setup.result_full = simulation.full_result;
         setup.setsetup = SetSetup.isSelected();
         setup.setupinfo = SetupInfo.isSelected();
         setup.skill1 = Skill1.getSelectedItem().toString();
-        setup.skill1_lvl = (double) Skill1_lvl.getValue();
+        setup.skill1_lvl = ((int) Skill1_lvl.getValue()
+                + Double.parseDouble(Skill1_lvl_p.getValue().toString()) / 100);
         setup.skill1_mod = (SkillMod) Skill1_mod.getSelectedItem();
         setup.skill1_s = (int) Skill1_s.getValue();
         setup.skill2 = Skill2.getSelectedItem().toString();
-        setup.skill2_lvl = (double) Skill2_lvl.getValue();
+        setup.skill2_lvl = ((int) Skill2_lvl.getValue()
+                + Double.parseDouble(Skill2_lvl_p.getValue().toString()) / 100);
         setup.skill2_mod = (SkillMod) Skill2_mod.getSelectedItem();
         setup.skill2_s = (int) Skill2_s.getValue();
         setup.skill3 = Skill3.getSelectedItem().toString();
-        setup.skill3_lvl = (double) Skill3_lvl.getValue();
+        setup.skill3_lvl = ((int) Skill3_lvl.getValue()
+                + Double.parseDouble(Skill3_lvl_p.getValue().toString()) / 100);
         setup.skill3_mod = (SkillMod) Skill3_mod.getSelectedItem();
         setup.skill3_s = (int) Skill3_s.getValue();
         setup.stats = Stats.getText();
