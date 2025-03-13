@@ -26,8 +26,6 @@ import static Disilon.Main.df2;
 import static Disilon.Main.df2p;
 import static Disilon.Main.dfm;
 import static Disilon.Main.dfs;
-import static Disilon.Main.padLeft;
-import static Disilon.Main.padRight;
 
 public class UserForm extends JFrame {
     private JPanel rootPanel;
@@ -122,6 +120,8 @@ public class UserForm extends JFrame {
     private JFormattedTextField Pskill2_lvl_p;
     private JFormattedTextField Pskill3_lvl_p;
     private JButton Update_lvls;
+    private JMenuBar Bar;
+    private JButton New_tab;
     GridBagConstraints gbc = new GridBagConstraints();
 
     public Player player;
@@ -139,6 +139,8 @@ public class UserForm extends JFrame {
     public LinkedHashMap<String, Equipment> acc2 = new LinkedHashMap<>();
     public LinkedHashMap<String, Equipment> neck = new LinkedHashMap<>();
     public ArrayList<String> twohanded = new ArrayList<>();
+    public LinkedHashMap<JMenu, Setup> tabs = new LinkedHashMap<>();
+    public JMenu selected_tab;
     Gson gson = new Gson();
 
     public UserForm() throws URISyntaxException {
@@ -154,6 +156,28 @@ public class UserForm extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         rootPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc;
+        Bar = new JMenuBar();
+//        this.setJMenuBar(Bar);
+        New_tab = new JButton("   +   ");
+        New_tab.setBorder(null);
+        New_tab.setFocusPainted(false);
+        New_tab.setContentAreaFilled(true);
+//        New_tab.setSize(30, 30);
+//        New_tab.setPreferredSize(new Dimension(40, 20));
+        New_tab.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (tabs.size() < 100) {
+                    createTab();
+                }
+            }
+        });
+        Bar.add(New_tab);
+        selected_tab = createTab("default");
+        for (int i = 0; i < 10; i++) {
+//            createTab();
+        }
+
         CL = createCustomSpinner(62, 0, 1000, 1);
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
@@ -1115,7 +1139,7 @@ public class UserForm extends JFrame {
                 fileChooser.setSelectedFile(new File(Main.getJarPath() + "/default.json"));
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showSaveDialog(UserForm.this);
-                if (result == JFileChooser.APPROVE_OPTION) saveSetup(fileChooser.getSelectedFile().getAbsolutePath());
+                if (result == JFileChooser.APPROVE_OPTION) saveFile(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
         Load.addActionListener(new ActionListener() {
@@ -1124,7 +1148,7 @@ public class UserForm extends JFrame {
                 fileChooser.setDialogTitle("Load setup from json file");
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showOpenDialog(UserForm.this);
-                if (result == JFileChooser.APPROVE_OPTION) loadSetup(fileChooser.getSelectedFile().getAbsolutePath());
+                if (result == JFileChooser.APPROVE_OPTION) loadFile(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
         Update_lvls.addActionListener(new ActionListener() {
@@ -1218,7 +1242,7 @@ public class UserForm extends JFrame {
                             info.append("</td>");
                             info.append("<tr style=\"height:10px;\">");
                             info.append("<td>");
-                            info.append(df2.format((a.old_lvl - (int) a.old_lvl)* 100)).append("%");
+                            info.append(df2.format((a.old_lvl - (int) a.old_lvl) * 100)).append("%");
                             info.append("</td>");
                             info.append("<td>");
                             info.append("</td>");
@@ -1244,7 +1268,7 @@ public class UserForm extends JFrame {
                             info.append("</td>");
                             info.append("<tr style=\"height:10px;\">");
                             info.append("<td>");
-                            info.append(df2.format((a.old_lvl - (int) a.old_lvl)* 100)).append("%");
+                            info.append(df2.format((a.old_lvl - (int) a.old_lvl) * 100)).append("%");
                             info.append("</td>");
                             info.append("<td>");
                             info.append("</td>");
@@ -1256,7 +1280,7 @@ public class UserForm extends JFrame {
                     info.append("</table>");
                     info.append("</body>");
                     info.append("</html>");
-                    int selectedOption = JOptionPane.showConfirmDialog(rootPanel, info, "Confirm",JOptionPane.YES_NO_OPTION);
+                    int selectedOption = JOptionPane.showConfirmDialog(rootPanel, info, "Confirm", JOptionPane.YES_NO_OPTION);
                     if (selectedOption == JOptionPane.YES_OPTION) {
                         Milestone.setValue(player.milestone_exp_mult * 100);
                         CL.setValue(player.cl);
@@ -1265,15 +1289,15 @@ public class UserForm extends JFrame {
                         ML_p.setValue(new_ml_p);
                         for (ActiveSkill a : player.active_skills.values()) {
                             if (a.lvl != a.old_lvl) {
-                                if(Skill1.getSelectedItem().toString().equals(a.name)) {
+                                if (Skill1.getSelectedItem().toString().equals(a.name)) {
                                     Skill1_lvl.setValue(a.lvl);
                                     Skill1_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
                                 }
-                                if(Skill2.getSelectedItem().toString().equals(a.name)) {
+                                if (Skill2.getSelectedItem().toString().equals(a.name)) {
                                     Skill2_lvl.setValue(a.lvl);
                                     Skill2_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
                                 }
-                                if(Skill3.getSelectedItem().toString().equals(a.name)) {
+                                if (Skill3.getSelectedItem().toString().equals(a.name)) {
                                     Skill3_lvl.setValue(a.lvl);
                                     Skill3_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
                                 }
@@ -1281,15 +1305,15 @@ public class UserForm extends JFrame {
                         }
                         for (PassiveSkill a : player.passives.values()) {
                             if (a.lvl != a.old_lvl) {
-                                if(Pskill1.getSelectedItem().toString().equals(a.name)) {
+                                if (Pskill1.getSelectedItem().toString().equals(a.name)) {
                                     Pskill1_lvl.setValue(a.lvl);
                                     Pskill1_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
                                 }
-                                if(Pskill2.getSelectedItem().toString().equals(a.name)) {
+                                if (Pskill2.getSelectedItem().toString().equals(a.name)) {
                                     Pskill2_lvl.setValue(a.lvl);
                                     Pskill2_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
                                 }
-                                if(Pskill3.getSelectedItem().toString().equals(a.name)) {
+                                if (Pskill3.getSelectedItem().toString().equals(a.name)) {
                                     Pskill3_lvl.setValue(a.lvl);
                                     Pskill3_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
                                 }
@@ -1339,6 +1363,7 @@ public class UserForm extends JFrame {
                         Zone z = (Zone) Enemy.getSelectedItem();
                         simulation.zone = z;
                         player.zone = z;
+                        player.zone.clear_recorded_data();
                         setupEquipment();
                         setupPassives();
                         simulation.run(Skill1.getSelectedItem().toString(),
@@ -1440,7 +1465,7 @@ public class UserForm extends JFrame {
                 }
             }
         });
-        loadSetup(Main.getJarPath() + "/default.json");
+        loadFile(Main.getJarPath() + "/default.json");
     }
 
     private String findItemFromSet(String name, LinkedHashMap<String, Equipment> set) {
@@ -1671,91 +1696,10 @@ public class UserForm extends JFrame {
         hm.put("None", new Equipment("None", "None"));
     }
 
-    private void saveSetup(String path) {
-        setup.accessory1_lvl = (int) Accessory1_lvl.getValue();
-        setup.accessory1_name = Accessory1_name.getSelectedItem().toString();
-        setup.accessory1_tier = (Equipment.Quality) Accessory1_tier.getSelectedItem();
-        setup.accessory2_lvl = (int) Accessory2_lvl.getValue();
-        setup.accessory2_name = Accessory2_name.getSelectedItem().toString();
-        setup.accessory2_tier = (Equipment.Quality) Accessory2_tier.getSelectedItem();
-        setup.alchemy_lvl = (int) Alchemy_lvl.getValue();
-        setup.boots_lvl = (int) Boots_lvl.getValue();
-        setup.boots_name = Boots_name.getSelectedItem().toString();
-        setup.boots_tier = (Equipment.Quality) Boots_tier.getSelectedItem();
-        setup.bracer_lvl = (int) Bracer_lvl.getValue();
-        setup.bracer_name = Bracer_name.getSelectedItem().toString();
-        setup.bracer_tier = (Equipment.Quality) Bracer_tier.getSelectedItem();
-        setup.chest_lvl = (int) Chest_lvl.getValue();
-        setup.chest_name = Chest_name.getSelectedItem().toString();
-        setup.chest_tier = (Equipment.Quality) Chest_tier.getSelectedItem();
-        setup.cl = ((int) CL.getValue() + Double.parseDouble(CL_p.getValue().toString()) / 100);
-        setup.crafting_lvl = (int) Crafting_lvl.getValue();
-        setup.zone = (Zone) Enemy.getSelectedItem();
-        setup.gameversion = GameVersion.getSelectedItem().toString();
-        setup.helmet_lvl = (int) Helmet_lvl.getValue();
-        setup.helmet_name = Helmet_name.getSelectedItem().toString();
-        setup.helmet_tier = (Equipment.Quality) Helmet_tier.getSelectedItem();
-        setup.mh_lvl = (int) MH_lvl.getValue();
-        setup.mh_name = MH_name.getSelectedItem().toString();
-        setup.mh_tier = (Equipment.Quality) MH_tier.getSelectedItem();
-        setup.milestone = (double) Milestone.getValue();
-        setup.ml = ((int) ML.getValue() + Double.parseDouble(ML_p.getValue().toString()) / 100);
-        setup.necklace_lvl = (int) Necklace_lvl.getValue();
-        setup.necklace_name = Necklace_name.getSelectedItem().toString();
-        setup.necklace_tier = (Equipment.Quality) Necklace_tier.getSelectedItem();
-        setup.oh_lvl = (int) OH_lvl.getValue();
-        setup.oh_name = OH_name.getSelectedItem().toString();
-        setup.oh_tier = (Equipment.Quality) OH_tier.getSelectedItem();
-        setup.pants_lvl = (int) Pants_lvl.getValue();
-        setup.pants_name = Pants_name.getSelectedItem().toString();
-        setup.pants_tier = (Equipment.Quality) Pants_tier.getSelectedItem();
-        setup.playerclass = PlayerClass.getSelectedItem().toString();
-        setup.potion1 = Potion1.getSelectedItem().toString();
-        setup.potion1_t = (int) Potion1_t.getValue();
-        setup.potion2 = Potion2.getSelectedItem().toString();
-        setup.potion2_t = (int) Potion2_t.getValue();
-        setup.potion3 = Potion3.getSelectedItem().toString();
-        setup.potion3_t = (int) Potion3_t.getValue();
-        setup.pskill1 = Pskill1.getSelectedItem().toString();
-        setup.pskill1_lvl = ((int) Pskill1_lvl.getValue()
-                + Double.parseDouble(Pskill1_lvl_p.getValue().toString()) / 100);
-        setup.pskill2 = Pskill2.getSelectedItem().toString();
-        setup.pskill2_lvl = ((int) Pskill2_lvl.getValue()
-                + Double.parseDouble(Pskill2_lvl_p.getValue().toString()) / 100);
-        setup.pskill3 = Pskill3.getSelectedItem().toString();
-        setup.pskill3_lvl = ((int) Pskill3_lvl.getValue()
-                + Double.parseDouble(Pskill3_lvl_p.getValue().toString()) / 100);
-        setup.reroll = (int) Reroll.getValue();
-        setup.result_essential = simulation.essential_result;
-        setup.result_full = simulation.full_result;
-        setup.setsetup = SetSetup.isSelected();
-        setup.setupinfo = SetupInfo.isSelected();
-        setup.skill1 = Skill1.getSelectedItem().toString();
-        setup.skill1_lvl = ((int) Skill1_lvl.getValue()
-                + Double.parseDouble(Skill1_lvl_p.getValue().toString()) / 100);
-        setup.skill1_mod = (SkillMod) Skill1_mod.getSelectedItem();
-        setup.skill1_s = (int) Skill1_s.getValue();
-        setup.skill2 = Skill2.getSelectedItem().toString();
-        setup.skill2_lvl = ((int) Skill2_lvl.getValue()
-                + Double.parseDouble(Skill2_lvl_p.getValue().toString()) / 100);
-        setup.skill2_mod = (SkillMod) Skill2_mod.getSelectedItem();
-        setup.skill2_s = (int) Skill2_s.getValue();
-        setup.skill3 = Skill3.getSelectedItem().toString();
-        setup.skill3_lvl = ((int) Skill3_lvl.getValue()
-                + Double.parseDouble(Skill3_lvl_p.getValue().toString()) / 100);
-        setup.skill3_mod = (SkillMod) Skill3_mod.getSelectedItem();
-        setup.skill3_s = (int) Skill3_s.getValue();
-        setup.stats = Stats.getText();
-        if (Sim_num.isSelected()) setup.sim_type = 1;
-        if (Sim_time.isSelected()) setup.sim_type = 2;
-        if (Sim_lvl.isSelected()) setup.sim_type = 3;
-        setup.simulations = (int) Simulations.getValue();
-        setup.sim_hours = (double) SimHours.getValue();
-        setup.sim_cl = (int) SimCL.getValue();
-        setup.leveling = Leveling.isSelected();
+    private void saveFile(String path) {
         try {
             JsonWriter writer = new JsonWriter(new FileWriter(path));
-            gson.toJson(setup, Setup.class, writer);
+            gson.toJson(saveSetup(), Setup.class, writer);
             writer.close();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
@@ -1764,123 +1708,211 @@ public class UserForm extends JFrame {
         }
     }
 
-    private void loadSetup(String path) {
+    private Setup saveSetup() {
+        Setup data = new Setup();
+        data.accessory1_lvl = (int) Accessory1_lvl.getValue();
+        data.accessory1_name = Accessory1_name.getSelectedItem().toString();
+        data.accessory1_tier = (Equipment.Quality) Accessory1_tier.getSelectedItem();
+        data.accessory2_lvl = (int) Accessory2_lvl.getValue();
+        data.accessory2_name = Accessory2_name.getSelectedItem().toString();
+        data.accessory2_tier = (Equipment.Quality) Accessory2_tier.getSelectedItem();
+        data.alchemy_lvl = (int) Alchemy_lvl.getValue();
+        data.boots_lvl = (int) Boots_lvl.getValue();
+        data.boots_name = Boots_name.getSelectedItem().toString();
+        data.boots_tier = (Equipment.Quality) Boots_tier.getSelectedItem();
+        data.bracer_lvl = (int) Bracer_lvl.getValue();
+        data.bracer_name = Bracer_name.getSelectedItem().toString();
+        data.bracer_tier = (Equipment.Quality) Bracer_tier.getSelectedItem();
+        data.chest_lvl = (int) Chest_lvl.getValue();
+        data.chest_name = Chest_name.getSelectedItem().toString();
+        data.chest_tier = (Equipment.Quality) Chest_tier.getSelectedItem();
+        data.cl = ((int) CL.getValue() + Double.parseDouble(CL_p.getValue().toString()) / 100);
+        data.crafting_lvl = (int) Crafting_lvl.getValue();
+        data.zone = (Zone) Enemy.getSelectedItem();
+        data.gameversion = GameVersion.getSelectedItem().toString();
+        data.helmet_lvl = (int) Helmet_lvl.getValue();
+        data.helmet_name = Helmet_name.getSelectedItem().toString();
+        data.helmet_tier = (Equipment.Quality) Helmet_tier.getSelectedItem();
+        data.mh_lvl = (int) MH_lvl.getValue();
+        data.mh_name = MH_name.getSelectedItem().toString();
+        data.mh_tier = (Equipment.Quality) MH_tier.getSelectedItem();
+        data.milestone = (double) Milestone.getValue();
+        data.ml = ((int) ML.getValue() + Double.parseDouble(ML_p.getValue().toString()) / 100);
+        data.necklace_lvl = (int) Necklace_lvl.getValue();
+        data.necklace_name = Necklace_name.getSelectedItem().toString();
+        data.necklace_tier = (Equipment.Quality) Necklace_tier.getSelectedItem();
+        data.oh_lvl = (int) OH_lvl.getValue();
+        data.oh_name = OH_name.getSelectedItem().toString();
+        data.oh_tier = (Equipment.Quality) OH_tier.getSelectedItem();
+        data.pants_lvl = (int) Pants_lvl.getValue();
+        data.pants_name = Pants_name.getSelectedItem().toString();
+        data.pants_tier = (Equipment.Quality) Pants_tier.getSelectedItem();
+        data.playerclass = PlayerClass.getSelectedItem().toString();
+        data.potion1 = Potion1.getSelectedItem().toString();
+        data.potion1_t = (int) Potion1_t.getValue();
+        data.potion2 = Potion2.getSelectedItem().toString();
+        data.potion2_t = (int) Potion2_t.getValue();
+        data.potion3 = Potion3.getSelectedItem().toString();
+        data.potion3_t = (int) Potion3_t.getValue();
+        data.pskill1 = Pskill1.getSelectedItem().toString();
+        data.pskill1_lvl = ((int) Pskill1_lvl.getValue()
+                + Double.parseDouble(Pskill1_lvl_p.getValue().toString()) / 100);
+        data.pskill2 = Pskill2.getSelectedItem().toString();
+        data.pskill2_lvl = ((int) Pskill2_lvl.getValue()
+                + Double.parseDouble(Pskill2_lvl_p.getValue().toString()) / 100);
+        data.pskill3 = Pskill3.getSelectedItem().toString();
+        data.pskill3_lvl = ((int) Pskill3_lvl.getValue()
+                + Double.parseDouble(Pskill3_lvl_p.getValue().toString()) / 100);
+        data.reroll = (int) Reroll.getValue();
+        data.result_essential = simulation.essential_result;
+        data.result_full = simulation.full_result;
+        data.setsetup = SetSetup.isSelected();
+        data.setupinfo = SetupInfo.isSelected();
+        data.skill1 = Skill1.getSelectedItem().toString();
+        data.skill1_lvl = ((int) Skill1_lvl.getValue()
+                + Double.parseDouble(Skill1_lvl_p.getValue().toString()) / 100);
+        data.skill1_mod = (SkillMod) Skill1_mod.getSelectedItem();
+        data.skill1_s = (int) Skill1_s.getValue();
+        data.skill2 = Skill2.getSelectedItem().toString();
+        data.skill2_lvl = ((int) Skill2_lvl.getValue()
+                + Double.parseDouble(Skill2_lvl_p.getValue().toString()) / 100);
+        data.skill2_mod = (SkillMod) Skill2_mod.getSelectedItem();
+        data.skill2_s = (int) Skill2_s.getValue();
+        data.skill3 = Skill3.getSelectedItem().toString();
+        data.skill3_lvl = ((int) Skill3_lvl.getValue()
+                + Double.parseDouble(Skill3_lvl_p.getValue().toString()) / 100);
+        data.skill3_mod = (SkillMod) Skill3_mod.getSelectedItem();
+        data.skill3_s = (int) Skill3_s.getValue();
+        data.stats = Stats.getText();
+        if (Sim_num.isSelected()) data.sim_type = 1;
+        if (Sim_time.isSelected()) data.sim_type = 2;
+        if (Sim_lvl.isSelected()) data.sim_type = 3;
+        data.simulations = (int) Simulations.getValue();
+        data.sim_hours = (double) SimHours.getValue();
+        data.sim_cl = (int) SimCL.getValue();
+        data.leveling = Leveling.isSelected();
+        return data;
+    }
+
+    private void loadFile(String path) {
         loadEquipment();
         try {
             File def = new File(path);
             if (def.exists()) {
                 JsonReader reader = new JsonReader(new FileReader(def));
-                setup = gson.fromJson(reader, Setup.class);
-                SetSetup.setSelected(setup.setsetup);
-                SetupInfo.setSelected(setup.setupinfo);
-                Helmet_lvl.setValue(setup.helmet_lvl);
-                Helmet_name.setSelectedItem(setup.helmet_name);
-                Helmet_tier.setSelectedItem(setup.helmet_tier);
-                Alchemy_lvl.setValue(setup.alchemy_lvl);
-                Accessory1_lvl.setValue(setup.accessory1_lvl);
-                Accessory1_name.setSelectedItem(setup.accessory1_name);
-                Accessory1_tier.setSelectedItem(setup.accessory1_tier);
-                Accessory2_lvl.setValue(setup.accessory2_lvl);
-                Accessory2_name.setSelectedItem(setup.accessory2_name);
-                Accessory2_tier.setSelectedItem(setup.accessory2_tier);
-                Boots_lvl.setValue(setup.boots_lvl);
-                Boots_name.setSelectedItem(setup.boots_name);
-                Boots_tier.setSelectedItem(setup.boots_tier);
-                Bracer_lvl.setValue(setup.bracer_lvl);
-                Bracer_name.setSelectedItem(setup.bracer_name);
-                Bracer_tier.setSelectedItem(setup.bracer_tier);
-                Chest_lvl.setValue(setup.chest_lvl);
-                Chest_name.setSelectedItem(setup.chest_name);
-                Chest_tier.setSelectedItem(setup.chest_tier);
-                CL.setValue((int) setup.cl);
-                ML.setValue((int) setup.ml);
-                CL_p.setValue((setup.cl - (int) setup.cl) * 100);
-                ML_p.setValue((setup.ml - (int) setup.ml) * 100);
-                Skill1_lvl_p.setValue((setup.skill1_lvl - (int) setup.skill1_lvl) * 100);
-                Skill2_lvl_p.setValue((setup.skill2_lvl - (int) setup.skill2_lvl) * 100);
-                Skill3_lvl_p.setValue((setup.skill3_lvl - (int) setup.skill3_lvl) * 100);
-                Pskill1_lvl_p.setValue((setup.pskill1_lvl - (int) setup.pskill1_lvl) * 100);
-                Pskill2_lvl_p.setValue((setup.pskill2_lvl - (int) setup.pskill2_lvl) * 100);
-                Pskill3_lvl_p.setValue((setup.pskill3_lvl - (int) setup.pskill3_lvl) * 100);
-                Crafting_lvl.setValue(setup.crafting_lvl);
-                if (setup.zone == null && setup.enemy != null) {
-                    setup.zone = switch (setup.enemy) {
-                        case "Devil" -> Zone.z9;
-                        case "Shax" -> Zone.z10;
-                        case "Dagon" -> Zone.z11;
-                        case "Lamia" -> Zone.z12;
-                        default -> Zone.z8;
-                    };
-                }
-                Enemy.setSelectedItem(setup.zone);
-                GameVersion.setSelectedItem(Integer.parseInt(setup.gameversion));
-                MH_lvl.setValue(setup.mh_lvl);
-                MH_name.setSelectedItem(setup.mh_name);
-                MH_tier.setSelectedItem(setup.mh_tier);
-                Milestone.setValue(setup.milestone);
-                Necklace_lvl.setValue(setup.necklace_lvl);
-                Necklace_name.setSelectedItem(setup.necklace_name);
-                Necklace_tier.setSelectedItem(setup.necklace_tier);
-                OH_lvl.setValue(setup.oh_lvl);
-                OH_name.setSelectedItem(setup.oh_name);
-                OH_tier.setSelectedItem(setup.oh_tier);
-                Pants_lvl.setValue(setup.pants_lvl);
-                Pants_name.setSelectedItem(setup.pants_name);
-                Pants_tier.setSelectedItem(setup.pants_tier);
-                PlayerClass.setSelectedItem(setup.playerclass);
-                Potion1.setSelectedItem(setup.potion1);
-                Potion1_t.setValue(setup.potion1_t);
-                Potion2.setSelectedItem(setup.potion2);
-                Potion2_t.setValue(setup.potion2_t);
-                Potion3.setSelectedItem(setup.potion3);
-                Potion3_t.setValue(setup.potion3_t);
-                Pskill1.setSelectedItem(setup.pskill1);
-                Pskill1_lvl.setValue((int) setup.pskill1_lvl);
-                Pskill2.setSelectedItem(setup.pskill2);
-                Pskill2_lvl.setValue((int) setup.pskill2_lvl);
-                Pskill3.setSelectedItem(setup.pskill3);
-                Pskill3_lvl.setValue((int) setup.pskill3_lvl);
-                Reroll.setValue(setup.reroll);
-                simulation.essential_result = setup.result_essential;
-                simulation.full_result = setup.result_full;
-                SetSetup.setSelected(setup.setsetup);
-                SetupInfo.setSelected(setup.setupinfo);
-                Skill1.setSelectedItem(setup.skill1);
-                Skill1_lvl.setValue((int) setup.skill1_lvl);
-                Skill1_mod.setSelectedItem(setup.skill1_mod != null ? setup.skill1_mod : SkillMod.Basic);
-                Skill1_s.setValue(setup.skill1_s);
-                Skill2.setSelectedItem(setup.skill2);
-                Skill2_lvl.setValue((int) setup.skill2_lvl);
-                Skill2_mod.setSelectedItem(setup.skill2_mod != null ? setup.skill2_mod : SkillMod.Basic);
-                Skill2_s.setValue(setup.skill2_s);
-                Skill3.setSelectedItem(setup.skill3);
-                Skill3_lvl.setValue((int) setup.skill3_lvl);
-                Skill3_mod.setSelectedItem(setup.skill3_mod != null ? setup.skill3_mod : SkillMod.Basic);
-                Skill3_s.setValue(setup.skill3_s);
-                Stats.setText(setup.stats);
-                switch (setup.sim_type) {
-                    case 2:
-                        Sim_time.doClick();
-                        break;
-                    case 3:
-                        Sim_lvl.doClick();
-                        break;
-                    default:
-                        Sim_num.doClick();
-                        break;
-                }
-                Simulations.setValue(setup.simulations);
-                SimHours.setValue(setup.sim_hours);
-                SimCL.setValue(setup.sim_cl);
-                Leveling.setSelected(setup.leveling);
+                Setup file = gson.fromJson(reader, Setup.class);
+                loadSetup(file);
             }
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
             throw new RuntimeException(ex);
         }
+    }
 
+    private void loadSetup(Setup data) {
+        SetSetup.setSelected(data.setsetup);
+        SetupInfo.setSelected(data.setupinfo);
+        Helmet_lvl.setValue(data.helmet_lvl);
+        Helmet_name.setSelectedItem(data.helmet_name);
+        Helmet_tier.setSelectedItem(data.helmet_tier);
+        Alchemy_lvl.setValue(data.alchemy_lvl);
+        Accessory1_lvl.setValue(data.accessory1_lvl);
+        Accessory1_name.setSelectedItem(data.accessory1_name);
+        Accessory1_tier.setSelectedItem(data.accessory1_tier);
+        Accessory2_lvl.setValue(data.accessory2_lvl);
+        Accessory2_name.setSelectedItem(data.accessory2_name);
+        Accessory2_tier.setSelectedItem(data.accessory2_tier);
+        Boots_lvl.setValue(data.boots_lvl);
+        Boots_name.setSelectedItem(data.boots_name);
+        Boots_tier.setSelectedItem(data.boots_tier);
+        Bracer_lvl.setValue(data.bracer_lvl);
+        Bracer_name.setSelectedItem(data.bracer_name);
+        Bracer_tier.setSelectedItem(data.bracer_tier);
+        Chest_lvl.setValue(data.chest_lvl);
+        Chest_name.setSelectedItem(data.chest_name);
+        Chest_tier.setSelectedItem(data.chest_tier);
+        CL.setValue((int) data.cl);
+        ML.setValue((int) data.ml);
+        CL_p.setValue((data.cl - (int) data.cl) * 100);
+        ML_p.setValue((data.ml - (int) data.ml) * 100);
+        Skill1_lvl_p.setValue((data.skill1_lvl - (int) data.skill1_lvl) * 100);
+        Skill2_lvl_p.setValue((data.skill2_lvl - (int) data.skill2_lvl) * 100);
+        Skill3_lvl_p.setValue((data.skill3_lvl - (int) data.skill3_lvl) * 100);
+        Pskill1_lvl_p.setValue((data.pskill1_lvl - (int) data.pskill1_lvl) * 100);
+        Pskill2_lvl_p.setValue((data.pskill2_lvl - (int) data.pskill2_lvl) * 100);
+        Pskill3_lvl_p.setValue((data.pskill3_lvl - (int) data.pskill3_lvl) * 100);
+        Crafting_lvl.setValue(data.crafting_lvl);
+        if (data.zone == null && data.enemy != null) {
+            data.zone = switch (data.enemy) {
+                case "Devil" -> Zone.z9;
+                case "Shax" -> Zone.z10;
+                case "Dagon" -> Zone.z11;
+                case "Lamia" -> Zone.z12;
+                default -> Zone.z8;
+            };
+        }
+        Enemy.setSelectedItem(data.zone);
+        GameVersion.setSelectedItem(Integer.parseInt(data.gameversion));
+        MH_lvl.setValue(data.mh_lvl);
+        MH_name.setSelectedItem(data.mh_name);
+        MH_tier.setSelectedItem(data.mh_tier);
+        Milestone.setValue(data.milestone);
+        Necklace_lvl.setValue(data.necklace_lvl);
+        Necklace_name.setSelectedItem(data.necklace_name);
+        Necklace_tier.setSelectedItem(data.necklace_tier);
+        OH_lvl.setValue(data.oh_lvl);
+        OH_name.setSelectedItem(data.oh_name);
+        OH_tier.setSelectedItem(data.oh_tier);
+        Pants_lvl.setValue(data.pants_lvl);
+        Pants_name.setSelectedItem(data.pants_name);
+        Pants_tier.setSelectedItem(data.pants_tier);
+        PlayerClass.setSelectedItem(data.playerclass);
+        Potion1.setSelectedItem(data.potion1);
+        Potion1_t.setValue(data.potion1_t);
+        Potion2.setSelectedItem(data.potion2);
+        Potion2_t.setValue(data.potion2_t);
+        Potion3.setSelectedItem(data.potion3);
+        Potion3_t.setValue(data.potion3_t);
+        Pskill1.setSelectedItem(data.pskill1);
+        Pskill1_lvl.setValue((int) data.pskill1_lvl);
+        Pskill2.setSelectedItem(data.pskill2);
+        Pskill2_lvl.setValue((int) data.pskill2_lvl);
+        Pskill3.setSelectedItem(data.pskill3);
+        Pskill3_lvl.setValue((int) data.pskill3_lvl);
+        Reroll.setValue(data.reroll);
+        simulation.essential_result = data.result_essential;
+        simulation.full_result = data.result_full;
+        SetSetup.setSelected(data.setsetup);
+        SetupInfo.setSelected(data.setupinfo);
+        Skill1.setSelectedItem(data.skill1);
+        Skill1_lvl.setValue((int) data.skill1_lvl);
+        Skill1_mod.setSelectedItem(data.skill1_mod != null ? data.skill1_mod : SkillMod.Basic);
+        Skill1_s.setValue(data.skill1_s);
+        Skill2.setSelectedItem(data.skill2);
+        Skill2_lvl.setValue((int) data.skill2_lvl);
+        Skill2_mod.setSelectedItem(data.skill2_mod != null ? data.skill2_mod : SkillMod.Basic);
+        Skill2_s.setValue(data.skill2_s);
+        Skill3.setSelectedItem(data.skill3);
+        Skill3_lvl.setValue((int) data.skill3_lvl);
+        Skill3_mod.setSelectedItem(data.skill3_mod != null ? data.skill3_mod : SkillMod.Basic);
+        Skill3_s.setValue(data.skill3_s);
+        Stats.setText(data.stats);
+        switch (data.sim_type) {
+            case 2:
+                Sim_time.doClick();
+                break;
+            case 3:
+                Sim_lvl.doClick();
+                break;
+            default:
+                Sim_num.doClick();
+                break;
+        }
+        Simulations.setValue(data.simulations);
+        SimHours.setValue(data.sim_hours);
+        SimCL.setValue(data.sim_cl);
+        Leveling.setSelected(data.leveling);
         showResult();
     }
 
@@ -1907,5 +1939,39 @@ public class UserForm extends JFrame {
 
     public JSpinner createLvlSpinner() {
         return createCustomSpinner(0, 0, 20, 1);
+    }
+
+    private JMenu createTab() {
+        return createTab(String.valueOf(tabs.size() + 1));
+    }
+
+    private JMenu createTab(String name) {
+        JMenu tab = new JMenu(name);
+        JMenuItem rename = new JMenuItem("Rename");
+        rename.addActionListener(e -> {
+            String new_name = JOptionPane.showInputDialog(
+                    UserForm.this,
+                    "<html><h2>Enter new tab name:");
+            if (new_name != null && new_name.length() > 0) {
+                tab.setText(new_name);
+            }
+        });
+        JMenuItem delete = new JMenuItem("Delete");
+        tab.add(rename);
+        tab.add(delete);
+        delete.addActionListener(e -> {
+            if (tabs.size() > 1) {
+                tabs.remove(tab);
+                selected_tab = tabs.lastEntry().getKey();
+                Bar.remove(tab);
+                Bar.updateUI();
+            }
+        });
+        tabs.put(tab, new Setup());
+        Bar.add(tab);
+        selected_tab = tab;
+
+        Bar.updateUI();
+        return tab;
     }
 }

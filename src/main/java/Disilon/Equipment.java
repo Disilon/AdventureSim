@@ -96,7 +96,7 @@ public class Equipment {
         this.light_res = equipStats.containsKey("LIGHT_RES") ? (double) equipStats.get("LIGHT_RES") * mult : 0;
 
         // Special
-        mult = 1.0;
+        mult = 1.0; //todo: find out formula for scaling
         this.burn = equipStats.containsKey("BURN") ? (double) equipStats.get("BURN") * mult : 0;
         this.crit = equipStats.containsKey("CRIT") ? (double) equipStats.get("CRIT") * mult : 0;
         this.stun = equipStats.containsKey("STUN") ? (double) equipStats.get("STUN") * mult : 0;

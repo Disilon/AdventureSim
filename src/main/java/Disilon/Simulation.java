@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static Disilon.Main.df2;
-import static Disilon.Main.padRight;
 
 public class Simulation {
     enum StatusType {death, respawn, combat, prepare, rerolling, delay}
@@ -74,6 +73,10 @@ public class Simulation {
             player.prepare.old_lvl = lvl3;
             prepare_threshold = setting3;
         }
+        player.disableAllActives();
+        if (s1 != null) s1.enabled = true;
+        if (s2 != null) s2.enabled = true;
+        if (s3 != null) s3.enabled = true;
         run(s1, setting1, s2, setting2, s3, setting3, prepare_threshold,
                 reroll);
     }
@@ -91,6 +94,7 @@ public class Simulation {
         int min_casts = 999;
         int max_casts = 0;
         double overkill = 0;
+        double dot_overkill = 0;
         double ignore_deaths = 0;
         double enemy_dmg = 0;
         int enemy_hits = 0;
@@ -98,6 +102,7 @@ public class Simulation {
         int kills = 0;
         int cleared = 0;
         double oom_time = 0;
+        player.dot_tracking = 0;
         title = zone.toString();
         if (time_to_respawn == -1) time_to_respawn = zone.getTime_to_respawn();
         if (potion1 != null) potion1.used = 0;
@@ -304,10 +309,11 @@ public class Simulation {
                                         dmg = previous_cast.attack(enemy, player, enemy.casting.hits);
                                     } else {
                                         dmg = enemy.casting.attack(enemy, player, 0);
-                                    }
-                                    if (previous_cast == null || (time - previous_cast.last_casted_at) >= 0.5) {
                                         previous_cast = enemy.casting;
                                         previous_cast.last_casted_at = time;
+                                    }
+                                    if (previous_cast == null || (time - previous_cast.last_casted_at) >= 0.5) {
+
                                     }
                                     if (dmg > 0) {
                                         player.setHp(player.getHp() - dmg);
@@ -334,7 +340,7 @@ public class Simulation {
                     if (enemy.getHp() <= 0) {
                         overkill -= enemy.getHp();
                         for (Debuff d : enemy.debuffs) {
-                            if (d.dmg > 0) overkill += d.getMaxTotalDmg();
+                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
                         }
                         double exp_gain = enemy.getExp() * player.getExp_mult() * player.milestone_exp_mult;
                         if (player.lvling) player.increment_exp(exp_gain);
@@ -459,16 +465,21 @@ public class Simulation {
         result.append("s; avg: ").append(df2.format(total_time / cleared)).append("s \n");
         result.append("Skill casts: ").append(min_casts).append(" - ").append(max_casts);
         result.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
-        result.append("Average Overkill: ").append((int) (overkill / kills)).append(" \n");
+        result.append("Average Overkill: ").append((int) (overkill / kills));
+        if (dot_overkill > 0) result.append("; DoT: ").append((int) (dot_overkill / kills));
+        result.append("\n");
         if (skill1 != null && skill1.hit > 0) result.append(skill1.getRecordedData());
         if (skill2 != null && skill2.hit > 0) result.append(skill2.getRecordedData());
         if (skill3 != null && skill3.hit > 0) result.append(skill3.getRecordedData());
-        if (enemy_hits > 0) {
-            result.append("Average enemy dmg: ").append(df2.format(enemy_dmg / enemy_hits)).append(" \n");
+        if (enemy_dmg > 0 && cleared > 0) {
+            result.append("Average enemy dmg per fight: ").append((int) enemy_dmg / cleared);
+            if (player.dot_tracking > 0) result.append("; DoT: ").append((int) (player.dot_tracking / cleared));
+            result.append("\n");
         }
-        if (healed > 0) {
-            result.append("Average heal per fight: ").append(df2.format(healed / cleared)).append(" \n");
+        if (healed > 0 && cleared > 0) {
+            result.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
         }
+        result.append(player.zone.getRecordedData());
         for (Enemy enemy : zone.enemies) { //todo: save enemy skill data and report it
             if (enemy.enemy_skills != null) {
                 for (ActiveSkill s : enemy.enemy_skills) {

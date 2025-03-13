@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DecimalStyle;
 import java.util.Locale;
+import java.util.Random;
 
 public class Main {
     public static int game_version = 1531;
@@ -13,6 +14,7 @@ public class Main {
     public static DecimalFormat df2;
     public static DecimalFormat df2p;
     public static DecimalFormat dfm;
+    public static final Random random = new Random();
 
     public static void main(String[] args) {
         dfs = DecimalFormatSymbols.getInstance(Locale.UK);

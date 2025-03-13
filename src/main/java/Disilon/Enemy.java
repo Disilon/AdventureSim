@@ -1,9 +1,8 @@
 package Disilon;
 
-import java.util.Random;
+import static Disilon.Main.random;
 
 public class Enemy extends Actor {
-    private final Random random = new Random();
     ActiveSkill waterpunch = new ActiveSkill("Water Punch", 1, 99, 121, 1, 0, 0.9, 0.9, Scaling.atkint, Element.water,
             false, false);
     ActiveSkill killingstrike = new ActiveSkill("Killing Strike", 1, 207.9, 254.1, 0.7, 0, 2, 2, Scaling.atk,
@@ -228,11 +227,11 @@ public class Enemy extends Actor {
     }
 
     public void rollStrength() {
-        strength = (this.random.nextInt(21) + 90) / 100.0;
+        strength = (random.nextInt(21) + 90) / 100.0;
     }
 
     public ActiveSkill rollAttack() {
-        double roll = this.random.nextDouble() * 100;
+        double roll = random.nextDouble() * 100;
         switch (name) {
             case "Dagon" -> {
                 return roll < 50 ? waterpunch : roll >= 50 && roll < 80 ? killingstrike : tsunami;

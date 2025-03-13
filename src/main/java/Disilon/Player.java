@@ -546,6 +546,10 @@ public class Player extends Actor {
         }
     }
 
+    public void disableAllActives() {
+        active_skills.forEach((key, value) -> value.enabled = false);
+    }
+
     public void levelActives() {
         active_skills.forEach((key, value) -> value.gainExp());
     }

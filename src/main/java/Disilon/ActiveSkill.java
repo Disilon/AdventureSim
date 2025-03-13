@@ -52,6 +52,7 @@ public class ActiveSkill {
     public double old_lvl;
     public double last_casted_at = 0;
     public boolean random_targets = false;
+    public boolean enabled = false;
 
     public ActiveSkill(String name) {
         this.name = name;
@@ -334,6 +335,9 @@ public class ActiveSkill {
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
         used++;
         hit_chance_sum += hit_chance;
+        if (defender.zone != null) {
+            defender.zone.incrementHit(attacker, this, hit_chance);
+        }
         if (attacker.isSmoked()) used_debuffed++;
         if (hit_chance < 1 && attacker.cl > 0) {
             //System.out.println(name + " has hit chance of " + hit_chance * 100 + "%, smoked=" + attacker.isSmoked());
@@ -443,6 +447,9 @@ public class ActiveSkill {
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         if (attacker.isAmbushing()) attacker.setAmbushing(false);
         dmg_sum += total;
+        if (defender.zone != null) {
+            defender.zone.incrementDmg(attacker, this, total);
+        }
         return total;
     }
 
@@ -485,6 +492,9 @@ public class ActiveSkill {
             return;
         } else {
             debuff_chance_sum += hit_chance;
+            if (defender.zone != null) {
+                defender.zone.incrementDebuff(attacker, this, hit_chance);
+            }
         }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
             int duration = (int) this.debuff_duration;
@@ -495,20 +505,25 @@ public class ActiveSkill {
             double dmg = switch (this.debuff_name) {
                 case "Poison" -> this.debuff_dmg * (attacker.getIntel() + attacker.getAtk()) * attacker.poison_mult;
                 case "Burn" ->
-                        this.debuff_dmg * (attacker.getIntel() / 10 + attacker.getFire() / 5) * (1 - defender.fire_res) * attacker.burn;
+                        this.debuff_dmg * (attacker.getIntel() / 10 + attacker.getFire() / 5) * (1 - defender.fire_res) * attacker.burn_mult;
                 default -> 0;
             };
+            if (defender.zone != null) {
+                defender.zone.incrementDot(attacker, this, duration * dmg);
+            }
             defender.debuffs.add(new Debuff(this.debuff_name, duration, dmg, debuff_effect));
         }
     }
 
     public void gainExp(double value) {
-        exp += value;
-        double need = need_for_lvl(lvl);
-        if (exp >= need && lvl < 20) {
-            lvl++;
-            exp -= need;
-            setSkill(lvl, skillMod);
+        if (enabled) {
+            exp += value;
+            double need = need_for_lvl(lvl);
+            if (exp >= need && lvl < 20) {
+                lvl++;
+                exp -= need;
+                setSkill(lvl, skillMod);
+            }
         }
     }
 
@@ -543,6 +558,7 @@ public class ActiveSkill {
     public String getRecordedData() {
         return name + " hit: " + df2.format(average_hit_chance() * 100) + "%" +
                 "; dmg: " + (int) average_dmg() +
-                (debuff_name == null ? "" : " average debuff chance: " + df2.format(average_debuff_chance())) + " \n";
+                (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
+                "\n";
     }
 }

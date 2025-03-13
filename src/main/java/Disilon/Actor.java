@@ -27,7 +27,6 @@ public class Actor {
     protected double earth;
     protected double light;
     protected double dark;
-    protected double burn;
 
     protected double base_hp_max;
     protected double base_atk;
@@ -93,8 +92,8 @@ public class Actor {
     protected double magic_res;
 
     protected double dmg_mult = 1;
+    protected double burn_mult = 1;
     protected double poison_mult = 1;
-    protected double fire_mult = 1;
     protected double ailment_res = 1;
     protected ActiveSkill prepare;
     protected double exp;
@@ -160,6 +159,7 @@ public class Actor {
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
     public Zone zone = null;
+    public double dot_tracking = 0;
 
     public void tick_debuffs() {
         smoked = false;
@@ -174,6 +174,7 @@ public class Actor {
             if (Objects.equals(d.name, "Res Break") && d.duration > 0) res_break = d.effect;
             if (Objects.equals(d.name, "Mark") && d.duration > 0) mark = d.effect;
             this.hp -= d.dmg;
+            dot_tracking += d.dmg;
 //            if (d.dmg > 0) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
             if (d.duration <= 0) debuff_iterator.remove();
         }
@@ -241,11 +242,11 @@ public class Actor {
         dodge_mult = 1;
         dmg_mult = 1;
         poison_mult = 1;
-        fire_mult = 1;
         ailment_res = 1;
         exp_mult = 1;
         cast_speed_mult = 1;
         delay_speed_mult = 1;
+        burn_mult = 1;
         Set<String> keys = passives.keySet();
         for (String key : keys) {
             passives.get(key).enabled = false;
@@ -309,7 +310,7 @@ public class Actor {
                 gear_light += item.light;
                 gear_dark += item.dark;
                 gear_crit += item.crit;
-                gear_burn *= 1 + item.burn;
+                gear_burn += item.burn;
                 add_resist("Fire", item.fire_res * 0.01);
                 add_resist("Water", item.water_res * 0.01);
                 add_resist("Wind", item.wind_res * 0.01);
@@ -347,7 +348,7 @@ public class Actor {
         mp_max = (resist * 3 + intel) * getMp_mult();
         hp = hp_max;
         mp = mp_max;
-        burn = gear_burn;
+        burn_mult *= 1 + gear_burn;
         if (set_mit1 > 0) add_resist("All", set_mit1);
         if (set_mit2 > 0) add_resist("All", set_mit2);
     }
@@ -389,7 +390,7 @@ public class Actor {
         gear_light = 0;
         gear_dark = 0;
         gear_crit = 0;
-        gear_burn = 1;
+        gear_burn = 0;
         phys_res = base_phys_res;
         magic_res = base_magic_res;
         water_res = base_water_res;
@@ -716,14 +717,6 @@ public class Actor {
 
     public void setPoison_mult(double poison_mult) {
         this.poison_mult = poison_mult;
-    }
-
-    public double getFire_mult() {
-        return fire_mult;
-    }
-
-    public void setFire_mult(double fire_mult) {
-        this.fire_mult = fire_mult;
     }
 
     public double getAilment_res() {
