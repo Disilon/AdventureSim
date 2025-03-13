@@ -1,5 +1,7 @@
 package Disilon;
 
+import Disilon.Equipment.Quality;
+
 import java.io.Serializable;
 
 public class Setup implements Serializable {
@@ -25,34 +27,34 @@ public class Setup implements Serializable {
     String pskill2;
     String pskill3;
     String mh_name;
-    Equipment.Quality mh_tier;
+    Quality mh_tier;
     int mh_lvl;
     String oh_name;
-    Equipment.Quality oh_tier;
+    Quality oh_tier;
     int oh_lvl;
     String helmet_name;
-    Equipment.Quality helmet_tier;
+    Quality helmet_tier;
     int helmet_lvl;
     String chest_name;
-    Equipment.Quality chest_tier;
+    Quality chest_tier;
     int chest_lvl;
     String pants_name;
-    Equipment.Quality pants_tier;
+    Quality pants_tier;
     int pants_lvl;
     String bracer_name;
-    Equipment.Quality bracer_tier;
+    Quality bracer_tier;
     int bracer_lvl;
     String boots_name;
-    Equipment.Quality boots_tier;
+    Quality boots_tier;
     int boots_lvl;
     String accessory1_name;
-    Equipment.Quality accessory1_tier;
+    Quality accessory1_tier;
     int accessory1_lvl;
     String accessory2_name;
-    Equipment.Quality accessory2_tier;
+    Quality accessory2_tier;
     int accessory2_lvl;
     String necklace_name;
-    Equipment.Quality necklace_tier;
+    Quality necklace_tier;
     int necklace_lvl;
     String result_full;
     String result_essential;
@@ -78,7 +80,81 @@ public class Setup implements Serializable {
     double sim_hours;
     int sim_cl;
 
-    public void setup() {
+    public Setup() {
+        this.playerclass = "Sniper";
+        this.ml = 140;
+        this.cl = 75;
+        this.potion1 = "HP T3";
+        this.potion1_t = 50;
+        this.potion2 = "MP T3";
+        this.potion2_t = 50;
+        this.potion3 = "None";
+        this.potion3_t = 50;
+        this.skill1 = "None";
+        this.skill2 = "None";
+        this.skill3 = "None";
+        this.skill1_mod = SkillMod.Damage;
+        this.skill2_mod = SkillMod.Basic;
+        this.skill3_mod = SkillMod.Basic;
+        this.skill1_s = 1;
+        this.skill2_s = 1;
+        this.skill3_s = 1;
+        this.pskill1 = "None";
+        this.pskill2 = "None";
+        this.pskill3 = "None";
+        this.mh_name = "None";
+        this.mh_tier = Quality.Good;
+        this.mh_lvl = 0;
+        this.oh_name = "None";
+        this.oh_tier = Quality.Good;
+        this.oh_lvl = 0;
+        this.helmet_name = "None";
+        this.helmet_tier = Quality.Good;
+        this.helmet_lvl = 0;
+        this.chest_name = "None";
+        this.chest_tier = Quality.Good;
+        this.chest_lvl = 0;
+        this.pants_name = "None";
+        this.pants_tier = Quality.Good;
+        this.pants_lvl = 0;
+        this.bracer_name = "None";
+        this.bracer_tier = Quality.Good;
+        this.bracer_lvl = 0;
+        this.boots_name = "None";
+        this.boots_tier = Quality.Good;
+        this.boots_lvl = 0;
+        this.accessory1_name = "Golden Belt";
+        this.accessory1_tier = Quality.Exceptional;
+        this.accessory1_lvl = 25;
+        this.accessory2_name = "None";
+        this.accessory2_tier = Quality.Good;
+        this.accessory2_lvl = 0;
+        this.necklace_name = "None";
+        this.necklace_tier = Quality.Good;
+        this.necklace_lvl = 0;
+        this.result_full = "Click simulate to get sim data";
+        this.result_essential = "Click simulate to get sim data";
+        this.stats = "Click simulate to calculate stats";
+        this.enemy = "";
+        this.zone = Zone.z9;
+        this.skill1_lvl = 0;
+        this.skill2_lvl = 0;
+        this.skill3_lvl = 0;
+        this.pskill1_lvl = 0;
+        this.pskill2_lvl = 0;
+        this.pskill3_lvl = 0;
+        this.gameversion = "1537";
+        this.reroll = 0;
+        this.milestone = 162.5;
+        this.crafting_lvl = 20;
+        this.alchemy_lvl = 20;
+        this.setsetup = true;
+        this.setupinfo = false;
+        this.leveling = false;
+        this.sim_type = 1;
+        this.simulations = 1000;
+        this.sim_hours = 12;
+        this.sim_cl = 90;
     }
 
     public Zone getZone() {
@@ -265,11 +341,11 @@ public class Setup implements Serializable {
         this.mh_name = mh_name;
     }
 
-    public Equipment.Quality getMh_tier() {
+    public Quality getMh_tier() {
         return mh_tier;
     }
 
-    public void setMh_tier(Equipment.Quality mh_tier) {
+    public void setMh_tier(Quality mh_tier) {
         this.mh_tier = mh_tier;
     }
 
@@ -289,11 +365,11 @@ public class Setup implements Serializable {
         this.oh_name = oh_name;
     }
 
-    public Equipment.Quality getOh_tier() {
+    public Quality getOh_tier() {
         return oh_tier;
     }
 
-    public void setOh_tier(Equipment.Quality oh_tier) {
+    public void setOh_tier(Quality oh_tier) {
         this.oh_tier = oh_tier;
     }
 
@@ -313,11 +389,11 @@ public class Setup implements Serializable {
         this.helmet_name = helmet_name;
     }
 
-    public Equipment.Quality getHelmet_tier() {
+    public Quality getHelmet_tier() {
         return helmet_tier;
     }
 
-    public void setHelmet_tier(Equipment.Quality helmet_tier) {
+    public void setHelmet_tier(Quality helmet_tier) {
         this.helmet_tier = helmet_tier;
     }
 
@@ -337,11 +413,11 @@ public class Setup implements Serializable {
         this.chest_name = chest_name;
     }
 
-    public Equipment.Quality getChest_tier() {
+    public Quality getChest_tier() {
         return chest_tier;
     }
 
-    public void setChest_tier(Equipment.Quality chest_tier) {
+    public void setChest_tier(Quality chest_tier) {
         this.chest_tier = chest_tier;
     }
 
@@ -361,11 +437,11 @@ public class Setup implements Serializable {
         this.pants_name = pants_name;
     }
 
-    public Equipment.Quality getPants_tier() {
+    public Quality getPants_tier() {
         return pants_tier;
     }
 
-    public void setPants_tier(Equipment.Quality pants_tier) {
+    public void setPants_tier(Quality pants_tier) {
         this.pants_tier = pants_tier;
     }
 
@@ -385,11 +461,11 @@ public class Setup implements Serializable {
         this.bracer_name = bracer_name;
     }
 
-    public Equipment.Quality getBracer_tier() {
+    public Quality getBracer_tier() {
         return bracer_tier;
     }
 
-    public void setBracer_tier(Equipment.Quality bracer_tier) {
+    public void setBracer_tier(Quality bracer_tier) {
         this.bracer_tier = bracer_tier;
     }
 
@@ -409,11 +485,11 @@ public class Setup implements Serializable {
         this.boots_name = boots_name;
     }
 
-    public Equipment.Quality getBoots_tier() {
+    public Quality getBoots_tier() {
         return boots_tier;
     }
 
-    public void setBoots_tier(Equipment.Quality boots_tier) {
+    public void setBoots_tier(Quality boots_tier) {
         this.boots_tier = boots_tier;
     }
 
@@ -441,11 +517,11 @@ public class Setup implements Serializable {
         this.accessory1_lvl = accessory1_lvl;
     }
 
-    public Equipment.Quality getAccessory1_tier() {
+    public Quality getAccessory1_tier() {
         return accessory1_tier;
     }
 
-    public void setAccessory1_tier(Equipment.Quality accessory1_tier) {
+    public void setAccessory1_tier(Quality accessory1_tier) {
         this.accessory1_tier = accessory1_tier;
     }
 
@@ -457,11 +533,11 @@ public class Setup implements Serializable {
         this.accessory2_name = accessory2_name;
     }
 
-    public Equipment.Quality getAccessory2_tier() {
+    public Quality getAccessory2_tier() {
         return accessory2_tier;
     }
 
-    public void setAccessory2_tier(Equipment.Quality accessory2_tier) {
+    public void setAccessory2_tier(Quality accessory2_tier) {
         this.accessory2_tier = accessory2_tier;
     }
 
@@ -481,11 +557,11 @@ public class Setup implements Serializable {
         this.necklace_name = necklace_name;
     }
 
-    public Equipment.Quality getNecklace_tier() {
+    public Quality getNecklace_tier() {
         return necklace_tier;
     }
 
-    public void setNecklace_tier(Equipment.Quality necklace_tier) {
+    public void setNecklace_tier(Quality necklace_tier) {
         this.necklace_tier = necklace_tier;
     }
 
@@ -639,5 +715,37 @@ public class Setup implements Serializable {
 
     public void setSetupinfo(boolean setupinfo) {
         this.setupinfo = setupinfo;
+    }
+
+    public boolean isLeveling() {
+        return leveling;
+    }
+
+    public void setLeveling(boolean leveling) {
+        this.leveling = leveling;
+    }
+
+    public int getSim_type() {
+        return sim_type;
+    }
+
+    public void setSim_type(int sim_type) {
+        this.sim_type = sim_type;
+    }
+
+    public double getSim_hours() {
+        return sim_hours;
+    }
+
+    public void setSim_hours(double sim_hours) {
+        this.sim_hours = sim_hours;
+    }
+
+    public int getSim_cl() {
+        return sim_cl;
+    }
+
+    public void setSim_cl(int sim_cl) {
+        this.sim_cl = sim_cl;
     }
 }

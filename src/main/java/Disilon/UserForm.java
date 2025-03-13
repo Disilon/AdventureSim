@@ -7,6 +7,8 @@ import com.google.gson.stream.JsonWriter;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -127,7 +130,6 @@ public class UserForm extends JFrame {
     public Player player;
     public Enemy enemy;
     public Simulation simulation;
-    public Setup setup;
     public LinkedHashMap<String, Equipment> mh = new LinkedHashMap<>();
     public LinkedHashMap<String, Equipment> oh = new LinkedHashMap<>();
     public LinkedHashMap<String, Equipment> helmet = new LinkedHashMap<>();
@@ -141,9 +143,56 @@ public class UserForm extends JFrame {
     public ArrayList<String> twohanded = new ArrayList<>();
     public LinkedHashMap<JMenu, Setup> tabs = new LinkedHashMap<>();
     public JMenu selected_tab;
+    ActionListener itemListener;
+    MenuListener menuListener;
     Gson gson = new Gson();
 
     public UserForm() throws URISyntaxException {
+        class SampleMenuListener implements MenuListener {
+
+            @Override
+            public void menuSelected(MenuEvent event) {
+                JMenu source = (JMenu) event.getSource();
+                selectTab(source);
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent event) {
+//                System.out.println("menuDeselected");
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent event) {
+//                System.out.println("menuCanceled");
+            }
+        }
+        class MenuItemActionListener implements ActionListener {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                JMenuItem source = (JMenuItem) event.getSource();
+                JPopupMenu jpm = (JPopupMenu) source.getParent();
+                JMenu tab = (JMenu) jpm.getInvoker();
+                if (source.getText() == "Rename") {
+                    String new_name = JOptionPane.showInputDialog(
+                            UserForm.this,
+                            "<html><h2>Enter new tab name:");
+                    if (new_name != null && new_name.length() > 0) {
+                        tab.setText(new_name);
+                    }
+                }
+                if (source.getText() == "Delete") {
+                    if (tabs.size() > 1) {
+                        tabs.remove(tab);
+                        selected_tab = tabs.lastEntry().getKey();
+                        Bar.remove(tab);
+                        selectTab(selected_tab);
+                        Bar.updateUI();
+                    }
+                }
+            }
+        }
+        menuListener = new SampleMenuListener();
+        itemListener = new MenuItemActionListener();
         fileChooser = new JFileChooser(Main.getJarPath());
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
                 "json", "json");
@@ -151,13 +200,12 @@ public class UserForm extends JFrame {
         player = new Player();
         enemy = new Enemy();
         simulation = new Simulation();
-        setup = new Setup();
         rootPanel = new JPanel();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         rootPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc;
         Bar = new JMenuBar();
-//        this.setJMenuBar(Bar);
+        this.setJMenuBar(Bar);
         New_tab = new JButton("   +   ");
         New_tab.setBorder(null);
         New_tab.setFocusPainted(false);
@@ -167,16 +215,13 @@ public class UserForm extends JFrame {
         New_tab.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (tabs.size() < 100) {
-                    createTab();
+                if (tabs.size() < 10) {
+                    JMenu new_tab = createTab();
+                    loadSetup(tabs.get(selected_tab));
                 }
             }
         });
         Bar.add(New_tab);
-        selected_tab = createTab("default");
-        for (int i = 0; i < 10; i++) {
-//            createTab();
-        }
 
         CL = createCustomSpinner(62, 0, 1000, 1);
         gbc = new GridBagConstraints();
@@ -1136,7 +1181,7 @@ public class UserForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 fileChooser.setDialogTitle("Save setup to json file");
-                fileChooser.setSelectedFile(new File(Main.getJarPath() + "/default.json"));
+                fileChooser.setSelectedFile(new File(Main.getJarPath() + "/" + selected_tab.getText() + ".json"));
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showSaveDialog(UserForm.this);
                 if (result == JFileChooser.APPROVE_OPTION) saveFile(fileChooser.getSelectedFile().getAbsolutePath());
@@ -1148,7 +1193,15 @@ public class UserForm extends JFrame {
                 fileChooser.setDialogTitle("Load setup from json file");
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showOpenDialog(UserForm.this);
-                if (result == JFileChooser.APPROVE_OPTION) loadFile(fileChooser.getSelectedFile().getAbsolutePath());
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    String path = fileChooser.getSelectedFile().getAbsolutePath();
+                    Setup file = loadFile(path);
+                    if (file != null) {
+                        tabs.put(selected_tab, file);
+                        selected_tab.setText(fileChooser.getSelectedFile().getName().replaceFirst("[.][^.]+$", ""));
+                    }
+                    loadTab(selected_tab);
+                }
             }
         });
         Update_lvls.addActionListener(new ActionListener() {
@@ -1465,7 +1518,12 @@ public class UserForm extends JFrame {
                 }
             }
         });
-        loadFile(Main.getJarPath() + "/default.json");
+        loadEquipment();
+        selected_tab = createTab("default");
+        Setup default_setup = loadFile(Main.getJarPath() + "/default.json");
+        if (default_setup == null) default_setup = new Setup();
+        tabs.put(selected_tab, default_setup);
+        loadTab(selected_tab);
     }
 
     private String findItemFromSet(String name, LinkedHashMap<String, Equipment> set) {
@@ -1794,20 +1852,18 @@ public class UserForm extends JFrame {
         return data;
     }
 
-    private void loadFile(String path) {
-        loadEquipment();
+    private Setup loadFile(String path) {
+        Setup file = null;
         try {
             File def = new File(path);
-            if (def.exists()) {
-                JsonReader reader = new JsonReader(new FileReader(def));
-                Setup file = gson.fromJson(reader, Setup.class);
-                loadSetup(file);
-            }
+            JsonReader reader = new JsonReader(new FileReader(def));
+            file = gson.fromJson(reader, Setup.class);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
             throw new RuntimeException(ex);
         }
+        return file;
     }
 
     private void loadSetup(Setup data) {
@@ -1948,30 +2004,35 @@ public class UserForm extends JFrame {
     private JMenu createTab(String name) {
         JMenu tab = new JMenu(name);
         JMenuItem rename = new JMenuItem("Rename");
-        rename.addActionListener(e -> {
-            String new_name = JOptionPane.showInputDialog(
-                    UserForm.this,
-                    "<html><h2>Enter new tab name:");
-            if (new_name != null && new_name.length() > 0) {
-                tab.setText(new_name);
-            }
-        });
+        rename.addActionListener(itemListener);
         JMenuItem delete = new JMenuItem("Delete");
+        delete.addActionListener(itemListener);
         tab.add(rename);
         tab.add(delete);
-        delete.addActionListener(e -> {
-            if (tabs.size() > 1) {
-                tabs.remove(tab);
-                selected_tab = tabs.lastEntry().getKey();
-                Bar.remove(tab);
-                Bar.updateUI();
-            }
-        });
+        tab.setOpaque(true);
         tabs.put(tab, new Setup());
         Bar.add(tab);
-        selected_tab = tab;
-
+        tab.addMenuListener(menuListener);
+        selectTab(tab);
         Bar.updateUI();
         return tab;
+    }
+
+    private void selectTab(JMenu source) {
+        if (selected_tab != null) {
+            tabs.put(selected_tab, saveSetup());
+        }
+        selected_tab = source;
+        loadTab(source);
+    }
+
+    private void loadTab(JMenu source) {
+        for (JMenu tab : tabs.keySet()) {
+            tab.setBackground(null);
+        }
+        source.setBackground(Color.YELLOW);
+        Setup show_setup = tabs.get(source);
+        if (show_setup == null) show_setup = new Setup();
+        loadSetup(show_setup);
     }
 }
