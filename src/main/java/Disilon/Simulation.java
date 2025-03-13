@@ -335,8 +335,8 @@ public class Simulation {
                         for (Debuff d : enemy.debuffs) {
                             if (d.dmg > 0) overkill += d.getMaxTotalDmg();
                         }
-                        double exp_gain = enemy.getExp() * player.getExp_mult();
-                        if (player.lvling) player.increment_exp(exp_gain * player.milestone_exp_mult);
+                        double exp_gain = enemy.getExp() * player.getExp_mult() * player.milestone_exp_mult;
+                        if (player.lvling) player.increment_exp(exp_gain);
                         exp += exp_gain;
                         kills++;
                         if (Main.game_version >= 1535 && player.lvling) player.levelActives();
@@ -422,9 +422,10 @@ public class Simulation {
             }
         }
 
-        result.append("Exp/h: ").append((int) (exp * player.milestone_exp_mult / (total_time + death_time) * 3600)).append(" (");
+        result.append("Exp/h: ").append((int) (exp / (total_time + death_time) * 3600)).append(" (");
         result.append(df2.format(player.milestone_exp_mult * 100)).append("%)\n");
-//        sb.append("Exp/h without milestones: ").append((int) (exp / (total_time + death_time) * 3600)).append("\n");
+//        result.append("Exp/h without milestones: ").append((int) (exp / player.milestone_exp_mult / (total_time + death_time) * 3600)).append
+//        ("\n");
         if (potion1 != null) {
             result.append(potion1.getRecordedData(total_time + death_time));
         }
@@ -435,7 +436,7 @@ public class Simulation {
             result.append(potion3.getRecordedData(total_time + death_time));
         }
         if (crafting_time > 0) {
-            result.append("Effective exp/h: ").append((int) (exp * player.milestone_exp_mult / (total_time + crafting_time + death_time) * 3600)).append("\n");
+            result.append("Effective exp/h: ").append((int) (exp / (total_time + crafting_time + death_time) * 3600)).append("\n");
         }
         if (player.prepare != null) {
             result.append("Time preparing %: ").append(df2.format(prepare_time / total_time * 100)).append("% " +

@@ -564,8 +564,8 @@ public class Player extends Actor {
 
     public double bonus_for_milestone() {
         return switch (tier) {
-            case 0 -> 0.25;
-            case 1 -> 0.5;
+            case 0 -> 0.025;
+            case 1 -> 0.05;
             case 2 -> 0.75;
             case 3 -> 0.1;
             default -> 0;
@@ -576,7 +576,7 @@ public class Player extends Actor {
         return switch (tier) {
             case 0 -> 10;
             case 1 -> 35;
-            case 2 -> 55;
+            case 2 -> 50;
             case 3 -> Main.game_version >= 1532 ? 90 : 75;
             default -> 0;
         };
