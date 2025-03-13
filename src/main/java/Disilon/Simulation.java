@@ -118,16 +118,16 @@ public class Simulation {
                 setup.append(passive.getValue().name).append(" ").append(passive.getValue().lvl).append("\n");
             }
         }
-        if (player.prepare != null) setup.append("Prepare threshold: ").append(prepare_threshold).append("\n");
+        if (player.prepare != null) setup.append("Prepare threshold: ").append(prepare_threshold).append("%\n");
         if (potion1 != null)
             setup.append(potion1.type.toUpperCase()).append(" potion tier: ").append(potion1.tier).append(", threshold: ").append(potion1.threshold).append(
-                    "\n");
+                    "%\n");
         if (potion2 != null)
             setup.append(potion2.type.toUpperCase()).append(" potion tier: ").append(potion2.tier).append(", threshold: ").append(potion2.threshold).append(
-                    "\n");
+                    "%\n");
         if (potion3 != null)
             setup.append(potion3.type.toUpperCase()).append(" potion tier: ").append(potion3.tier).append(", threshold: ").append(potion3.threshold).append(
-                    "\n");
+                    "%\n");
         player.debuffs.clear();
         player.buffs.clear();
         boolean end = false;
@@ -475,9 +475,13 @@ public class Simulation {
             }
         }
         result.append("\nSimulations: ").append(cleared).append("\n");
-        result.append("Simulation time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
+        result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
+        result.append("Time in combat: ").append(Main.secToTime(total_time)).append("\n");
+        if (death_time > 0) {
+            result.append("Time dead: ").append(Main.secToTime(death_time)).append("\n");
+        }
         if (crafting_time > 0) {
-            result.append("Includes crafting: ").append(Main.secToTime(crafting_time)).append("\n");
+            result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
         }
         if (player.milestone_exp_mult != player.old_milestone_exp_mult) {
             lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));
