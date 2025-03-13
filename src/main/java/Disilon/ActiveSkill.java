@@ -49,7 +49,7 @@ public class ActiveSkill {
     public double debuff_chance_sum;
     public int used;
     public boolean lvling = false;
-    public int old_lvl;
+    public double old_lvl;
     public double last_casted_at = 0;
     public boolean random_targets = false;
 

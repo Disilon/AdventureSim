@@ -278,7 +278,7 @@ public class Player extends Actor {
 
     public void setCLML(double cl, double ml) {
         setCLML((int) cl, (int) ml);
-        double next_cl_exp = exp_to_cl((int) cl, tier);
+        double next_cl_exp = exp_to_cl((int) cl);
         double next_ml_exp = exp_to_ml((int) ml);
         cl_exp = next_cl_exp * (cl - (int) cl);
         ml_exp = next_ml_exp * (ml - (int) ml);
@@ -376,7 +376,7 @@ public class Player extends Actor {
 
     public void setPassiveLvl(String passive, double lvl) {
         passives.get(passive).setLvl(lvl);
-        passives.get(passive).old_lvl = (int) lvl;
+        passives.get(passive).old_lvl = lvl;
     }
 
     public double getEblast() {
@@ -529,7 +529,7 @@ public class Player extends Actor {
     public void increment_exp(double exp) {
         cl_exp += exp;
         ml_exp += exp;
-        double need_cl = exp_to_cl(cl, tier);
+        double need_cl = exp_to_cl(cl);
         double need_ml = exp_to_ml(ml);
         if (cl_exp >= need_cl && cl < 120) {
             cl += 1;
@@ -554,7 +554,7 @@ public class Player extends Actor {
         passives.forEach((key, value) -> value.gainExp(time));
     }
 
-    public double exp_to_cl(int lvl, int tier) {
+    public double exp_to_cl(int lvl) {
         return (Math.pow(lvl, 5) / 340 + Math.pow(lvl, 2) * 50 + 10) * Math.pow(2, tier - 1);
     }
 

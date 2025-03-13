@@ -22,8 +22,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import static Disilon.Main.df2;
 import static Disilon.Main.df2p;
+import static Disilon.Main.dfm;
 import static Disilon.Main.dfs;
+import static Disilon.Main.padLeft;
+import static Disilon.Main.padRight;
 
 public class UserForm extends JFrame {
     private JPanel rootPanel;
@@ -117,6 +121,7 @@ public class UserForm extends JFrame {
     private JFormattedTextField Pskill1_lvl_p;
     private JFormattedTextField Pskill2_lvl_p;
     private JFormattedTextField Pskill3_lvl_p;
+    private JButton Update_lvls;
     GridBagConstraints gbc = new GridBagConstraints();
 
     public Player player;
@@ -1073,12 +1078,19 @@ public class UserForm extends JFrame {
         gbc.gridx = 7;
         gbc.gridy = 19;
         rootPanel.add(Leveling, gbc);
+        Update_lvls = new JButton();
+        Update_lvls.setText("Update lvls from sim data");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 7;
+        gbc.gridy = 22;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        rootPanel.add(Update_lvls, gbc);
 
         Run = new JButton();
         Run.setText("Simulate");
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
-        gbc.gridy = 22;
+        gbc.gridy = 20;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         rootPanel.add(Run, gbc);
         SetSetup = new JCheckBox();
@@ -1115,6 +1127,178 @@ public class UserForm extends JFrame {
                 if (result == JFileChooser.APPROVE_OPTION) loadSetup(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
+        Update_lvls.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (player == null || player.ml == 0) {
+                    JOptionPane.showMessageDialog(rootPanel, "You need to sim first! No lvling data.", "Warning",
+                            JOptionPane.WARNING_MESSAGE);
+                } else {
+                    double new_cl_p = player.cl_exp / player.exp_to_cl(player.cl) * 100;
+                    double new_ml_p = player.ml_exp / player.exp_to_ml(player.ml) * 100;
+                    StringBuilder info = new StringBuilder("<html>");
+                    info.append("<style>table, th, td {border-style: hidden;text-align:center;}</style>");
+                    info.append("<body><table style=\"width:100%;\">");
+                    info.append("<tr><th colspan=\"3\">");
+                    info.append("Lvls will be updated:</p>");
+                    info.append("</th></tr>");
+                    info.append("<tr><td colspan=\"3\">");
+                    info.append("Milestone exp:");
+                    info.append("</td></tr>");
+                    info.append("<tr>");
+                    info.append("<td style=\"width:40%;height:10px;\">");
+                    info.append(dfm.format(Milestone.getValue())).append("%");
+                    info.append("</td>");
+                    info.append("<td style=\"width:20%;height:10px;\">");
+                    info.append("->");
+                    info.append("</td>");
+                    info.append("<td style=\"width:40%;height:10px;\">");
+                    info.append(dfm.format(player.milestone_exp_mult * 100)).append("%");
+                    info.append("</td>");
+
+                    info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
+                    info.append("CL:");
+                    info.append("</td></tr>");
+                    info.append("<tr style=\"height:10px;\">");
+                    info.append("<td>");
+                    info.append((int) player.old_cl);
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append("->");
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append(player.cl);
+                    info.append("</td>");
+                    info.append("<tr style=\"height:10px;\">");
+                    info.append("<td>");
+                    info.append(df2.format((player.old_cl - (int) player.old_cl) * 100)).append("%");
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append(df2.format(new_cl_p)).append("%");
+                    info.append("</td>");
+
+                    info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
+                    info.append("ML:");
+                    info.append("</td></tr>");
+                    info.append("<tr style=\"height:10px;\">");
+                    info.append("<td>");
+                    info.append((int) player.old_ml);
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append("->");
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append(player.ml);
+                    info.append("</td>");
+                    info.append("<tr style=\"height:10px;\">");
+                    info.append("<td>");
+                    info.append(df2.format((player.old_ml - (int) player.old_ml) * 100)).append("%");
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append("</td>");
+                    info.append("<td>");
+                    info.append(df2.format(new_ml_p)).append("%");
+                    info.append("</td>");
+                    for (ActiveSkill a : player.active_skills.values()) {
+                        if (a.lvl != a.old_lvl) {
+                            info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
+                            info.append(a.name);
+                            info.append("</td></tr>");
+                            info.append("<tr style=\"height:10px;\">");
+                            info.append("<td>");
+                            info.append((int) a.old_lvl);
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append("->");
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append(a.lvl);
+                            info.append("</td>");
+                            info.append("<tr style=\"height:10px;\">");
+                            info.append("<td>");
+                            info.append(df2.format((a.old_lvl - (int) a.old_lvl)* 100)).append("%");
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append(df2.format((a.exp / a.need_for_lvl(a.lvl)) * 100)).append("%");
+                            info.append("</td>");
+                        }
+                    }
+                    for (PassiveSkill a : player.passives.values()) {
+                        if (a.lvl != a.old_lvl) {
+                            info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
+                            info.append(a.name);
+                            info.append("</td></tr>");
+                            info.append("<tr style=\"height:10px;\">");
+                            info.append("<td>");
+                            info.append((int) a.old_lvl);
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append("->");
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append(a.lvl);
+                            info.append("</td>");
+                            info.append("<tr style=\"height:10px;\">");
+                            info.append("<td>");
+                            info.append(df2.format((a.old_lvl - (int) a.old_lvl)* 100)).append("%");
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append("</td>");
+                            info.append("<td>");
+                            info.append(df2.format((a.exp / a.need_for_lvl(a.lvl)) * 100)).append("%");
+                            info.append("</td>");
+                        }
+                    }
+                    info.append("</table>");
+                    info.append("</body>");
+                    info.append("</html>");
+                    int selectedOption = JOptionPane.showConfirmDialog(rootPanel, info, "Confirm",JOptionPane.YES_NO_OPTION);
+                    if (selectedOption == JOptionPane.YES_OPTION) {
+                        Milestone.setValue(player.milestone_exp_mult * 100);
+                        CL.setValue(player.cl);
+                        ML.setValue(player.ml);
+                        CL_p.setValue(new_cl_p);
+                        ML_p.setValue(new_ml_p);
+                        for (ActiveSkill a : player.active_skills.values()) {
+                            if (a.lvl != a.old_lvl) {
+                                if(Skill1.getSelectedItem().toString().equals(a.name)) {
+                                    Skill1_lvl.setValue(a.lvl);
+                                    Skill1_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
+                                }
+                                if(Skill2.getSelectedItem().toString().equals(a.name)) {
+                                    Skill2_lvl.setValue(a.lvl);
+                                    Skill2_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
+                                }
+                                if(Skill3.getSelectedItem().toString().equals(a.name)) {
+                                    Skill3_lvl.setValue(a.lvl);
+                                    Skill3_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
+                                }
+                            }
+                        }
+                        for (PassiveSkill a : player.passives.values()) {
+                            if (a.lvl != a.old_lvl) {
+                                if(Pskill1.getSelectedItem().toString().equals(a.name)) {
+                                    Pskill1_lvl.setValue(a.lvl);
+                                    Pskill1_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
+                                }
+                                if(Pskill2.getSelectedItem().toString().equals(a.name)) {
+                                    Pskill2_lvl.setValue(a.lvl);
+                                    Pskill2_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
+                                }
+                                if(Pskill3.getSelectedItem().toString().equals(a.name)) {
+                                    Pskill3_lvl.setValue(a.lvl);
+                                    Pskill3_lvl_p.setValue((a.exp / a.need_for_lvl(a.lvl)) * 100);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
         Run.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1137,8 +1321,8 @@ public class UserForm extends JFrame {
                         double cl = (int) CL.getValue() + Double.parseDouble(CL_p.getValue().toString()) / 100;
                         double ml = (int) ML.getValue() + Double.parseDouble(ML_p.getValue().toString()) / 100;
                         player.setCLML(cl, ml);
-                        player.old_cl = (int) CL.getValue();
-                        player.old_ml = (int) ML.getValue();
+                        player.old_cl = cl;
+                        player.old_ml = ml;
                         player.clear_skills_recorded_data();
                         simulation.time_to_respawn = -1;
                         simulation.sim_limit = (int) Simulations.getValue();

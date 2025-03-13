@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.padRight;
 
 public class Simulation {
     enum StatusType {death, respawn, combat, prepare, rerolling, delay}
@@ -46,18 +47,18 @@ public class Simulation {
         player.prepare = null;
         ActiveSkill s1 = player.getSkill(skill1);
         s1.setSkill(lvl1, mod1);
-        s1.old_lvl = (int) lvl1;
+        s1.old_lvl = lvl1;
         ActiveSkill s2 = null;
         if (!skill2.equals("Prepare")) {
             s2 = player.getSkill(skill2);
             if (s2 != null) {
                 s2.setSkill(lvl2, mod2);
-                s2.old_lvl = (int) lvl2;
+                s2.old_lvl = lvl2;
             }
         } else {
             player.prepare = player.getSkill(skill2);
             player.prepare.setSkill(lvl2, SkillMod.Basic);
-            player.prepare.old_lvl = (int) lvl2;
+            player.prepare.old_lvl = lvl2;
             prepare_threshold = setting2;
         }
         ActiveSkill s3 = null;
@@ -65,12 +66,12 @@ public class Simulation {
             s3 = player.getSkill(skill3);
             if (s3 != null) {
                 s3.setSkill(lvl3, mod3);
-                s3.old_lvl = (int) lvl3;
+                s3.old_lvl = lvl3;
             }
         } else {
             player.prepare = player.getSkill(skill3);
             player.prepare.setSkill(lvl3, SkillMod.Basic);
-            player.prepare.old_lvl = (int) lvl3;
+            player.prepare.old_lvl = lvl3;
             prepare_threshold = setting3;
         }
         run(s1, setting1, s2, setting2, s3, setting3, prepare_threshold,
@@ -445,7 +446,7 @@ public class Simulation {
         if (death_time > 0) {
             result.append("Time dead %: ").append(df2.format(death_time / (total_time + death_time) * 100)).append("% \n");
             //result.append("Spawning time: ").append(df2.format(respawning_time)).append("s \n");
-            result.append("Exp/h without deaths: ").append((int) (exp * player.milestone_exp_mult / (total_time - ignore_deaths) * 3600)).append(
+            result.append("Exp/h without deaths: ").append((int) (exp / (total_time - ignore_deaths) * 3600)).append(
                     "\n");
         }
         if (oom_time > 0) {
@@ -488,17 +489,19 @@ public class Simulation {
             lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));
             lvling_log.append("% -> ").append(df2.format(player.milestone_exp_mult * 100)).append("%\n");
         }
-        if (player.cl != player.old_cl)
-            lvling_log.append("CL: ").append(player.old_cl).append(" -> ").append(player.cl).append(" \n");
-        if (player.ml != player.old_ml)
-            lvling_log.append("ML: ").append(player.old_ml).append(" -> ").append(player.ml).append(" \n");
+        if (player.cl != (int) player.old_cl)
+            lvling_log.append("CL: ").append((int) player.old_cl).append(" -> ").append(player.cl).append(" \n");
+        if (player.ml != (int) player.old_ml)
+            lvling_log.append("ML: ").append((int) player.old_ml).append(" -> ").append(player.ml).append(" \n");
         for (ActiveSkill a : player.active_skills.values()) {
-            if (a.lvl != a.old_lvl)
-                lvling_log.append(a.name).append(": ").append(a.old_lvl).append(" -> ").append(a.lvl).append(" \n");
+            if (a.lvl != (int) a.old_lvl)
+                lvling_log.append(a.name).append(": ").append((int) a.old_lvl).append(" -> ").append(a.lvl).append(" " +
+                        "\n");
         }
         for (PassiveSkill p : player.passives.values()) {
-            if (p.lvl != p.old_lvl)
-                lvling_log.append(p.name).append(": ").append(p.old_lvl).append(" -> ").append(p.lvl).append(" \n");
+            if (p.lvl != (int) p.old_lvl)
+                lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" " +
+                        "\n");
         }
         if (!lvling_log.isEmpty()) {
             result.append("Gained during simulation: \n").append(lvling_log);

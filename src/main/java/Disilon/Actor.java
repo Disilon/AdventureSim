@@ -117,8 +117,8 @@ public class Actor {
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;
-    protected int old_ml;
-    protected int old_cl;
+    protected double old_ml;
+    protected double old_cl;
     public boolean counter_dodge = false;
     public boolean counter_heal = false;
 

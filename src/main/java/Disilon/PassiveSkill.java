@@ -13,7 +13,7 @@ public class PassiveSkill {
     public double mp_mult;
     public boolean enabled;
     public double exp;
-    public int old_lvl;
+    public double old_lvl;
 
     public PassiveSkill(String name, double base_bonus, double base_mp_add, double base_mp_mult) {
         this.name = name;
