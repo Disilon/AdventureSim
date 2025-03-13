@@ -280,12 +280,12 @@ public class ActiveSkill {
     }
 
     public void use(Actor attacker) {
-        if (attacker.isHidden()) attacker.setHidden(false);
+        if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         if (attacker.isAmbushing()) attacker.setAmbushing(false);
         double gain = 0;
         switch (name) {
             case "Hide":
-                attacker.setHidden(true);
+                attacker.hide_bonus = this.min;
                 break;
             case "First Aid":
                 gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
@@ -324,7 +324,7 @@ public class ActiveSkill {
             //System.out.println(gain);
             attacker.setHp(attacker.getHp() + gain);
         }
-        if (!this.aoe && defender.isHidden()) {
+        if (!this.aoe && defender.hide_bonus > 0) {
             //System.out.println("The target is hidden!");
             return 0;
         }
@@ -347,7 +347,7 @@ public class ActiveSkill {
                 double atk = 0;
                 double def = 0;
                 double dmg_mult = attacker.getDmg_mult();
-                dmg_mult *= attacker.isHidden() ? 1.3 : 1;
+                dmg_mult += attacker.hide_bonus;
                 dmg_mult *= 1.0 + (attacker.ambush_target == defender ? attacker.ambush.bonus : 0);
                 dmg_mult *= this.dmg_mult;
                 enemy_resist = switch (this.element) {
@@ -440,7 +440,7 @@ public class ActiveSkill {
             }
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
-        if (attacker.isHidden()) attacker.setHidden(false);
+        if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         if (attacker.isAmbushing()) attacker.setAmbushing(false);
         dmg_sum += total;
         return total;
@@ -455,7 +455,7 @@ public class ActiveSkill {
     }
 
     public void applyDebuff(Actor attacker, Actor defender) {
-        if (!this.aoe && defender.isHidden()) {
+        if (!this.aoe && attacker.hide_bonus > 0) {
             return;
         }
 

@@ -104,7 +104,7 @@ public class Actor {
     protected double cast_speed_mult = 1;
     protected double delay_speed_mult = 1;
 
-    protected boolean hidden = false;
+    protected double hide_bonus = 0;
     protected boolean smoked = false;
     protected boolean ambushing = false;
     protected Actor ambush_target = null;
@@ -632,14 +632,6 @@ public class Actor {
 
     public void setDmg_mult(double dmg_mult) {
         this.dmg_mult = dmg_mult;
-    }
-
-    public boolean isHidden() {
-        return hidden;
-    }
-
-    public void setHidden(boolean hidden) {
-        this.hidden = hidden;
     }
 
     public double stealthDelay() {

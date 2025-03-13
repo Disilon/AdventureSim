@@ -43,6 +43,7 @@ public class Simulation {
         player.eblast_enabled = skill1.equals("Elemental Blast") || skill2.equals("Elemental Blast") || skill3.equals("Elemental Blast");
         player.holylight_enabled = skill1.equals("Holy Light") || skill2.equals("Holy Light") || skill3.equals("Holy Light");
         player.aurablade_enabled = skill1.equals("Aura Blade") || skill2.equals("Aura Blade") || skill3.equals("Aura Blade");
+        player.prepare = null;
         ActiveSkill s1 = player.getSkill(skill1);
         s1.setSkill(lvl1, mod1);
         s1.old_lvl = (int) lvl1;

@@ -290,7 +290,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         rootPanel.add(Skill2, gbc);
         Skill3 = new JComboBox();
-        Skill3.setMaximumRowCount(2);
+        Skill3.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
         gbc.gridx = 5;
         gbc.gridy = 5;
@@ -1134,8 +1134,8 @@ public class UserForm extends JFrame {
                         simulation.crafting_lvl = (int) Crafting_lvl.getValue();
                         player.milestone_exp_mult = (double) Milestone.getValue() / 100;
                         player.old_milestone_exp_mult = player.milestone_exp_mult;
-                        double cl = (int) CL.getValue() + (double) CL_p.getValue() / 100;
-                        double ml = (int) ML.getValue() + (double) ML_p.getValue() / 100;
+                        double cl = (int) CL.getValue() + Double.parseDouble(CL_p.getValue().toString()) / 100;
+                        double ml = (int) ML.getValue() + Double.parseDouble(ML_p.getValue().toString()) / 100;
                         player.setCLML(cl, ml);
                         player.old_cl = (int) CL.getValue();
                         player.old_ml = (int) ML.getValue();
@@ -1158,15 +1158,15 @@ public class UserForm extends JFrame {
                         setupEquipment();
                         setupPassives();
                         simulation.run(Skill1.getSelectedItem().toString(),
-                                (int) Skill1_lvl.getValue() + (double) Skill1_lvl_p.getValue() / 100,
+                                (int) Skill1_lvl.getValue() + Double.parseDouble(Skill1_lvl_p.getValue().toString()) / 100,
                                 (SkillMod) Skill1_mod.getSelectedItem(),
                                 (int) Skill1_s.getValue(),
                                 Skill2.getSelectedItem().toString(),
-                                (int) Skill2_lvl.getValue() + (double) Skill2_lvl_p.getValue() / 100,
+                                (int) Skill2_lvl.getValue() + Double.parseDouble(Skill2_lvl_p.getValue().toString()) / 100,
                                 (SkillMod) Skill2_mod.getSelectedItem(),
                                 (int) Skill2_s.getValue(),
                                 Skill3.getSelectedItem().toString(),
-                                (int) Skill3_lvl.getValue() + (double) Skill3_lvl_p.getValue() / 100,
+                                (int) Skill3_lvl.getValue() + Double.parseDouble(Skill3_lvl_p.getValue().toString()) / 100,
                                 (SkillMod) Skill3_mod.getSelectedItem(),
                                 (int) Skill3_s.getValue(),
                                 (int) Reroll.getValue());
@@ -1366,17 +1366,17 @@ public class UserForm extends JFrame {
         String[] passives = new String[3];
         if (!Pskill1.getSelectedItem().toString().equals("None")) {
             player.setPassiveLvl(Pskill1.getSelectedItem().toString(),
-                    (int) Pskill1_lvl.getValue() + (double) Pskill1_lvl_p.getValue() / 100);
+                    (int) Pskill1_lvl.getValue() + Double.parseDouble(Pskill1_lvl_p.getValue().toString()) / 100);
             passives[0] = Pskill1.getSelectedItem().toString();
         }
         if (!Pskill2.getSelectedItem().toString().equals("None")) {
             player.setPassiveLvl(Pskill2.getSelectedItem().toString(),
-                    (int) Pskill2_lvl.getValue() + (double) Pskill2_lvl_p.getValue() / 100);
+                    (int) Pskill2_lvl.getValue() + Double.parseDouble(Pskill2_lvl_p.getValue().toString()) / 100);
             passives[1] = Pskill2.getSelectedItem().toString();
         }
         if (!Pskill3.getSelectedItem().toString().equals("None")) {
             player.setPassiveLvl(Pskill3.getSelectedItem().toString(),
-                    (int) Pskill3_lvl.getValue() + (double) Pskill3_lvl_p.getValue() / 100);
+                    (int) Pskill3_lvl.getValue() + Double.parseDouble(Pskill3_lvl_p.getValue().toString()) / 100);
             passives[2] = Pskill3.getSelectedItem().toString();
         }
         player.enablePassives(passives);
