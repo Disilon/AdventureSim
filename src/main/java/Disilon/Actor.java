@@ -226,6 +226,8 @@ public class Actor {
         set_mit2 = 0;
         for (EquipmentSet set : sets.values()) {
             set.current_items = 0;
+            set.min_quality = null;
+            set.min_upgrade = -1;
         }
     }
 
