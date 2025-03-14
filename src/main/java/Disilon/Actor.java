@@ -435,7 +435,7 @@ public class Actor {
     }
 
     public double getPrepare_mps() {
-        return getMp_regen() + getMp_max() * (0.0056 + 0.0001 * prepare.lvl);
+        return getMp_regen() + getMp_max() * (0.0056 + 0.00011 * prepare.lvl);
     }
 
     public double getMp_regen() {
