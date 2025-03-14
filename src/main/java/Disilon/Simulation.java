@@ -47,32 +47,21 @@ public class Simulation {
         ActiveSkill s1 = player.getSkill(skill1);
         s1.setSkill(lvl1, mod1);
         s1.old_lvl = lvl1;
-        ActiveSkill s2 = null;
-        if (!skill2.equals("Prepare")) {
-            s2 = player.getSkill(skill2);
-            if (s2 != null) {
-                s2.setSkill(lvl2, mod2);
-                s2.old_lvl = lvl2;
-            }
-        } else {
-            player.prepare = player.getSkill(skill2);
-            player.prepare.setSkill(lvl2, SkillMod.Basic);
-            player.prepare.old_lvl = lvl2;
-            prepare_threshold = setting2;
+        ActiveSkill s2;
+        s2 = player.getSkill(skill2);
+        if (s2 != null) {
+            s2.setSkill(lvl2, mod2);
+            s2.old_lvl = lvl2;
         }
-        ActiveSkill s3 = null;
-        if (!skill3.equals("Prepare")) {
-            s3 = player.getSkill(skill3);
-            if (s3 != null) {
-                s3.setSkill(lvl3, mod3);
-                s3.old_lvl = lvl3;
-            }
-        } else {
-            player.prepare = player.getSkill(skill3);
-            player.prepare.setSkill(lvl3, SkillMod.Basic);
-            player.prepare.old_lvl = lvl3;
-            prepare_threshold = setting3;
+        ActiveSkill s3;
+        s3 = player.getSkill(skill3);
+        if (s3 != null) {
+            s3.setSkill(lvl3, mod3);
+            s3.old_lvl = lvl3;
         }
+        if (skill1.equals("Prepare")) prepare_threshold = setting1;
+        if (skill2.equals("Prepare")) prepare_threshold = setting2;
+        if (skill3.equals("Prepare")) prepare_threshold = setting3;
         player.disableAllActives();
         if (s1 != null) s1.enabled = true;
         if (s2 != null) s2.enabled = true;
@@ -101,6 +90,7 @@ public class Simulation {
         double healed = 0;
         int kills = 0;
         int cleared = 0;
+        int failed = 0;
         double oom_time = 0;
         player.dot_tracking = 0;
         title = zone.toString();
@@ -143,6 +133,7 @@ public class Simulation {
             double delta;
             int casts = 0;
             double delay_left = 0;
+            int skill_cycle = 1;
             ActiveSkill previous_cast = null;
             status = StatusType.respawn;
             zone.respawn();
@@ -157,6 +148,7 @@ public class Simulation {
                     if (potion1 != null) potion1.checkPotion(player, delta);
                     if (potion2 != null) potion2.checkPotion(player, delta);
                     if (potion3 != null) potion3.checkPotion(player, delta);
+                    failed++;
                 }
             }
             skill1.used_in_rotation = 0;
@@ -174,39 +166,54 @@ public class Simulation {
             if (time >= time_to_respawn) {
                 status = StatusType.combat;
             }
-            while (status == StatusType.combat && time < 3600) {
-                if (player.casting == null && skill1.canCast(player) && ((skill3 == null && skill2 == null) || skill1.shouldUse(player,
-                        setting1))) {
-                    player.casting = skill1;
-                    player.casting.startCastPlayer(player, zone);
-                    if (skill2 != null) skill2.used_in_rotation = 0;
-                    if (skill3 != null) skill3.used_in_rotation = 0;
+            while (status == StatusType.combat) {
+                int cycled = 0;
+                if (time > 600) {
+                    if (sim_type == 2 || sim_type == 3) sim_type = 1;
+                    sim_limit = 100; //sim slow fights less so that we don't freeze
                 }
-                if (player.casting == null && skill2 != null && skill2.canCast(player) && skill2.shouldUse(player,
-                        setting2)) {
-                    player.casting = skill2;
-                    player.casting.startCastPlayer(player, zone);
-                    //skill1.used_in_rotation = 0;
-                }
-                if (player.casting == null && skill3 != null && skill3.canCast(player) && skill3.shouldUse(player,
-                        setting3)) {
-                    player.casting = skill3;
-                    player.casting.startCastPlayer(player, zone);
-                    //skill1.used_in_rotation = 0;
-
-                }
-                if (skill3 != null && skill3.used_in_rotation >= setting3) {
-                    skill1.used_in_rotation = 0;
-                    if (skill2 != null) skill2.used_in_rotation = 0;
-                    skill3.used_in_rotation = 0;
-                }
-                if (skill3 == null && skill2 != null && skill2.used_in_rotation >= setting2) {
-                    skill1.used_in_rotation = 0;
-                    skill2.used_in_rotation = 0;
-                }
-                if (player.casting != null) {
-//                    System.out.println(time + " " + player.getName() + " casting " + player.casting.name + " at " +
-//                            enemy.getName() + " cast time: " + player.casting.cast + " delay: " + player.casting.delay);
+                while (player.casting == null) {
+                    switch (skill_cycle) {
+                        case 1 -> {
+                            if (skill1 != null && skill1.canCast(player) && skill1.shouldUse(player, setting1)) {
+                                player.casting = skill1;
+                                player.casting.startCastPlayer(player, zone);
+                                cycled = 0;
+                            } else {
+                                if (skill1 != null) skill1.used_in_rotation = 0;
+                                skill_cycle++;
+                                cycled++;
+                            }
+                        }
+                        case 2 -> {
+                            if (skill2 != null && skill2.canCast(player) && skill2.shouldUse(player, setting2)) {
+                                player.casting = skill2;
+                                player.casting.startCastPlayer(player, zone);
+                                cycled = 0;
+                            } else {
+                                if (skill2 != null) skill2.used_in_rotation = 0;
+                                skill_cycle++;
+                                cycled++;
+                            }
+                        }
+                        case 3 -> {
+                            if (skill3 != null && skill3.canCast(player) && skill3.shouldUse(player, setting3)) {
+                                player.casting = skill3;
+                                player.casting.startCastPlayer(player, zone);
+                                cycled = 0;
+                            } else {
+                                if (skill3 != null) skill3.used_in_rotation = 0;
+                                skill_cycle = 1;
+                                cycled++;
+                            }
+                        }
+                    }
+                    if (cycled >= 4) {
+                        player.casting = player.getWeakSkill();
+                        player.casting.startCastPlayer(player, zone);
+                        cycled = 0;
+                        skill_cycle = 1;
+                    }
                 }
                 for (Iterator<Enemy> iterator = zone.enemies.iterator(); iterator.hasNext(); ) {
                     Enemy enemy = iterator.next();
@@ -218,6 +225,7 @@ public class Simulation {
                             enemy.reroll(); //todo: add user option to run away from lamia explosion
                             player.casting = null;
                             status = StatusType.rerolling;
+                            failed++;
                             break;
                         }
                     }
@@ -360,7 +368,7 @@ public class Simulation {
                         player.casting = null;
                     }
                 }
-                if (player.getHp() <= 0) {
+                if (player.getHp() <= 0 || time >= 3600) {
                     status = StatusType.death;
                     death_time += 15 * 60;
                     player.setHp(player.getHp_max());
@@ -369,6 +377,7 @@ public class Simulation {
                     if (potion2 != null) potion2.cooldown = 0;
                     if (potion3 != null) potion3.cooldown = 0;
                     ignore_deaths += time;
+                    failed++;
                     //System.out.println("Player died at " + time);
                 }
             }
@@ -416,9 +425,10 @@ public class Simulation {
             if (potion3 != null) {
                 crafting_time += potion3.calc_time(crafting_lvl, alchemy_lvl);
             }
+            if ((cleared + failed) >= 100000) end = true;
             switch (sim_type) {
                 default -> {
-                    if (cleared >= sim_limit) end = true;
+                    if ((cleared + failed) >= sim_limit) end = true;
                 }
                 case 2 -> {
                     if ((total_time + death_time + crafting_time) >= time_limit * 3600) end = true;
@@ -468,6 +478,7 @@ public class Simulation {
         result.append("Average Overkill: ").append((int) (overkill / kills));
         if (dot_overkill > 0) result.append("; DoT: ").append((int) (dot_overkill / kills));
         result.append("\n");
+        result.append(player.getWeakAttackData());
         if (skill1 != null && skill1.hit > 0) result.append(skill1.getRecordedData());
         if (skill2 != null && skill2.hit > 0) result.append(skill2.getRecordedData());
         if (skill3 != null && skill3.hit > 0) result.append(skill3.getRecordedData());

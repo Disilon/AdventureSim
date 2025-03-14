@@ -273,7 +273,18 @@ public class Player extends Actor {
     }
 
     public ActiveSkill getSkill(String name) {
+        if (name.equals("Prepare") && active_skills.containsKey(name)) {
+            this.prepare = active_skills.get(name);
+        }
         return active_skills.get(name);
+    }
+
+    public ActiveSkill getWeakSkill() {
+        if (atk > intel) {
+            return weak_a;
+        } else {
+            return weak_i;
+        }
     }
 
     public void setCLML(double cl, double ml) {
@@ -523,6 +534,11 @@ public class Player extends Actor {
         if (getDark_res() != 0) {
             sb.append("Dark mitigation = ").append(df2.format(getDark_res() * 100)).append("%\n");
         }
+        if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
+        if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
+        if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
+        if (set_mit1 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit1 * 100)).append("%\n");
+        if (set_mit2 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit2 * 100)).append("%\n");
         return sb.toString();
     }
 
@@ -584,5 +600,16 @@ public class Player extends Actor {
             case 3 -> Main.game_version >= 1532 ? 90 : 75;
             default -> 0;
         };
+    }
+
+    public String getWeakAttackData() {
+        StringBuilder sb = new StringBuilder();
+        if (weak_a.used > 0) {
+            sb.append(weak_a.getWeakRecordedData());
+        }
+        if (weak_i.used > 0) {
+            sb.append(weak_i.getWeakRecordedData());
+        }
+        return sb.toString();
     }
 }

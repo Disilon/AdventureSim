@@ -1080,7 +1080,7 @@ public class UserForm extends JFrame {
             @Override
             public Object getNextValue() {
                 Object nextValue = super.getValue();
-                int x = Integer.parseInt(nextValue.toString()) * 10;
+                int x = (int) Double.parseDouble(nextValue.toString()) * 10;
                 if (x > 100000) x = 100000;
                 //Object o = x;
                 return x;
@@ -1089,7 +1089,7 @@ public class UserForm extends JFrame {
             @Override
             public Object getPreviousValue() {
                 Object nextValue = super.getValue();
-                int x = Integer.parseInt(nextValue.toString()) / 10;
+                int x = (int) Double.parseDouble(nextValue.toString()) / 10;
                 if (x < 1) x = 1;
                 //Object o = x;
                 return x;
@@ -1383,28 +1383,30 @@ public class UserForm extends JFrame {
                     JOptionPane.showMessageDialog(rootPanel, "You need to setup first active skill", "Warning",
                             JOptionPane.WARNING_MESSAGE);
                 } else {
-                    if (Sim_lvl.isSelected() && ((int) CL.getValue() >= (int) SimCL.getValue())) {
+                    if (Sim_lvl.isSelected() && ((int) Double.parseDouble(CL.getValue().toString()) >= (int) Double.parseDouble(SimCL.getValue().toString()))) {
                         JOptionPane.showMessageDialog(rootPanel,
                                 "You need to setup target CL higher than your current", "Warning",
                                 JOptionPane.WARNING_MESSAGE);
                     } else {
                         long startTime = System.nanoTime();
-                        Main.game_version = Integer.parseInt(GameVersion.getSelectedItem().toString());
+                        Main.game_version = (int) Double.parseDouble(GameVersion.getSelectedItem().toString());
                         setupPotions();
                         simulation.alchemy_lvl = (int) Alchemy_lvl.getValue();
                         simulation.crafting_lvl = (int) Crafting_lvl.getValue();
-                        player.milestone_exp_mult = (double) Milestone.getValue() / 100;
+                        player.milestone_exp_mult = (double) Double.parseDouble(Milestone.getValue().toString()) / 100;
                         player.old_milestone_exp_mult = player.milestone_exp_mult;
-                        double cl = (int) CL.getValue() + Double.parseDouble(CL_p.getValue().toString()) / 100;
-                        double ml = (int) ML.getValue() + Double.parseDouble(ML_p.getValue().toString()) / 100;
+                        double cl =
+                                (int) Double.parseDouble(CL.getValue().toString()) + Double.parseDouble(CL_p.getValue().toString()) / 100;
+                        double ml =
+                                (int) Double.parseDouble(ML.getValue().toString()) + Double.parseDouble(ML_p.getValue().toString()) / 100;
                         player.setCLML(cl, ml);
                         player.old_cl = cl;
                         player.old_ml = ml;
                         player.clear_skills_recorded_data();
                         simulation.time_to_respawn = -1;
-                        simulation.sim_limit = (int) Simulations.getValue();
-                        simulation.time_limit = (double) SimHours.getValue();
-                        simulation.cl_limit = (int) SimCL.getValue();
+                        simulation.sim_limit = (int) Double.parseDouble(Simulations.getValue().toString());
+                        simulation.time_limit = (double) Double.parseDouble(SimHours.getValue().toString());
+                        simulation.cl_limit = (int) Double.parseDouble(SimCL.getValue().toString());
                         simulation.player = player;
                         player.lvling = Leveling.isSelected();
                         if (Sim_num.isSelected()) simulation.sim_type = 1;
@@ -1420,18 +1422,18 @@ public class UserForm extends JFrame {
                         setupEquipment();
                         setupPassives();
                         simulation.run(Skill1.getSelectedItem().toString(),
-                                (int) Skill1_lvl.getValue() + Double.parseDouble(Skill1_lvl_p.getValue().toString()) / 100,
+                                (int) Double.parseDouble(Skill1_lvl.getValue().toString()) + Double.parseDouble(Skill1_lvl_p.getValue().toString()) / 100,
                                 (SkillMod) Skill1_mod.getSelectedItem(),
-                                (int) Skill1_s.getValue(),
+                                (int) Double.parseDouble(Skill1_s.getValue().toString()),
                                 Skill2.getSelectedItem().toString(),
-                                (int) Skill2_lvl.getValue() + Double.parseDouble(Skill2_lvl_p.getValue().toString()) / 100,
+                                (int) Double.parseDouble(Skill2_lvl.getValue().toString()) + Double.parseDouble(Skill2_lvl_p.getValue().toString()) / 100,
                                 (SkillMod) Skill2_mod.getSelectedItem(),
-                                (int) Skill2_s.getValue(),
+                                (int) Double.parseDouble(Skill2_s.getValue().toString()),
                                 Skill3.getSelectedItem().toString(),
-                                (int) Skill3_lvl.getValue() + Double.parseDouble(Skill3_lvl_p.getValue().toString()) / 100,
+                                (int) Double.parseDouble(Skill3_lvl.getValue().toString()) + Double.parseDouble(Skill3_lvl_p.getValue().toString()) / 100,
                                 (SkillMod) Skill3_mod.getSelectedItem(),
-                                (int) Skill3_s.getValue(),
-                                (int) Reroll.getValue());
+                                (int) Double.parseDouble(Skill3_s.getValue().toString()),
+                                (int) Double.parseDouble(Reroll.getValue().toString()));
                         if (SetupInfo.isSelected()) {
                             Result.setText(simulation.full_result);
                         } else {
@@ -1487,7 +1489,7 @@ public class UserForm extends JFrame {
         GameVersion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (Integer.parseInt(GameVersion.getSelectedItem().toString()) >= 1535) {
+                if ((int) Double.parseDouble(GameVersion.getSelectedItem().toString()) >= 1535) {
                     Reroll.setVisible(false);
                     Reroll_label.setVisible(false);
                 } else {
@@ -1579,18 +1581,18 @@ public class UserForm extends JFrame {
         int threshold3 = 0;
         if (!Potion1.getSelectedItem().toString().equals("None")) {
             type1 = Potion1.getSelectedItem().toString().substring(0, 2);
-            tier1 = Integer.parseInt(Potion1.getSelectedItem().toString().substring(4));
-            threshold1 = Integer.parseInt(Potion1_t.getValue().toString());
+            tier1 = (int) Double.parseDouble(Potion1.getSelectedItem().toString().substring(4));
+            threshold1 = (int) Double.parseDouble(Potion1_t.getValue().toString());
         }
         if (!Potion2.getSelectedItem().toString().equals("None")) {
             type2 = Potion2.getSelectedItem().toString().substring(0, 2);
-            tier2 = Integer.parseInt(Potion2.getSelectedItem().toString().substring(4));
-            threshold2 = Integer.parseInt(Potion2_t.getValue().toString());
+            tier2 = (int) Double.parseDouble(Potion2.getSelectedItem().toString().substring(4));
+            threshold2 = (int) Double.parseDouble(Potion2_t.getValue().toString());
         }
         if (!Potion3.getSelectedItem().toString().equals("None")) {
             type3 = Potion3.getSelectedItem().toString().substring(0, 2);
-            tier3 = Integer.parseInt(Potion3.getSelectedItem().toString().substring(4));
-            threshold3 = Integer.parseInt(Potion3_t.getValue().toString());
+            tier3 = (int) Double.parseDouble(Potion3.getSelectedItem().toString().substring(4));
+            threshold3 = (int) Double.parseDouble(Potion3_t.getValue().toString());
         }
         simulation.setupPotions(type1, tier1, threshold1, type2, tier2, threshold2, type3, tier3, threshold3);
     }
@@ -1608,42 +1610,42 @@ public class UserForm extends JFrame {
         player.equipment.put("Accessory2", acc2.get(Accessory2_name.getSelectedItem().toString()));
         player.equipment.put("Necklace", neck.get(Necklace_name.getSelectedItem().toString()));
         mh.get(MH_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) MH_tier.getSelectedItem(),
-                Integer.parseInt(MH_lvl.getValue().toString()));
+                (int) Double.parseDouble(MH_lvl.getValue().toString()));
         oh.get(OH_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) OH_tier.getSelectedItem(),
-                Integer.parseInt(OH_lvl.getValue().toString()));
+                (int) Double.parseDouble(OH_lvl.getValue().toString()));
         helmet.get(Helmet_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Helmet_tier.getSelectedItem(),
-                Integer.parseInt(Helmet_lvl.getValue().toString()));
+                (int) Double.parseDouble(Helmet_lvl.getValue().toString()));
         chest.get(Chest_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Chest_tier.getSelectedItem(),
-                Integer.parseInt(Chest_lvl.getValue().toString()));
+                (int) Double.parseDouble(Chest_lvl.getValue().toString()));
         pants.get(Pants_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Pants_tier.getSelectedItem(),
-                Integer.parseInt(Pants_lvl.getValue().toString()));
+                (int) Double.parseDouble(Pants_lvl.getValue().toString()));
         bracers.get(Bracer_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Bracer_tier.getSelectedItem(),
-                Integer.parseInt(Bracer_lvl.getValue().toString()));
+                (int) Double.parseDouble(Bracer_lvl.getValue().toString()));
         boots.get(Boots_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Boots_tier.getSelectedItem(),
-                Integer.parseInt(Boots_lvl.getValue().toString()));
+                (int) Double.parseDouble(Boots_lvl.getValue().toString()));
         acc1.get(Accessory1_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Accessory1_tier.getSelectedItem(),
-                Integer.parseInt(Accessory1_lvl.getValue().toString()));
+                (int) Double.parseDouble(Accessory1_lvl.getValue().toString()));
         acc2.get(Accessory2_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Accessory2_tier.getSelectedItem(),
-                Integer.parseInt(Accessory2_lvl.getValue().toString()));
+                (int) Double.parseDouble(Accessory2_lvl.getValue().toString()));
         neck.get(Necklace_name.getSelectedItem().toString()).setQualityLvl((Equipment.Quality) Necklace_tier.getSelectedItem(),
-                Integer.parseInt(Necklace_lvl.getValue().toString()));
+                (int) Double.parseDouble(Necklace_lvl.getValue().toString()));
     }
 
     private void setupPassives() {
         String[] passives = new String[3];
         if (!Pskill1.getSelectedItem().toString().equals("None")) {
             player.setPassiveLvl(Pskill1.getSelectedItem().toString(),
-                    (int) Pskill1_lvl.getValue() + Double.parseDouble(Pskill1_lvl_p.getValue().toString()) / 100);
+                    (int) Double.parseDouble(Pskill1_lvl.getValue().toString()) + Double.parseDouble(Pskill1_lvl_p.getValue().toString()) / 100);
             passives[0] = Pskill1.getSelectedItem().toString();
         }
         if (!Pskill2.getSelectedItem().toString().equals("None")) {
             player.setPassiveLvl(Pskill2.getSelectedItem().toString(),
-                    (int) Pskill2_lvl.getValue() + Double.parseDouble(Pskill2_lvl_p.getValue().toString()) / 100);
+                    (int) Double.parseDouble(Pskill2_lvl.getValue().toString()) + Double.parseDouble(Pskill2_lvl_p.getValue().toString()) / 100);
             passives[1] = Pskill2.getSelectedItem().toString();
         }
         if (!Pskill3.getSelectedItem().toString().equals("None")) {
             player.setPassiveLvl(Pskill3.getSelectedItem().toString(),
-                    (int) Pskill3_lvl.getValue() + Double.parseDouble(Pskill3_lvl_p.getValue().toString()) / 100);
+                    (int) Double.parseDouble(Pskill3_lvl.getValue().toString()) + Double.parseDouble(Pskill3_lvl_p.getValue().toString()) / 100);
             passives[2] = Pskill3.getSelectedItem().toString();
         }
         player.enablePassives(passives);
@@ -1759,95 +1761,99 @@ public class UserForm extends JFrame {
             JsonWriter writer = new JsonWriter(new FileWriter(path));
             gson.toJson(saveSetup(), Setup.class, writer);
             writer.close();
-        } catch (IOException ex) {
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(rootPanel, "Some field has illegal value!", "Exception",
+                    JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
-            throw new RuntimeException(ex);
         }
     }
 
     private Setup saveSetup() {
         Setup data = new Setup();
-        data.accessory1_lvl = (int) Accessory1_lvl.getValue();
+        data.accessory1_lvl = (int) Double.parseDouble(Accessory1_lvl.getValue().toString());
         data.accessory1_name = Accessory1_name.getSelectedItem().toString();
         data.accessory1_tier = (Equipment.Quality) Accessory1_tier.getSelectedItem();
-        data.accessory2_lvl = (int) Accessory2_lvl.getValue();
+        data.accessory2_lvl = (int) Double.parseDouble(Accessory2_lvl.getValue().toString());
         data.accessory2_name = Accessory2_name.getSelectedItem().toString();
         data.accessory2_tier = (Equipment.Quality) Accessory2_tier.getSelectedItem();
-        data.alchemy_lvl = (int) Alchemy_lvl.getValue();
-        data.boots_lvl = (int) Boots_lvl.getValue();
+        data.alchemy_lvl = (int) Double.parseDouble(Alchemy_lvl.getValue().toString());
+        data.boots_lvl = (int) Double.parseDouble(Boots_lvl.getValue().toString());
         data.boots_name = Boots_name.getSelectedItem().toString();
         data.boots_tier = (Equipment.Quality) Boots_tier.getSelectedItem();
-        data.bracer_lvl = (int) Bracer_lvl.getValue();
+        data.bracer_lvl = (int) Double.parseDouble(Bracer_lvl.getValue().toString());
         data.bracer_name = Bracer_name.getSelectedItem().toString();
         data.bracer_tier = (Equipment.Quality) Bracer_tier.getSelectedItem();
-        data.chest_lvl = (int) Chest_lvl.getValue();
+        data.chest_lvl = (int) Double.parseDouble(Chest_lvl.getValue().toString());
         data.chest_name = Chest_name.getSelectedItem().toString();
         data.chest_tier = (Equipment.Quality) Chest_tier.getSelectedItem();
-        data.cl = ((int) CL.getValue() + Double.parseDouble(CL_p.getValue().toString()) / 100);
-        data.crafting_lvl = (int) Crafting_lvl.getValue();
+        data.cl = ((int) Double.parseDouble(CL.getValue().toString()) + Double.parseDouble(CL_p.getValue().toString()) / 100);
+        data.crafting_lvl = (int) Double.parseDouble(Crafting_lvl.getValue().toString());
         data.zone = (Zone) Enemy.getSelectedItem();
         data.gameversion = GameVersion.getSelectedItem().toString();
-        data.helmet_lvl = (int) Helmet_lvl.getValue();
+        data.helmet_lvl = (int) Double.parseDouble(Helmet_lvl.getValue().toString());
         data.helmet_name = Helmet_name.getSelectedItem().toString();
         data.helmet_tier = (Equipment.Quality) Helmet_tier.getSelectedItem();
-        data.mh_lvl = (int) MH_lvl.getValue();
+        data.mh_lvl = (int) Double.parseDouble(MH_lvl.getValue().toString());
         data.mh_name = MH_name.getSelectedItem().toString();
         data.mh_tier = (Equipment.Quality) MH_tier.getSelectedItem();
-        data.milestone = (double) Milestone.getValue();
-        data.ml = ((int) ML.getValue() + Double.parseDouble(ML_p.getValue().toString()) / 100);
-        data.necklace_lvl = (int) Necklace_lvl.getValue();
+        data.milestone = Double.parseDouble(Milestone.getValue().toString());
+        data.ml = ((int) Double.parseDouble(ML.getValue().toString()) + Double.parseDouble(ML_p.getValue().toString()) / 100);
+        data.necklace_lvl = (int) Double.parseDouble(Necklace_lvl.getValue().toString());
         data.necklace_name = Necklace_name.getSelectedItem().toString();
         data.necklace_tier = (Equipment.Quality) Necklace_tier.getSelectedItem();
-        data.oh_lvl = (int) OH_lvl.getValue();
+        data.oh_lvl = (int) Double.parseDouble(OH_lvl.getValue().toString());
         data.oh_name = OH_name.getSelectedItem().toString();
         data.oh_tier = (Equipment.Quality) OH_tier.getSelectedItem();
-        data.pants_lvl = (int) Pants_lvl.getValue();
+        data.pants_lvl = (int) Double.parseDouble(Pants_lvl.getValue().toString());
         data.pants_name = Pants_name.getSelectedItem().toString();
         data.pants_tier = (Equipment.Quality) Pants_tier.getSelectedItem();
         data.playerclass = PlayerClass.getSelectedItem().toString();
         data.potion1 = Potion1.getSelectedItem().toString();
-        data.potion1_t = (int) Potion1_t.getValue();
+        data.potion1_t = (int) Double.parseDouble(Potion1_t.getValue().toString());
         data.potion2 = Potion2.getSelectedItem().toString();
-        data.potion2_t = (int) Potion2_t.getValue();
+        data.potion2_t = (int) Double.parseDouble(Potion2_t.getValue().toString());
         data.potion3 = Potion3.getSelectedItem().toString();
-        data.potion3_t = (int) Potion3_t.getValue();
+        data.potion3_t = (int) Double.parseDouble(Potion3_t.getValue().toString());
         data.pskill1 = Pskill1.getSelectedItem().toString();
-        data.pskill1_lvl = ((int) Pskill1_lvl.getValue()
+        data.pskill1_lvl = ((int) Double.parseDouble(Pskill1_lvl.getValue().toString())
                 + Double.parseDouble(Pskill1_lvl_p.getValue().toString()) / 100);
         data.pskill2 = Pskill2.getSelectedItem().toString();
-        data.pskill2_lvl = ((int) Pskill2_lvl.getValue()
+        data.pskill2_lvl = ((int) Double.parseDouble(Pskill2_lvl.getValue().toString())
                 + Double.parseDouble(Pskill2_lvl_p.getValue().toString()) / 100);
         data.pskill3 = Pskill3.getSelectedItem().toString();
-        data.pskill3_lvl = ((int) Pskill3_lvl.getValue()
+        data.pskill3_lvl = ((int) Double.parseDouble(Pskill3_lvl.getValue().toString())
                 + Double.parseDouble(Pskill3_lvl_p.getValue().toString()) / 100);
-        data.reroll = (int) Reroll.getValue();
+        data.reroll = (int) Double.parseDouble(Reroll.getValue().toString());
         data.result_essential = simulation.essential_result;
         data.result_full = simulation.full_result;
         data.setsetup = SetSetup.isSelected();
         data.setupinfo = SetupInfo.isSelected();
         data.skill1 = Skill1.getSelectedItem().toString();
-        data.skill1_lvl = ((int) Skill1_lvl.getValue()
+        data.skill1_lvl = ((int) Double.parseDouble(Skill1_lvl.getValue().toString())
                 + Double.parseDouble(Skill1_lvl_p.getValue().toString()) / 100);
         data.skill1_mod = (SkillMod) Skill1_mod.getSelectedItem();
-        data.skill1_s = (int) Skill1_s.getValue();
+        data.skill1_s = (int) Double.parseDouble(Skill1_s.getValue().toString());
         data.skill2 = Skill2.getSelectedItem().toString();
-        data.skill2_lvl = ((int) Skill2_lvl.getValue()
+        data.skill2_lvl = ((int) Double.parseDouble(Skill2_lvl.getValue().toString())
                 + Double.parseDouble(Skill2_lvl_p.getValue().toString()) / 100);
         data.skill2_mod = (SkillMod) Skill2_mod.getSelectedItem();
-        data.skill2_s = (int) Skill2_s.getValue();
+        data.skill2_s = (int) Double.parseDouble(Skill2_s.getValue().toString());
         data.skill3 = Skill3.getSelectedItem().toString();
-        data.skill3_lvl = ((int) Skill3_lvl.getValue()
+        data.skill3_lvl = ((int) Double.parseDouble(Skill3_lvl.getValue().toString())
                 + Double.parseDouble(Skill3_lvl_p.getValue().toString()) / 100);
         data.skill3_mod = (SkillMod) Skill3_mod.getSelectedItem();
-        data.skill3_s = (int) Skill3_s.getValue();
+        data.skill3_s = (int) Double.parseDouble(Skill3_s.getValue().toString());
         data.stats = Stats.getText();
         if (Sim_num.isSelected()) data.sim_type = 1;
         if (Sim_time.isSelected()) data.sim_type = 2;
         if (Sim_lvl.isSelected()) data.sim_type = 3;
-        data.simulations = (int) Simulations.getValue();
-        data.sim_hours = (double) SimHours.getValue();
-        data.sim_cl = (int) SimCL.getValue();
+        data.simulations = (int) Double.parseDouble(Simulations.getValue().toString());
+        data.sim_hours = Double.parseDouble(SimHours.getValue().toString());
+        data.sim_cl = (int) Double.parseDouble(SimCL.getValue().toString());
         data.leveling = Leveling.isSelected();
         return data;
     }
@@ -1859,9 +1865,9 @@ public class UserForm extends JFrame {
             JsonReader reader = new JsonReader(new FileReader(def));
             file = gson.fromJson(reader, Setup.class);
         } catch (Exception ex) {
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(rootPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
-            throw new RuntimeException(ex);
         }
         return file;
     }
@@ -1909,7 +1915,7 @@ public class UserForm extends JFrame {
             };
         }
         Enemy.setSelectedItem(data.zone);
-        GameVersion.setSelectedItem(Integer.parseInt(data.gameversion));
+        GameVersion.setSelectedItem((int) Double.parseDouble(data.gameversion));
         MH_lvl.setValue(data.mh_lvl);
         MH_name.setSelectedItem(data.mh_name);
         MH_tier.setSelectedItem(data.mh_tier);

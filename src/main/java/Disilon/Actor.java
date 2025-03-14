@@ -156,6 +156,11 @@ public class Actor {
     protected ActiveSkill casting;
     protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
 
+    ActiveSkill weak_a = new ActiveSkill("Weak Attack", 1, 54, 66, 1, 0, 1, 1, Scaling.atk, Element.phys,
+            false, false);
+    ActiveSkill weak_i = new ActiveSkill("Weak Magic Arrow", 1, 55.8, 68.2, 1, 1, 1, 1, Scaling.intel, Element.magic,
+            false, false);
+
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
     public Zone zone = null;
@@ -413,6 +418,8 @@ public class Actor {
                 skill.clear_recorded_data();
             }
         }
+        weak_a.clear_recorded_data();
+        weak_i.clear_recorded_data();
     }
 
     public void setCLML(int cl, int ml) {

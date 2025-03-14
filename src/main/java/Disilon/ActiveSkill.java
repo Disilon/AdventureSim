@@ -92,6 +92,7 @@ public class ActiveSkill {
     }
 
     public boolean canCast(Actor actor) {
+        if (name.equals("Prepare")) return false;
         return actor.getMp() >= calculate_manacost(actor);
     }
 
@@ -111,6 +112,7 @@ public class ActiveSkill {
         if (attacker.isAmbushing()) cast = Math.max(0.01, cast - 5);
         delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
         used_in_rotation++;
+//        System.out.println(attacker.name + " started casting " + name);
     }
 
     public boolean progressCast(double delta) {
@@ -462,10 +464,6 @@ public class ActiveSkill {
     }
 
     public void applyDebuff(Actor attacker, Actor defender) {
-        if (!this.aoe && attacker.hide_bonus > 0) {
-            return;
-        }
-
         double hit_chance =
                 (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
         if (debuff_name.equals("Poison")) {
@@ -560,5 +558,10 @@ public class ActiveSkill {
                 "; dmg: " + (int) average_dmg() +
                 (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
                 "\n";
+    }
+
+    public String getWeakRecordedData() {
+        return name + " used: " + used + " hit: " + df2.format(average_hit_chance() * 100) + "%" +
+                "; dmg: " + (int) average_dmg() + "\n";
     }
 }
