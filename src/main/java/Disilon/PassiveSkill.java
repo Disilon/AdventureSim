@@ -57,6 +57,8 @@ public class PassiveSkill {
                 exp -= need;
                 setLvl(lvl);
             }
+        } else {
+            lvl = (int) old_lvl;
         }
     }
 

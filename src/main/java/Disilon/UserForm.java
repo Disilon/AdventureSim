@@ -1905,7 +1905,7 @@ public class UserForm extends JFrame {
         Pskill2_lvl_p.setValue((data.pskill2_lvl - (int) data.pskill2_lvl) * 100);
         Pskill3_lvl_p.setValue((data.pskill3_lvl - (int) data.pskill3_lvl) * 100);
         Crafting_lvl.setValue(data.crafting_lvl);
-        if (data.zone == null && data.enemy != null) {
+        if (data.enemy.length() > 0) {
             data.zone = switch (data.enemy) {
                 case "Devil" -> Zone.z9;
                 case "Shax" -> Zone.z10;
