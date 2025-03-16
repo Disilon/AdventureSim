@@ -96,7 +96,7 @@ public class Equipment {
         this.light_res = equipStats.containsKey("LIGHT_RES") ? (double) equipStats.get("LIGHT_RES") * mult : 0;
 
         // Special
-        mult = 1.0; //todo: find out formula for scaling
+        mult = multiplier(quality, upgrade, 3); //todo: find out formula for scaling
         this.burn = equipStats.containsKey("BURN") ? (double) equipStats.get("BURN") * mult : 0;
         this.crit = equipStats.containsKey("CRIT") ? (double) equipStats.get("CRIT") * mult : 0;
         this.stun = equipStats.containsKey("STUN") ? (double) equipStats.get("STUN") * mult : 0;
@@ -115,6 +115,9 @@ public class Equipment {
             }
             case 2 -> {
                 return (0.5 + quality.getMult() * 0.5) * (1 + upgrade * 0.025);
+            }
+            case 3 -> {
+                return 1 + upgrade * 0.05 * (0.5 + quality.getMult() * 0.5);
             }
             default -> {
                 return 1;

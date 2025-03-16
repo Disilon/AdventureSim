@@ -1012,7 +1012,7 @@ public class UserForm extends JFrame {
         gbc.gridx = 7;
         gbc.gridy = 8;
         rootPanel.add(label25, gbc);
-        Milestone = createCustomSpinner(155, 100, 190, 2.5);
+        Milestone = createCustomSpinner(155, 100, 222.5, 2.5);
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
         gbc.gridy = 9;
