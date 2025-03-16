@@ -1181,10 +1181,16 @@ public class UserForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 fileChooser.setDialogTitle("Save setup to json file");
-                fileChooser.setSelectedFile(new File(Main.getJarPath() + "/" + selected_tab.getText() + ".json"));
+                fileChooser.setSelectedFile(new File(Main.getJarPath() + "/" + selected_tab.getText()));
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showSaveDialog(UserForm.this);
-                if (result == JFileChooser.APPROVE_OPTION) saveFile(fileChooser.getSelectedFile().getAbsolutePath());
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    String user_path = fileChooser.getSelectedFile().getAbsolutePath();
+                    if (!user_path.endsWith(".json")) {
+                        user_path += ".json";
+                    }
+                    saveFile(user_path);
+                }
             }
         });
         Load.addActionListener(new ActionListener() {
