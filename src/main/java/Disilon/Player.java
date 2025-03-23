@@ -14,6 +14,8 @@ public class Player extends Actor {
             true, false);
     ActiveSkill pa = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 4, 0.4, 0.9, Scaling.atk, Element.phys, false
             , false);
+    ActiveSkill pa1541 = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 4, 0.4, 0.9, Scaling.atk, Element.phys, false
+            , false);
     ActiveSkill smoke = new ActiveSkill("Smoke Screen", 1, 0, 0, 0.85, 25, 0.8, 1, Scaling.atk, Element.none, true, false);
     ActiveSkill fa = new ActiveSkill("First Aid", 1, 15, 15, 0, 5, 0.9, 1.1, Scaling.atk, Element.none, false,
             true);
@@ -89,6 +91,7 @@ public class Player extends Actor {
 
     public void addSkillEffects() {
         pa.addDebuff("Poison", 3, 0.1);
+        pa1541.addDebuff("Poison", 3, 0.15);
         smoke.addDebuff("Smoke", 3, 0);
         bash.addDebuff("Defense Break", 3, 0.2);
         db.addDebuff("Defense Break", 3, 0.25);
@@ -142,7 +145,11 @@ public class Player extends Actor {
                 active_skills.put("Hide", hide);
                 active_skills.put("Dragon Punch", dp);
                 active_skills.put("Whirling Foot", wf);
-                active_skills.put("Poison Attack", pa);
+                if (Main.game_version < 1541) {
+                    active_skills.put("Poison Attack", pa);
+                } else {
+                    active_skills.put("Poison Attack", pa1541);
+                }
                 active_skills.put("Smoke Screen", smoke);
                 active_skills.put("First Aid", fa);
                 active_skills.put("Prepare", prep);

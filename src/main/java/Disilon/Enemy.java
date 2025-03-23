@@ -89,13 +89,21 @@ public class Enemy extends Actor {
         switch (name) {
             case "Dagon" -> {
                 base_lvl = 100;
-                base_hp_max = 16000 / base_lvl;
+                if (Main.game_version < 1541) {
+                    base_hp_max = 16000 / base_lvl;
+                } else {
+                    base_hp_max = 22000 / base_lvl;
+                }
                 base_exp = 13200 / base_lvl;
                 base_atk = 1100 / base_lvl;
                 base_def = 2000 / base_lvl;
                 base_int = 1000 / base_lvl;
                 base_res = 2000 / base_lvl;
-                base_hit = 400 / base_lvl;
+                if (Main.game_version < 1541) {
+                    base_hit = 400 / base_lvl;
+                } else {
+                    base_hit = 350 / base_lvl;
+                }
                 base_speed = 600 / base_lvl;
                 base_water = 400 / base_lvl;
                 fire_res = 0.5;
@@ -124,7 +132,11 @@ public class Enemy extends Actor {
             case "Shax" -> {
                 base_lvl = 100;
                 base_hp_max = 19200 / base_lvl;
-                base_exp = 9200 / base_lvl;
+                if (Main.game_version < 1541) {
+                    base_exp = 9200 / base_lvl;
+                } else {
+                    base_exp = 10500 / base_lvl;
+                }
                 base_atk = 1100 / base_lvl;
                 base_def = 600 / base_lvl;
                 base_int = 1000 / base_lvl;

@@ -40,6 +40,7 @@ public class Simulation {
                     int setting2, String skill3, double lvl3, SkillMod mod3,
                     int setting3, double reroll) {
         int prepare_threshold = 0;
+        player.setClass(player.name);
         player.eblast_enabled = skill1.equals("Elemental Blast") || skill2.equals("Elemental Blast") || skill3.equals("Elemental Blast");
         player.holylight_enabled = skill1.equals("Holy Light") || skill2.equals("Holy Light") || skill3.equals("Holy Light");
         player.aurablade_enabled = skill1.equals("Aura Blade") || skill2.equals("Aura Blade") || skill3.equals("Aura Blade");
