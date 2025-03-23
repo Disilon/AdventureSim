@@ -253,7 +253,6 @@ public class Actor {
         exp_mult = 1;
         cast_speed_mult = 1;
         delay_speed_mult = 1;
-        burn_mult = 1;
         Set<String> keys = passives.keySet();
         for (String key : keys) {
             passives.get(key).enabled = false;
@@ -355,7 +354,6 @@ public class Actor {
         mp_max = (resist * 3 + intel) * getMp_mult();
         hp = hp_max;
         mp = mp_max;
-        burn_mult *= 1 + gear_burn;
         if (set_mit1 > 0) add_resist("All", set_mit1);
         if (set_mit2 > 0) add_resist("All", set_mit2);
     }

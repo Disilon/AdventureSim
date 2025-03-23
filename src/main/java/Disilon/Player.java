@@ -535,7 +535,7 @@ public class Player extends Actor {
             sb.append("Dark mitigation = ").append(df2.format(getDark_res() * 100)).append("%\n");
         }
         if (gear_crit > 0) sb.append("Crit = ").append(df2.format(gear_crit * 100)).append("%\n");
-        if (burn_mult > 1) sb.append("Burn = ").append(df2.format(burn_mult * 100 - 100)).append("%\n");
+        if ((burn_mult + gear_burn) > 1) sb.append("Burn = ").append(df2.format((burn_mult + gear_burn) * 100 - 100)).append("%\n");
         if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
         if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
