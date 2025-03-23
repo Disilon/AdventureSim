@@ -31,6 +31,8 @@ public class Player extends Actor {
             Scaling.atkhit, Element.phys,
             false,
             false);
+    ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 10, 1.2, 1.1, Scaling.atk, Element.phys, false,
+            false);
     ActiveSkill db = new ActiveSkill("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
             false);
     ActiveSkill qh = new ActiveSkill("Quick Hit", 1, 76.5, 93.5, 1, 10, 0.7, 0.7, Scaling.atk, Element.phys, false,
@@ -88,6 +90,7 @@ public class Player extends Actor {
     public void addSkillEffects() {
         pa.addDebuff("Poison", 3, 0.1);
         smoke.addDebuff("Smoke", 3, 0);
+        bash.addDebuff("Defense Break", 3, 0.2);
         db.addDebuff("Defense Break", 3, 0.25);
         mm.addDebuff("Resist Break", 3, 0.25);
         mark.addDebuff("Mark", 1, 0.2);
@@ -218,6 +221,9 @@ public class Player extends Actor {
                 active_skills.put("Defense Break", db);
                 active_skills.put("First Aid", fa);
                 active_skills.put("Prepare", prep);
+                active_skills.put("Bash", bash);
+                active_skills.put("Double Shot", ds);
+                active_skills.put("Quick Hit", qh);
             }
             case "Archer" -> {
                 tier = 2;
@@ -233,6 +239,7 @@ public class Player extends Actor {
                 }
                 active_skills.put("First Aid", fa);
                 active_skills.put("Prepare", prep);
+                active_skills.put("Bash", bash);
             }
             case "Warrior" -> {
                 tier = 2;

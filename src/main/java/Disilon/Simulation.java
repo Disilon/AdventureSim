@@ -168,7 +168,7 @@ public class Simulation {
             }
             while (status == StatusType.combat) {
                 int cycled = 0;
-                if (time > 600) {
+                if (time > 3600) {
                     if (sim_type == 2 || sim_type == 3) sim_type = 1;
                     sim_limit = 100; //sim slow fights less so that we don't freeze
                 }

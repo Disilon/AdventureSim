@@ -41,6 +41,9 @@ public class Enemy extends Actor {
     ActiveSkill da = new ActiveSkill("Double Attack", 2, 64.8, 79.2, 1, 0, 1, 1, Scaling.atk, Element.phys, false,
             false);
 
+    ActiveSkill cupid_atkint = new ActiveSkill("Cupid Hard Love Shot", 1, 189, 231, 1.75, 0, 1.4, 1.4, Scaling.atkint, Element.physmagic,
+            false, false);
+
     double strength = 1;
     double base_lvl;
 
@@ -198,6 +201,18 @@ public class Enemy extends Actor {
                 enemy_skills.add(dp);
                 enemy_skills.add(as);
             }
+            case "Dummy" -> {
+                base_lvl = 100;
+                base_hp_max = 400000 / base_lvl;
+                base_exp = 100000 / base_lvl;
+                base_atk = 600 / base_lvl;
+                base_def = 600 / base_lvl;
+                base_int = 600 / base_lvl;
+                base_res = 600 / base_lvl;
+                base_hit = 600 / base_lvl;
+                base_speed = 600 / base_lvl;
+                enemy_skills.add(cupid_atkint);
+            }
         }
         reroll();
     }
@@ -253,6 +268,9 @@ public class Enemy extends Actor {
             }
             case "Akuma" -> {
                 return roll < 50 ? dp : as;
+            }
+            case "Dummy" -> {
+                return cupid_atkint;
             }
             default -> {
                 return null;

@@ -978,6 +978,7 @@ public class UserForm extends JFrame {
         gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        Enemy.setMaximumRowCount(25);
         rootPanel.add(Enemy, gbc);
         final JLabel label23 = new JLabel();
         label23.setText("Game version:");

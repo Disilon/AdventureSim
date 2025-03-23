@@ -13,7 +13,9 @@ public enum Zone {
     z9("Devil"),
     z10("Shax"),
     z11("Dagon"),
-    z12("Lamia");
+    z12("Lamia"),
+    Dummy("Dummy"),
+    HelplessDummy("Dummy");
 
     final String display_name;
     final String[] possible_enemies;
@@ -61,6 +63,10 @@ public enum Zone {
             } else {
                 incrementStrength();
             }
+            if (this == HelplessDummy) {
+                e.atk = 1;
+                e.intel = 1;
+            }
         }
 //        System.out.println(enemies.stream().map(Enemy::getName).collect(Collectors.joining(", ")));
     }
@@ -82,6 +88,7 @@ public enum Zone {
         return switch (this) {
             case z6, z7, z8, z9 -> 5;
             case z10, z11, z12 -> 6;
+            default -> 6;
         };
     }
 
