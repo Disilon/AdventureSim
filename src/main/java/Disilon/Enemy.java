@@ -44,6 +44,17 @@ public class Enemy extends Actor {
     ActiveSkill cupid_atkint = new ActiveSkill("Cupid Hard Love Shot", 1, 189, 231, 1.75, 0, 1.4, 1.4, Scaling.atkint, Element.physmagic,
             false, false);
 
+    ActiveSkill blind = new ActiveSkill("Blind", 1, 76.5, 93.5, 1, 0, 1, 1, Scaling.atk, Element.phys,
+            false, false);
+    ActiveSkill backstab = new ActiveSkill("Back Stab", 1, 225, 275, 2, 0, 2, 2, Scaling.atk, Element.phys,
+            false, false);
+    ActiveSkill attack = new ActiveSkill("Attack", 1, 90, 110, 1, 0, 1, 1, Scaling.atk, Element.phys,
+            false, false);
+    ActiveSkill charge = new ActiveSkill("Charge Attack", 1, 270, 330, 1, 0, 2.5, 2, Scaling.atk, Element.phys,
+            false, false);
+    ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
+            false,false);
+
     double strength = 1;
     double base_lvl;
 
@@ -55,6 +66,8 @@ public class Enemy extends Actor {
         tsunami.addDebuff("Poison", 3, 0.1);
         bash.addDebuff("Defense Break", 3, 0.2);
         mm.addDebuff("Resist Break", 3, 0.25);
+        blind.addDebuff("Smoke", 3, 0);
+        mark.addDebuff("Mark", 1, 0.2);
     }
 
     public void setEnemy(String name) {
@@ -225,6 +238,65 @@ public class Enemy extends Actor {
                 base_speed = 600 / base_lvl;
                 enemy_skills.add(cupid_atkint);
             }
+            case "Astaroth" -> {
+                base_lvl = 40;
+                base_hp_max = 1800 / base_lvl;
+                base_exp = 180 / base_lvl;
+                base_atk = 120 / base_lvl;
+                base_def = 60 / base_lvl;
+                base_int = 60 / base_lvl;
+                base_res = 100 / base_lvl;
+                base_hit = 120 / base_lvl;
+                base_speed = 100 / base_lvl;
+                base_fire = 60 / base_lvl;
+                fire_res = 0.6;
+                enemy_skills.add(blind);
+                enemy_skills.add(poison);
+            }
+            case "Shinigami" -> {
+                base_lvl = 40;
+                base_hp_max = 2000 / base_lvl;
+                base_exp = 180 / base_lvl;
+                base_atk = 140 / base_lvl;
+                base_def = 60 / base_lvl;
+                base_int = 40 / base_lvl;
+                base_res = 120 / base_lvl;
+                base_hit = 120 / base_lvl;
+                base_speed = 60 / base_lvl;
+                base_dark = 60 / base_lvl;
+                dark_res = 0.6;
+                enemy_skills.add(killingstrike);
+                enemy_skills.add(backstab);
+            }
+            case "Wraith" -> {
+                base_lvl = 30;
+                base_hp_max = 1500 / base_lvl;
+                base_exp = 120 / base_lvl;
+                base_atk = 105 / base_lvl;
+                base_def = 90 / base_lvl;
+                base_int = 45 / base_lvl;
+                base_res = 5 / base_lvl;
+                base_hit = 90 / base_lvl;
+                base_speed = 75 / base_lvl;
+                base_wind = 45 / base_lvl;
+                wind_res = 0.6;
+                light_res = -0.5;
+                enemy_skills.add(attack);
+                enemy_skills.add(mark);
+            }
+            case "Ghoul" -> {
+                base_lvl = 30;
+                base_hp_max = 1950 / base_lvl;
+                base_exp = 120 / base_lvl;
+                base_atk = 105 / base_lvl;
+                base_def = 75 / base_lvl;
+                base_int = 30 / base_lvl;
+                base_res = 30 / base_lvl;
+                base_hit = 60 / base_lvl;
+                base_speed = 45 / base_lvl;
+                light_res = -0.5;
+                enemy_skills.add(charge);
+            }
         }
         reroll();
     }
@@ -285,7 +357,7 @@ public class Enemy extends Actor {
                 return cupid_atkint;
             }
             default -> {
-                return null;
+                return enemy_skills.get(random.nextInt(enemy_skills.size()));
             }
         }
     }

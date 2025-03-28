@@ -40,11 +40,11 @@ public class Player extends Actor {
     ActiveSkill qh = new ActiveSkill("Quick Hit", 1, 76.5, 93.5, 1, 10, 0.7, 0.7, Scaling.atk, Element.phys, false,
             false);
     ActiveSkill ab = new ActiveSkill("Aura Blade", 1, 121.5, 148.5, 1, 15, 1.3, 1.3, Scaling.atk, Element.light,
-            false,
-            false);
+            false,false);
+    ActiveSkill sr = new ActiveSkill("Sword Rush", 3, 47.25, 57.75, 1, 20, 1.5, 1.5, Scaling.atk, Element.phys,
+            false, false);
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
-            false,
-            false);
+            false,false);
     ActiveSkill charge = new ActiveSkill("Charge Up", 1, 0, 0, 0, 50, 2, 2, Scaling.atk, Element.none, false,
             false);
     ActiveSkill fball = new ActiveSkill("Fire Ball", 1, 99, 121, 1.35, 20, 1.15, 1, Scaling.intel, Element.fire,
@@ -73,13 +73,15 @@ public class Player extends Actor {
             false);
     ActiveSkill push = new ActiveSkill("Push Blast", 1, 99, 121, 0.9, 30, 1.3, 1.3, Scaling.intel,
             Element.magic, true, false);
+    ActiveSkill doubleattack = new ActiveSkill("Double Attack", 2, 64.8, 79.2, 1, 7, 1, 1, Scaling.atk,
+            Element.phys, false, false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
     protected boolean holylight_enabled;
     protected boolean aurablade_enabled;
     protected boolean eblast_enabled;
     public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Cleric", "Mage", "Fighter",
-            "Warrior", "Archer", "Student"};
+            "Warrior", "Archer", "Student", "Thief"};
     public int tier = 3;
     public double milestone_exp_mult = 1;
     public double old_milestone_exp_mult = 1;
@@ -257,6 +259,7 @@ public class Player extends Actor {
                 active_skills.put("Quick Hit", qh);
                 active_skills.put("Aura Blade", ab);
                 active_skills.put("Defense Break", db);
+                active_skills.put("Sword Rush", sr);
                 active_skills.put("First Aid", fa);
             }
             case "Cleric" -> {
@@ -270,6 +273,17 @@ public class Player extends Actor {
                 active_skills.put("Heal", heal);
                 active_skills.put("First Aid", fa);
                 active_skills.put("Bless", bless);
+            }
+            case "Thief" -> {
+                tier = 2;
+                passives.put("Drop Boost", dropBoost);
+                passives.put("Dagger Mastery", daggerMastery);
+                passives.put("Speed Boost", speedBoost);
+                passives.put("Dodge", dodge);
+                active_skills.put("Bash", bash);
+                active_skills.put("Double Attack", doubleattack);
+                active_skills.put("Hide", hide);
+                active_skills.put("Prepare", prep);
             }
         }
     }
@@ -394,6 +408,15 @@ public class Player extends Actor {
                 base_res = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Thief" -> {
+                base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
             }
         }
         refreshStats();
@@ -602,7 +625,7 @@ public class Player extends Actor {
         return switch (tier) {
             case 0 -> 0.025;
             case 1 -> 0.05;
-            case 2 -> 0.75;
+            case 2 -> 0.075;
             case 3 -> 0.1;
             default -> 0;
         };
@@ -612,7 +635,7 @@ public class Player extends Actor {
         return switch (tier) {
             case 0 -> 10;
             case 1 -> 35;
-            case 2 -> 50;
+            case 2 -> 55;
             case 3 -> Main.game_version >= 1532 ? 90 : 75;
             default -> 0;
         };

@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import static Disilon.Main.random;
 
 public enum Zone {
+    z4("Wraith/Ghoul"),
+    z5("Astaroth/Shinigami"),
     z6("Tengu"),
     z7("Amon"),
     z8("Tengu/Amon/Akuma"),
@@ -86,6 +88,8 @@ public enum Zone {
 
     public double getTime_to_respawn() {
         return switch (this) {
+            case z4 -> 4;
+            case z5 -> 4.5;
             case z6, z7, z8, z9 -> 5;
             case z10, z11, z12 -> 6;
             default -> 6;

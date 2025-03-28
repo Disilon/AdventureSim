@@ -335,6 +335,7 @@ public class ActiveSkill {
 
         double hit_chance = (attacker.isSmoked() ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
+        if (name.equals("Back Stab") && !defender.isSmoked()) hit_chance *= 0.5;
         used++;
         hit_chance_sum += hit_chance;
         if (defender.zone != null) {
@@ -356,6 +357,7 @@ public class ActiveSkill {
                 dmg_mult += attacker.hide_bonus;
                 dmg_mult *= 1.0 + (attacker.ambush_target == defender ? attacker.ambush.bonus : 0);
                 dmg_mult *= this.dmg_mult;
+                if (name.equals("Back Stab") && defender.isSmoked()) dmg_mult *= 2;
                 enemy_resist = switch (this.element) {
                     case Element.dark -> {
                         atk = attacker.getDark();
