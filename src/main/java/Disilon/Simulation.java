@@ -36,6 +36,12 @@ public class Simulation {
         if (type3 != null) potion3 = new Potion(type3, tier3, threshold3);
     }
 
+    public void setupAndRun(Setup setup) {
+        player = new Player(setup);
+        //player.enablePassives(new String[setup.pskill1, setup.pskill2, setup.pskill3]);
+
+    }
+
     public void run(String skill1, double lvl1, SkillMod mod1, int setting1, String skill2, double lvl2, SkillMod mod2,
                     int setting2, String skill3, double lvl3, SkillMod mod3,
                     int setting3, double reroll) {

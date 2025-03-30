@@ -91,6 +91,12 @@ public class Player extends Actor {
         initializeSets();
     }
 
+    public Player(Setup setup) {
+        this();
+        this.setClass(setup.playerclass);
+        this.setCLML(setup.cl, setup.ml);
+    }
+
     public void addSkillEffects() {
         pa.addDebuff("Poison", 3, 0.1);
         pa1541.addDebuff("Poison", 3, 0.15);

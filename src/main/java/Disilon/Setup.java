@@ -3,6 +3,7 @@ package Disilon;
 import Disilon.Equipment.Quality;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 public class Setup implements Serializable {
     String playerclass;
@@ -79,8 +80,42 @@ public class Setup implements Serializable {
     int simulations;
     double sim_hours;
     int sim_cl;
+    HashMap<String, PassiveDTO> passives_data;
+
+    public static class PassiveDTO implements Serializable{
+        double lvl;
+        String name;
+        boolean enabled;
+        public PassiveDTO() {
+        }
+
+        public double getLvl() {
+            return lvl;
+        }
+
+        public void setLvl(double lvl) {
+            this.lvl = lvl;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
 
     public Setup() {
+        this.passives_data = new HashMap<>();
         this.playerclass = "Sniper";
         this.ml = 140;
         this.cl = 75;
@@ -143,7 +178,7 @@ public class Setup implements Serializable {
         this.pskill1_lvl = 0;
         this.pskill2_lvl = 0;
         this.pskill3_lvl = 0;
-        this.gameversion = "1537";
+        this.gameversion = "1541";
         this.reroll = 0;
         this.milestone = 162.5;
         this.crafting_lvl = 20;
@@ -747,5 +782,13 @@ public class Setup implements Serializable {
 
     public void setSim_cl(int sim_cl) {
         this.sim_cl = sim_cl;
+    }
+
+    public HashMap<String, PassiveDTO> getPassives_data() {
+        return passives_data;
+    }
+
+    public void setPassives_data(HashMap<String, PassiveDTO> passives_data) {
+        this.passives_data = passives_data;
     }
 }
