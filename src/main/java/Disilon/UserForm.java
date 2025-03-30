@@ -1803,9 +1803,9 @@ public class UserForm extends JFrame {
     }
 
     private void setupPotions() {
-        String type1 = null;
-        String type2 = null;
-        String type3 = null;
+        String type1 = "None";
+        String type2 = "None";
+        String type3 = "None";
         int tier1 = 0;
         int tier2 = 0;
         int tier3 = 0;

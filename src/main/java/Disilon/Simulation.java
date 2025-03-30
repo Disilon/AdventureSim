@@ -31,13 +31,45 @@ public class Simulation {
 
     public void setupPotions(String type1, int tier1, int threshold1, String type2, int tier2, int threshold2,
                              String type3, int tier3, int threshold3) {
-        if (type1 != null) potion1 = new Potion(type1, tier1, threshold1);
-        if (type2 != null) potion2 = new Potion(type2, tier2, threshold2);
-        if (type3 != null) potion3 = new Potion(type3, tier3, threshold3);
+        if (!type1.equals("None")) {
+            potion1 = new Potion(type1, tier1, threshold1);
+        } else {
+            potion1 = null;
+        }
+        if (!type2.equals("None")) {
+            potion2 = new Potion(type2, tier2, threshold2);
+        } else {
+            potion2 = null;
+        }
+        if (!type3.equals("None")) {
+            potion3 = new Potion(type3, tier3, threshold3);
+        } else {
+            potion3 = null;
+        }
+    }
+
+    public void setupPotions(String type1, int threshold1, String type2, int threshold2,
+                             String type3, int threshold3) {
+        if (!type1.equals("None")) {
+            potion1 = new Potion(type1.substring(0, 2), Integer.parseInt(type1.substring(4)), threshold1);
+        } else {
+            potion1 = null;
+        }
+        if (!type2.equals("None")) {
+            potion2 = new Potion(type2.substring(0, 2), Integer.parseInt(type2.substring(4)), threshold2);
+        } else {
+            potion2 = null;
+        }
+        if (!type3.equals("None")) {
+            potion3 = new Potion(type3.substring(0, 2), Integer.parseInt(type3.substring(4)), threshold3);
+        } else {
+            potion3 = null;
+        }
     }
 
     public void setupAndRun(Setup setup) {
         player = new Player(setup);
+        player.setClass(setup.playerclass);
         player.equipment.clear();
         player.setEquip("MH", setup.mh_name, setup.mh_tier, setup.mh_lvl);
         player.setEquip("OH", setup.oh_name, setup.oh_tier, setup.oh_lvl);
@@ -49,8 +81,40 @@ public class Simulation {
         player.setEquip("Accessory1", setup.accessory1_name, setup.accessory1_tier, setup.accessory1_lvl);
         player.setEquip("Accessory2", setup.accessory2_name, setup.accessory2_tier, setup.accessory2_lvl);
         player.setEquip("Necklace", setup.necklace_name, setup.necklace_tier, setup.necklace_lvl);
-        //player.enablePassives(new String[setup.pskill1, setup.pskill2, setup.pskill3]);
-
+        setupPotions(setup.potion1, setup.potion1_t, setup.potion2, setup.potion2_t, setup.potion3, setup.potion3_t);
+        player.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3});
+        int prepare_threshold = 0;
+        String skill1 = setup.skill1;
+        String skill2 = setup.skill2;
+        String skill3 = setup.skill3;
+        player.eblast_enabled = skill1.equals("Elemental Blast") || skill2.equals("Elemental Blast") || skill3.equals("Elemental Blast");
+        player.holylight_enabled = skill1.equals("Holy Light") || skill2.equals("Holy Light") || skill3.equals("Holy Light");
+        player.aurablade_enabled = skill1.equals("Aura Blade") || skill2.equals("Aura Blade") || skill3.equals("Aura Blade");
+        player.prepare = null;
+        ActiveSkill s1 = player.getSkill(skill1);
+        s1.setSkill(setup.skill1_mod);
+        //s1.old_lvl = lvl1;
+        ActiveSkill s2;
+        s2 = player.getSkill(skill2);
+        if (s2 != null) {
+            s2.setSkill(setup.skill2_mod);
+            //s2.old_lvl = lvl2;
+        }
+        ActiveSkill s3;
+        s3 = player.getSkill(skill3);
+        if (s3 != null) {
+            s3.setSkill(setup.skill3_mod);
+            //s3.old_lvl = lvl3;
+        }
+        if (skill1.equals("Prepare")) prepare_threshold = setup.skill1_s;
+        if (skill2.equals("Prepare")) prepare_threshold = setup.skill2_s;
+        if (skill3.equals("Prepare")) prepare_threshold = setup.skill3_s;
+        player.disableAllActives();
+        if (s1 != null) s1.enabled = true;
+        if (s2 != null) s2.enabled = true;
+        if (s3 != null) s3.enabled = true;
+        run(s1, setup.skill1_s, s2, setup.skill2_s, s3, setup.skill3_s, prepare_threshold,
+                setup.reroll);
     }
 
     public void run(String skill1, double lvl1, SkillMod mod1, int setting1, String skill2, double lvl2, SkillMod mod2,

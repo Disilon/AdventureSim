@@ -56,7 +56,6 @@ public class Main {
                 Map<String, Map> accessoryDataMap = gson.fromJson(accessoryReader, Map.class);
                 twohanded.clear();
                 items.clear();
-
                 weaponDataMap.forEach((slot, value) -> {
                     for (Object item : value.entrySet()) {
                         String name = ((Map.Entry<String, Map>) item).getKey();
