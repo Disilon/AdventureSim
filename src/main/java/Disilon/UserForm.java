@@ -133,6 +133,7 @@ public class UserForm extends JFrame {
     private JButton Update_lvls;
     private JMenuBar Bar;
     private JButton New_tab;
+    private JScrollPane LeftPane;
     private JTable ActiveSkills;
     private JTable PassiveSkills;
     DefaultTableModel activeSkillsModel;
@@ -1187,7 +1188,7 @@ public class UserForm extends JFrame {
         //RightPanel.setPreferredSize(new Dimension(700, 1050));
 
         activeSkillsModel = new DefaultTableModel(new String[] {"Skill", "Lvl", "exp %"}, 3);
-        //.setColumnIdentifiers(new String[] {"Skill", "Lvl", "exp %"});
+        activeSkillsModel.setColumnIdentifiers(new String[] {"Skill", "Lvl", "exp %"});
         ActiveSkills = new JTable();
         ActiveSkills.setModel(activeSkillsModel);
         ActiveSkills.setTableHeader(new JTableHeader());
@@ -1199,11 +1200,13 @@ public class UserForm extends JFrame {
         passiveSkillsModel.setColumnIdentifiers(new String[] {"Skill", "Lvl", "exp %"});
         PassiveSkills = new JTable();
         PassiveSkills.setModel(passiveSkillsModel);
-        LeftPanel.add(new JScrollPane(ActiveSkills));
+
+        LeftPanel.add(ActiveSkills);
         LeftPanel.add(PassiveSkills);
+        LeftPane = new JScrollPane(LeftPanel);
 
         RootPanel.setLayout(new BoxLayout(RootPanel, BoxLayout.LINE_AXIS));
-        RootPanel.add(LeftPanel, gbc);
+        RootPanel.add(LeftPane, gbc);
         RootPanel.add(RightPanel, gbc);
         this.setContentPane(RootPanel);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
