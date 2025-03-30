@@ -207,6 +207,13 @@ public class Actor {
         }
     }
 
+    public void setEquip(String slot, String name, Equipment.Quality quality, int lvl) {
+        if (name.equals("None")) return;
+        Equipment e = Main.equipmentData.items.get(name).clone();
+        e.setQualityLvl(quality, lvl);
+        equipment.put(slot, e);
+    }
+
     public void enableSet(String bonus, Equipment.Quality quality, int upgrade) {
         double tier = quality.getMult();
         switch (bonus.toLowerCase()) {

@@ -2,7 +2,6 @@ package Disilon;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static Disilon.Main.df2;
 
@@ -23,8 +22,9 @@ public class Simulation {
     int alchemy_lvl = 20;
     int sim_type = 1;
     double time_to_respawn = -1;
-    String full_result = "";
-    String essential_result = "";
+    String skills_info = "";
+    String result_info = "";
+    String lvling_info = "";
 
     public Simulation() {
     }
@@ -38,6 +38,17 @@ public class Simulation {
 
     public void setupAndRun(Setup setup) {
         player = new Player(setup);
+        player.equipment.clear();
+        player.setEquip("MH", setup.mh_name, setup.mh_tier, setup.mh_lvl);
+        player.setEquip("OH", setup.oh_name, setup.oh_tier, setup.oh_lvl);
+        player.setEquip("Helmet", setup.helmet_name, setup.helmet_tier, setup.helmet_lvl);
+        player.setEquip("Chest", setup.chest_name, setup.chest_tier, setup.chest_lvl);
+        player.setEquip("Pants", setup.pants_name, setup.pants_tier, setup.pants_lvl);
+        player.setEquip("Bracer", setup.bracer_name, setup.bracer_tier, setup.bracer_lvl);
+        player.setEquip("Boots", setup.boots_name, setup.boots_tier, setup.boots_lvl);
+        player.setEquip("Accessory1", setup.accessory1_name, setup.accessory1_tier, setup.accessory1_lvl);
+        player.setEquip("Accessory2", setup.accessory2_name, setup.accessory2_tier, setup.accessory2_lvl);
+        player.setEquip("Necklace", setup.necklace_name, setup.necklace_tier, setup.necklace_lvl);
         //player.enablePassives(new String[setup.pskill1, setup.pskill2, setup.pskill3]);
 
     }
@@ -93,7 +104,6 @@ public class Simulation {
         double dot_overkill = 0;
         double ignore_deaths = 0;
         double enemy_dmg = 0;
-        int enemy_hits = 0;
         double healed = 0;
         int kills = 0;
         int cleared = 0;
@@ -106,31 +116,9 @@ public class Simulation {
         if (potion2 != null) potion2.used = 0;
         if (potion3 != null) potion3.used = 0;
         StringBuilder result = new StringBuilder();
-        StringBuilder setup = new StringBuilder();
+        StringBuilder skills_log = new StringBuilder();
         StringBuilder lvling_log = new StringBuilder();
-        setup.append(title).append("\n");
-        setup.append(player.getName()).append(" ML/CL ").append(player.getMl()).append("/").append(player.getCl()).append("\n");
-        setup.append("Active Skills: \n").append(skill1.name).append(" lvl ").append(skill1.lvl).append(" ").append(skill1.skillMod).append(" / ").append(setting1).append("\n");
-        if (skill2 != null)
-            setup.append(skill2.name).append(" lvl ").append(skill2.lvl).append(" ").append(skill2.skillMod).append(" / ").append(setting2).append("\n");
-        if (skill3 != null)
-            setup.append(skill3.name).append(" lvl ").append(skill3.lvl).append(" ").append(skill3.skillMod).append(" / ").append(setting3).append("\n");
-        setup.append("Passive skills:\n");
-        for (Map.Entry<String, PassiveSkill> passive : player.passives.entrySet()) {
-            if (passive.getValue().enabled) {
-                setup.append(passive.getValue().name).append(" ").append(passive.getValue().lvl).append("\n");
-            }
-        }
-        if (player.prepare != null) setup.append("Prepare threshold: ").append(prepare_threshold).append("%\n");
-        if (potion1 != null)
-            setup.append(potion1.type.toUpperCase()).append(" potion tier: ").append(potion1.tier).append(", threshold: ").append(potion1.threshold).append(
-                    "%\n");
-        if (potion2 != null)
-            setup.append(potion2.type.toUpperCase()).append(" potion tier: ").append(potion2.tier).append(", threshold: ").append(potion2.threshold).append(
-                    "%\n");
-        if (potion3 != null)
-            setup.append(potion3.type.toUpperCase()).append(" potion tier: ").append(potion3.tier).append(", threshold: ").append(potion3.threshold).append(
-                    "%\n");
+
         player.debuffs.clear();
         player.buffs.clear();
         boolean end = false;
@@ -249,6 +237,7 @@ public class Simulation {
                 if (player.casting != null) {
                     if (player.casting.cast > 0) {
                         if (player.casting.progressCast(delta)) {
+                            player.casting.used++;
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
@@ -332,7 +321,6 @@ public class Simulation {
                                     }
                                     if (dmg > 0) {
                                         player.setHp(player.getHp() - dmg);
-                                        enemy_hits++;
                                         enemy_dmg += dmg;
 //                                    System.out.println("Enemy dealt " + (int) dmg + " damage with " + enemy.casting.name);
                                     } else {
@@ -415,13 +403,14 @@ public class Simulation {
                 if (potion2 != null) potion2.checkPotion(player, delta);
                 if (potion3 != null) potion3.checkPotion(player, delta);
             }
-            if (delay_left <= 0) status = StatusType.respawn;
+            if (delay_left <= 0 && status == StatusType.delay) status = StatusType.respawn;
             if (status == StatusType.respawn) {
                 min_time = Math.min(min_time, time);
                 max_time = Math.max(max_time, time);
                 min_casts = Math.min(min_casts, casts);
                 max_casts = Math.max(max_casts, casts);
             }
+            //if (status == StatusType.death) status = StatusType.respawn;
             if (player.lvling) player.levelPassives(time);
             if (potion1 != null) {
                 crafting_time += potion1.calc_time(crafting_lvl, alchemy_lvl);
@@ -480,24 +469,29 @@ public class Simulation {
                 "\n");
         result.append("Time to clear: ").append(df2.format(min_time)).append("s - ").append(df2.format(max_time));
         result.append("s; avg: ").append(df2.format(total_time / cleared)).append("s \n");
-        result.append("Skill casts: ").append(min_casts).append(" - ").append(max_casts);
-        result.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
-        result.append("Average Overkill: ").append((int) (overkill / kills));
-        if (dot_overkill > 0) result.append("; DoT: ").append((int) (dot_overkill / kills));
-        result.append("\n");
-        result.append(player.getWeakAttackData());
-        if (skill1 != null && skill1.hit > 0) result.append(skill1.getRecordedData());
-        if (skill2 != null && skill2.hit > 0) result.append(skill2.getRecordedData());
-        if (skill3 != null && skill3.hit > 0) result.append(skill3.getRecordedData());
+        skills_log.append("Damage skill casts: ").append(min_casts).append(" - ").append(max_casts);
+        skills_log.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
+        skills_log.append("Average Overkill: ").append((int) (overkill / kills));
+        if (dot_overkill > 0) skills_log.append("; DoT: ").append((int) (dot_overkill / kills));
+        skills_log.append("\n");
+        skills_log.append(player.getWeakAttackData());
+        if (skill1 != null && !skill1.name.equals("Prepare"))
+            skills_log.append(skill1.getRecordedData(cleared + failed));
+        if (skill2 != null && !skill2.name.equals("Prepare"))
+            skills_log.append(skill2.getRecordedData(cleared + failed));
+        if (skill3 != null && !skill3.name.equals("Prepare"))
+            skills_log.append(skill3.getRecordedData(cleared + failed));
+        skills_log.append("\n");
         if (enemy_dmg > 0 && cleared > 0) {
-            result.append("Average enemy dmg per fight: ").append((int) enemy_dmg / cleared);
-            if (player.dot_tracking > 0) result.append("; DoT: ").append((int) (player.dot_tracking / cleared));
-            result.append("\n");
+            skills_log.append("Average enemy dmg per fight: ").append((int) enemy_dmg / cleared);
+            if (player.dot_tracking > 0) skills_log.append("; DoT: ").append((int) (player.dot_tracking / cleared));
+            skills_log.append("\n");
         }
         if (healed > 0 && cleared > 0) {
-            result.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
+            skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
         }
-        result.append(player.zone.getRecordedData());
+        skills_log.append("\n");
+        skills_log.append(player.zone.getRecordedData());
         for (Enemy enemy : zone.enemies) { //todo: save enemy skill data and report it
             if (enemy.enemy_skills != null) {
                 for (ActiveSkill s : enemy.enemy_skills) {
@@ -533,9 +527,9 @@ public class Simulation {
                         "\n");
         }
         if (!lvling_log.isEmpty()) {
-            result.append("Gained during simulation: \n").append(lvling_log);
+            lvling_info = "Gained during simulation: \n" + lvling_log;
         }
-        essential_result = result.toString();
-        full_result = setup + result.toString();
+        result_info = result.toString();
+        skills_info = skills_log.toString();
     }
 }

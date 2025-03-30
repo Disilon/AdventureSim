@@ -58,6 +58,37 @@ public class Equipment {
         this.equipStats = equipStats;
         calcStats();
     }
+
+    public Equipment clone() {
+        Equipment clone = new Equipment(this.name, this.slot);
+        clone.quality = this.quality;
+        clone.upgrade = this.upgrade;
+        clone.equipStats = this.equipStats;
+        clone.atk = this.atk;
+        clone.def = this.def;
+        clone.intel = this.intel;
+        clone.resist = this.resist;
+        clone.hit = this.hit;
+        clone.speed = this.speed;
+        clone.fire = this.fire;
+        clone.water = this.water;
+        clone.wind = this.wind;
+        clone.earth = this.earth;
+        clone.dark = this.dark;
+        clone.light = this.light;
+        clone.phys_res = this.phys_res;
+        clone.magic_res = this.magic_res;
+        clone.fire_res = this.fire_res;
+        clone.water_res = this.water_res;
+        clone.wind_res = this.wind_res;
+        clone.earth_res = this.earth_res;
+        clone.light_res = this.light_res;
+        clone.dark_res = this.dark_res;
+        clone.burn = this.burn;
+        clone.crit = this.crit;
+        clone.stun = this.stun;
+        return clone;
+    }
     
     public void setQualityLvl(Quality quality, int lvl) {
         this.quality = quality;

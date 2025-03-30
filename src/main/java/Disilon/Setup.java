@@ -57,8 +57,9 @@ public class Setup implements Serializable {
     String necklace_name;
     Quality necklace_tier;
     int necklace_lvl;
-    String result_full;
     String result_essential;
+    String result_skills;
+    String result_lvling;
     String stats;
     String enemy;
     Zone zone;
@@ -74,7 +75,6 @@ public class Setup implements Serializable {
     int crafting_lvl;
     int alchemy_lvl;
     boolean setsetup;
-    boolean setupinfo;
     boolean leveling;
     int sim_type;
     int simulations;
@@ -167,7 +167,6 @@ public class Setup implements Serializable {
         this.necklace_name = "None";
         this.necklace_tier = Quality.Good;
         this.necklace_lvl = 0;
-        this.result_full = "Click simulate to get sim data";
         this.result_essential = "Click simulate to get sim data";
         this.stats = "Click simulate to calculate stats";
         this.enemy = "";
@@ -184,7 +183,6 @@ public class Setup implements Serializable {
         this.crafting_lvl = 20;
         this.alchemy_lvl = 20;
         this.setsetup = true;
-        this.setupinfo = false;
         this.leveling = false;
         this.sim_type = 1;
         this.simulations = 1000;
@@ -608,14 +606,6 @@ public class Setup implements Serializable {
         this.necklace_lvl = necklace_lvl;
     }
 
-    public String getResult_full() {
-        return result_full;
-    }
-
-    public void setResult_full(String result_full) {
-        this.result_full = result_full;
-    }
-
     public String getResult_essential() {
         return result_essential;
     }
@@ -744,14 +734,6 @@ public class Setup implements Serializable {
         this.setsetup = setsetup;
     }
 
-    public boolean isSetupinfo() {
-        return setupinfo;
-    }
-
-    public void setSetupinfo(boolean setupinfo) {
-        this.setupinfo = setupinfo;
-    }
-
     public boolean isLeveling() {
         return leveling;
     }
@@ -790,5 +772,21 @@ public class Setup implements Serializable {
 
     public void setPassives_data(HashMap<String, PassiveDTO> passives_data) {
         this.passives_data = passives_data;
+    }
+
+    public String getResult_skills() {
+        return result_skills;
+    }
+
+    public void setResult_skills(String result_skills) {
+        this.result_skills = result_skills;
+    }
+
+    public String getResult_lvling() {
+        return result_lvling;
+    }
+
+    public void setResult_lvling(String result_lvling) {
+        this.result_lvling = result_lvling;
     }
 }

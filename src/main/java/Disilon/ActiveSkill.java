@@ -48,7 +48,7 @@ public class ActiveSkill {
     public double dmg_sum;
     public double debuff_chance_sum;
     public int used;
-    public boolean lvling = false;
+    public int hits_total;
     public double old_lvl;
     public double last_casted_at = 0;
     public boolean random_targets = false;
@@ -161,18 +161,30 @@ public class ActiveSkill {
         setSkill(lvl, SkillMod.Enemy);
     }
 
-    public void setSkill(double lvl, SkillMod type) {
-        if (name.equals("Prepare")) {
-            this.lvl = (int) lvl;
-        } else {
-            setSkill((int) lvl, type);
-        }
+    public void setLvl(double lvl) {
+        setLvl((int) lvl);
         double next_lvl_exp = need_for_lvl((int) lvl);
         exp = next_lvl_exp * (lvl - (int) lvl);
     }
 
-    public void setSkill(int lvl, SkillMod type) {
+    public void setLvl(int lvl) {
         this.lvl = lvl;
+    }
+
+    public void setSkill(double lvl, SkillMod type) {
+        setLvl(lvl);
+        setSkill(type);
+    }
+
+    public void setSkill(int lvl, SkillMod type) {
+        setLvl(lvl);
+        setSkill(type);
+    }
+
+    public void setSkill(SkillMod type) {
+        if (name.equals("Prepare")) {
+            return;
+        }
         this.min = this.base_min;
         this.max = this.base_max;
         this.hit = this.base_hit;
@@ -336,7 +348,7 @@ public class ActiveSkill {
         double hit_chance = (attacker.isSmoked() ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
         if (name.equals("Back Stab") && !defender.isSmoked()) hit_chance *= 0.5;
-        used++;
+        hits_total++;
         hit_chance_sum += hit_chance;
         if (defender.zone != null) {
             defender.zone.incrementHit(attacker, this, hit_chance);
@@ -536,34 +548,39 @@ public class ActiveSkill {
     }
 
     public double average_hit_chance() {
-        return used > 0 ? hit_chance_sum / used : 0;
+        return hits_total > 0 ? hit_chance_sum / hits_total : 0;
     }
 
     public double average_dmg() {
-        return used > 0 ? dmg_sum / used : 0;
+        return hits_total > 0 ? dmg_sum / hits_total : 0;
     }
 
     public double average_debuff_chance() {
-        return used > 0 ? debuff_chance_sum / used : 0;
+        return hits_total > 0 ? debuff_chance_sum / hits_total : 0;
     }
 
     public void clear_recorded_data() {
         used = 0;
+        hits_total = 0;
         hit_chance_sum = 0;
         dmg_sum = 0;
         debuff_chance_sum = 0;
         used_debuffed = 0;
     }
 
-    public String getRecordedData() {
-        return name + " hit: " + df2.format(average_hit_chance() * 100) + "%" +
-                "; dmg: " + (int) average_dmg() +
-                (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
-                "\n";
+    public String getRecordedData(int simulations) {
+        if (hit == 0) {
+            return name + " used: " + df2.format((double) used / simulations) + "\n";
+        } else {
+            return name + " used: " + df2.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
+                    "; dmg: " + (int) average_dmg() +
+                    (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
+                    "\n";
+        }
     }
 
     public String getWeakRecordedData() {
-        return name + " used: " + used + " hit: " + df2.format(average_hit_chance() * 100) + "%" +
+        return name + " used: " + used + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
                 "; dmg: " + (int) average_dmg() + "\n";
     }
 }
