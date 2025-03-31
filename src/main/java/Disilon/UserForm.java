@@ -20,13 +20,10 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Vector;
 
 import static Disilon.Main.df2;
@@ -131,20 +128,8 @@ public class UserForm extends JFrame {
     GridBagConstraints gbc = new GridBagConstraints();
 
     public Player player;
-    public Enemy enemy;
     public Simulation simulation;
     public Setup setup;
-    public LinkedHashMap<String, Equipment> mh = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> oh = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> helmet = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> chest = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> pants = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> bracers = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> boots = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> acc1 = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> acc2 = new LinkedHashMap<>();
-    public LinkedHashMap<String, Equipment> neck = new LinkedHashMap<>();
-    public ArrayList<String> twohanded = new ArrayList<>();
     public LinkedHashMap<JMenu, Setup> tabs = new LinkedHashMap<>();
     public JMenu selected_tab;
     ActionListener itemListener;
@@ -202,7 +187,6 @@ public class UserForm extends JFrame {
                 "json", "json");
         fileChooser.setFileFilter(filter);
         player = new Player();
-        enemy = new Enemy();
         setup = new Setup();
         simulation = new Simulation();
         RootPanel = new JPanel();
@@ -1151,11 +1135,11 @@ public class UserForm extends JFrame {
         this.setContentPane(RootPanel);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JScrollPane Scroll = new JScrollPane(BottomPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane
-                .HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        Scroll.getVerticalScrollBar().setUnitIncrement(16);
-        Scroll.getHorizontalScrollBar().setUnitIncrement(16);
-        this.add(Scroll);
+//        JScrollPane Scroll = new JScrollPane(BottomPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane
+//                .HORIZONTAL_SCROLLBAR_AS_NEEDED);
+//        Scroll.getVerticalScrollBar().setUnitIncrement(16);
+//        Scroll.getHorizontalScrollBar().setUnitIncrement(16);
+//        this.add(Scroll);
 
         this.setPreferredSize(new Dimension(1210, 910));
         this.pack();
@@ -1326,10 +1310,10 @@ public class UserForm extends JFrame {
                     int selectedOption = JOptionPane.showConfirmDialog(RightPanel, info, "Confirm", JOptionPane.YES_NO_OPTION);
                     if (selectedOption == JOptionPane.YES_OPTION) {
                         setup.milestone = player.milestone_exp_mult * 100;
-                        setup.ml = player.ml;
-                        setup.cl = player.cl;
+                        setup.ml = player.getMl();
+                        setup.cl = player.getCl();
                         for (String s : player.active_skills.keySet()) {
-                              setup.actives_lvls.put(s, player.active_skills.get(s).getLvl());
+                            setup.actives_lvls.put(s, player.active_skills.get(s).getLvl());
                         }
                         for (String s : player.passives.keySet()) {
                             setup.passives_lvls.put(s, player.passives.get(s).getLvl());
@@ -1383,7 +1367,18 @@ public class UserForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (MH_name.getSelectedItem() != null) {
                     String item_name = MH_name.getSelectedItem().toString();
-                    if (twohanded.contains(item_name)) {
+                    if (equipmentData.twohanded.contains(item_name)) {
+                        OH_name.setSelectedItem("None");
+                    }
+                }
+            }
+        });
+        OH_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (MH_name.getSelectedItem() != null) {
+                    String item_name = MH_name.getSelectedItem().toString();
+                    if (equipmentData.twohanded.contains(item_name)) {
                         OH_name.setSelectedItem("None");
                     }
                 }
@@ -1393,13 +1388,13 @@ public class UserForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (SetSetup.isSelected() && Helmet_name.getSelectedItem() != null && Helmet_name.getSelectedItem() != "None") {
-                    Equipment eq = helmet.get(Helmet_name.getSelectedItem().toString());
+                    Equipment eq = equipmentData.items.get(Helmet_name.getSelectedItem().toString());
                     if (eq != null) {
                         String set = eq.displayName;
-                        Chest_name.setSelectedItem(findItemFromSet(set, chest));
-                        Pants_name.setSelectedItem(findItemFromSet(set, pants));
-                        Bracer_name.setSelectedItem(findItemFromSet(set, bracers));
-                        Boots_name.setSelectedItem(findItemFromSet(set, boots));
+                        Chest_name.setSelectedItem(findItemFromSet(set, "CHEST"));
+                        Pants_name.setSelectedItem(findItemFromSet(set, "PANTS"));
+                        Bracer_name.setSelectedItem(findItemFromSet(set, "BRACERS"));
+                        Boots_name.setSelectedItem(findItemFromSet(set, "BOOTS"));
                     }
                 }
             }
@@ -1446,7 +1441,7 @@ public class UserForm extends JFrame {
         loadTab(selected_tab);
     }
 
-    public static class StringEditor extends DefaultCellEditor {
+    public class StringEditor extends DefaultCellEditor {
         JTextField textField;
 
         public StringEditor() {
@@ -1456,7 +1451,7 @@ public class UserForm extends JFrame {
         }
     }
 
-    public static class SpinnerEditor extends DefaultCellEditor {
+    public class SpinnerEditor extends DefaultCellEditor {
         JSpinner spinner;
         JSpinner.DefaultEditor editor;
         JTextField textField;
@@ -1542,9 +1537,9 @@ public class UserForm extends JFrame {
         }
     }
 
-    private String findItemFromSet(String name, LinkedHashMap<String, Equipment> set) {
-        for (Equipment e : set.values()) {
-            if (e.displayName.equals(name)) {
+    private String findItemFromSet(String name, String slot) {
+        for (Equipment e : equipmentData.items.values()) {
+            if (e.displayName.equals(name) && e.slot.equals(slot)) {
                 return e.name;
             }
         }
@@ -1553,7 +1548,6 @@ public class UserForm extends JFrame {
 
     private void selectClass(String name) {
         player.setClass(name);
-        equipmentData.loadEquipment();
         DefaultComboBoxModel<String> active1 =
                 new DefaultComboBoxModel<>(new Vector<>(player.getAvailableActiveSkills()));
         DefaultComboBoxModel<String> active2 =
@@ -1577,12 +1571,12 @@ public class UserForm extends JFrame {
         activeSkillsModel.setRowCount(0);
         for (String skill : player.active_skills.keySet()) {
             activeSkillsModel.addRow(new Object[]{skill, player.active_skills.get(skill).lvl,
-                    player.active_skills.get(skill).exp});
+                    (player.active_skills.get(skill).getLvl() - player.active_skills.get(skill).lvl) * 100});
         }
         passiveSkillsModel.setRowCount(0);
         for (String skill : player.passives.keySet()) {
             passiveSkillsModel.addRow(new Object[]{skill, player.passives.get(skill).lvl,
-                    player.passives.get(skill).exp});
+                    (player.passives.get(skill).getLvl() - player.passives.get(skill).lvl) * 100});
         }
     }
 
@@ -1596,100 +1590,57 @@ public class UserForm extends JFrame {
     }
 
     private void loadEquipment() {
-        try {
-            JsonReader weaponReader = new JsonReader(new FileReader("data/Weapons.json"));
-            Map<String, Map> weaponDataMap = gson.fromJson(weaponReader, Map.class);
-            JsonReader armorReader = new JsonReader(new FileReader("data/Armor.json"));
-            Map<String, Map> armorDataMap = gson.fromJson(armorReader, Map.class);
-            JsonReader accessoryReader = new JsonReader(new FileReader("data/Accessories.json"));
-            Map<String, Map> accessoryDataMap = gson.fromJson(accessoryReader, Map.class);
-            twohanded.clear();
-            clearSlot(MH_name);
-            clearSlot(OH_name);
-            clearSlot(Helmet_name);
-            clearSlot(Chest_name);
-            clearSlot(Pants_name);
-            clearSlot(Bracer_name);
-            clearSlot(Boots_name);
-            clearSlot(Accessory1_name);
-            clearSlot(Accessory2_name);
-            clearSlot(Necklace_name);
-            weaponDataMap.forEach((slot, value) -> {
-                for (Object item : value.entrySet()) {
-                    String name = ((Map.Entry<String, Map>) item).getKey();
-                    Map weapon_data = ((Map.Entry<String, Map>) item).getValue();
-                    if (slot.equals("MH")) {
-                        mh.put(name, new Equipment(name, slot, weapon_data));
-                        MH_name.addItem(name);
+        MH_name.addItem("None");
+        OH_name.addItem("None");
+        Helmet_name.addItem("None");
+        Chest_name.addItem("None");
+        Pants_name.addItem("None");
+        Bracer_name.addItem("None");
+        Boots_name.addItem("None");
+        Accessory1_name.addItem("None");
+        Accessory2_name.addItem("None");
+        Necklace_name.addItem("None");
+        equipmentData.loadEquipment();
+        for (String name : equipmentData.items.keySet()) {
+            String slot = equipmentData.items.get(name).slot;
+            switch (slot) {
+                case "MH":
+                    MH_name.addItem(name);
+                    if (!equipmentData.items.get(name).mh_only) {
+                        OH_name.addItem(name);
                     }
-                    if (slot.equals("2H")) {
-                        mh.put(name, new Equipment(name, slot, weapon_data));
-                        MH_name.addItem(name);
-                        twohanded.add(name);
+                    break;
+                case "2H":
+                    MH_name.addItem(name);
+                    break;
+                case "OH":
+                    if (!equipmentData.items.get(name).mh_only) {
+                        OH_name.addItem(name);
                     }
-                    if (slot.equals("MH") || slot.equals("OH")) {
-                        if (!(weapon_data.containsKey("MH_ONLY") && (boolean) weapon_data.get("MH_ONLY"))) {
-                            oh.put(name, new Equipment(name, slot, weapon_data));
-                            OH_name.addItem(name);
-                        }
-                    }
-                }
-            });
-            armorDataMap.forEach((slot, value) -> {
-                for (Object item : value.entrySet()) {
-                    String name = ((Map.Entry<String, Map>) item).getKey();
-                    Equipment e = new Equipment(name, slot,
-                            ((Map.Entry<String, Map>) item).getValue());
-                    if (slot.equals("HEADGEAR")) {
-                        helmet.put(name, e);
-                        Helmet_name.addItem(name);
-                        if (e.displayName.equals("Leather")) Helmet_name.setSelectedItem(name);
-                    }
-                    if (slot.equals("BOOTS")) {
-                        boots.put(name, e);
-                        Boots_name.addItem(name);
-                        if (e.displayName.equals("Leather")) Boots_name.setSelectedItem(name);
-                    }
-                    if (slot.equals("BRACERS")) {
-                        bracers.put(name, e);
-                        Bracer_name.addItem(name);
-                        if (e.displayName.equals("Leather")) Bracer_name.setSelectedItem(name);
-                    }
-                    if (slot.equals("PANTS")) {
-                        pants.put(name, e);
-                        Pants_name.addItem(name);
-                        if (e.displayName.equals("Leather")) Pants_name.setSelectedItem(name);
-                    }
-                    if (slot.equals("CHEST")) {
-                        chest.put(name, e);
-                        Chest_name.addItem(name);
-                        if (e.displayName.equals("Leather")) Chest_name.setSelectedItem(name);
-                    }
-                }
-            });
-            accessoryDataMap.forEach((slot, value) -> {
-                for (Object item : value.entrySet()) {
-                    String name = ((Map.Entry<String, Map>) item).getKey();
-                    if (slot.equals("NECK")) {
-                        neck.put(name, new Equipment(name, slot,
-                                ((Map.Entry<String, Map>) item).getValue()));
-                        Necklace_name.addItem(name);
-                        if (name.equals("Metal Necklace")) Necklace_name.setSelectedItem(name);
-                    }
-                    if (slot.equals("RING")) {
-                        acc1.put(name, new Equipment(name, slot,
-                                ((Map.Entry<String, Map>) item).getValue()));
-                        Accessory1_name.addItem(name);
-                        if (name.equals("Golden Belt")) Accessory1_name.setSelectedItem(name);
-                        acc2.put(name, new Equipment(name, slot,
-                                ((Map.Entry<String, Map>) item).getValue()));
-                        Accessory2_name.addItem(name);
-                        if (name.equals("Metal Ring")) Accessory2_name.setSelectedItem(name);
-                    }
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
+                    break;
+                case "HEADGEAR":
+                    Helmet_name.addItem(name);
+                    break;
+                case "CHEST":
+                    Chest_name.addItem(name);
+                    break;
+                case "PANTS":
+                    Pants_name.addItem(name);
+                    break;
+                case "BRACERS":
+                    Bracer_name.addItem(name);
+                    break;
+                case "BOOTS":
+                    Boots_name.addItem(name);
+                    break;
+                case "RING":
+                    Accessory1_name.addItem(name);
+                    Accessory2_name.addItem(name);
+                    break;
+                case "NECK":
+                    Necklace_name.addItem(name);
+                    break;
+            }
         }
     }
 
@@ -1918,7 +1869,7 @@ public class UserForm extends JFrame {
             if (data.actives_lvls.containsKey(name)) {
                 double lvl = data.actives_lvls.get(name);
                 ActiveSkills.setValueAt((int) lvl, i, 1);
-                ActiveSkills.setValueAt((lvl - (int) lvl) * 100, i, 2);
+                ActiveSkills.setValueAt(df2.format((lvl - (int) lvl) * 100), i, 2);
             }
         }
         for (int i = 0; i < PassiveSkills.getRowCount(); i++) {
@@ -1935,7 +1886,7 @@ public class UserForm extends JFrame {
             if (data.passives_lvls.containsKey(name)) {
                 double lvl = data.passives_lvls.get(name);
                 PassiveSkills.setValueAt((int) lvl, i, 1);
-                PassiveSkills.setValueAt((lvl - (int) lvl) * 100, i, 2);
+                PassiveSkills.setValueAt(df2.format((lvl - (int) lvl) * 100), i, 2);
             }
         }
         showResult();

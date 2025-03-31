@@ -461,6 +461,7 @@ public class Simulation {
                 lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" " +
                         "\n");
         }
+        lvling_info = "";
         if (!lvling_log.isEmpty()) {
             lvling_info = "Gained during simulation: \n" + lvling_log;
         }
