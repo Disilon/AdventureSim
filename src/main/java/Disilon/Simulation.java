@@ -12,10 +12,6 @@ public class Simulation {
     double time_limit;
     int cl_limit;
     Player player;
-    Zone zone;
-    Potion potion1;
-    Potion potion2;
-    Potion potion3;
     StatusType status = StatusType.respawn;
     String title = "Default simulation.";
     int crafting_lvl = 20;
@@ -29,131 +25,21 @@ public class Simulation {
     public Simulation() {
     }
 
-    public void setupPotions(String type1, int tier1, int threshold1, String type2, int tier2, int threshold2,
-                             String type3, int tier3, int threshold3) {
-        if (!type1.equals("None")) {
-            potion1 = new Potion(type1, tier1, threshold1);
-        } else {
-            potion1 = null;
-        }
-        if (!type2.equals("None")) {
-            potion2 = new Potion(type2, tier2, threshold2);
-        } else {
-            potion2 = null;
-        }
-        if (!type3.equals("None")) {
-            potion3 = new Potion(type3, tier3, threshold3);
-        } else {
-            potion3 = null;
-        }
-    }
-
-    public void setupPotions(String type1, int threshold1, String type2, int threshold2,
-                             String type3, int threshold3) {
-        if (!type1.equals("None")) {
-            potion1 = new Potion(type1.substring(0, 2), Integer.parseInt(type1.substring(4)), threshold1);
-        } else {
-            potion1 = null;
-        }
-        if (!type2.equals("None")) {
-            potion2 = new Potion(type2.substring(0, 2), Integer.parseInt(type2.substring(4)), threshold2);
-        } else {
-            potion2 = null;
-        }
-        if (!type3.equals("None")) {
-            potion3 = new Potion(type3.substring(0, 2), Integer.parseInt(type3.substring(4)), threshold3);
-        } else {
-            potion3 = null;
-        }
-    }
-
-    public void setupAndRun(Setup setup) {
+    public Player setupAndRun(Setup setup) {
+        sim_type = setup.sim_type;
+        sim_limit = setup.simulations;
+        cl_limit = setup.sim_cl;
+        time_limit = setup.sim_hours;
         player = new Player(setup);
-        player.setClass(setup.playerclass);
-        player.equipment.clear();
-        player.setEquip("MH", setup.mh_name, setup.mh_tier, setup.mh_lvl);
-        player.setEquip("OH", setup.oh_name, setup.oh_tier, setup.oh_lvl);
-        player.setEquip("Helmet", setup.helmet_name, setup.helmet_tier, setup.helmet_lvl);
-        player.setEquip("Chest", setup.chest_name, setup.chest_tier, setup.chest_lvl);
-        player.setEquip("Pants", setup.pants_name, setup.pants_tier, setup.pants_lvl);
-        player.setEquip("Bracer", setup.bracer_name, setup.bracer_tier, setup.bracer_lvl);
-        player.setEquip("Boots", setup.boots_name, setup.boots_tier, setup.boots_lvl);
-        player.setEquip("Accessory1", setup.accessory1_name, setup.accessory1_tier, setup.accessory1_lvl);
-        player.setEquip("Accessory2", setup.accessory2_name, setup.accessory2_tier, setup.accessory2_lvl);
-        player.setEquip("Necklace", setup.necklace_name, setup.necklace_tier, setup.necklace_lvl);
-        setupPotions(setup.potion1, setup.potion1_t, setup.potion2, setup.potion2_t, setup.potion3, setup.potion3_t);
-        player.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3});
-        int prepare_threshold = 0;
-        String skill1 = setup.skill1;
-        String skill2 = setup.skill2;
-        String skill3 = setup.skill3;
-        player.eblast_enabled = skill1.equals("Elemental Blast") || skill2.equals("Elemental Blast") || skill3.equals("Elemental Blast");
-        player.holylight_enabled = skill1.equals("Holy Light") || skill2.equals("Holy Light") || skill3.equals("Holy Light");
-        player.aurablade_enabled = skill1.equals("Aura Blade") || skill2.equals("Aura Blade") || skill3.equals("Aura Blade");
-        player.prepare = null;
-        ActiveSkill s1 = player.getSkill(skill1);
-        s1.setSkill(setup.skill1_mod);
-        //s1.old_lvl = lvl1;
-        ActiveSkill s2;
-        s2 = player.getSkill(skill2);
-        if (s2 != null) {
-            s2.setSkill(setup.skill2_mod);
-            //s2.old_lvl = lvl2;
-        }
-        ActiveSkill s3;
-        s3 = player.getSkill(skill3);
-        if (s3 != null) {
-            s3.setSkill(setup.skill3_mod);
-            //s3.old_lvl = lvl3;
-        }
-        if (skill1.equals("Prepare")) prepare_threshold = setup.skill1_s;
-        if (skill2.equals("Prepare")) prepare_threshold = setup.skill2_s;
-        if (skill3.equals("Prepare")) prepare_threshold = setup.skill3_s;
-        player.disableAllActives();
-        if (s1 != null) s1.enabled = true;
-        if (s2 != null) s2.enabled = true;
-        if (s3 != null) s3.enabled = true;
-        run(s1, setup.skill1_s, s2, setup.skill2_s, s3, setup.skill3_s, prepare_threshold,
-                setup.reroll);
+        crafting_lvl = setup.crafting_lvl;
+        alchemy_lvl = setup.alchemy_lvl;
+        return run(setup.reroll);
     }
 
-    public void run(String skill1, double lvl1, SkillMod mod1, int setting1, String skill2, double lvl2, SkillMod mod2,
-                    int setting2, String skill3, double lvl3, SkillMod mod3,
-                    int setting3, double reroll) {
-        int prepare_threshold = 0;
-        player.setClass(player.name);
-        player.eblast_enabled = skill1.equals("Elemental Blast") || skill2.equals("Elemental Blast") || skill3.equals("Elemental Blast");
-        player.holylight_enabled = skill1.equals("Holy Light") || skill2.equals("Holy Light") || skill3.equals("Holy Light");
-        player.aurablade_enabled = skill1.equals("Aura Blade") || skill2.equals("Aura Blade") || skill3.equals("Aura Blade");
-        player.prepare = null;
-        ActiveSkill s1 = player.getSkill(skill1);
-        s1.setSkill(lvl1, mod1);
-        s1.old_lvl = lvl1;
-        ActiveSkill s2;
-        s2 = player.getSkill(skill2);
-        if (s2 != null) {
-            s2.setSkill(lvl2, mod2);
-            s2.old_lvl = lvl2;
-        }
-        ActiveSkill s3;
-        s3 = player.getSkill(skill3);
-        if (s3 != null) {
-            s3.setSkill(lvl3, mod3);
-            s3.old_lvl = lvl3;
-        }
-        if (skill1.equals("Prepare")) prepare_threshold = setting1;
-        if (skill2.equals("Prepare")) prepare_threshold = setting2;
-        if (skill3.equals("Prepare")) prepare_threshold = setting3;
-        player.disableAllActives();
-        if (s1 != null) s1.enabled = true;
-        if (s2 != null) s2.enabled = true;
-        if (s3 != null) s3.enabled = true;
-        run(s1, setting1, s2, setting2, s3, setting3, prepare_threshold,
-                reroll);
-    }
-
-    public void run(ActiveSkill skill1, int setting1, ActiveSkill skill2, int setting2, ActiveSkill skill3,
-                    int setting3, double prepare_threshold, double reroll) {
+    public Player run(double reroll) {
+        ActiveSkill skill1 = player.skill1;
+        ActiveSkill skill2 = player.skill2;
+        ActiveSkill skill3 = player.skill3;
         double exp = 0;
         double total_time = 0;
         double death_time = 0;
@@ -174,11 +60,8 @@ public class Simulation {
         int failed = 0;
         double oom_time = 0;
         player.dot_tracking = 0;
-        title = zone.toString();
-        if (time_to_respawn == -1) time_to_respawn = zone.getTime_to_respawn();
-        if (potion1 != null) potion1.used = 0;
-        if (potion2 != null) potion2.used = 0;
-        if (potion3 != null) potion3.used = 0;
+        title = player.zone.toString();
+        if (time_to_respawn == -1) time_to_respawn = player.zone.getTime_to_respawn();
         StringBuilder result = new StringBuilder();
         StringBuilder skills_log = new StringBuilder();
         StringBuilder lvling_log = new StringBuilder();
@@ -195,22 +78,20 @@ public class Simulation {
             int skill_cycle = 1;
             ActiveSkill previous_cast = null;
             status = StatusType.respawn;
-            zone.respawn();
+            player.zone.respawn();
             player.checkAmbush();
             if (Main.game_version < 1535 && reroll >= 1) {
-                while (zone.getRandomEnemy().getHp_max() >= reroll) { //won't work properly with multiple enemies
-                    zone.respawn();
+                while (player.zone.getRandomEnemy().getHp_max() >= reroll) { //won't work properly with multiple enemies
+                    player.zone.respawn();
                     delta = time_to_respawn;
                     time += delta;
                     total_time += delta;
                     player.setMp(player.getMp() + player.getMp_regen() * delta);
-                    if (potion1 != null) potion1.checkPotion(player, delta);
-                    if (potion2 != null) potion2.checkPotion(player, delta);
-                    if (potion3 != null) potion3.checkPotion(player, delta);
+                    player.checkPotion(delta);
                     failed++;
                 }
             }
-            skill1.used_in_rotation = 0;
+            if (skill1 != null) skill1.used_in_rotation = 0;
             if (skill2 != null) skill2.used_in_rotation = 0;
             if (skill3 != null) skill3.used_in_rotation = 0;
             while (time < time_to_respawn) {
@@ -218,9 +99,7 @@ public class Simulation {
                 time += delta;
                 total_time += delta;
                 player.setMp(player.getMp() + player.getMp_regen() * delta);
-                if (potion1 != null) potion1.checkPotion(player, delta);
-                if (potion2 != null) potion2.checkPotion(player, delta);
-                if (potion3 != null) potion3.checkPotion(player, delta);
+                player.checkPotion(delta);
             }
             if (time >= time_to_respawn) {
                 status = StatusType.combat;
@@ -234,9 +113,9 @@ public class Simulation {
                 while (player.casting == null) {
                     switch (skill_cycle) {
                         case 1 -> {
-                            if (skill1 != null && skill1.canCast(player) && skill1.shouldUse(player, setting1)) {
+                            if (skill1 != null && skill1.canCast(player) && skill1.shouldUse(player)) {
                                 player.casting = skill1;
-                                player.casting.startCastPlayer(player, zone);
+                                player.casting.startCastPlayer(player, player.zone);
                                 cycled = 0;
                             } else {
                                 if (skill1 != null) skill1.used_in_rotation = 0;
@@ -245,9 +124,9 @@ public class Simulation {
                             }
                         }
                         case 2 -> {
-                            if (skill2 != null && skill2.canCast(player) && skill2.shouldUse(player, setting2)) {
+                            if (skill2 != null && skill2.canCast(player) && skill2.shouldUse(player)) {
                                 player.casting = skill2;
-                                player.casting.startCastPlayer(player, zone);
+                                player.casting.startCastPlayer(player, player.zone);
                                 cycled = 0;
                             } else {
                                 if (skill2 != null) skill2.used_in_rotation = 0;
@@ -256,9 +135,9 @@ public class Simulation {
                             }
                         }
                         case 3 -> {
-                            if (skill3 != null && skill3.canCast(player) && skill3.shouldUse(player, setting3)) {
+                            if (skill3 != null && skill3.canCast(player) && skill3.shouldUse(player)) {
                                 player.casting = skill3;
-                                player.casting.startCastPlayer(player, zone);
+                                player.casting.startCastPlayer(player, player.zone);
                                 cycled = 0;
                             } else {
                                 if (skill3 != null) skill3.used_in_rotation = 0;
@@ -269,12 +148,12 @@ public class Simulation {
                     }
                     if (cycled >= 4) {
                         player.casting = player.getWeakSkill();
-                        player.casting.startCastPlayer(player, zone);
+                        player.casting.startCastPlayer(player, player.zone);
                         cycled = 0;
                         skill_cycle = 1;
                     }
                 }
-                for (Iterator<Enemy> iterator = zone.enemies.iterator(); iterator.hasNext(); ) {
+                for (Iterator<Enemy> iterator = player.zone.enemies.iterator(); iterator.hasNext(); ) {
                     Enemy enemy = iterator.next();
                     if (enemy.casting == null) {
                         ActiveSkill enemyCast = enemy.getCasting();
@@ -291,13 +170,11 @@ public class Simulation {
                 }
                 delta = 0.1;
                 if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta());
-                delta = Math.min(delta, zone.calculateDelta());
+                delta = Math.min(delta, player.zone.calculateDelta());
                 time += delta;
                 total_time += delta;
                 player.setMp(player.getMp() + player.getMp_regen() * delta); //todo: implement mana properly for enemies
-                if (potion1 != null) potion1.checkPotion(player, delta);
-                if (potion2 != null) potion2.checkPotion(player, delta);
-                if (potion3 != null) potion3.checkPotion(player, delta);
+                player.checkPotion(delta);
                 if (player.casting != null) {
                     if (player.casting.cast > 0) {
                         if (player.casting.progressCast(delta)) {
@@ -306,7 +183,7 @@ public class Simulation {
                                 casts++;
                                 total_casts++;
                                 if (player.casting.aoe) {
-                                    for (Enemy enemy : zone.enemies) {
+                                    for (Enemy enemy : player.zone.enemies) {
                                         double dmg = player.casting.attack(player, enemy, 0);
                                         if (dmg > 0) {
                                             enemy.setHp(enemy.getHp() - dmg);
@@ -317,13 +194,13 @@ public class Simulation {
                                     }
                                 } else {
                                     if (target == null) {
-                                        target = zone.getRandomEnemy();
+                                        target = player.zone.getRandomEnemy();
                                         player.ambush_target = player.isAmbushing() ? target : null;
                                     }
                                     if (target != null) {
                                         if (player.casting.random_targets) {
                                             LinkedHashMap<Enemy, Integer> targets =
-                                                    zone.getRandomTargets(player.casting.hits);
+                                                    player.zone.getRandomTargets(player.casting.hits);
                                             targets.forEach((key, value) -> {
                                                 double dmg = player.casting.attack(player, key, value);
                                                 if (dmg > 0) {
@@ -365,7 +242,7 @@ public class Simulation {
                 } else {
                     oom_time += delta;
                 }
-                Iterator<Enemy> iterator = zone.enemies.iterator();
+                Iterator<Enemy> iterator = player.zone.enemies.iterator();
                 while (iterator.hasNext()) {
                     Enemy enemy = iterator.next();
                     if (enemy.casting != null) {
@@ -419,7 +296,7 @@ public class Simulation {
                         iterator.remove();
                     }
                 }
-                if (zone.enemies.isEmpty()) {
+                if (player.zone.enemies.isEmpty()) {
                     status = StatusType.delay;
                     cleared++;
                     if (player.casting != null) {
@@ -432,9 +309,7 @@ public class Simulation {
                     death_time += 15 * 60;
                     player.setHp(player.getHp_max());
                     player.setMp(player.getMp_max());
-                    if (potion1 != null) potion1.cooldown = 0;
-                    if (potion2 != null) potion2.cooldown = 0;
-                    if (potion3 != null) potion3.cooldown = 0;
+                    player.resetPotionCd();
                     ignore_deaths += time;
                     failed++;
                     //System.out.println("Player died at " + time);
@@ -442,7 +317,7 @@ public class Simulation {
             }
             if (player.prepare != null && (status == StatusType.respawn || status == StatusType.rerolling || status == StatusType.delay)) {
                 delta = 0.1;
-                while (player.getHp() / player.getHp_max() < prepare_threshold / 100 || player.getMp() / player.getMp_max() < prepare_threshold / 100) {
+                while (player.getHp() / player.getHp_max() < player.prepare_threshold / 100 || player.getMp() / player.getMp_max() < player.prepare_threshold / 100) {
                     //status = StatusType.prepare;
                     total_time += delta;
                     prepare_time += delta;
@@ -451,9 +326,7 @@ public class Simulation {
                     player.setHp(player.getHp() + player.getPrepare_hps() * delta);
                     player.setMp(player.getMp() + player.getPrepare_mps() * delta);
                     if (Main.game_version >= 1534) {
-                        if (potion1 != null) potion1.tickPotion(player, delta);
-                        if (potion2 != null) potion2.tickPotion(player, delta);
-                        if (potion3 != null) potion3.tickPotion(player, delta);
+                        player.tickPotion(delta);
                     }
                 }
             }
@@ -463,9 +336,7 @@ public class Simulation {
                 total_time += delta;
                 delay_left -= delta;
                 player.setMp(player.getMp() + player.getMp_regen() * delta);
-                if (potion1 != null) potion1.checkPotion(player, delta);
-                if (potion2 != null) potion2.checkPotion(player, delta);
-                if (potion3 != null) potion3.checkPotion(player, delta);
+                player.checkPotion(delta);
             }
             if (delay_left <= 0 && status == StatusType.delay) status = StatusType.respawn;
             if (status == StatusType.respawn) {
@@ -476,14 +347,14 @@ public class Simulation {
             }
             //if (status == StatusType.death) status = StatusType.respawn;
             if (player.lvling) player.levelPassives(time);
-            if (potion1 != null) {
-                crafting_time += potion1.calc_time(crafting_lvl, alchemy_lvl);
+            if (player.potion1 != null) {
+                crafting_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl);
             }
-            if (potion2 != null) {
-                crafting_time += potion2.calc_time(crafting_lvl, alchemy_lvl);
+            if (player.potion2 != null) {
+                crafting_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl);
             }
-            if (potion3 != null) {
-                crafting_time += potion3.calc_time(crafting_lvl, alchemy_lvl);
+            if (player.potion3 != null) {
+                crafting_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl);
             }
             if ((cleared + failed) >= 100000) end = true;
             switch (sim_type) {
@@ -503,14 +374,14 @@ public class Simulation {
         result.append(df2.format(player.milestone_exp_mult * 100)).append("%)\n");
 //        result.append("Exp/h without milestones: ").append((int) (exp / player.milestone_exp_mult / (total_time + death_time) * 3600)).append
 //        ("\n");
-        if (potion1 != null) {
-            result.append(potion1.getRecordedData(total_time + death_time));
+        if (player.potion1 != null) {
+            result.append(player.potion1.getRecordedData(total_time + death_time));
         }
-        if (potion2 != null) {
-            result.append(potion2.getRecordedData(total_time + death_time));
+        if (player.potion2 != null) {
+            result.append(player.potion2.getRecordedData(total_time + death_time));
         }
-        if (potion3 != null) {
-            result.append(potion3.getRecordedData(total_time + death_time));
+        if (player.potion3 != null) {
+            result.append(player.potion3.getRecordedData(total_time + death_time));
         }
         if (crafting_time > 0) {
             result.append("Effective exp/h: ").append((int) (exp / (total_time + crafting_time + death_time) * 3600)).append("\n");
@@ -556,7 +427,7 @@ public class Simulation {
         }
         skills_log.append("\n");
         skills_log.append(player.zone.getRecordedData());
-        for (Enemy enemy : zone.enemies) { //todo: save enemy skill data and report it
+        for (Enemy enemy : player.zone.enemies) { //todo: save enemy skill data and report it
             if (enemy.enemy_skills != null) {
                 for (ActiveSkill s : enemy.enemy_skills) {
 //                result.append(s.name).append(" used with smoke: ").append(df2.format((double) s.used_debuffed / s.used_in_rotation * 100.0)).append("% \n");
@@ -595,5 +466,6 @@ public class Simulation {
         }
         result_info = result.toString();
         skills_info = skills_log.toString();
+        return player;
     }
 }

@@ -53,6 +53,7 @@ public class ActiveSkill {
     public double last_casted_at = 0;
     public boolean random_targets = false;
     public boolean enabled = false;
+    public int use_setting;
 
     public ActiveSkill(String name) {
         this.name = name;
@@ -78,15 +79,15 @@ public class ActiveSkill {
         setSkill(lvl, SkillMod.Enemy);
     }
 
-    public boolean shouldUse(Actor actor, int setting) {
+    public boolean shouldUse(Actor actor) {
         if (heal) {
             used_in_rotation++;
-            return actor.getHp() / actor.getHp_max() * 100.0 < setting;
+            return actor.getHp() / actor.getHp_max() * 100.0 < use_setting;
         } else {
             if (name.equals("Bless") && actor.blessed > 0) {
                 return false;
             } else {
-                return used_in_rotation < setting;
+                return used_in_rotation < use_setting;
             }
         }
     }
@@ -159,6 +160,11 @@ public class ActiveSkill {
         this.base_buff_duration = duration;
         this.base_buff_bonus = bonus;
         setSkill(lvl, SkillMod.Enemy);
+    }
+
+    public double getLvl() {
+        double fraction = exp / need_for_lvl(lvl);
+        return lvl + fraction;
     }
 
     public void setLvl(double lvl) {
@@ -324,7 +330,7 @@ public class ActiveSkill {
         }
         Zone zone = attacker.zone;
         if (zone != null) {
-            for(Enemy enemy : zone.enemies) {
+            for (Enemy enemy : zone.enemies) {
                 if (heal && enemy.counter_heal) {
                     counter_dodge(attacker, enemy);
                 }
@@ -544,7 +550,7 @@ public class ActiveSkill {
     }
 
     public double need_for_lvl(int lvl) {
-        return ((Math.pow(lvl, 2)) * 1000);
+        return ((Math.pow(Math.max(lvl, 1), 2)) * 1000);
     }
 
     public double average_hit_chance() {

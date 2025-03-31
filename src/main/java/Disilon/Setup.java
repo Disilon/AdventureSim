@@ -80,42 +80,12 @@ public class Setup implements Serializable {
     int simulations;
     double sim_hours;
     int sim_cl;
-    HashMap<String, PassiveDTO> passives_data;
-
-    public static class PassiveDTO implements Serializable{
-        double lvl;
-        String name;
-        boolean enabled;
-        public PassiveDTO() {
-        }
-
-        public double getLvl() {
-            return lvl;
-        }
-
-        public void setLvl(double lvl) {
-            this.lvl = lvl;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-    }
+    HashMap<String, Double> passives_lvls;
+    HashMap<String, Double> actives_lvls;
 
     public Setup() {
-        this.passives_data = new HashMap<>();
+        this.passives_lvls = new HashMap<>();
+        this.actives_lvls = new HashMap<>();
         this.playerclass = "Sniper";
         this.ml = 140;
         this.cl = 75;
@@ -766,12 +736,20 @@ public class Setup implements Serializable {
         this.sim_cl = sim_cl;
     }
 
-    public HashMap<String, PassiveDTO> getPassives_data() {
-        return passives_data;
+    public HashMap<String, Double> getPassives_lvls() {
+        return passives_lvls;
     }
 
-    public void setPassives_data(HashMap<String, PassiveDTO> passives_data) {
-        this.passives_data = passives_data;
+    public void setPassives_lvls(HashMap<String, Double> passives_lvls) {
+        this.passives_lvls = passives_lvls;
+    }
+
+    public HashMap<String, Double> getActives_lvls() {
+        return actives_lvls;
+    }
+
+    public void setActives_lvls(HashMap<String, Double> actives_lvls) {
+        this.actives_lvls = actives_lvls;
     }
 
     public String getResult_skills() {

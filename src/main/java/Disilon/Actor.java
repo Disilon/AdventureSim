@@ -69,8 +69,8 @@ public class Actor {
     protected double set_hit = 1;
     protected double set_magicdmg = 1;
     protected double set_physdmg = 1;
-    protected double set_mit1 = 1;
-    protected double set_mit2 = 1;
+    protected double set_mit1 = 0;
+    protected double set_mit2 = 0;
 
     protected double hp_mult = 1;
     protected double mp_mult = 1;
@@ -96,6 +96,7 @@ public class Actor {
     protected double poison_mult = 1;
     protected double ailment_res = 1;
     protected ActiveSkill prepare;
+    protected double prepare_threshold;
     protected double exp;
     protected double exp_mult = 1;
     protected double mp_cost_add;
@@ -165,6 +166,17 @@ public class Actor {
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
     public Zone zone = null;
     public double dot_tracking = 0;
+    protected boolean holylight_enabled;
+    protected boolean aurablade_enabled;
+    protected boolean eblast_enabled;
+    public double milestone_exp_mult = 1;
+    public double old_milestone_exp_mult = 1;
+    public ActiveSkill skill1;
+    public ActiveSkill skill2;
+    public ActiveSkill skill3;
+    public Potion potion1;
+    public Potion potion2;
+    public Potion potion3;
 
     public void tick_debuffs() {
         smoked = false;

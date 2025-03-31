@@ -22,6 +22,11 @@ public class PassiveSkill {
         this.base_mp_mult = base_mp_mult;
     }
 
+    public double getLvl() {
+        double fraction = exp / need_for_lvl(lvl);
+        return lvl + fraction;
+    }
+
     public void setLvl(double lvl) {
         setLvl((int) lvl);
         double next_lvl_exp = need_for_lvl((int) lvl);
@@ -63,6 +68,6 @@ public class PassiveSkill {
     }
 
     public int need_for_lvl(int lvl) {
-        return (int) ((Math.pow(lvl, 2)) * 3000);
+        return (int) ((Math.pow(Math.max(lvl, 1), 2)) * 3000);
     }
 }

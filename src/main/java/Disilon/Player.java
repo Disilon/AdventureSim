@@ -77,14 +77,9 @@ public class Player extends Actor {
             Element.phys, false, false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
-    protected boolean holylight_enabled;
-    protected boolean aurablade_enabled;
-    protected boolean eblast_enabled;
     public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Cleric", "Mage", "Fighter",
             "Warrior", "Archer", "Student", "Thief"};
     public int tier = 3;
-    public double milestone_exp_mult = 1;
-    public double old_milestone_exp_mult = 1;
 
     public Player() {
         addSkillEffects();
@@ -95,6 +90,52 @@ public class Player extends Actor {
         this();
         this.setClass(setup.playerclass);
         this.setCLML(setup.cl, setup.ml);
+        this.old_cl = setup.cl;
+        this.old_ml = setup.ml;
+        this.lvling = setup.leveling;
+        this.zone = setup.zone;
+        this.zone.clear_recorded_data();
+        this.setupPotions(setup.potion1, setup.potion1_t, setup.potion2, setup.potion2_t, setup.potion3, setup.potion3_t);
+        this.clear_skills_recorded_data();
+        this.equipment.clear();
+        this.setEquip("MH", setup.mh_name, setup.mh_tier, setup.mh_lvl);
+        this.setEquip("OH", setup.oh_name, setup.oh_tier, setup.oh_lvl);
+        this.setEquip("Helmet", setup.helmet_name, setup.helmet_tier, setup.helmet_lvl);
+        this.setEquip("Chest", setup.chest_name, setup.chest_tier, setup.chest_lvl);
+        this.setEquip("Pants", setup.pants_name, setup.pants_tier, setup.pants_lvl);
+        this.setEquip("Bracer", setup.bracer_name, setup.bracer_tier, setup.bracer_lvl);
+        this.setEquip("Boots", setup.boots_name, setup.boots_tier, setup.boots_lvl);
+        this.setEquip("Accessory1", setup.accessory1_name, setup.accessory1_tier, setup.accessory1_lvl);
+        this.setEquip("Accessory2", setup.accessory2_name, setup.accessory2_tier, setup.accessory2_lvl);
+        this.setEquip("Necklace", setup.necklace_name, setup.necklace_tier, setup.necklace_lvl);
+        this.milestone_exp_mult = setup.milestone / 100;
+        this.old_milestone_exp_mult = this.milestone_exp_mult;
+        for (String skill : setup.passives_lvls.keySet()) {
+            if (passives.containsKey(skill)) {
+                passives.get(skill).setLvl(setup.passives_lvls.get(skill));
+                passives.get(skill).old_lvl = passives.get(skill).lvl;
+            }
+        }
+        for (String skill : setup.actives_lvls.keySet()) {
+            if (active_skills.containsKey(skill)) {
+                active_skills.get(skill).setLvl(setup.actives_lvls.get(skill));
+                active_skills.get(skill).old_lvl = active_skills.get(skill).lvl;
+            }
+        }
+        this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3});
+        this.disableAllActives();
+        this.skill1 = getSkill(setup.skill1, setup.skill1_s);
+        if (this.skill1 != null) {
+            this.skill1.setSkill(setup.skill1_mod);
+        }
+        this.skill2 = getSkill(setup.skill2, setup.skill2_s);
+        if (this.skill2 != null) {
+            this.skill2.setSkill(setup.skill2_mod);
+        }
+        this.skill3 = getSkill(setup.skill3, setup.skill3_s);
+        if (this.skill3 != null) {
+            this.skill3.setSkill(setup.skill3_mod);
+        }
     }
 
     public void addSkillEffects() {
@@ -121,6 +162,43 @@ public class Player extends Actor {
         sets.put("Metal", new EquipmentSet("mit1", 5));
         sets.put("Iron", new EquipmentSet("mit2", 5));
         sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
+    }
+
+    public void setupPotions(String type1, int threshold1, String type2, int threshold2,
+                             String type3, int threshold3) {
+        if (!type1.equals("None")) {
+            potion1 = new Potion(type1.substring(0, 2), Integer.parseInt(type1.substring(4)), threshold1);
+        } else {
+            potion1 = null;
+        }
+        if (!type2.equals("None")) {
+            potion2 = new Potion(type2.substring(0, 2), Integer.parseInt(type2.substring(4)), threshold2);
+        } else {
+            potion2 = null;
+        }
+        if (!type3.equals("None")) {
+            potion3 = new Potion(type3.substring(0, 2), Integer.parseInt(type3.substring(4)), threshold3);
+        } else {
+            potion3 = null;
+        }
+    }
+
+    public void checkPotion(double delta) {
+        if (potion1 != null) potion1.checkPotion(this, delta);
+        if (potion2 != null) potion2.checkPotion(this, delta);
+        if (potion3 != null) potion3.checkPotion(this, delta);
+    }
+
+    public void tickPotion(double delta) {
+        if (potion1 != null) potion1.tickPotion(delta);
+        if (potion2 != null) potion2.tickPotion(delta);
+        if (potion3 != null) potion3.tickPotion(delta);
+    }
+
+    public void resetPotionCd() {
+        if (potion1 != null) potion1.cooldown = 0;
+        if (potion2 != null) potion2.cooldown = 0;
+        if (potion3 != null) potion3.cooldown = 0;
     }
 
     public void setClass(String name) {
@@ -306,11 +384,20 @@ public class Player extends Actor {
         return v;
     }
 
-    public ActiveSkill getSkill(String name) {
+    public ActiveSkill getSkill(String name, int setting) {
+        this.eblast_enabled = name.equals("Elemental Blast");
+        this.holylight_enabled = name.equals("Holy Light");
+        this.aurablade_enabled = name.equals("Aura Blade");
         if (name.equals("Prepare") && active_skills.containsKey(name)) {
             this.prepare = active_skills.get(name);
+            this.prepare_threshold = setting;
         }
-        return active_skills.get(name);
+        ActiveSkill skill = active_skills.get(name);
+        if (skill != null) {
+            skill.use_setting = setting;
+            skill.enabled = true;
+        }
+        return skill;
     }
 
     public ActiveSkill getWeakSkill() {

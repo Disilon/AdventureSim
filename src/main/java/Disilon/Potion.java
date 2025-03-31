@@ -51,7 +51,7 @@ public class Potion {
         }
     }
 
-    public void tickPotion(Actor player, double time) {
+    public void tickPotion(double time) {
         if (cooldown > 0) {
             cooldown -= time;
         }
