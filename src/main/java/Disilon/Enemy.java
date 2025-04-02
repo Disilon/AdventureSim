@@ -298,7 +298,7 @@ public class Enemy extends Actor {
                 enemy_skills.add(charge);
             }
         }
-        reroll();
+        //reroll();
     }
 
     @Override

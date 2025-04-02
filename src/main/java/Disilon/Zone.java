@@ -46,6 +46,9 @@ public enum Zone {
 
     public void respawn() {
         enemies.clear();
+        if (Main.game_version >= 1535) {
+            incrementStrength();
+        }
         if (max_enemies == 1) {
             Enemy e = new Enemy();
             e.setEnemy(possible_enemies[0]);
@@ -63,7 +66,8 @@ public enum Zone {
                 e.rollStrength();
                 e.reroll();
             } else {
-                incrementStrength();
+                e.strength = strength;
+                e.reroll();
             }
             if (this == HelplessDummy) {
                 e.atk = 1;
