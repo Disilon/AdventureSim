@@ -1169,6 +1169,9 @@ public class UserForm extends JFrame {
                 int result = fileChooser.showOpenDialog(UserForm.this);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     String path = fileChooser.getSelectedFile().getAbsolutePath();
+                    if (!path.endsWith(".json")) {
+                        path += ".json";
+                    }
                     Setup file = loadFile(path);
                     if (file != null) {
                         tabs.put(selected_tab, file);

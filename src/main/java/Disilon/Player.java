@@ -41,7 +41,7 @@ public class Player extends Actor {
             false);
     ActiveSkill ab = new ActiveSkill("Aura Blade", 1, 121.5, 148.5, 1, 15, 1.3, 1.3, Scaling.atk, Element.light,
             false,false);
-    ActiveSkill sr = new ActiveSkill("Sword Rush", 3, 47.25, 57.75, 1, 20, 1.5, 1.5, Scaling.atk, Element.phys,
+    ActiveSkill sr = new ActiveSkill("Sword Rush", 3, 67.5, 82.5, 1, 15, 1.5, 1.5, Scaling.atk, Element.phys,
             false, false);
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
             false,false);
