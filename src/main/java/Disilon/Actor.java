@@ -257,6 +257,19 @@ public class Actor {
     }
 
     public void enablePassives(String[] names) {
+        Set<String> keys = passives.keySet();
+        for (String key : keys) {
+            passives.get(key).enabled = false;
+        }
+        for (String name : names) {
+            if (passives.containsKey(name)) {
+                passives.get(name).enabled = true;
+            }
+        }
+        refreshStats();
+    }
+
+    public void refreshStats() {
         hp_mult = 1;
         mp_mult = 1;
         atk_mult = 1;
@@ -272,15 +285,7 @@ public class Actor {
         exp_mult = 1;
         cast_speed_mult = 1;
         delay_speed_mult = 1;
-        Set<String> keys = passives.keySet();
-        for (String key : keys) {
-            passives.get(key).enabled = false;
-        }
-        for (String name : names) {
-            if (passives.containsKey(name)) {
-                passives.get(name).enabled = true;
-            }
-        }
+
         poison_mult *= 1.0 + poisonBoost.bonus(passives);
         dmg_mult *= 1.0 + daggerMastery.bonus(passives);
         dmg_mult *= 1.0 + fistMastery.bonus(passives);
@@ -309,13 +314,7 @@ public class Actor {
         cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         hp_regen = hpRegen.bonus(passives);
-        refreshStats();
-        if (fireResist.enabled) {
-            add_resist("Fire", fireResist.bonus(passives));
-        }
-    }
 
-    public void refreshStats() {
         mp_cost_add = 0;
         mp_cost_mult = 1;
         clear_gear_stats();
@@ -375,6 +374,9 @@ public class Actor {
         mp = mp_max;
         if (set_mit1 > 0) add_resist("All", set_mit1);
         if (set_mit2 > 0) add_resist("All", set_mit2);
+        if (fireResist.enabled) {
+            add_resist("Fire", fireResist.bonus(passives));
+        }
     }
 
     public void add_resist(String type, double value) {
