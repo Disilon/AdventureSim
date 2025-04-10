@@ -261,9 +261,9 @@ public class Player extends Actor {
                 passives.put("Fire Boost", fireBoost);
                 passives.put("Fire Resistance", fireResist);
                 if (Main.game_version >= 1537) {
-                    active_skills.put("Fire Pillar", fpillar);
-                } else {
                     active_skills.put("Fire Pillar", fpillar1537);
+                } else {
+                    active_skills.put("Fire Pillar", fpillar);
                 }
                 active_skills.put("Fireball", fball);
                 active_skills.put("Explosion", explosion);
