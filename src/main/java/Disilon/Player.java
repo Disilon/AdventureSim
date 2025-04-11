@@ -25,9 +25,7 @@ public class Player extends Actor {
     ActiveSkill ds = new ActiveSkill("Double Shot", 2, 76.5, 93.5, 1, 12, 1.1, 1.1, Scaling.atkhit, Element.phys,
             false, false);
     ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 20, 1.5, 1.5,
-            Scaling.atkhit, Element.phys,
-            false,
-            false);
+            Scaling.atkhit, Element.phys,false,false);
     ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
             1.5,
             Scaling.atkhit, Element.phys,
@@ -75,9 +73,15 @@ public class Player extends Actor {
             Element.magic, true, false);
     ActiveSkill doubleattack = new ActiveSkill("Double Attack", 2, 64.8, 79.2, 1, 7, 1, 1, Scaling.atk,
             Element.phys, false, false);
+    ActiveSkill empowerhp = new ActiveSkill("Empower HP", 1, 0, 0, 0, 60, 2, 2, Scaling.atk, Element.none, false,
+            false);
+    ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 67.5, 82.5, 0.9, 100, 1.7, 1,
+            Scaling.atk, Element.phys,false,false);
+    ActiveSkill pierce = new ActiveSkill("Pierce", 1, 45, 55, 1, 25, 0.75, 1,
+            Scaling.atk, Element.phys,false,false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
-    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Cleric", "Mage", "Fighter",
+    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Cleric", "Mage", "Fighter",
             "Warrior", "Archer", "Student", "Thief"};
     public int tier = 3;
 
@@ -152,6 +156,7 @@ public class Player extends Actor {
         fpillar1537.addDebuff("Burn", 3, 1);
         explosion.addDebuff("Burn", 3, 1);
         bless.addBuff("Bless", 2, 0.3);
+        empowerhp.addBuff("Empower HP", 7, 0.05);
         ar.random_targets = true;
     }
 
@@ -334,6 +339,34 @@ public class Player extends Actor {
                 active_skills.put("Prepare", prep);
                 active_skills.put("Bash", bash);
             }
+            case "Knight" -> {
+                tier = 3;
+                base_phys_res = 0.1;
+                base_fire_res = 0.1;
+                base_water_res = 0.1;
+                base_wind_res = 0.1;
+                base_earth_res = 0.1;
+                base_light_res = 0.1;
+                base_dark_res = 0.1;
+                base_magic_res = -0.5;
+                passives.put("Attack Boost", attackBoost);
+                passives.put("Defense Boost", defenseBoost);
+                passives.put("HP Regen", hpRegen);
+                passives.put("Sword Mastery", swordMastery);
+                passives.put("Fist Mastery", fistMastery);
+                passives.put("Spear Mastery", spearMastery);
+                passives.put("HP Boost", hpBoost);
+                active_skills.put("Empower HP", empowerhp);
+                active_skills.put("Pierce", pierce);
+                active_skills.put("Rapid Stabs", rapidstabs);
+                active_skills.put("Dragon Punch", dp);
+                active_skills.put("Whirling Foot", wf);
+                active_skills.put("Quick Hit", qh);
+                active_skills.put("Aura Blade", ab);
+                active_skills.put("Defense Break", db);
+                active_skills.put("Sword Rush", sr);
+                active_skills.put("First Aid", fa);
+            }
             case "Warrior" -> {
                 tier = 2;
                 passives.put("Attack Boost", attackBoost);
@@ -447,6 +480,15 @@ public class Player extends Actor {
                 base_res = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Knight" -> {
+                base_hp_max = (double) (130 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Pyromancer" -> {
                 base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;

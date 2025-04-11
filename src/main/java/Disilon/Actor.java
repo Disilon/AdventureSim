@@ -112,6 +112,7 @@ public class Actor {
     protected double def_break = 0;
     protected double res_break = 0;
     protected double mark = 0;
+    protected double empower_hp = 0;
     protected double hp_regen = 0;
     protected double blessed = 0;
     public double cl_exp;
@@ -143,6 +144,9 @@ public class Actor {
     protected PassiveSkill concentration = new PassiveSkill("Concentration", 0.3, 15, 0.15);
     protected PassiveSkill hitBoost = new PassiveSkill("Hit Boost", 0.2, 10, 0.1);
     protected PassiveSkill swordMastery = new PassiveSkill("Sword Mastery", 0.2, 0, 0);
+
+    protected PassiveSkill spearMastery = new PassiveSkill("Spear Mastery", 0.2, 0, 0);
+    protected PassiveSkill hpBoost = new PassiveSkill("HP Boost", 0.25, 5, 0.2);
 
     protected PassiveSkill intBoost = new PassiveSkill("Int Boost", 0.2, 5, 0.3);
     protected PassiveSkill resBoost = new PassiveSkill("Res Boost", 0.2, 5, 0.3);
@@ -200,11 +204,13 @@ public class Actor {
     public void tick_buffs() {
         charge = 0;
         blessed = 0;
+        empower_hp = 0;
         Iterator<Buff> buff_iterator = buffs.iterator();
         while (buff_iterator.hasNext()) {
             Buff b = buff_iterator.next();
             if (Objects.equals(b.name, "Charge Up") && b.duration > 0) charge = b.effect;
             if (Objects.equals(b.name, "Bless") && b.duration > 0) blessed = b.effect;
+            if (Objects.equals(b.name, "Empower HP") && b.duration > 0) empower_hp = b.effect;
             b.duration--;
             if (b.duration <= 0) buff_iterator.remove();
         }
@@ -290,6 +296,7 @@ public class Actor {
         dmg_mult *= 1.0 + daggerMastery.bonus(passives);
         dmg_mult *= 1.0 + fistMastery.bonus(passives);
         dmg_mult *= 1.0 + swordMastery.bonus(passives);
+        dmg_mult *= 1.0 + spearMastery.bonus(passives);
         dmg_mult *= 1.0 + bowMastery.bonus(passives);
         dmg_mult *= 1.0 + wandMastery.bonus(passives);
         dmg_mult *= 1.0 + bookMastery.bonus(passives);
@@ -313,6 +320,7 @@ public class Actor {
         cast_speed_mult /= 1.0 + castBoost.bonus(passives);
         cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
+        hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
 
         mp_cost_add = 0;
@@ -494,7 +502,7 @@ public class Actor {
     }
 
     public double getAtk() {
-        return atk + (base_atk + gear_atk) * blessed;
+        return atk + (base_atk + gear_atk) * blessed + empower_hp * getHp_max();
     }
 
     public void setAtk(double atk) {

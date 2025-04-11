@@ -314,13 +314,8 @@ public class ActiveSkill {
             case "Heal":
                 gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
                 break;
-            case "Charge Up":
-                attacker.buffs.add(new Buff("Charge Up", (int) buff_duration, buff_bonus));
-                break;
-            case "Bless":
-                attacker.buffs.add(new Buff("Bless", (int) buff_duration, buff_bonus));
-                break;
             default:
+                attacker.buffs.add(new Buff(buff_name, (int) buff_duration, buff_bonus));
                 break;
         }
         gain += attacker.getHp_max() * attacker.hp_regen;
@@ -448,6 +443,9 @@ public class ActiveSkill {
                 };
                 if (attacker.gear_crit > 0 && Math.random() < attacker.gear_crit) {
                     atk *= 1.5;
+                }
+                if (name.equals("Pierce")) {
+                    def = 0;
                 }
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
                 for (int i = 0; i < calc_hits; i++) {

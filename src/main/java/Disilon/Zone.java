@@ -16,6 +16,7 @@ public enum Zone {
     z10("Shax"),
     z11("Dagon"),
     z12("Lamia"),
+    z13("Tyrant"),
     Dummy("Dummy"),
     HelplessDummy("Dummy");
 
@@ -95,7 +96,7 @@ public enum Zone {
             case z4 -> 4;
             case z5 -> 4.5;
             case z6, z7, z8, z9 -> 5;
-            case z10, z11, z12 -> 6;
+            case z10, z11, z12, z13 -> 6;
             default -> 6;
         };
     }

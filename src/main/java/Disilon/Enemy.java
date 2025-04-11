@@ -21,6 +21,9 @@ public class Enemy extends Actor {
             Element.wind,
             false, false);
 
+    ActiveSkill soulslash = new ActiveSkill("Soul Slash", 1, 2250, 2750, 2, 0, 0.3, 75, Scaling.atk,
+            Element.phys, false, false);
+
     ActiveSkill slash = new ActiveSkill("Dark Slash", 1, 135, 165, 1, 0, 0.9, 0.9, Scaling.atk, Element.dark,
             false, false);
     ActiveSkill poison = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 0, 0.4, 0.9, Scaling.atk, Element.phys,
@@ -163,6 +166,19 @@ public class Enemy extends Actor {
                 enemy_skills.add(compression);
                 counter_dodge = true;
                 counter_heal = true;
+            }
+            case "Tyrant" -> {
+                base_lvl = 100;
+                base_hp_max = 26000 / base_lvl;
+                base_exp = 20000 / base_lvl;
+                base_atk = 1000 / base_lvl;
+                base_def = 5000 / base_lvl;
+                base_int = 300 / base_lvl;
+                base_res = 5000 / base_lvl;
+                base_hit = 1500 / base_lvl;
+                base_speed = 600 / base_lvl;
+                magic_res = 0.5;
+                enemy_skills.add(soulslash);
             }
             case "Devil" -> {
                 base_lvl = 90;
