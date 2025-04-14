@@ -57,6 +57,7 @@ public class Actor {
     protected double gear_res;
     protected double gear_hit;
     protected double gear_speed;
+    protected double gear_hp;
     protected double gear_water;
     protected double gear_fire;
     protected double gear_wind;
@@ -335,6 +336,7 @@ public class Actor {
                 gear_speed += item.speed;
                 gear_int += item.intel;
                 gear_res += item.resist;
+                gear_hp += item.hp;
                 gear_water += item.water;
                 gear_fire += item.fire;
                 gear_earth += item.earth;
@@ -354,6 +356,7 @@ public class Actor {
                 String set_type = item.displayName;
                 if (set_type.equals("Blazing")) set_type = "Cloth";
                 if (set_type.equals("Windy")) set_type = "Leather";
+                if (set_type.equals("Bronze")) set_type = "Iron";
                 if (sets.containsKey(set_type)) {
                     sets.get(set_type).addItem(item.quality, item.upgrade);
                 }
@@ -370,13 +373,20 @@ public class Actor {
                 mp_cost_mult *= 1 + passive.getValue().mp_mult;
             }
         }
+        for (Map.Entry<String, ActiveSkill> active : active_skills.entrySet()) {
+            if (active.getValue().enabled) {
+                if (active.getValue().name.equals("Elemental Blast")) eblast_enabled = true;
+                if (active.getValue().name.equals("Holy Light")) holylight_enabled = true;
+                if (active.getValue().name.equals("Aura Blade")) aurablade_enabled = true;
+            }
+        }
         atk = (base_atk + gear_atk) * getAtk_mult();
         def = (base_def + gear_def) * getDef_mult();
         intel = (base_int + gear_int) * getInt_mult();
         resist = (base_res + gear_res) * getRes_mult();
         hit = (base_hit + gear_hit) * getHit_mult() * set_hit;
         speed = (base_speed + gear_speed) * getSpeed_mult();
-        hp_max = (base_hp_max) * getHp_mult();
+        hp_max = (base_hp_max + gear_hp) * getHp_mult();
         mp_max = (resist * 3 + intel) * getMp_mult();
         hp = hp_max;
         mp = mp_max;
@@ -417,6 +427,7 @@ public class Actor {
         gear_speed = 0;
         gear_int = 0;
         gear_res = 0;
+        gear_hp = 0;
         gear_water = 0;
         gear_fire = 0;
         gear_earth = 0;

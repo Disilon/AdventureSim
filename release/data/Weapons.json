@@ -25,6 +25,9 @@
 		},"Iron Knuckles": {
 			"ATK": 16,
 			"SPD": 16
+		},"Bronze Knuckles": {
+			"ATK": 32,
+			"SPD": 32
 		},"Metal Spear": {
 			"ATK": 16,
 			"HIT": 4
@@ -32,15 +35,21 @@
 			"ATK": 20,
 			"DEF": 8,
 			"HIT": 8
+		},"Bronze Spear": {
+			"ATK": 40,
+			"DEF": 16,
+			"HIT": 16
 		}
 	},
 	"MH":{
 		"Magic Book": {
 			"INT": 6,
-			"RES": 2
+			"RES": 2,
+			"MH_ONLY": true
 		},"Hidden Book": {
 			"INT": 10,
-			"RES": 6
+			"RES": 6,
+			"MH_ONLY": true
 		},"Metal Dagger": {
 			"ATK": 4,
 			"HIT": 2,
@@ -59,7 +68,11 @@
 		},"Iron Sword": {
 			"ATK": 16,
 			"HIT": 2
+		},"Bronze Sword": {
+			"ATK": 28,
+			"HIT": 8
 		}
+
 	},
 	"OH":{
 		"Wooden Shield": {
@@ -70,6 +83,10 @@
 			"DEF": 12,
 			"RES": 8,
 			"SPD": -4
+		},"Bronze Shield": {
+			"DEF": 20,
+			"RES": 20,
+			"SPD": -8
 		}
 	}
 }

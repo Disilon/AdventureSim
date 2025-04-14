@@ -42,6 +42,14 @@
             "SPD": -2,
             "PHY_RES": 1.5,
             "SET": "Iron"
+        }, "Bronze Helmet": {
+            "HP": 100,
+            "DEF": 14,
+            "RES": 10,
+            "HIT": -10,
+            "SPD": -4,
+            "PHY_RES": 2,
+            "SET": "Bronze"
         }
     }, "BOOTS":{
         "Cloth Boots": {
@@ -80,6 +88,12 @@
             "RES": 4,
             "SPD": 2,
             "SET": "Iron"
+        }, "Bronze Boots": {
+            "HP": 100,
+            "DEF": 6,
+            "RES": 6,
+            "SPD": 4,
+            "SET": "Bronze"
         }
     }, "BRACERS":{
 		"Cloth Bracers": {
@@ -119,6 +133,14 @@
 			"SPD": -4,
 			"PHY_RES": 1.5,
             "SET": "Iron"
+        }, "Bronze Bracers": {
+            "HP": 100,
+            "DEF": 8,
+            "RES": 6,
+            "HIT": 12,
+            "SPD": -8,
+            "PHY_RES": 2,
+            "SET": "Bronze"
         }
 	}, "PANTS":{
         "Cloth Pants": {
@@ -160,6 +182,13 @@
             "SPD": -6,
             "PHY_RES": 1.5,
             "SET": "Iron"
+        }, "Bronze Pants": {
+            "HP": 100,
+            "DEF": 10,
+            "RES": 8,
+            "SPD": -12,
+            "PHY_RES": 2,
+            "SET": "Bronze"
         }
     }, "CHEST":{
         "Cloth Mantle": {
@@ -208,6 +237,14 @@
             "SPD": -6,
             "PHY_RES": 5,
             "SET": "Iron"
+        }, "Bronze Chest": {
+            "HP": 200,
+            "DEF": 24,
+            "RES": 14,
+            "HIT": -12,
+            "SPD": -12,
+            "PHY_RES": 7,
+            "SET": "Bronze"
         }
     }
 }

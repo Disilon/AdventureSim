@@ -17,6 +17,7 @@ public class Equipment {
     double resist = 0;
     double hit = 0;
     double speed = 0;
+    double hp = 0;
 
     //Elements
     double fire = 0;
@@ -70,6 +71,7 @@ public class Equipment {
         clone.resist = this.resist;
         clone.hit = this.hit;
         clone.speed = this.speed;
+        clone.hp = this.hp;
         clone.fire = this.fire;
         clone.water = this.water;
         clone.wind = this.wind;
@@ -106,6 +108,7 @@ public class Equipment {
         this.resist = equipStats.containsKey("RES") ? (double) equipStats.get("RES") * mult : 0;
         this.hit = equipStats.containsKey("HIT") ? (double) equipStats.get("HIT") * mult : 0;
         this.speed = equipStats.containsKey("SPD") ? (double) equipStats.get("SPD") * mult : 0;
+        this.hp = equipStats.containsKey("HP") ? (double) equipStats.get("HP") * mult : 0;
 
         // Elements
         this.fire = equipStats.containsKey("FIRE") ? (double) equipStats.get("FIRE") * mult : 0;

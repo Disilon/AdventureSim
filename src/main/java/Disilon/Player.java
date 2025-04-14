@@ -114,6 +114,7 @@ public class Player extends Actor {
         this.setEquip("Necklace", setup.necklace_name, setup.necklace_tier, setup.necklace_lvl);
         this.milestone_exp_mult = setup.milestone / 100;
         this.old_milestone_exp_mult = this.milestone_exp_mult;
+        this.disableAllActives();
         for (String skill : setup.passives_lvls.keySet()) {
             if (passives.containsKey(skill)) {
                 passives.get(skill).setLvl(setup.passives_lvls.get(skill));
@@ -126,8 +127,6 @@ public class Player extends Actor {
                 active_skills.get(skill).old_lvl = active_skills.get(skill).lvl;
             }
         }
-        this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3});
-        this.disableAllActives();
         this.skill1 = getSkill(setup.skill1, setup.skill1_s);
         if (this.skill1 != null) {
             this.skill1.setSkill(setup.skill1_mod);
@@ -140,6 +139,7 @@ public class Player extends Actor {
         if (this.skill3 != null) {
             this.skill3.setSkill(setup.skill3_mod);
         }
+        this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3});
     }
 
     public void addSkillEffects() {
@@ -418,9 +418,15 @@ public class Player extends Actor {
     }
 
     public ActiveSkill getSkill(String name, int setting) {
-        this.eblast_enabled = name.equals("Elemental Blast");
-        this.holylight_enabled = name.equals("Holy Light");
-        this.aurablade_enabled = name.equals("Aura Blade");
+//        if (name.equals("Elemental Blast")) {
+//            this.eblast_enabled = true;
+//        }
+//        if (name.equals("Holy Light")) {
+//            this.holylight_enabled = true;
+//        }
+//        if (name.equals("Aura Blade")) {
+//            this.aurablade_enabled = true;
+//        }
         if (name.equals("Prepare") && active_skills.containsKey(name)) {
             this.prepare = active_skills.get(name);
             this.prepare_threshold = setting;
@@ -568,91 +574,88 @@ public class Player extends Actor {
 
     @Override
     public double getFire() {
+        double result = gear_fire;
         switch (name) {
             case "Pyromancer" -> {
-                return (getAtk() + getIntel()) * (fireBoost.enabled ? 0.5 + fireBoost.bonus : 0.5) + gear_fire + getEblast();
-            }
-            case "Mage" -> {
-                return gear_fire + getEblast();
+                result += (getAtk() + getIntel()) * (fireBoost.enabled ? 0.5 + fireBoost.bonus : 0.5);
             }
             default -> {
-                return gear_fire;
             }
         }
+        result += getEblast();
+        return result;
     }
 
     @Override
     public double getWater() {
+        double result = gear_water;
         switch (name) {
             case "Pyromancer" -> {
-                return (getAtk() + getIntel()) / -2 + gear_water + getEblast();
-            }
-            case "Mage" -> {
-                return gear_water + getEblast();
+                result += (getAtk() + getIntel()) / -2;
             }
             default -> {
-                return gear_water;
             }
         }
+        result += getEblast();
+        return result;
     }
 
     @Override
     public double getWind() {
+        double result = gear_wind;
         switch (name) {
             case "Sniper" -> {
-                return (atk + intel) / 2 + gear_wind;
-            }
-            case "Mage", "Pyromancer" -> {
-                return gear_wind + getEblast();
+                result += (getAtk() + getIntel()) / 2;
             }
             default -> {
-                return gear_wind;
             }
         }
+        result += getEblast();
+        return result;
     }
 
     @Override
     public double getEarth() {
+        double result = gear_earth;
         switch (name) {
-            case "Mage", "Pyromancer" -> {
-                return gear_earth + getEblast();
-            }
             default -> {
-                return gear_earth;
             }
         }
+        result += getEblast();
+        return result;
     }
 
     @Override
     public double getDark() {
+        double result = gear_dark;
         switch (name) {
             case "Assassin" -> {
-                return (atk + intel) / 2 + gear_dark;
+                result += (getAtk() + getIntel()) / 2;
             }
             default -> {
-                return gear_dark;
             }
         }
+        return result;
     }
 
     @Override
     public double getLight() {
+        double result = gear_light;
         switch (name) {
             case "Assassin", "Sniper" -> {
-                return (atk + intel) / -2 + gear_light + (aurablade_enabled ? getAtk() * 0.1 : 0);
-            }
-            case "Cleric" -> {
-                return gear_light + (holylight_enabled ? getResist() * 0.25 : 0);
+                result += (getAtk() + getIntel()) / -2;
             }
             default -> {
-                return gear_light + (aurablade_enabled ? getAtk() * 0.1 : 0);
             }
         }
+        result += (holylight_enabled ? getResist() * 0.25 : 0);
+        result += (aurablade_enabled ? getAtk() * 0.1 : 0);
+        return result;
     }
 
     public String getAllStats() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HP = ").append(Math.round(getHp_max())).append("\n");
+        sb.append("HP = ").append(Math.round(getHp_max())).append(" (").append(Math.round(gear_hp)).append(")\n");
         sb.append("MP = ").append(Math.round(getMp_max())).append("\n");
         sb.append("ATK = ").append(Math.round(getAtk())).append(" (").append(Math.round(gear_atk)).append(")\n");
         sb.append("DEF = ").append(Math.round(getDef())).append(" (").append(Math.round(gear_def)).append(")\n");
