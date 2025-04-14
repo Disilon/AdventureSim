@@ -86,9 +86,14 @@ public class ActiveSkill {
         } else {
             if (name.equals("Bless") && actor.blessed > 0) {
                 return false;
-            } else {
-                return used_in_rotation < use_setting;
             }
+            if (name.equals("Charge Up") && actor.charge > 0) {
+                return false;
+            }
+            if (name.equals("Empower HP") && actor.empower_hp > 0) {
+                return false;
+            }
+            return used_in_rotation < use_setting;
         }
     }
 
