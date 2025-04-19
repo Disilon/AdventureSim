@@ -77,7 +77,9 @@ public class Player extends Actor {
             false);
     ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 67.5, 82.5, 0.9, 100, 1.7, 1,
             Scaling.atk, Element.phys,false,false);
-    ActiveSkill pierce = new ActiveSkill("Pierce", 1, 45, 55, 1, 25, 0.75, 1,
+    ActiveSkill pierce1551 = new ActiveSkill("Pierce", 1, 45, 55, 1, 25, 0.75, 1,
+            Scaling.atk, Element.phys,false,false);
+    ActiveSkill pierce1552 = new ActiveSkill("Pierce", 1, 67.5, 82.5, 1, 40, 1.2, 1.2,
             Scaling.atk, Element.phys,false,false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
@@ -357,7 +359,11 @@ public class Player extends Actor {
                 passives.put("Spear Mastery", spearMastery);
                 passives.put("HP Boost", hpBoost);
                 active_skills.put("Empower HP", empowerhp);
-                active_skills.put("Pierce", pierce);
+                if (Main.game_version >= 1552) {
+                    active_skills.put("Pierce", pierce1552);
+                } else {
+                    active_skills.put("Pierce", pierce1551);
+                }
                 active_skills.put("Rapid Stabs", rapidstabs);
                 active_skills.put("Dragon Punch", dp);
                 active_skills.put("Whirling Foot", wf);
@@ -418,15 +424,6 @@ public class Player extends Actor {
     }
 
     public ActiveSkill getSkill(String name, int setting) {
-//        if (name.equals("Elemental Blast")) {
-//            this.eblast_enabled = true;
-//        }
-//        if (name.equals("Holy Light")) {
-//            this.holylight_enabled = true;
-//        }
-//        if (name.equals("Aura Blade")) {
-//            this.aurablade_enabled = true;
-//        }
         if (name.equals("Prepare") && active_skills.containsKey(name)) {
             this.prepare = active_skills.get(name);
             this.prepare_threshold = setting;
