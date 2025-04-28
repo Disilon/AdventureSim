@@ -27,6 +27,7 @@ public class Setup implements Serializable {
     String pskill1;
     String pskill2;
     String pskill3;
+    String pskill4;
     String mh_name;
     Quality mh_tier;
     int mh_lvl;
@@ -107,6 +108,7 @@ public class Setup implements Serializable {
         this.pskill1 = "None";
         this.pskill2 = "None";
         this.pskill3 = "None";
+        this.pskill4 = "None";
         this.mh_name = "None";
         this.mh_tier = Quality.Good;
         this.mh_lvl = 0;
@@ -766,5 +768,13 @@ public class Setup implements Serializable {
 
     public void setResult_lvling(String result_lvling) {
         this.result_lvling = result_lvling;
+    }
+
+    public String getPskill4() {
+        return pskill4;
+    }
+
+    public void setPskill4(String pskill4) {
+        this.pskill4 = pskill4;
     }
 }

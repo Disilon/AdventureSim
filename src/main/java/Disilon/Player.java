@@ -20,8 +20,7 @@ public class Player extends Actor {
     ActiveSkill fa = new ActiveSkill("First Aid", 1, 15, 15, 0, 5, 0.9, 1.1, Scaling.atk, Element.none, false,
             true);
     ActiveSkill ss = new ActiveSkill("Sharp Shooting", 1, 207, 253, 1.5, 80, 2, 3, Scaling.atkhit, Element.wind,
-            false,
-            false);
+            false, false);
     ActiveSkill ds = new ActiveSkill("Double Shot", 2, 76.5, 93.5, 1, 12, 1.1, 1.1, Scaling.atkhit, Element.phys,
             false, false);
     ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 20, 1.5, 1.5,
@@ -43,7 +42,7 @@ public class Player extends Actor {
             false, false);
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
             false,false);
-    ActiveSkill charge = new ActiveSkill("Charge Up", 1, 0, 0, 0, 50, 2, 2, Scaling.atk, Element.none, false,
+    ActiveSkill charge_up = new ActiveSkill("Charge Up", 1, 0, 0, 0, 50, 2, 2, Scaling.atk, Element.none, false,
             false);
     ActiveSkill fball = new ActiveSkill("Fire Ball", 1, 99, 121, 1.35, 20, 1.15, 1, Scaling.intel, Element.fire,
             false, false);
@@ -141,7 +140,7 @@ public class Player extends Actor {
         if (this.skill3 != null) {
             this.skill3.setSkill(setup.skill3_mod);
         }
-        this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3});
+        this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3, setup.pskill4});
     }
 
     public void addSkillEffects() {
@@ -152,7 +151,7 @@ public class Player extends Actor {
         db.addDebuff("Defense Break", 3, 0.25);
         mm.addDebuff("Resist Break", 3, 0.25);
         mark.addDebuff("Mark", 1, 0.2);
-        charge.addBuff("Charge Up", 1, 1.5);
+        charge_up.addBuff("Charge Up", 1, 1.5);
         fball.addDebuff("Burn", 3, 1);
         fpillar.addDebuff("Burn", 3, 1);
         fpillar1537.addDebuff("Burn", 3, 1);
@@ -317,7 +316,7 @@ public class Player extends Actor {
                 }
                 active_skills.put("Sharpshooter", ss);
                 active_skills.put("Mark", mark);
-                active_skills.put("Charge Up", charge);
+                active_skills.put("Charge Up", charge_up);
                 active_skills.put("Defense Break", db);
                 active_skills.put("First Aid", fa);
                 active_skills.put("Prepare", prep);

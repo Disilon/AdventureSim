@@ -321,6 +321,7 @@ public class ActiveSkill {
                 break;
             default:
                 attacker.buffs.add(new Buff(buff_name, (int) buff_duration, buff_bonus));
+//                System.out.println(buff_name + " added to " + attacker.name + " duration " + buff_duration);
                 break;
         }
         gain += attacker.getHp_max() * attacker.hp_regen;

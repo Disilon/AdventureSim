@@ -110,6 +110,7 @@ public class Actor {
     protected boolean ambushing = false;
     protected Actor ambush_target = null;
     protected double charge;
+    protected boolean remove_charge = false;
     protected double def_break = 0;
     protected double res_break = 0;
     protected double mark = 0;
@@ -209,11 +210,21 @@ public class Actor {
         Iterator<Buff> buff_iterator = buffs.iterator();
         while (buff_iterator.hasNext()) {
             Buff b = buff_iterator.next();
-            if (Objects.equals(b.name, "Charge Up") && b.duration > 0) charge = b.effect;
-            if (Objects.equals(b.name, "Bless") && b.duration > 0) blessed = b.effect;
-            if (Objects.equals(b.name, "Empower HP") && b.duration > 0) empower_hp = b.effect;
-            b.duration--;
-            if (b.duration <= 0) buff_iterator.remove();
+            if (!Objects.equals(b.name, "Charge Up")) {
+                b.duration--;
+            }
+            if (Objects.equals(b.name, "Charge Up") && remove_charge) {
+                b.duration--;
+                remove_charge = false;
+            }
+            if (b.duration <= 0) {
+//                System.out.println(b.name + " was removed from " + name);
+                buff_iterator.remove();
+            } else {
+                if (Objects.equals(b.name, "Charge Up")) charge = b.effect;
+                if (Objects.equals(b.name, "Bless")) blessed = b.effect;
+                if (Objects.equals(b.name, "Empower HP")) empower_hp = b.effect;
+            }
         }
     }
 

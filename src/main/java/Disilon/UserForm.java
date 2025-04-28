@@ -60,6 +60,7 @@ public class UserForm extends JFrame {
     private JComboBox Pskill1;
     private JComboBox Pskill2;
     private JComboBox Pskill3;
+    private JComboBox Pskill4;
     private JComboBox MH_name;
     private JComboBox MH_tier;
     private JSpinner MH_lvl;
@@ -437,6 +438,15 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Pskill3, gbc);
+        Pskill4 = new JComboBox();
+        Pskill4.setMaximumRowCount(16);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 7;
+        gbc.gridy = 8;
+//        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        RightPanel.add(Pskill4, gbc);
         final JLabel label4 = new JLabel();
         label4.setText("Equipment:");
         gbc = new GridBagConstraints();
@@ -1563,12 +1573,15 @@ public class UserForm extends JFrame {
                 new DefaultComboBoxModel<>(new Vector<>(player.getAvailablePassiveSkills()));
         DefaultComboBoxModel<String> passive3 =
                 new DefaultComboBoxModel<>(new Vector<>(player.getAvailablePassiveSkills()));
+        DefaultComboBoxModel<String> passive4 =
+                new DefaultComboBoxModel<>(new Vector<>(player.getAvailablePassiveSkills()));
         Skill1.setModel(active1);
         Skill2.setModel(active2);
         Skill3.setModel(active3);
         Pskill1.setModel(passive1);
         Pskill2.setModel(passive2);
         Pskill3.setModel(passive3);
+        Pskill4.setModel(passive4);
         clearSelections();
         new DefaultTableModel();
         activeSkillsModel.setRowCount(0);
@@ -1590,6 +1603,7 @@ public class UserForm extends JFrame {
         Pskill1.setSelectedIndex(0);
         Pskill2.setSelectedIndex(0);
         Pskill3.setSelectedIndex(0);
+        Pskill4.setSelectedIndex(0);
     }
 
     private void loadEquipment() {
@@ -1718,6 +1732,7 @@ public class UserForm extends JFrame {
         data.pskill1 = Pskill1.getSelectedItem().toString();
         data.pskill2 = Pskill2.getSelectedItem().toString();
         data.pskill3 = Pskill3.getSelectedItem().toString();
+        data.pskill4 = Pskill4.getSelectedItem().toString();
         data.reroll = (int) Double.parseDouble(Reroll.getValue().toString());
         data.result_essential = simulation.result_info;
         data.result_skills = simulation.skills_info;
@@ -1828,6 +1843,7 @@ public class UserForm extends JFrame {
         Pskill1.setSelectedItem(data.pskill1);
         Pskill2.setSelectedItem(data.pskill2);
         Pskill3.setSelectedItem(data.pskill3);
+        Pskill4.setSelectedItem(data.pskill4);
         Reroll.setValue(data.reroll);
         simulation.result_info = data.result_essential;
         simulation.skills_info = data.result_skills;

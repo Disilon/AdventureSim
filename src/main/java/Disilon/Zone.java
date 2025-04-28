@@ -58,6 +58,14 @@ public enum Zone {
             int number = random.nextInt(max_enemies - 1, max_enemies + 1);
             for (int i = 0; i < number; i++) {
                 Enemy e = new Enemy();
+//                if (this == z8) {
+//                    double roll = random.nextDouble() * 100;
+//                    String enemy;
+//                    enemy = roll < 30 ? "Tengu" : roll >= 30 && roll < 60 ? "Amon" : "Akuma";
+//                    e.setEnemy(enemy);
+//                } else {
+//                    e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
+//                }
                 e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
                 enemies.add(e);
             }

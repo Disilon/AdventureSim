@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.df2p;
 
 public class Simulation {
     enum StatusType {death, respawn, combat, prepare, rerolling, delay}
@@ -80,6 +81,7 @@ public class Simulation {
             status = StatusType.respawn;
             player.zone.respawn();
             player.checkAmbush();
+            player.remove_charge = false;
             if (Main.game_version < 1535 && reroll >= 1) {
                 while (player.zone.getRandomEnemy().getHp_max() >= reroll) { //won't work properly with multiple enemies
                     player.zone.respawn();
@@ -187,6 +189,7 @@ public class Simulation {
                                         double dmg = player.casting.attack(player, enemy, 0);
                                         if (dmg > 0) {
                                             enemy.setHp(enemy.getHp() - dmg);
+                                            if (player.charge > 0) player.remove_charge = true;
 //                                    System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name);
                                         } else {
 //                                    System.out.println("Player missed with " + player.casting.name);
@@ -205,6 +208,7 @@ public class Simulation {
                                                 double dmg = player.casting.attack(player, key, value);
                                                 if (dmg > 0) {
                                                     key.setHp(key.getHp() - dmg);
+                                                    if (player.charge > 0) player.remove_charge = true;
 //                                          System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name);
                                                 } else {
 //                                          System.out.println("Player missed with " + player.casting.name);
@@ -214,9 +218,10 @@ public class Simulation {
                                             double dmg = player.casting.attack(player, target, 0);
                                             if (dmg > 0) {
                                                 target.setHp(target.getHp() - dmg);
-//                                          System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name);
+                                                if (player.charge > 0) player.remove_charge = true;
+//                                                System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name + " at " + df2.format(time));
                                             } else {
-//                                          System.out.println("Player missed with " + player.casting.name);
+//                                                System.out.println("Player missed with " + player.casting.name  + " at " + df2.format(time));
                                             }
                                         }
                                     }
@@ -227,7 +232,7 @@ public class Simulation {
                                 if (player.casting.heal) {
                                     healed += player.getHp() - previous_hp;
                                 }
-//                                System.out.println("Player casted " + player.casting.name);
+//                                System.out.println("Player casted " + player.casting.name + " at " + df2.format(time));
                             }
                             if (player.lvling) player.casting.gainExp();
                             player.setMp(player.getMp() - player.casting.calculate_manacost(player));
@@ -291,7 +296,7 @@ public class Simulation {
                         exp += exp_gain;
                         kills++;
                         if (Main.game_version >= 1535 && player.lvling) player.levelActives();
-//                    System.out.println("Enemy killed at " + df2.format(time) + " s");
+//                        System.out.println("Enemy killed at " + df2.format(time) + " s \n");
                         if (target == enemy) target = null;
                         iterator.remove();
                     }
