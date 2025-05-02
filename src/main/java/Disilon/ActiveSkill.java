@@ -320,7 +320,8 @@ public class ActiveSkill {
                 gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
                 break;
             default:
-                attacker.buffs.add(new Buff(buff_name, (int) buff_duration, buff_bonus));
+                attacker.buffs.add(new Buff(buff_name, name.equals("Charge Up") ? (int) buff_duration :
+                        (int) buff_duration + 1, buff_bonus));
 //                System.out.println(buff_name + " added to " + attacker.name + " duration " + buff_duration);
                 break;
         }

@@ -26,10 +26,7 @@ public class Player extends Actor {
     ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 20, 1.5, 1.5,
             Scaling.atkhit, Element.phys,false,false);
     ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
-            1.5,
-            Scaling.atkhit, Element.phys,
-            false,
-            false);
+            1.5,Scaling.atkhit, Element.phys,false,false);
     ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 10, 1.2, 1.1, Scaling.atk, Element.phys, false,
             false);
     ActiveSkill db = new ActiveSkill("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,

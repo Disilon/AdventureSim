@@ -187,6 +187,7 @@ public class Actor {
     public void tick_debuffs() {
         smoked = false;
         def_break = 0;
+        res_break = 0;
         mark = 0;
         Iterator<Debuff> debuff_iterator = debuffs.iterator();
         while (debuff_iterator.hasNext()) {
