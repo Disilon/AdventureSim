@@ -170,17 +170,17 @@ public class Player extends Actor {
     public void setupPotions(String type1, int threshold1, String type2, int threshold2,
                              String type3, int threshold3) {
         if (!type1.equals("None")) {
-            potion1 = new Potion(type1.substring(0, 2), Integer.parseInt(type1.substring(4)), threshold1);
+            potion1 = new Potion(type1, threshold1);
         } else {
             potion1 = null;
         }
         if (!type2.equals("None")) {
-            potion2 = new Potion(type2.substring(0, 2), Integer.parseInt(type2.substring(4)), threshold2);
+            potion2 = new Potion(type2, threshold2);
         } else {
             potion2 = null;
         }
         if (!type3.equals("None")) {
-            potion3 = new Potion(type3.substring(0, 2), Integer.parseInt(type3.substring(4)), threshold3);
+            potion3 = new Potion(type3, threshold3);
         } else {
             potion3 = null;
         }

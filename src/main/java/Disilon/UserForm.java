@@ -278,8 +278,8 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 4;
         RightPanel.add(label1, gbc);
         Potion1 = new JComboBox<>(Potion.getAvailablePotions());
-        Potion1.setMaximumRowCount(11);
-        Potion1.setSelectedIndex(3);
+        Potion1.setMaximumRowCount(21);
+        Potion1.setSelectedIndex(6);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 3;
@@ -295,8 +295,8 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Potion1_t, gbc);
         Potion2 = new JComboBox<>(Potion.getAvailablePotions());
-        Potion2.setMaximumRowCount(11);
-        Potion2.setSelectedIndex(6);
+        Potion2.setMaximumRowCount(21);
+        Potion2.setSelectedIndex(16);
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = 3;
@@ -312,7 +312,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Potion2_t, gbc);
         Potion3 = new JComboBox<>(Potion.getAvailablePotions());
-        Potion3.setMaximumRowCount(11);
+        Potion3.setMaximumRowCount(21);
         Potion3.setSelectedIndex(0);
         gbc = new GridBagConstraints();
         gbc.gridx = 5;
