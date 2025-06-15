@@ -171,7 +171,7 @@ public class Simulation {
                     }
                 }
                 delta = 0.1;
-                if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta());
+                if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta(player));
                 delta = Math.min(delta, player.zone.calculateDelta());
                 time += delta;
                 total_time += delta;
@@ -179,7 +179,7 @@ public class Simulation {
                 player.checkPotion(delta);
                 if (player.casting != null) {
                     if (player.casting.cast > 0) {
-                        if (player.casting.progressCast(delta)) {
+                        if (player.casting.progressCast(player, delta)) {
                             player.casting.used++;
                             if (player.casting.hit > 0) {
                                 casts++;
@@ -240,7 +240,7 @@ public class Simulation {
                             player.tick_buffs();
                         }
                     } else if (player.casting.delay > 0) {
-                        if (player.casting.progressDelay(delta)) {
+                        if (player.casting.progressDelay(player, delta)) {
                             player.casting = null;
                         }
                     }
@@ -252,7 +252,7 @@ public class Simulation {
                     Enemy enemy = iterator.next();
                     if (enemy.casting != null) {
                         if (enemy.casting.cast > 0) {
-                            if (enemy.casting.progressCast(delta)) {
+                            if (enemy.casting.progressCast(enemy, delta)) {
                                 if (enemy.casting.hit > 0) {
                                     double dmg = 0;
                                     if (previous_cast != null && (time - previous_cast.last_casted_at) < 0.5) {
@@ -281,7 +281,7 @@ public class Simulation {
                                 enemy.tick_buffs();
                             }
                         } else if (enemy.casting.delay > 0) {
-                            if (enemy.casting.progressDelay(delta)) {
+                            if (enemy.casting.progressDelay(enemy, delta)) {
                                 enemy.casting = null;
                             }
                         }

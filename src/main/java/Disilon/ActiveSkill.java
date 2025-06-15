@@ -123,7 +123,16 @@ public class ActiveSkill {
 //        System.out.println(attacker.name + " started casting " + name);
     }
 
-    public boolean progressCast(double delta) {
+    public boolean progressCast(Actor actor, double delta) {
+        if (actor.stun_time > 0) {
+            if (actor.stun_time > delta) {
+                actor.stun_time -= delta;
+                delta = 0;
+            } else {
+                delta -= actor.stun_time;
+                actor.stun_time = 0;
+            }
+        }
         cast -= delta;
         if (cast <= 0) {
             cast = 0;
@@ -132,7 +141,16 @@ public class ActiveSkill {
         return false;
     }
 
-    public boolean progressDelay(double delta) {
+    public boolean progressDelay(Actor actor, double delta) {
+        if (actor.stun_time > 0) {
+            if (actor.stun_time > delta) {
+                actor.stun_time -= delta;
+                delta = 0;
+            } else {
+                delta -= actor.stun_time;
+                actor.stun_time = 0;
+            }
+        }
         delay -= delta;
         if (delay <= 0) {
             delay = 0;
@@ -141,7 +159,10 @@ public class ActiveSkill {
         return false;
     }
 
-    public double calculate_delta() {
+    public double calculate_delta(Actor actor) {
+        if (actor.stun_time > 0) {
+            return actor.stun_time;
+        }
         if (cast > 0) {
             return cast;
         }
@@ -458,6 +479,9 @@ public class ActiveSkill {
                 }
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
                 for (int i = 0; i < calc_hits; i++) {
+                    if (attacker.gear_stun > 0 && Math.random() < attacker.gear_stun) {
+                        defender.stun_time += 2.0;
+                    }
                     double atk_mit = atk * (1 - enemy_resist);
                     double dmg = Math.random() * (this.max - this.min) + this.min;
                     dmg =

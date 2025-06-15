@@ -35,14 +35,27 @@ public class PassiveSkill {
 
     public void setLvl(int lvl) {
         this.lvl = lvl;
-        if (name.equals("Fire Resist") || name.equals("Multi Arrows")) {
-            this.bonus = this.base_bonus * (1 + 0.03 * lvl);
-            this.mp_add = this.base_mp_add * (1 + 0.03 * lvl);
-            this.mp_mult = this.base_mp_mult * (1 + 0.03 * lvl);
-        } else {
-            this.bonus = this.base_bonus * (1 + 0.02 * lvl);
-            this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
-            this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+        switch (name) {
+            case "Fire Resist" -> {
+                this.bonus = this.base_bonus * (1 + 0.03 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.03 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.03 * lvl);
+            }
+            case "Multi Arrows" -> {
+                this.bonus = this.base_bonus * (1 + 0.03 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
+            case "Core Boost" -> {
+                this.bonus = this.base_bonus * (1 + 0.05 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
+            default -> {
+                this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
         }
     }
 

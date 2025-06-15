@@ -66,6 +66,7 @@ public class Actor {
     protected double gear_dark;
     protected double gear_crit;
     protected double gear_burn;
+    protected double gear_stun;
 
     protected double set_hit = 1;
     protected double set_magicdmg = 1;
@@ -127,6 +128,7 @@ public class Actor {
     protected double old_cl;
     public boolean counter_dodge = false;
     public boolean counter_heal = false;
+    public double stun_time = 0;
 
     protected LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
     protected LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
@@ -370,6 +372,7 @@ public class Actor {
                 gear_dark += item.dark;
                 gear_crit += item.crit;
                 gear_burn += item.burn;
+                gear_stun += item.stun;
                 add_resist("Fire", item.fire_res * 0.01);
                 add_resist("Water", item.water_res * 0.01);
                 add_resist("Wind", item.wind_res * 0.01);
@@ -461,6 +464,7 @@ public class Actor {
         gear_dark = 0;
         gear_crit = 0;
         gear_burn = 0;
+        gear_stun = 0;
         phys_res = base_phys_res;
         magic_res = base_magic_res;
         water_res = base_water_res;

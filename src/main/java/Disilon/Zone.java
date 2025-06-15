@@ -112,7 +112,7 @@ public enum Zone {
     public double calculateDelta() {
         double delta = 3600;
         for (Enemy enemy : enemies) {
-            if (enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta());
+            if (enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta(enemy));
         }
         return delta;
     }
