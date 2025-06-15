@@ -142,7 +142,7 @@ public class MonsterStatData {
     }
 
     public static double getCoreGradeRP(int grade) {
-        double mult = Math.pow(1.3, Math.max(grade, 5));
+        double mult = Math.pow(1.3, Math.min(grade, 5));
         if (grade > 5) mult = mult * Math.pow(1.5, grade - 5);
         return mult;
     }
@@ -158,7 +158,7 @@ public class MonsterStatData {
             case "Shinigami" -> 9;
             case "Amon" -> 10;
             case "Tengu" -> 10;
-            case "Akuna" -> 12;
+            case "Akuma" -> 12;
             case "Devil" -> 18;
             case "Shax" -> 40;
             case "Dagon" -> 45;

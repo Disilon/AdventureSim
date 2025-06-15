@@ -330,7 +330,6 @@ public class ActiveSkill {
 
     public void use(Actor attacker) {
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
-        if (attacker.isAmbushing()) attacker.setAmbushing(false);
         double gain = 0;
         switch (name) {
             case "Hide":
@@ -361,7 +360,6 @@ public class ActiveSkill {
                 }
             }
         }
-        attacker.setAmbushing(false);
     }
 
     public double attack(Actor attacker, Actor defender, int overwrite_hits) {
@@ -398,7 +396,7 @@ public class ActiveSkill {
                 double def = 0;
                 double dmg_mult = attacker.getDmg_mult();
                 dmg_mult += attacker.hide_bonus;
-                dmg_mult *= 1.0 + (attacker.ambush_target == defender ? attacker.ambush.bonus : 0);
+                dmg_mult *= 1.0 + (attacker.isAmbushing() ? attacker.ambush.bonus : 0);
                 dmg_mult *= this.dmg_mult;
                 if (name.equals("Back Stab") && defender.isSmoked()) dmg_mult *= 2;
                 enemy_resist = switch (this.element) {
@@ -488,8 +486,12 @@ public class ActiveSkill {
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
                                     calc_hits) * dmg_mult;
                     dmg = Math.max(1, dmg);
+//                    System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name + " to " + defender.name);
                     total += dmg;
-                    if (total > defender.getHp()) break;
+                    //if (total > defender.getHp()) break; //doesn't work like that according to tests
+                    if (total - dmg > defender.getHp() && i == calc_hits - 1) {
+                        total = defender.getHp() + dmg;
+                    }
                 }
             }
         } else {
@@ -499,7 +501,6 @@ public class ActiveSkill {
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
-        if (attacker.isAmbushing()) attacker.setAmbushing(false);
         dmg_sum += total;
         if (defender.zone != null) {
             defender.zone.stats.incrementDmg(attacker, this, total);

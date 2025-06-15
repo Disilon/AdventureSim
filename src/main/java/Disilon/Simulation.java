@@ -62,7 +62,7 @@ public class Simulation {
         double oom_time = 0;
         player.dot_tracking = 0;
         title = player.zone.toString();
-        if (time_to_respawn == -1) time_to_respawn = player.zone.getTime_to_respawn();
+        time_to_respawn = player.zone.getTime_to_respawn();
         StringBuilder result = new StringBuilder();
         StringBuilder skills_log = new StringBuilder();
         StringBuilder lvling_log = new StringBuilder();
@@ -190,15 +190,11 @@ public class Simulation {
                                         if (dmg > 0) {
                                             enemy.setHp(enemy.getHp() - dmg);
                                             if (player.charge > 0) player.remove_charge = true;
-//                                    System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name);
-                                        } else {
-//                                    System.out.println("Player missed with " + player.casting.name);
                                         }
                                     }
                                 } else {
                                     if (target == null) {
                                         target = player.zone.getRandomEnemy();
-                                        player.ambush_target = player.isAmbushing() ? target : null;
                                     }
                                     if (target != null) {
                                         if (player.casting.random_targets) {
@@ -209,9 +205,6 @@ public class Simulation {
                                                 if (dmg > 0) {
                                                     key.setHp(key.getHp() - dmg);
                                                     if (player.charge > 0) player.remove_charge = true;
-//                                          System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name);
-                                                } else {
-//                                          System.out.println("Player missed with " + player.casting.name);
                                                 }
                                             });
                                         } else {
@@ -219,9 +212,6 @@ public class Simulation {
                                             if (dmg > 0) {
                                                 target.setHp(target.getHp() - dmg);
                                                 if (player.charge > 0) player.remove_charge = true;
-//                                                System.out.println("Player dealt " + (int) dmg + " damage with " + player.casting.name + " at " + df2.format(time));
-                                            } else {
-//                                                System.out.println("Player missed with " + player.casting.name  + " at " + df2.format(time));
                                             }
                                         }
                                     }
@@ -235,6 +225,7 @@ public class Simulation {
 //                                System.out.println("Player casted " + player.casting.name + " at " + df2.format(time));
                             }
                             if (player.lvling) player.casting.gainExp();
+                            if (player.isAmbushing()) player.setAmbushing(false);
                             player.setMp(player.getMp() - player.casting.calculate_manacost(player));
                             player.tick_debuffs();
                             player.tick_buffs();
@@ -268,9 +259,6 @@ public class Simulation {
                                     if (dmg > 0) {
                                         player.setHp(player.getHp() - dmg);
                                         enemy_dmg += dmg;
-//                                    System.out.println("Enemy dealt " + (int) dmg + " damage with " + enemy.casting.name);
-                                    } else {
-//                                    System.out.println("Enemy missed with " + enemy.casting.name);
                                     }
 //                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
                                 } else {
