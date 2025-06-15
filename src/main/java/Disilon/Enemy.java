@@ -60,6 +60,7 @@ public class Enemy extends Actor {
 
     double strength = 1;
     double base_lvl;
+    double core_mult; //currently unused
 
     public Enemy() {
         ball.addDebuff("Burn", 3, 1);
@@ -127,6 +128,7 @@ public class Enemy extends Actor {
                 enemy_skills.add(waterpunch);
                 enemy_skills.add(killingstrike);
                 enemy_skills.add(tsunami);
+                core_mult = 45;
             }
             case "Lamia" -> {
                 base_lvl = 100;
@@ -144,6 +146,7 @@ public class Enemy extends Actor {
                 enemy_skills.add(ball);
                 enemy_skills.add(pillar);
                 enemy_skills.add(explosion);
+                core_mult = 50;
             }
             case "Shax" -> {
                 base_lvl = 100;
@@ -166,6 +169,7 @@ public class Enemy extends Actor {
                 enemy_skills.add(compression);
                 counter_dodge = true;
                 counter_heal = true;
+                core_mult = 40;
             }
             case "Tyrant" -> {
                 base_lvl = 100;
@@ -179,6 +183,7 @@ public class Enemy extends Actor {
                 base_speed = 600 / base_lvl;
                 magic_res = 0.5;
                 enemy_skills.add(soulslash);
+                core_mult = 100;
             }
             case "Devil" -> {
                 base_lvl = 90;
@@ -195,6 +200,7 @@ public class Enemy extends Actor {
                 light_res = -0.5;
                 enemy_skills.add(poison);
                 enemy_skills.add(slash);
+                core_mult = 18;
             }
             case "Tengu" -> {
                 base_lvl = 50;
@@ -211,6 +217,7 @@ public class Enemy extends Actor {
                 dodge_mult = 1.25;
                 enemy_skills.add(bash);
                 enemy_skills.add(da);
+                core_mult = 10;
             }
             case "Amon" -> {
                 base_lvl = 50;
@@ -226,6 +233,7 @@ public class Enemy extends Actor {
                 water_res = 1;
                 enemy_skills.add(mm);
                 enemy_skills.add(eblast);
+                core_mult = 10;
             }
             case "Akuma" -> {
                 base_lvl = 50;
@@ -241,6 +249,7 @@ public class Enemy extends Actor {
                 fire_res = 0.5;
                 enemy_skills.add(dp);
                 enemy_skills.add(as);
+                core_mult = 12;
             }
             case "Dummy" -> {
                 base_lvl = 100;
@@ -268,6 +277,7 @@ public class Enemy extends Actor {
                 fire_res = 0.6;
                 enemy_skills.add(blind);
                 enemy_skills.add(poison);
+                core_mult = 9;
             }
             case "Shinigami" -> {
                 base_lvl = 40;
@@ -283,6 +293,7 @@ public class Enemy extends Actor {
                 dark_res = 0.6;
                 enemy_skills.add(killingstrike);
                 enemy_skills.add(backstab);
+                core_mult = 9;
             }
             case "Wraith" -> {
                 base_lvl = 30;
@@ -299,6 +310,7 @@ public class Enemy extends Actor {
                 light_res = -0.5;
                 enemy_skills.add(attack);
                 enemy_skills.add(mark);
+                core_mult = 8;
             }
             case "Ghoul" -> {
                 base_lvl = 30;
@@ -312,6 +324,7 @@ public class Enemy extends Actor {
                 base_speed = 45 / base_lvl;
                 light_res = -0.5;
                 enemy_skills.add(charge);
+                core_mult = 8;
             }
         }
         //reroll();

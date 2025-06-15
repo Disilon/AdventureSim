@@ -25,12 +25,7 @@ public enum Zone {
     public final ArrayList<Enemy> enemies = new ArrayList<>(1);
     final int max_enemies;
     public double strength;
-    private HashMap<String, Double> dmg_sum = new HashMap<>();
-    private HashMap<String, Double> hit_sum = new HashMap<>();
-    private HashMap<String, Double> debuff_sum = new HashMap<>();
-    private HashMap<String, Double> dot_sum = new HashMap<>();
-    private HashMap<String, Double> casts = new HashMap<>();
-    private HashMap<String, Double> hits = new HashMap<>();
+    public final MonsterStatData stats = new MonsterStatData();
 
     Zone(String enemies) {
         this.display_name = this.name() + "(" + enemies + ")";
@@ -129,59 +124,5 @@ public enum Zone {
             targets.put(e, targets.containsKey(e) ? targets.get(e) + 1 : 1);
         }
         return targets;
-    }
-
-    private void incrementStats(Actor e, ActiveSkill s, double dmg, double hit, double debuff, int uses, int h,
-                                double dot) {
-        String key = e.getName() + ": " + s.name;
-        dmg_sum.put(key, dmg_sum.containsKey(key) ? dmg_sum.get(key) + dmg : dmg);
-        hit_sum.put(key, hit_sum.containsKey(key) ? hit_sum.get(key) + hit : hit);
-        debuff_sum.put(key, debuff_sum.containsKey(key) ? debuff_sum.get(key) + debuff : debuff);
-        casts.put(key, casts.containsKey(key) ? casts.get(key) + uses : uses);
-        hits.put(key, hits.containsKey(key) ? hits.get(key) + h : h);
-        dot_sum.put(key, dot_sum.containsKey(key) ? dot_sum.get(key) + dot : dot);
-    }
-
-    public void incrementDmg(Actor e, ActiveSkill s, double dmg) {
-        if (dmg > 0) {
-            incrementStats(e, s, dmg, 0, 0, 0, 1, 0);
-        }
-    }
-
-    public void incrementHit(Actor e, ActiveSkill s, double hit) {
-        incrementStats(e, s, 0, hit, 0, 1, 0, 0);
-    }
-
-    public void incrementDebuff(Actor e, ActiveSkill s, double debuff) {
-        incrementStats(e, s, 0, 0, debuff, 0, 0, 0);
-    }
-
-    public void incrementDot(Actor e, ActiveSkill s, double dmg) {
-        incrementStats(e, s, 0, 0, 0, 0, 0, dmg);
-    }
-
-    public void clear_recorded_data() {
-        dmg_sum.clear();
-        hit_sum.clear();
-        debuff_sum.clear();
-        casts.clear();
-        hits.clear();
-        dot_sum.clear();
-    }
-
-    public String getRecordedData() {
-        StringBuilder sb = new StringBuilder();
-        for (String name : hit_sum.keySet()) {
-            double average_hit_chance = hit_sum.get(name) / casts.get(name);
-            double average_dmg = dmg_sum.get(name) / hits.get(name);
-            double average_debuff_chance = debuff_sum.get(name) / hits.get(name);
-            double average_dot = dot_sum.get(name) / hits.get(name);
-            sb.append(name).append(" hit: ").append((int) (average_hit_chance * 100)).append("%");
-            sb.append("; dmg: ").append((int) average_dmg);
-            sb.append(average_debuff_chance == 0 ? "" : "; debuff: " + (int) (average_debuff_chance * 100) + "%");
-            sb.append(average_dot == 0 ? "" : "; DoT: " + (int) (average_dot));
-            sb.append("\n");
-        }
-        return sb.toString();
     }
 }

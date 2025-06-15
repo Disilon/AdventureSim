@@ -113,10 +113,13 @@ public class Actor {
     protected boolean remove_charge = false;
     protected double def_break = 0;
     protected double res_break = 0;
+    protected double weaken = 0;
     protected double mark = 0;
     protected double empower_hp = 0;
     protected double hp_regen = 0;
     protected double blessed = 0;
+    protected double core_mult = 1;
+    protected boolean multi_arrows = false;
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;
@@ -159,6 +162,8 @@ public class Actor {
 
     protected PassiveSkill bookMastery = new PassiveSkill("Book Mastery", 0.2, 0, 0.0);
     protected PassiveSkill ailmentRes = new PassiveSkill("Ailment Res", 0.75, 10, 0.2);
+    protected PassiveSkill multiArrows = new PassiveSkill("Multi Arrows", 0.4, 10, 0.15);
+    protected PassiveSkill coreBoost = new PassiveSkill("Core Boost", 0.5, 10, 0.1);
 
     protected ActiveSkill casting;
     protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
@@ -196,6 +201,7 @@ public class Actor {
             if (Objects.equals(d.name, "Smoke") && d.duration > 0) smoked = true;
             if (Objects.equals(d.name, "Defense Break") && d.duration > 0) def_break = d.effect;
             if (Objects.equals(d.name, "Res Break") && d.duration > 0) res_break = d.effect;
+            if (Objects.equals(d.name, "Weaken") && d.duration > 0) weaken = d.effect;
             if (Objects.equals(d.name, "Mark") && d.duration > 0) mark = d.effect;
             this.hp -= d.dmg;
             dot_tracking += d.dmg;
@@ -304,6 +310,8 @@ public class Actor {
         exp_mult = 1;
         cast_speed_mult = 1;
         delay_speed_mult = 1;
+        core_mult = 1;
+        multi_arrows = false;
 
         poison_mult *= 1.0 + poisonBoost.bonus(passives);
         dmg_mult *= 1.0 + daggerMastery.bonus(passives);
@@ -314,6 +322,10 @@ public class Actor {
         dmg_mult *= 1.0 + wandMastery.bonus(passives);
         dmg_mult *= 1.0 + bookMastery.bonus(passives);
         dmg_mult *= 1.0 + concentration.bonus(passives);
+        if (multiArrows.enabled) {
+            dmg_mult *= multiArrows.bonus(passives);
+            multi_arrows = true;
+        }
         if (Main.game_version >= 1534) {
             dmg_mult *= 1.0 + stealth.bonus(passives);
             poison_mult *= 1.0 + stealth.bonus(passives);
@@ -335,6 +347,7 @@ public class Actor {
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
+        core_mult *= 1.0 + coreBoost.bonus(passives);
 
         mp_cost_add = 0;
         mp_cost_mult = 1;
@@ -687,6 +700,7 @@ public class Actor {
     public double getDmg_mult() {
         double mult = 1.0;
         mult *= 1.0 + charge;
+        mult *= 1.0 - weaken;
         return dmg_mult * mult;
     }
 

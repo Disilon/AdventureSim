@@ -54,6 +54,8 @@ public class ActiveSkill {
     public boolean random_targets = false;
     public boolean enabled = false;
     public int use_setting;
+    public boolean overkill = true;
+    public boolean can_kill = true;
 
     public ActiveSkill(String name) {
         this.name = name;
@@ -359,7 +361,7 @@ public class ActiveSkill {
         hits_total++;
         hit_chance_sum += hit_chance;
         if (defender.zone != null) {
-            defender.zone.incrementHit(attacker, this, hit_chance);
+            defender.zone.stats.incrementHit(attacker, this, hit_chance);
         }
         if (attacker.isSmoked()) used_debuffed++;
         if (hit_chance < 1 && attacker.cl > 0) {
@@ -463,6 +465,7 @@ public class ActiveSkill {
                                     calc_hits) * dmg_mult;
                     dmg = Math.max(1, dmg);
                     total += dmg;
+                    if (total > defender.getHp()) break;
                 }
             }
         } else {
@@ -475,7 +478,13 @@ public class ActiveSkill {
         if (attacker.isAmbushing()) attacker.setAmbushing(false);
         dmg_sum += total;
         if (defender.zone != null) {
-            defender.zone.incrementDmg(attacker, this, total);
+            defender.zone.stats.incrementDmg(attacker, this, total);
+        }
+        if (name.equals("Careful Shot")) {
+            total = Math.min(total, defender.getHp());
+        }
+        if (name.equals("Aimed Shot")) {
+            total = Math.min(total, defender.getHp() - 1);
         }
         return total;
     }
@@ -516,7 +525,7 @@ public class ActiveSkill {
         } else {
             debuff_chance_sum += hit_chance;
             if (defender.zone != null) {
-                defender.zone.incrementDebuff(attacker, this, hit_chance);
+                defender.zone.stats.incrementDebuff(attacker, this, hit_chance);
             }
         }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
@@ -532,7 +541,7 @@ public class ActiveSkill {
                 default -> 0;
             };
             if (defender.zone != null) {
-                defender.zone.incrementDot(attacker, this, duration * dmg);
+                defender.zone.stats.incrementDot(attacker, this, duration * dmg);
             }
             defender.debuffs.add(new Debuff(this.debuff_name, duration, dmg, debuff_effect));
         }

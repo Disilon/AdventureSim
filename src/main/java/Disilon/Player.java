@@ -77,9 +77,15 @@ public class Player extends Actor {
             Scaling.atk, Element.phys,false,false);
     ActiveSkill pierce1552 = new ActiveSkill("Pierce", 1, 67.5, 82.5, 1, 40, 1.2, 1.2,
             Scaling.atk, Element.phys,false,false);
+    ActiveSkill careful = new ActiveSkill("Careful Shot", 1, 54, 66, 1.5, 15, 0.6, 0.6, Scaling.atkhit,
+            Element.phys, false, false);
+    ActiveSkill weakening = new ActiveSkill("Weakening Shot", 1, 112.5, 137.5, 1, 50, 1.3, 1.3, Scaling.atkhit,
+            Element.phys, false, false);
+    ActiveSkill aimed = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 75, 1.5, 1.5, Scaling.atkhit,
+            Element.phys, false, false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
-    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Cleric", "Mage", "Fighter",
+    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Hunter", "Cleric", "Mage", "Fighter",
             "Warrior", "Archer", "Student", "Thief"};
     public int tier = 3;
 
@@ -96,7 +102,7 @@ public class Player extends Actor {
         this.old_ml = setup.ml;
         this.lvling = setup.leveling;
         this.zone = setup.zone;
-        this.zone.clear_recorded_data();
+        this.zone.stats.clear_recorded_data();
         this.setupPotions(setup.potion1, setup.potion1_t, setup.potion2, setup.potion2_t, setup.potion3, setup.potion3_t);
         this.clear_skills_recorded_data();
         this.equipment.clear();
@@ -155,7 +161,10 @@ public class Player extends Actor {
         explosion.addDebuff("Burn", 3, 1);
         bless.addBuff("Bless", 2, 0.3);
         empowerhp.addBuff("Empower HP", 7, 0.05);
+        weakening.addDebuff("Weaken", 4, 0.25);
         ar.random_targets = true;
+        careful.overkill = false;
+        aimed.can_kill = false;
     }
 
     public void initializeSets() {
@@ -404,6 +413,31 @@ public class Player extends Actor {
                 active_skills.put("Hide", hide);
                 active_skills.put("Prepare", prep);
             }
+            case "Hunter" -> {
+                tier = 3;
+                base_fire_res = 0.2;
+                base_water_res = 0.2;
+                base_wind_res = 0.2;
+                base_earth_res = 0.2;
+                passives.put("Drop Boost", dropBoost);
+                passives.put("Bow Mastery", bowMastery);
+                passives.put("Speed Boost", speedBoost);
+                passives.put("Ambush", ambush);
+                passives.put("Multi Arrows", multiArrows);
+                passives.put("Core Boost", coreBoost);
+                active_skills.put("Careful Shot", careful);
+                active_skills.put("Weakening Shot", weakening);
+                active_skills.put("Aimed Shot", aimed);
+                active_skills.put("Double Shot", ds);
+                if (Main.game_version >= 1535) {
+                    active_skills.put("Arrow Rain", ar1535);
+                } else {
+                    active_skills.put("Arrow Rain", ar);
+                }
+                active_skills.put("First Aid", fa);
+                active_skills.put("Prepare", prep);
+                active_skills.put("Bash", bash);
+            }
         }
     }
 
@@ -551,6 +585,15 @@ public class Player extends Actor {
                 base_res = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Hunter" -> {
+                base_hp_max = (double) (100 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
             }
         }
         refreshStats();

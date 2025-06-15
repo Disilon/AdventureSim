@@ -184,7 +184,7 @@ public class Simulation {
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
-                                if (player.casting.aoe) {
+                                if (player.casting.aoe || player.multi_arrows) {
                                     for (Enemy enemy : player.zone.enemies) {
                                         double dmg = player.casting.attack(player, enemy, 0);
                                         if (dmg > 0) {
@@ -288,13 +288,14 @@ public class Simulation {
                     }
                     if (enemy.getHp() <= 0) {
                         overkill -= enemy.getHp();
-                        for (Debuff d : enemy.debuffs) {
-                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
-                        }
+//                        for (Debuff d : enemy.debuffs) {
+//                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
+//                        }
                         double exp_gain = enemy.getExp() * player.getExp_mult() * player.milestone_exp_mult;
                         if (player.lvling) player.increment_exp(exp_gain);
                         exp += exp_gain;
                         kills++;
+                        player.zone.stats.recordOverkill(enemy);
                         if (Main.game_version >= 1535 && player.lvling) player.levelActives();
 //                        System.out.println("Enemy killed at " + df2.format(time) + " s \n");
                         if (target == enemy) target = null;
@@ -367,7 +368,11 @@ public class Simulation {
                     if ((cleared + failed) >= sim_limit) end = true;
                 }
                 case 2 -> {
-                    if ((total_time + death_time + crafting_time) >= time_limit * 3600) end = true;
+                    if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
+                        if ((total_time + death_time) >= time_limit * 3600) end = true;
+                    } else {
+                        if ((total_time + death_time + crafting_time) >= time_limit * 3600) end = true;
+                    }
                 }
                 case 3 -> {
                     if (player.cl >= cl_limit) end = true;
@@ -431,7 +436,7 @@ public class Simulation {
             skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
         }
         skills_log.append("\n");
-        skills_log.append(player.zone.getRecordedData());
+        skills_log.append(player.zone.stats.getSkillData());
         for (Enemy enemy : player.zone.enemies) { //todo: save enemy skill data and report it
             if (enemy.enemy_skills != null) {
                 for (ActiveSkill s : enemy.enemy_skills) {
@@ -448,6 +453,9 @@ public class Simulation {
         if (crafting_time > 0) {
             result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
         }
+        result.append("\n");
+        result.append("Cores: \n");
+        result.append(player.zone.stats.getCoreData(player, total_time));
         if (player.milestone_exp_mult != player.old_milestone_exp_mult) {
             lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));
             lvling_log.append("% -> ").append(df2.format(player.milestone_exp_mult * 100)).append("%\n");
