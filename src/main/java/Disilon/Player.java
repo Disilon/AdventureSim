@@ -83,11 +83,19 @@ public class Player extends Actor {
             Element.phys, false, false);
     ActiveSkill aimed = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 75, 1.5, 1.5, Scaling.atkhit,
             Element.phys, false, false);
+    ActiveSkill aimed1563 = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 60, 1.5, 1.5, Scaling.atkhit,
+            Element.phys, false, false);
+
+    ActiveSkill basic = new ActiveSkill("Basic Attack", 1, 81, 99, 1, 0, 1, 1, Scaling.atk,
+            Element.phys, false, false);
+    ActiveSkill onion_slash = new ActiveSkill("Onion Slash", 1, 252, 308, 1.25, 99, 1.4, 1.4, Scaling.atk,
+            Element.water, false, false);
+    ActiveSkill onion_wave = new ActiveSkill("Onion Wave", 1, 299.7, 366.3, 0.99, 333, 2.9, 5, Scaling.atk,
+            Element.water, true, false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
-    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Hunter", "Cleric", "Mage", "Fighter",
+    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Hunter", "Onion Knight", "Cleric", "Mage", "Fighter",
             "Warrior", "Archer", "Student", "Thief"};
-    public int tier = 3;
 
     public Player() {
         addSkillEffects();
@@ -427,7 +435,11 @@ public class Player extends Actor {
                 passives.put("Core Boost", coreBoost);
                 active_skills.put("Careful Shot", careful);
                 active_skills.put("Weakening Shot", weakening);
-                active_skills.put("Aimed Shot", aimed);
+                if (Main.game_version >= 1563) {
+                    active_skills.put("Aimed Shot", aimed1563);
+                } else {
+                    active_skills.put("Aimed Shot", aimed);
+                }
                 active_skills.put("Double Shot", ds);
                 if (Main.game_version >= 1535) {
                     active_skills.put("Arrow Rain", ar1535);
@@ -437,6 +449,15 @@ public class Player extends Actor {
                 active_skills.put("First Aid", fa);
                 active_skills.put("Prepare", prep);
                 active_skills.put("Bash", bash);
+            }
+            case "Onion Knight" -> {
+                tier = 3;
+                passives.put("Weapon Mastery", weaponMastery);
+                passives.put("Attack Boost", attackBoost);
+                passives.put("Water Boost", waterBoost);
+                active_skills.put("Basic Attack", basic);
+                active_skills.put("Onion Slash", onion_slash);
+                active_skills.put("Onion Wave", onion_wave);
             }
         }
     }
@@ -595,6 +616,26 @@ public class Player extends Actor {
                 base_hit = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "Onion Knight" -> {
+                if (cl >= 99) {
+                    base_hp_max = (double) (120 * (cl + 100)) / 10000 * 30 * ml;
+                    base_atk = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                    base_def = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                    base_int = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                    base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                    base_hit = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                    base_speed = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                } else {
+                    base_hp_max = (double) (60 * (cl + 100)) / 10000 * 30 * ml;
+                    base_atk = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                    base_def = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                    base_int = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                    base_res = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                    base_hit = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                    base_speed = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                }
+
+            }
         }
         refreshStats();
     }
@@ -630,6 +671,7 @@ public class Player extends Actor {
                 result += (getAtk() + getIntel()) / -2;
             }
             default -> {
+                result += (getAtk() + getIntel()) * (waterBoost.enabled ? waterBoost.bonus : 0);
             }
         }
         result += getEblast();

@@ -6,9 +6,11 @@ public class PassiveSkill {
     public int lvl;
     public String name;
     public double base_bonus;
+    public double base_bonus2;
     public double base_mp_add;
     public double base_mp_mult;
     public double bonus;
+    public double bonus2;
     public double mp_add;
     public double mp_mult;
     public boolean enabled;
@@ -48,11 +50,13 @@ public class PassiveSkill {
             }
             case "Core Boost" -> {
                 this.bonus = this.base_bonus * (1 + 0.05 * lvl);
+                this.bonus2 = this.base_bonus2 * (1 + 0.05 * lvl);
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }
             default -> {
                 this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                this.bonus2 = this.base_bonus2 * (1 + 0.02 * lvl);
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }
@@ -64,6 +68,13 @@ public class PassiveSkill {
             return 0;
         }
         return enabled ? bonus : 0;
+    }
+
+    public double bonus2(Map passives) {
+        if (!passives.containsValue(this)) {
+            return 0;
+        }
+        return enabled ? bonus2 : 0;
     }
 
     public void gainExp(double time) {

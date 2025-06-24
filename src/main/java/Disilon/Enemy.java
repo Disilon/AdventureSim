@@ -58,6 +58,13 @@ public class Enemy extends Actor {
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
             false,false);
 
+    ActiveSkill holy_slash = new ActiveSkill("Holy Slash", 1, 141.75, 173.25, 1, 0, 1.8, 1.8, Scaling.atk,
+            Element.light,false, false);
+    ActiveSkill holy_power_slash = new ActiveSkill("Holy Power Slash", 1, 252, 308, 1, 0, 3.4, 3.4, Scaling.atk,
+            Element.light,false, false);
+    ActiveSkill sense = new ActiveSkill("Sense", 1, 90, 110, 2.5, 0, 0.5, 0.5, Scaling.atk,
+            Element.magic,false, false);
+
     double strength = 1;
     double base_lvl;
     double core_mult; //currently unused
@@ -172,7 +179,7 @@ public class Enemy extends Actor {
                 core_mult = 40;
             }
             case "Tyrant" -> {
-                base_lvl = 100;
+                base_lvl = 125;
                 base_hp_max = 26000 / base_lvl;
                 base_exp = 20000 / base_lvl;
                 base_atk = 1000 / base_lvl;
@@ -184,6 +191,23 @@ public class Enemy extends Actor {
                 magic_res = 0.5;
                 enemy_skills.add(soulslash);
                 core_mult = 100;
+            }
+            case "Asura" -> {
+                base_lvl = 200;
+                base_hp_max = 150000 / base_lvl;
+                base_exp = 45000 / base_lvl;
+                base_atk = 1700 / base_lvl;
+                base_def = 1000 / base_lvl;
+                base_int = 1600 / base_lvl;
+                base_res = 1000 / base_lvl;
+                base_hit = 1800 / base_lvl;
+                base_speed = 1600 / base_lvl;
+                fire_res = 0.25;
+                phys_res = -0.3;
+                enemy_skills.add(holy_slash);
+                enemy_skills.add(holy_power_slash);
+                enemy_skills.add(sense);
+                core_mult = 165;
             }
             case "Devil" -> {
                 base_lvl = 90;
@@ -358,7 +382,7 @@ public class Enemy extends Actor {
         strength = (random.nextInt(21) + 90) / 100.0;
     }
 
-    public ActiveSkill rollAttack() {
+    public ActiveSkill rollAttack(Player player) {
         double roll = random.nextDouble() * 100;
         switch (name) {
             case "Dagon" -> {
@@ -382,6 +406,13 @@ public class Enemy extends Actor {
             case "Akuma" -> {
                 return roll < 50 ? dp : as;
             }
+            case "Asura" -> {
+                if (player.hide_bonus > 0) {
+                    return sense;
+                } else {
+                    return roll < 30 ? holy_power_slash : holy_slash;
+                }
+            }
             case "Dummy" -> {
                 return cupid_atkint;
             }
@@ -391,10 +422,9 @@ public class Enemy extends Actor {
         }
     }
 
-    @Override
-    public ActiveSkill getCasting() {
+    public ActiveSkill getCasting(Player player) {
         if (casting == null) {
-            casting = rollAttack();
+            casting = rollAttack(player);
         }
         return casting;
     }

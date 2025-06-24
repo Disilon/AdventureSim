@@ -3,6 +3,7 @@ package Disilon;
 import java.util.Objects;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.df4;
 
 public class ActiveSkill {
     public String name;
@@ -93,6 +94,9 @@ public class ActiveSkill {
                 return false;
             }
             if (name.equals("Empower HP") && actor.empower_hp > 0) {
+                return false;
+            }
+            if (name.equals("Careful Shot") && actor.zone.getMaxEnemyHp() > use_setting) {
                 return false;
             }
             return used_in_rotation < use_setting;
@@ -231,19 +235,33 @@ public class ActiveSkill {
         this.skillMod = type;
         switch (type) {
             case Basic:
-                this.min = this.base_min * (1 + 0.02 * lvl);
-                this.max = this.base_max * (1 + 0.02 * lvl);
+                if (Main.game_version >= 1563) {
+                    this.min = this.base_min * (1 + 0.025 * lvl);
+                    this.max = this.base_max * (1 + 0.025 * lvl);
+                } else {
+                    this.min = this.base_min * (1 + 0.02 * lvl);
+                    this.max = this.base_max * (1 + 0.02 * lvl);
+                }
                 this.hit = this.base_hit * (1 + 0.01 * lvl);
                 this.mp_mult = (1 + 0.01 * lvl);
                 this.cast_mult = this.base_cast * (1 + 0.01 * lvl);
                 this.delay_mult = this.base_delay * (1 + 0.01 * lvl);
                 break;
             case Pow:
-                this.min = this.base_min * (1 + 0.01 * lvl);
-                this.max = this.base_max * (1 + 0.01 * lvl);
+                if (Main.game_version >= 1563) {
+                    this.min = this.base_min * (1 + 0.015 * lvl);
+                    this.max = this.base_max * (1 + 0.015 * lvl);
+                } else {
+                    this.min = this.base_min * (1 + 0.01 * lvl);
+                    this.max = this.base_max * (1 + 0.01 * lvl);
+                }
                 break;
             case Hit:
-                this.hit = this.base_hit * (1 + 0.01 * lvl);
+                if (Main.game_version >= 1563) {
+                    this.hit = this.base_hit * (1 + 0.025 * lvl);
+                } else {
+                    this.hit = this.base_hit * (1 + 0.01 * lvl);
+                }
                 break;
             case Cheap:
                 this.min = this.base_min * (1 - 0.01 * lvl);
@@ -268,9 +286,15 @@ public class ActiveSkill {
                 this.mp_additive = lvl;
                 break;
             case SlowHit:
-                this.hit = this.base_hit * (1 + 0.05 * lvl);
-                this.cast_mult = this.base_cast * (1 + 0.02 * lvl);
-                this.delay_mult = this.base_delay * (1 + 0.02 * lvl);
+                if (Main.game_version >= 1563) {
+                    this.hit = this.base_hit * (1 + 0.06 * lvl);
+                    this.cast_mult = this.base_cast * (1 + 0.01 * lvl);
+                    this.delay_mult = this.base_delay * (1 + 0.01 * lvl);
+                } else {
+                    this.hit = this.base_hit * (1 + 0.05 * lvl);
+                    this.cast_mult = this.base_cast * (1 + 0.02 * lvl);
+                    this.delay_mult = this.base_delay * (1 + 0.02 * lvl);
+                }
                 break;
             default:
                 break;
@@ -293,6 +317,7 @@ public class ActiveSkill {
                 case "Mark":
                 case "Defense Break":
                 case "Resist Break":
+                case "Weaken":
                     this.debuff_duration = switch (this.skillMod) {
                         case SkillMod.Basic -> base_debuff_duration * (1 + 0.02 * lvl);
                         case SkillMod.Pow -> base_debuff_duration * (1 + 0.01 * lvl);
@@ -548,6 +573,7 @@ public class ActiveSkill {
         if (hit_chance < 0.2) {
             return;
         } else {
+//            System.out.println(attacker.name + ": " + name + " debuff chance: " + hit_chance);
             debuff_chance_sum += hit_chance;
             if (defender.zone != null) {
                 defender.zone.stats.incrementDebuff(attacker, this, hit_chance);
@@ -615,9 +641,9 @@ public class ActiveSkill {
 
     public String getRecordedData(int simulations) {
         if (hit == 0) {
-            return name + " used: " + df2.format((double) used / simulations) + "\n";
+            return name + " used: " + df4.format((double) used / simulations) + "\n";
         } else {
-            return name + " used: " + df2.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
+            return name + " used: " + df4.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
                     "; dmg: " + (int) average_dmg() +
                     (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
                     "\n";

@@ -113,6 +113,11 @@ public class Simulation {
                     sim_limit = 100; //sim slow fights less so that we don't freeze
                 }
                 while (player.casting == null) {
+                    if (skill1 != null && skill1.canCast(player) && skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) {
+                        player.casting = skill1;
+                        player.casting.startCastPlayer(player, player.zone);
+                        break;
+                    }
                     switch (skill_cycle) {
                         case 1 -> {
                             if (skill1 != null && skill1.canCast(player) && skill1.shouldUse(player)) {
@@ -158,7 +163,7 @@ public class Simulation {
                 for (Iterator<Enemy> iterator = player.zone.enemies.iterator(); iterator.hasNext(); ) {
                     Enemy enemy = iterator.next();
                     if (enemy.casting == null) {
-                        ActiveSkill enemyCast = enemy.getCasting();
+                        ActiveSkill enemyCast = enemy.getCasting(player);
                         enemyCast.startCast(enemy, player);
                         if (player.name.equals("Assassin1") &&
                                 enemy.name.equals("Lamia") && enemyCast.name.equals("Explosion") && enemy.getHp() > enemy.getHp_max() * 0.4) {
@@ -382,6 +387,9 @@ public class Simulation {
             result.append(player.potion3.getRecordedData(total_time + death_time));
         }
         if (crafting_time > 0) {
+            if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
+                crafting_time = Math.max(0, crafting_time - (total_time + death_time)/5);
+            }
             result.append("Effective exp/h: ").append((int) (exp / (total_time + crafting_time + death_time) * 3600)).append("\n");
         }
         if (player.prepare != null) {
@@ -425,13 +433,6 @@ public class Simulation {
         }
         skills_log.append("\n");
         skills_log.append(player.zone.stats.getSkillData());
-        for (Enemy enemy : player.zone.enemies) { //todo: save enemy skill data and report it
-            if (enemy.enemy_skills != null) {
-                for (ActiveSkill s : enemy.enemy_skills) {
-//                result.append(s.name).append(" used with smoke: ").append(df2.format((double) s.used_debuffed / s.used_in_rotation * 100.0)).append("% \n");
-                }
-            }
-        }
         result.append("\nSimulations: ").append(cleared).append("\n");
         result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
         result.append("Time in combat: ").append(Main.secToTime(total_time)).append("\n");

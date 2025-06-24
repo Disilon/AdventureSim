@@ -149,7 +149,7 @@ public class Setup implements Serializable {
         this.pskill1_lvl = 0;
         this.pskill2_lvl = 0;
         this.pskill3_lvl = 0;
-        this.gameversion = "1541";
+        this.gameversion = "1552";
         this.reroll = 0;
         this.milestone = 162.5;
         this.crafting_lvl = 20;

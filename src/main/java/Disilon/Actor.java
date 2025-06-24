@@ -11,6 +11,7 @@ public class Actor {
     protected String name;
     protected int ml;
     protected int cl;
+    protected int tier;
     protected double hp_max;
     protected double hp;
     protected double mp_max;
@@ -167,6 +168,9 @@ public class Actor {
     protected PassiveSkill multiArrows = new PassiveSkill("Multi Arrows", 0.4, 10, 0.15);
     protected PassiveSkill coreBoost = new PassiveSkill("Core Boost", 0.5, 10, 0.1);
 
+    protected PassiveSkill waterBoost = new PassiveSkill("Water Boost", 0.3, 10, 0.3);
+    protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
+
     protected ActiveSkill casting;
     protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
 
@@ -191,11 +195,19 @@ public class Actor {
     public Potion potion2;
     public Potion potion3;
 
+    public Actor() {
+        coreBoost.base_bonus2 = 0.125;
+    }
+
     public void tick_debuffs() {
         smoked = false;
         def_break = 0;
         res_break = 0;
         mark = 0;
+        weaken = 0;
+        if (this.getClass() == Enemy.class) {
+            debuffs.size();
+        }
         Iterator<Debuff> debuff_iterator = debuffs.iterator();
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
@@ -323,6 +335,7 @@ public class Actor {
         dmg_mult *= 1.0 + bowMastery.bonus(passives);
         dmg_mult *= 1.0 + wandMastery.bonus(passives);
         dmg_mult *= 1.0 + bookMastery.bonus(passives);
+        dmg_mult *= 1.0 + weaponMastery.bonus(passives);
         dmg_mult *= 1.0 + concentration.bonus(passives);
         if (multiArrows.enabled) {
             dmg_mult *= multiArrows.bonus(passives);
@@ -335,7 +348,11 @@ public class Actor {
             atk_mult *= 1.0 + stealth.bonus(passives);
         }
         speed_mult *= 1.0 + speedBoost.bonus(passives);
-        exp_mult *= 1.0 + dropBoost.bonus(passives);
+        if (Main.game_version >= 1563 && tier >= 3) {
+            exp_mult *= 1.0 + coreBoost.bonus2(passives);
+        } else {
+            exp_mult *= 1.0 + dropBoost.bonus(passives);
+        }
         atk_mult *= 1.0 + attackBoost.bonus(passives);
         def_mult *= 1.0 + defenseBoost.bonus(passives);
         dodge_mult *= 1.0 + dodge.bonus(passives);

@@ -164,6 +164,7 @@ public class MonsterStatData {
             case "Dagon" -> 45;
             case "Lamia" -> 50;
             case "Tyrant" -> 100;
+            case "Asura" -> 165;
             default -> 0;
         };
     }

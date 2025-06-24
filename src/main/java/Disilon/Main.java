@@ -16,10 +16,11 @@ import java.util.Map;
 import java.util.Random;
 
 public class Main {
-    public static int game_version = 1531;
-    public static Integer[] availableVersions = {1531, 1532, 1534, 1535, 1537, 1541, 1552};
+    public static int game_version = 1552;
+    public static Integer[] availableVersions = {1531, 1532, 1534, 1535, 1537, 1541, 1552, 1565};
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
+    public static DecimalFormat df4;
     public static DecimalFormat df2p;
     public static DecimalFormat dfm;
     public static final Random random = new Random();
@@ -29,6 +30,7 @@ public class Main {
         dfs = DecimalFormatSymbols.getInstance(Locale.UK);
         dfs.setDecimalSeparator(DecimalStyle.STANDARD.getDecimalSeparator());
         df2 = new DecimalFormat("#.##", Main.dfs);
+        df4 = new DecimalFormat("#.####", Main.dfs);
         dfm = new DecimalFormat("#.0", Main.dfs);
         df2p = new DecimalFormat("#00.00", Main.dfs);
         df2p.setMinimumIntegerDigits(2);

@@ -17,6 +17,7 @@ public enum Zone {
     z11("Dagon"),
     z12("Lamia"),
     z13("Tyrant"),
+    z14("Asura"),
     Dummy("Dummy"),
     HelplessDummy("Dummy");
 
@@ -45,14 +46,22 @@ public enum Zone {
         if (Main.game_version >= 1535) {
             incrementStrength();
         }
-        if (max_enemies == 1) {
-            Enemy e = new Enemy();
-            e.setEnemy(possible_enemies[0]);
-            enemies.add(e);
-        } else {
-            int number = random.nextInt(max_enemies - 1, max_enemies + 1);
+        if (this == z14) {
+            int number = random.nextInt(2, 5);
             for (int i = 0; i < number; i++) {
                 Enemy e = new Enemy();
+                e.setEnemy(possible_enemies[0]);
+                enemies.add(e);
+            }
+        } else {
+            if (max_enemies == 1) {
+                Enemy e = new Enemy();
+                e.setEnemy(possible_enemies[0]);
+                enemies.add(e);
+            } else {
+                int number = random.nextInt(max_enemies - 1, max_enemies + 1);
+                for (int i = 0; i < number; i++) {
+                    Enemy e = new Enemy();
 //                if (this == z8) {
 //                    double roll = random.nextDouble() * 100;
 //                    String enemy;
@@ -61,10 +70,12 @@ public enum Zone {
 //                } else {
 //                    e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
 //                }
-                e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
-                enemies.add(e);
+                    e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
+                    enemies.add(e);
+                }
             }
         }
+
         for (Enemy e : enemies) {
             if (Main.game_version < 1535) {
                 e.rollStrength();
@@ -100,6 +111,7 @@ public enum Zone {
             case z5 -> 4.5;
             case z6, z7, z8, z9 -> 5;
             case z10, z11, z12, z13 -> 6;
+            case z14 -> 7.5;
             default -> 6;
         };
     }
@@ -124,5 +136,9 @@ public enum Zone {
             targets.put(e, targets.containsKey(e) ? targets.get(e) + 1 : 1);
         }
         return targets;
+    }
+
+    public double getMaxEnemyHp() {
+        return enemies.stream().mapToDouble(Enemy::getHp).max().getAsDouble();
     }
 }

@@ -383,21 +383,21 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Skill3_mod, gbc);
-        Skill1_s = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        Skill1_s = new JSpinner(new SpinnerNumberModel(1, 1, 10000, 1));
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
         gbc.gridy = 6;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Skill1_s, gbc);
-        Skill2_s = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        Skill2_s = new JSpinner(new SpinnerNumberModel(1, 1, 10000, 1));
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
         gbc.gridy = 6;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Skill2_s, gbc);
-        Skill3_s = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        Skill3_s = new JSpinner(new SpinnerNumberModel(1, 1, 10000, 1));
         gbc = new GridBagConstraints();
         gbc.gridx = 6;
         gbc.gridy = 6;
@@ -1151,7 +1151,7 @@ public class UserForm extends JFrame {
 //        Scroll.getHorizontalScrollBar().setUnitIncrement(16);
 //        this.add(Scroll);
 
-        this.setPreferredSize(new Dimension(1210, 910));
+        this.setPreferredSize(new Dimension(1270, 910));
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
