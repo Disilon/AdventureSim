@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import static Disilon.Main.df2;
-import static Disilon.Main.df2p;
+import static Disilon.Main.shorthand;
 
 public class Simulation {
     enum StatusType {death, respawn, combat, prepare, rerolling, delay}
@@ -41,6 +41,7 @@ public class Simulation {
         ActiveSkill skill1 = player.skill1;
         ActiveSkill skill2 = player.skill2;
         ActiveSkill skill3 = player.skill3;
+        ActiveSkill skill4 = player.skill4;
         double exp = 0;
         double total_time = 0;
         double death_time = 0;
@@ -96,8 +97,9 @@ public class Simulation {
             if (skill1 != null) skill1.used_in_rotation = 0;
             if (skill2 != null) skill2.used_in_rotation = 0;
             if (skill3 != null) skill3.used_in_rotation = 0;
+            if (skill4 != null) skill4.used_in_rotation = 0;
             while (time < time_to_respawn) {
-                delta = Math.clamp(time_to_respawn - time, 0, 0.1);
+                delta = Math.clamp(time_to_respawn - time, 0, 0.2);
                 time += delta;
                 total_time += delta;
                 player.setMp(player.getMp() + player.getMp_regen() * delta);
@@ -148,12 +150,23 @@ public class Simulation {
                                 cycled = 0;
                             } else {
                                 if (skill3 != null) skill3.used_in_rotation = 0;
+                                skill_cycle++;
+                                cycled++;
+                            }
+                        }
+                        case 4 -> {
+                            if (skill4 != null && skill4.canCast(player) && skill4.shouldUse(player)) {
+                                player.casting = skill4;
+                                player.casting.startCastPlayer(player, player.zone);
+                                cycled = 0;
+                            } else {
+                                if (skill4 != null) skill4.used_in_rotation = 0;
                                 skill_cycle = 1;
                                 cycled++;
                             }
                         }
                     }
-                    if (cycled >= 4) {
+                    if (cycled >= 5) {
                         player.casting = player.getWeakSkill();
                         player.casting.startCastPlayer(player, player.zone);
                         cycled = 0;
@@ -175,7 +188,7 @@ public class Simulation {
                         }
                     }
                 }
-                delta = 0.1;
+                delta = 0.2;
                 if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta(player));
                 delta = Math.min(delta, player.zone.calculateDelta());
                 time += delta;
@@ -189,7 +202,7 @@ public class Simulation {
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
-                                if (player.casting.aoe || player.multi_arrows) {
+                                if (player.casting.aoe || player.isMulti_hit_override()) {
                                     for (Enemy enemy : player.zone.enemies) {
                                         double dmg = player.casting.attack(player, enemy, 0);
                                         if (dmg > 0) {
@@ -229,7 +242,7 @@ public class Simulation {
                                 }
 //                                System.out.println("Player casted " + player.casting.name + " at " + df2.format(time));
                             }
-                            if (player.lvling) player.casting.gainExp();
+                            if (player.lvling) player.casting.gainExp(1);
                             if (player.isAmbushing()) player.setAmbushing(false);
                             player.setMp(player.getMp() - player.casting.calculate_manacost(player));
                             player.tick_debuffs();
@@ -288,7 +301,7 @@ public class Simulation {
                         if (player.lvling) player.increment_exp(exp_gain);
                         exp += exp_gain;
                         kills++;
-                        player.zone.stats.recordOverkill(enemy);
+                        player.zone.stats.recordOverkill(enemy, player.research_lvls.get("CoreQuality"));
                         if (Main.game_version >= 1535 && player.lvling) player.levelActives();
 //                        System.out.println("Enemy killed at " + df2.format(time) + " s \n");
                         if (target == enemy) target = null;
@@ -330,7 +343,7 @@ public class Simulation {
                 }
             }
             while (delay_left > 0) {
-                delta = Math.clamp(delay_left, 0, 0.1);
+                delta = Math.clamp(delay_left, 0, 0.2);
                 time += delta;
                 total_time += delta;
                 delay_left -= delta;
@@ -346,14 +359,16 @@ public class Simulation {
             }
             //if (status == StatusType.death) status = StatusType.respawn;
             if (player.lvling) player.levelPassives(time);
+            int research_craft = player.research_lvls.getOrDefault("CraftSpd", 0);
+            int research_alch = player.research_lvls.getOrDefault("AlchemySpd", 0);
             if (player.potion1 != null) {
-                crafting_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl);
+                crafting_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
             }
             if (player.potion2 != null) {
-                crafting_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl);
+                crafting_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
             }
             if (player.potion3 != null) {
-                crafting_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl);
+                crafting_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
             }
             if ((cleared + failed) >= 100000) end = true;
             switch (sim_type) {
@@ -372,11 +387,11 @@ public class Simulation {
                 }
             }
         }
-
-        result.append("Exp/h: ").append((int) (exp / (total_time + death_time) * 3600)).append(" (");
-        result.append(df2.format(player.milestone_exp_mult * 100)).append("%)\n");
-//        result.append("Exp/h without milestones: ").append((int) (exp / player.milestone_exp_mult / (total_time + death_time) * 3600)).append
-//        ("\n");
+        double exph = (exp / (total_time + death_time) * 3600);
+        double exp_total_bonus = player.getExp_mult() * player.milestone_exp_mult;
+        result.append("Exp/h: ").append(shorthand(exph)).append(" (");
+        result.append(df2.format(exp_total_bonus * 100)).append("%; ");
+        result.append(shorthand(exph / (player.getExp_mult() * player.milestone_exp_mult))).append(" at 100%)\n");
         if (player.potion1 != null) {
             result.append(player.potion1.getRecordedData(total_time + death_time));
         }
@@ -390,7 +405,7 @@ public class Simulation {
             if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
                 crafting_time = Math.max(0, crafting_time - (total_time + death_time)/5);
             }
-            result.append("Effective exp/h: ").append((int) (exp / (total_time + crafting_time + death_time) * 3600)).append("\n");
+            result.append("Effective exp/h: ").append(shorthand((exp / (total_time + crafting_time + death_time) * 3600))).append("\n");
         }
         if (player.prepare != null) {
             result.append("Time preparing %: ").append(df2.format(prepare_time / total_time * 100)).append("% " +
@@ -399,7 +414,7 @@ public class Simulation {
         if (death_time > 0) {
             result.append("Time dead %: ").append(df2.format(death_time / (total_time + death_time) * 100)).append("% \n");
             //result.append("Spawning time: ").append(df2.format(respawning_time)).append("s \n");
-            result.append("Exp/h without deaths: ").append((int) (exp / (total_time - ignore_deaths) * 3600)).append(
+            result.append("Exp/h without deaths: ").append(shorthand((exp / (total_time - ignore_deaths) * 3600))).append(
                     "\n");
         }
         if (oom_time > 0) {
@@ -422,6 +437,12 @@ public class Simulation {
             skills_log.append(skill2.getRecordedData(cleared + failed));
         if (skill3 != null && !skill3.name.equals("Prepare"))
             skills_log.append(skill3.getRecordedData(cleared + failed));
+        if (skill4 != null && !skill4.name.equals("Prepare"))
+            skills_log.append(skill4.getRecordedData(cleared + failed));
+        if (player.counter_strike_log.used > 0)
+            skills_log.append(player.counter_strike_log.getRecordedData(cleared + failed));
+        if (player.counter_dodge_log.used > 0)
+            skills_log.append(player.counter_dodge_log.getRecordedData(cleared + failed));
         skills_log.append("\n");
         if (enemy_dmg > 0 && cleared > 0) {
             skills_log.append("Average enemy dmg per fight: ").append((int) enemy_dmg / cleared);
@@ -432,7 +453,7 @@ public class Simulation {
             skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
         }
         skills_log.append("\n");
-        skills_log.append(player.zone.stats.getSkillData());
+        skills_log.append(player.zone.stats.getSkillData(cleared + failed));
         result.append("\nSimulations: ").append(cleared).append("\n");
         result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
         result.append("Time in combat: ").append(Main.secToTime(total_time)).append("\n");
@@ -445,23 +466,29 @@ public class Simulation {
         result.append("\n");
         result.append("Cores: \n");
         result.append(player.zone.stats.getCoreData(player, total_time));
-        if (player.milestone_exp_mult != player.old_milestone_exp_mult) {
-            lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));
-            lvling_log.append("% -> ").append(df2.format(player.milestone_exp_mult * 100)).append("%\n");
-        }
-        if (player.cl != (int) player.old_cl)
-            lvling_log.append("CL: ").append((int) player.old_cl).append(" -> ").append(player.cl).append(" \n");
-        if (player.ml != (int) player.old_ml)
-            lvling_log.append("ML: ").append((int) player.old_ml).append(" -> ").append(player.ml).append(" \n");
-        for (ActiveSkill a : player.active_skills.values()) {
-            if (a.lvl != (int) a.old_lvl)
-                lvling_log.append(a.name).append(": ").append((int) a.old_lvl).append(" -> ").append(a.lvl).append(" " +
-                        "\n");
-        }
-        for (PassiveSkill p : player.passives.values()) {
-            if (p.lvl != (int) p.old_lvl)
-                lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" " +
-                        "\n");
+        if (player.lvling) {
+            if (player.milestone_exp_mult != player.old_milestone_exp_mult) {
+                lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));
+                lvling_log.append("% -> ").append(df2.format(player.milestone_exp_mult * 100)).append("%\n");
+            }
+            if ((int) player.old_cl <= 120) {
+                lvling_log.append("CL: ").append((int) player.old_cl).append(" -> ").append(player.cl).append(" (");
+                lvling_log.append(df2.format(player.getCLpercent())).append("%)\n");
+            }
+            lvling_log.append("ML: ").append((int) player.old_ml).append(" -> ").append(player.ml).append(" (");
+            lvling_log.append(df2.format(player.getMLpercent())).append("%)\n");
+            for (ActiveSkill a : player.active_skills.values()) {
+                if (a.enabled && a.old_lvl < 20) {
+                    lvling_log.append(a.name).append(": ").append((int) a.old_lvl).append(" -> ").append(a.lvl).append(" (");
+                    lvling_log.append(df2.format(a.getLpercent())).append("%)\n");
+                }
+            }
+            for (PassiveSkill p : player.passives.values()) {
+                if (p.enabled && p.old_lvl < 20) {
+                    lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" (");
+                    lvling_log.append(df2.format(p.getLpercent())).append("%)\n");
+                }
+            }
         }
         lvling_info = "";
         if (!lvling_log.isEmpty()) {

@@ -199,6 +199,10 @@ public class ActiveSkill {
         return lvl + fraction;
     }
 
+    public double getLpercent() {
+        return exp / need_for_lvl(lvl) * 100;
+    }
+
     public void setLvl(double lvl) {
         setLvl((int) lvl);
         double next_lvl_exp = need_for_lvl((int) lvl);
@@ -381,7 +385,7 @@ public class ActiveSkill {
         if (zone != null) {
             for (Enemy enemy : zone.enemies) {
                 if (heal && enemy.counter_heal) {
-                    counter_dodge(attacker, enemy);
+                    counter_attack(attacker, enemy, true); //Counter heal will log as Counter Strike
                 }
             }
         }
@@ -416,6 +420,9 @@ public class ActiveSkill {
                 applyDebuff(attacker, defender);
             }
             if (max > 0) {
+                if (defender.counter_strike > 0 && defender.counter_strike > Math.random()) {
+                    counter_attack(attacker, defender, false);
+                }
                 double enemy_resist;
                 double atk = 0;
                 double def = 0;
@@ -500,12 +507,21 @@ public class ActiveSkill {
                 if (name.equals("Pierce")) {
                     def = 0;
                 }
+                double atk_mit = atk;
+                if (Main.game_version < 1566) {
+                    atk_mit *= (1 - enemy_resist);
+                } else {
+                    dmg_mult *= (1 - enemy_resist);
+                }
+                dmg_mult *= attacker.isMulti_hit_override() ? attacker.multi_arrows : 1;
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
+                if (attacker.gear_stun > 0 && Main.game_version >= 1566 && Math.random() < attacker.gear_stun) {
+                    defender.stun_time += 2.0;
+                }
                 for (int i = 0; i < calc_hits; i++) {
-                    if (attacker.gear_stun > 0 && Math.random() < attacker.gear_stun) {
+                    if (attacker.gear_stun > 0 && Main.game_version < 1566 && Math.random() < attacker.gear_stun) {
                         defender.stun_time += 2.0;
                     }
-                    double atk_mit = atk * (1 - enemy_resist);
                     double dmg = Math.random() * (this.max - this.min) + this.min;
                     dmg =
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
@@ -520,8 +536,8 @@ public class ActiveSkill {
                 }
             }
         } else {
-            if (defender.counter_dodge) { //todo: implement counter strike
-                counter_dodge(attacker, defender);
+            if (defender.counter_dodge) {
+                counter_attack(attacker, defender, true);
             }
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
@@ -539,11 +555,19 @@ public class ActiveSkill {
         return total;
     }
 
-    public void counter_dodge(Actor attacker, Actor defender) {
+    public void counter_attack(Actor attacker, Actor defender, boolean counter_dodge) {
         double atk = defender.getAtk();
         double def = attacker.getDef();
         double dmg = (atk * 100 / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1, 1) * 2;
-        //System.out.println(dmg);
+        ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
+        if (attacker.zone != null) {
+            attacker.zone.stats.incrementStats(defender, skill, dmg, 1, 0, 1, 1, 0);
+        } else {
+            skill.used += 1;
+            skill.hits_total += 1;
+            skill.dmg_sum += dmg;
+        }
+//        System.out.println(skill.name + ": " + dmg);
         attacker.setHp(attacker.getHp() - dmg);
     }
 
@@ -641,7 +665,12 @@ public class ActiveSkill {
 
     public String getRecordedData(int simulations) {
         if (hit == 0) {
-            return name + " used: " + df4.format((double) used / simulations) + "\n";
+            if (name.equals("Counter Strike") || name.equals("Counter Dodge")) {
+                return name + " used: " + df4.format((double) used / simulations) +
+                        "; dmg: " + (int) average_dmg() + "\n";
+            } else {
+                return name + " used: " + df4.format((double) used / simulations) + "\n";
+            }
         } else {
             return name + " used: " + df4.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
                     "; dmg: " + (int) average_dmg() +

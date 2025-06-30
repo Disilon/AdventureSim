@@ -29,6 +29,10 @@ public class PassiveSkill {
         return lvl + fraction;
     }
 
+    public double getLpercent() {
+        return exp / need_for_lvl(lvl) * 100;
+    }
+
     public void setLvl(double lvl) {
         setLvl((int) lvl);
         double next_lvl_exp = need_for_lvl((int) lvl);

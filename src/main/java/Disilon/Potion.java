@@ -130,28 +130,30 @@ public class Potion {
         };
     }
 
-    public double craft_time(int crafting, int alchemy) {
+    public double craft_time(int crafting, int alchemy, int research_craft, int research_alch) {
+        double craft_spd = (1 + 0.01 * crafting) * (1 + 0.01 * research_craft);
+        double alch_spd = (1 + 0.01 * alchemy) * (1 + 0.01 * research_alch);
         return switch (tier) {
-            case 1 -> 200.0 / (100 + crafting) + 300.0 / (100 + alchemy);
-            case 2 -> 400.0 / (100 + crafting) + 600.0 / (100 + alchemy);
-            case 3 -> 600.0 / (100 + crafting) + 900.0 / (100 + alchemy);
-            case 4 -> 800.0 / (100 + crafting) + 1200.0 / (100 + alchemy);
-            case 5 -> 1000.0 / (100 + crafting) + 1500.0 / (100 + alchemy);
-            case 11 -> 200.0 / (100 + crafting) + 300.0 / (100 + alchemy) * 1.5;
-            case 12 -> 400.0 / (100 + crafting) + 600.0 / (100 + alchemy) * 1.5;
-            case 13 -> 600.0 / (100 + crafting) + 900.0 / (100 + alchemy) * 1.5;
-            case 14 -> 800.0 / (100 + crafting) + 1200.0 / (100 + alchemy) * 1.5;
-            case 15 -> 1000.0 / (100 + crafting) + 1500.0 / (100 + alchemy) * 1.5;
+            case 1 -> 2 / craft_spd + 3 / alch_spd;
+            case 2 -> 4 / craft_spd + 6 / alch_spd;
+            case 3 -> 6 / craft_spd + 9 / alch_spd;
+            case 4 -> 8 / craft_spd + 12 / alch_spd;
+            case 5 -> 10 / craft_spd + 15 / alch_spd;
+            case 11 -> 2 / craft_spd + 3 / alch_spd * 1.5;
+            case 12 -> 4 / craft_spd + 6 / alch_spd * 1.5;
+            case 13 -> 6 / craft_spd + 9 / alch_spd * 1.5;
+            case 14 -> 8 / craft_spd + 120 / alch_spd * 1.5;
+            case 15 -> 10 / craft_spd + 15 / alch_spd * 1.5;
             default -> 0;
         };
     }
 
-    public double calc_time(int crafting, int alchemy) {
+    public double calc_time(int crafting, int alchemy, int research_craft, int research_alch) {
         int need_to_craft = 0;
         double time = 0;
         if (count < 0) {
             need_to_craft = count * -1;
-            time = craft_time(crafting, alchemy) * need_to_craft;
+            time = craft_time(crafting, alchemy, research_craft, research_alch) * need_to_craft;
             count = 0;
         }
         return time;

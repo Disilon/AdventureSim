@@ -58,6 +58,9 @@ public class Enemy extends Actor {
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
             false,false);
 
+    ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 47.25, 57.75, 1.1, 0, 1.7, 1,
+            Scaling.atk, Element.phys,false,false);
+
     ActiveSkill holy_slash = new ActiveSkill("Holy Slash", 1, 141.75, 173.25, 1, 0, 1.8, 1.8, Scaling.atk,
             Element.light,false, false);
     ActiveSkill holy_power_slash = new ActiveSkill("Holy Power Slash", 1, 252, 308, 1, 0, 3.4, 3.4, Scaling.atk,
@@ -79,6 +82,7 @@ public class Enemy extends Actor {
         mm.addDebuff("Resist Break", 3, 0.25);
         blind.addDebuff("Smoke", 3, 0);
         mark.addDebuff("Mark", 1, 0.2);
+        rapidstabs.dmg_mult = 1.65;
     }
 
     public void setEnemy(String name) {
@@ -161,7 +165,11 @@ public class Enemy extends Actor {
                 if (Main.game_version < 1541) {
                     base_exp = 9200 / base_lvl;
                 } else {
-                    base_exp = 10500 / base_lvl;
+                    if (Main.game_version < 1566) {
+                        base_exp = 10500 / base_lvl;
+                    } else {
+                        base_exp = 11500 / base_lvl;
+                    }
                 }
                 base_atk = 1100 / base_lvl;
                 base_def = 600 / base_lvl;
@@ -184,7 +192,11 @@ public class Enemy extends Actor {
                 base_exp = 20000 / base_lvl;
                 base_atk = 1000 / base_lvl;
                 base_def = 5000 / base_lvl;
-                base_int = 300 / base_lvl;
+                if (Main.game_version < 1566) {
+                    base_int = 300 / base_lvl;
+                } else {
+                    base_int = 375 / base_lvl;
+                }
                 base_res = 5000 / base_lvl;
                 base_hit = 1500 / base_lvl;
                 base_speed = 600 / base_lvl;
@@ -192,16 +204,45 @@ public class Enemy extends Actor {
                 enemy_skills.add(soulslash);
                 core_mult = 100;
             }
+            case "Raum" -> {
+                base_lvl = 175;
+                base_hp_max = 87500 / base_lvl;
+                base_exp = 38850 / base_lvl;
+                base_atk = 5600 / base_lvl;
+                base_def = 700 / base_lvl;
+                base_int = 700 / base_lvl;
+                base_res = 2100 / base_lvl;
+                base_hit = 3500 / base_lvl;
+                base_speed = 1225 / base_lvl;
+                dark_res = 0.5;
+                enemy_skills.add(rapidstabs);
+                counter_dodge = true;
+                counter_heal = true;
+                counter_strike = 0.25;
+                core_mult = 150;
+            }
             case "Asura" -> {
                 base_lvl = 200;
                 base_hp_max = 150000 / base_lvl;
-                base_exp = 45000 / base_lvl;
-                base_atk = 1700 / base_lvl;
+                base_exp = 42000 / base_lvl;
+                if (Main.game_version < 1566) {
+                    base_atk = 1700 / base_lvl;
+                } else {
+                    base_atk = 1560 / base_lvl;
+                }
                 base_def = 1000 / base_lvl;
-                base_int = 1600 / base_lvl;
+                if (Main.game_version < 1566) {
+                    base_int = 1600 / base_lvl;
+                } else {
+                    base_int = 1560 / base_lvl;
+                }
                 base_res = 1000 / base_lvl;
                 base_hit = 1800 / base_lvl;
-                base_speed = 1600 / base_lvl;
+                if (Main.game_version < 1566) {
+                    base_speed = 1600 / base_lvl;
+                } else {
+                    base_speed = 1800 / base_lvl;
+                }
                 fire_res = 0.25;
                 phys_res = -0.3;
                 enemy_skills.add(holy_slash);

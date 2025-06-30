@@ -17,7 +17,9 @@ public enum Zone {
     z11("Dagon"),
     z12("Lamia"),
     z13("Tyrant"),
-    z14("Asura"),
+//    z14("Fairy"),
+    z15("Raum"),
+    z16("Asura"),
     Dummy("Dummy"),
     HelplessDummy("Dummy");
 
@@ -26,13 +28,14 @@ public enum Zone {
     public final ArrayList<Enemy> enemies = new ArrayList<>(1);
     final int max_enemies;
     public double strength;
-    public final MonsterStatData stats = new MonsterStatData();
+    public final MonsterStatData stats;
 
     Zone(String enemies) {
         this.display_name = this.name() + "(" + enemies + ")";
         max_enemies = enemies.split("/").length;
         possible_enemies = new String[max_enemies];
         System.arraycopy(enemies.split("/"), 0, possible_enemies, 0, max_enemies);
+        stats = new MonsterStatData(possible_enemies);
         strength = 0.9;
     }
 
@@ -46,7 +49,7 @@ public enum Zone {
         if (Main.game_version >= 1535) {
             incrementStrength();
         }
-        if (this == z14) {
+        if (this == z16) {
             int number = random.nextInt(2, 5);
             for (int i = 0; i < number; i++) {
                 Enemy e = new Enemy();
@@ -110,8 +113,8 @@ public enum Zone {
             case z4 -> 4;
             case z5 -> 4.5;
             case z6, z7, z8, z9 -> 5;
-            case z10, z11, z12, z13 -> 6;
-            case z14 -> 7.5;
+            case z10, z11, z12, z13, z15 -> 6;
+            case z16 -> 7.5;
             default -> 6;
         };
     }

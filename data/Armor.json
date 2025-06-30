@@ -44,9 +44,9 @@
             "SET": "Iron"
         }, "Bronze Helmet": {
             "HP": 100,
-            "DEF": 14,
+            "DEF": 16,
             "RES": 10,
-            "HIT": -10,
+            "HIT": -8,
             "SPD": -4,
             "PHY_RES": 2,
             "SET": "Bronze"
@@ -138,7 +138,7 @@
             "DEF": 8,
             "RES": 6,
             "HIT": 12,
-            "SPD": -8,
+            "SPD": -6,
             "PHY_RES": 2,
             "SET": "Bronze"
         }
@@ -186,7 +186,7 @@
             "HP": 100,
             "DEF": 10,
             "RES": 8,
-            "SPD": -12,
+            "SPD": -8,
             "PHY_RES": 2,
             "SET": "Bronze"
         }
@@ -238,11 +238,11 @@
             "PHY_RES": 5,
             "SET": "Iron"
         }, "Bronze Chest": {
-            "HP": 200,
-            "DEF": 24,
+			"HP": 200,
+			"DEF": 28,
             "RES": 14,
-            "HIT": -12,
-            "SPD": -12,
+            "HIT": -8,
+            "SPD": -10,
             "PHY_RES": 7,
             "SET": "Bronze"
         }

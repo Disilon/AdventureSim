@@ -18,12 +18,15 @@ public class Setup implements Serializable {
     String skill1;
     String skill2;
     String skill3;
+    String skill4;
     SkillMod skill1_mod;
     SkillMod skill2_mod;
     SkillMod skill3_mod;
+    SkillMod skill4_mod;
     int skill1_s;
     int skill2_s;
     int skill3_s;
+    int skill4_s;
     String pskill1;
     String pskill2;
     String pskill3;
@@ -64,12 +67,6 @@ public class Setup implements Serializable {
     String stats;
     String enemy;
     Zone zone;
-    double skill1_lvl;
-    double skill2_lvl;
-    double skill3_lvl;
-    double pskill1_lvl;
-    double pskill2_lvl;
-    double pskill3_lvl;
     String gameversion;
     int reroll;
     double milestone;
@@ -83,10 +80,12 @@ public class Setup implements Serializable {
     int sim_cl;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
+    HashMap<String, Integer> research_lvls;
 
     public Setup() {
         this.passives_lvls = new HashMap<>();
         this.actives_lvls = new HashMap<>();
+        this.research_lvls = new HashMap<>();
         this.playerclass = "Sniper";
         this.ml = 140;
         this.cl = 75;
@@ -99,12 +98,15 @@ public class Setup implements Serializable {
         this.skill1 = "None";
         this.skill2 = "None";
         this.skill3 = "None";
+        this.skill4 = "None";
         this.skill1_mod = SkillMod.Damage;
         this.skill2_mod = SkillMod.Basic;
         this.skill3_mod = SkillMod.Basic;
+        this.skill4_mod = SkillMod.Basic;
         this.skill1_s = 1;
         this.skill2_s = 1;
         this.skill3_s = 1;
+        this.skill4_s = 1;
         this.pskill1 = "None";
         this.pskill2 = "None";
         this.pskill3 = "None";
@@ -143,12 +145,6 @@ public class Setup implements Serializable {
         this.stats = "Click simulate to calculate stats";
         this.enemy = "";
         this.zone = Zone.z9;
-        this.skill1_lvl = 0;
-        this.skill2_lvl = 0;
-        this.skill3_lvl = 0;
-        this.pskill1_lvl = 0;
-        this.pskill2_lvl = 0;
-        this.pskill3_lvl = 0;
         this.gameversion = "1552";
         this.reroll = 0;
         this.milestone = 162.5;
@@ -602,54 +598,6 @@ public class Setup implements Serializable {
         this.enemy = enemy;
     }
 
-    public double getSkill1_lvl() {
-        return skill1_lvl;
-    }
-
-    public void setSkill1_lvl(double skill1_lvl) {
-        this.skill1_lvl = skill1_lvl;
-    }
-
-    public double getSkill2_lvl() {
-        return skill2_lvl;
-    }
-
-    public void setSkill2_lvl(double skill2_lvl) {
-        this.skill2_lvl = skill2_lvl;
-    }
-
-    public double getSkill3_lvl() {
-        return skill3_lvl;
-    }
-
-    public void setSkill3_lvl(double skill3_lvl) {
-        this.skill3_lvl = skill3_lvl;
-    }
-
-    public double getPskill1_lvl() {
-        return pskill1_lvl;
-    }
-
-    public void setPskill1_lvl(double pskill1_lvl) {
-        this.pskill1_lvl = pskill1_lvl;
-    }
-
-    public double getPskill2_lvl() {
-        return pskill2_lvl;
-    }
-
-    public void setPskill2_lvl(double pskill2_lvl) {
-        this.pskill2_lvl = pskill2_lvl;
-    }
-
-    public double getPskill3_lvl() {
-        return pskill3_lvl;
-    }
-
-    public void setPskill3_lvl(double pskill3_lvl) {
-        this.pskill3_lvl = pskill3_lvl;
-    }
-
     public int getSimulations() {
         return simulations;
     }
@@ -776,5 +724,37 @@ public class Setup implements Serializable {
 
     public void setPskill4(String pskill4) {
         this.pskill4 = pskill4;
+    }
+
+    public String getSkill4() {
+        return skill4;
+    }
+
+    public void setSkill4(String skill4) {
+        this.skill4 = skill4;
+    }
+
+    public SkillMod getSkill4_mod() {
+        return skill4_mod;
+    }
+
+    public void setSkill4_mod(SkillMod skill4_mod) {
+        this.skill4_mod = skill4_mod;
+    }
+
+    public int getSkill4_s() {
+        return skill4_s;
+    }
+
+    public void setSkill4_s(int skill4_s) {
+        this.skill4_s = skill4_s;
+    }
+
+    public HashMap<String, Integer> getResearch_lvls() {
+        return research_lvls;
+    }
+
+    public void setResearch_lvls(HashMap<String, Integer> research_lvls) {
+        this.research_lvls = research_lvls;
     }
 }

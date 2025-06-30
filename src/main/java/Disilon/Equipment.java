@@ -110,6 +110,16 @@ public class Equipment {
         this.speed = equipStats.containsKey("SPD") ? (double) equipStats.get("SPD") * mult : 0;
         this.hp = equipStats.containsKey("HP") ? (double) equipStats.get("HP") * mult : 0;
 
+        if (Main.game_version >= 1566) { //temporary support for multiversion gear stats
+            this.atk = equipStats.containsKey("ATK_NEW") ? (double) equipStats.get("ATK_NEW") * mult : this.atk;
+            this.def = equipStats.containsKey("DEF_NEW") ? (double) equipStats.get("DEF_NEW") * mult : this.def;
+            this.intel = equipStats.containsKey("INT_NEW") ? (double) equipStats.get("INT_NEW") * mult : this.intel;
+            this.resist = equipStats.containsKey("RES_NEW") ? (double) equipStats.get("RES_NEW") * mult : this.resist;
+            this.hit = equipStats.containsKey("HIT_NEW") ? (double) equipStats.get("HIT_NEW") * mult : this.hit;
+            this.speed = equipStats.containsKey("SPD_NEW") ? (double) equipStats.get("SPD_NEW") * mult : this.speed;
+            this.hp = equipStats.containsKey("HP_NEW") ? (double) equipStats.get("HP_NEW") * mult : this.hp;
+        }
+
         // Elements
         this.fire = equipStats.containsKey("FIRE") ? (double) equipStats.get("FIRE") * mult : 0;
         this.water = equipStats.containsKey("WATER") ? (double) equipStats.get("WATER") * mult : 0;

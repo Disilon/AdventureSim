@@ -1,6 +1,7 @@
 package Disilon;
 
 import java.util.HashMap;
+
 import static Disilon.Main.df2;
 
 public class MonsterStatData {
@@ -10,15 +11,22 @@ public class MonsterStatData {
     public HashMap<String, Double> dot_sum = new HashMap<>();
     public HashMap<String, Integer> hits_total = new HashMap<>();
     public HashMap<String, Integer> casts_total = new HashMap<>();
-    public HashMap<String, Integer> overkill_1 = new HashMap<>();
-    public HashMap<String, Integer> overkill_10 = new HashMap<>();
-    public HashMap<String, Integer> overkill_25 = new HashMap<>();
-    public HashMap<String, Integer> overkill_50 = new HashMap<>();
-    public HashMap<String, Integer> overkill_200 = new HashMap<>();
+    public HashMap<String, HashMap<Integer, Double>> cores; //Grade, Count in nested map
     public HashMap<String, Integer> deaths = new HashMap<>();
 
-    private void incrementStats(Actor e, ActiveSkill s, double dmg, double hit, double debuff, int uses, int h,
-                                double dot) {
+    public MonsterStatData(String[] possibleEnemies) {
+        cores = new HashMap<>();
+        for (String e : possibleEnemies) {
+            HashMap<Integer, Double> nested = new HashMap<>();
+            for (int i = 0; i < 9; i++) {
+                nested.put(i, 0.0);
+            }
+            cores.put(e, nested);
+        }
+    }
+
+    public void incrementStats(Actor e, ActiveSkill s, double dmg, double hit, double debuff, int uses, int h,
+                               double dot) {
         String key = e.getName() + ": " + s.name;
         dmg_sum.put(key, dmg_sum.containsKey(key) ? dmg_sum.get(key) + dmg : dmg);
         hit_chance_sum.put(key, hit_chance_sum.containsKey(key) ? hit_chance_sum.get(key) + hit : hit);
@@ -53,39 +61,58 @@ public class MonsterStatData {
         casts_total.clear();
         hits_total.clear();
         dot_sum.clear();
-        overkill_1.clear();
-        overkill_10.clear();
-        overkill_25.clear();
-        overkill_50.clear();
-        overkill_200.clear();
+        cores.clear();
         deaths.clear();
     }
 
-    public void recordOverkill(Actor e) {
-        double percent = - e.getHp() / e.getHp_max() * 100;
+    public void recordOverkill(Actor e, int research) {
+        double percent = -e.getHp() / e.getHp_max() * 100;
         if (percent <= 1) {
-            overkill_1.put(e.getName(), overkill_1.containsKey(e.getName()) ? overkill_1.get(e.getName()) + 1 : 1);
+            addCore(e.name, 4, research);
         } else if (percent <= 10) {
-            overkill_10.put(e.getName(), overkill_10.containsKey(e.getName()) ? overkill_10.get(e.getName()) + 1 : 1);
+            addCore(e.name, 3, research);
         } else if (percent <= 25) {
-            overkill_25.put(e.getName(), overkill_25.containsKey(e.getName()) ? overkill_25.get(e.getName()) + 1 : 1);
+            addCore(e.name, 2, research);
         } else if (percent <= 50) {
-            overkill_50.put(e.getName(), overkill_50.containsKey(e.getName()) ? overkill_50.get(e.getName()) + 1 : 1);
+            addCore(e.name, 1, research);
         } else if (percent <= 200) {
-            overkill_200.put(e.getName(), overkill_200.containsKey(e.getName()) ? overkill_200.get(e.getName()) + 1 : 1);
+            addCore(e.name, 0, research);
         }
         deaths.put(e.getName(), deaths.containsKey(e.getName()) ? deaths.get(e.getName()) + 1 : 1);
     }
 
-    public String getSkillData() {
+    public void addCore(String name, int grade, int research) {
+        if (!cores.containsKey(name)) {
+            HashMap<Integer, Double> nested = new HashMap<>();
+            for (int i = 0; i < 9; i++) {
+                nested.put(i, 0.0);
+            }
+            cores.put(name, nested);
+        }
+        double fractional = research / 100.0 - (double) (research / 100);
+        int new_grade = Math.min(8, grade + research / 100);
+        if (fractional > 0 && new_grade < 8) {
+            Double count = 1 - fractional;
+            cores.get(name).merge(new_grade, count, Double::sum);
+            cores.get(name).merge(new_grade + 1, fractional, Double::sum);
+        } else {
+            cores.get(name).merge(new_grade, 1.0, Double::sum);
+        }
+    }
+
+    public String getSkillData(int simulations) {
         StringBuilder sb = new StringBuilder();
         for (String name : hit_chance_sum.keySet()) {
             double average_hit_chance = hit_chance_sum.get(name) / casts_total.get(name);
             double average_dmg = dmg_sum.get(name) / hits_total.get(name);
             double average_debuff_chance = debuff_chance_sum.get(name) / hits_total.get(name);
             double average_dot = dot_sum.get(name) / hits_total.get(name);
-            sb.append(name).append(" hit: ").append((int) (average_hit_chance * 100)).append("%");
-            sb.append("; dmg: ").append((int) average_dmg);
+            double average_used = (double) casts_total.get(name) / simulations;
+            sb.append(name).append(" used: ").append(df2.format(average_used)).append(";");
+            if (!name.endsWith("Counter Strike") && !name.endsWith("Counter Dodge")) {
+                sb.append(" hit: ").append((int) (average_hit_chance * 100)).append("%;");
+            }
+            sb.append(" dmg: ").append((int) average_dmg);
             sb.append(average_debuff_chance == 0 ? "" : "; debuff: " + (int) (average_debuff_chance * 100) + "%");
             sb.append(average_dot == 0 ? "" : "; DoT: " + (int) (average_dot));
             sb.append("\n");
@@ -96,38 +123,21 @@ public class MonsterStatData {
     public String getCoreData(Player p, double time) {
         StringBuilder sb = new StringBuilder();
         double rp = 0;
-        double drop_rate = 0.01 * p.core_mult;
-        for (String name : deaths.keySet()) {
+        double drop_rate = 0.01 * p.core_mult * (1 + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0));
+        for (String name : cores.keySet()) {
             sb.append(name).append(": ");
-            if (overkill_200.containsKey(name)) {
-                int grade = 0;
-                double count = (double) overkill_200.get(name) * drop_rate;
-                rp += getCoreRP(grade, name) * count;
-                sb.append("F: ").append(df2.format(count));
-            }
-            if (overkill_50.containsKey(name)) {
-                int grade = 1;
-                double count = (double) overkill_50.get(name) * drop_rate;
-                rp += getCoreRP(grade, name) * count;
-                sb.append("; E: ").append(df2.format(count));
-            }
-            if (overkill_25.containsKey(name)) {
-                int grade = 2;
-                double count = (double) overkill_25.get(name) * drop_rate;
-                rp += getCoreRP(grade, name) * count;
-                sb.append("; D: ").append(df2.format(count));
-            }
-            if (overkill_10.containsKey(name)) {
-                int grade = 3;
-                double count = (double) overkill_10.get(name) * drop_rate;
-                rp += getCoreRP(grade, name) * count;
-                sb.append("; C: ").append(df2.format(count));
-            }
-            if (overkill_1.containsKey(name)) {
-                int grade = 4;
-                double count = (double) overkill_1.get(name) * drop_rate;
-                rp += getCoreRP(grade, name) * count;
-                sb.append("; B: ").append(df2.format(count));
+            boolean first = true;
+            for (Integer grade : cores.get(name).keySet()) {
+                double count = cores.get(name).get(grade) * drop_rate;
+                if (count > 0) {
+                    rp += getCoreRP(grade, name) * count;
+                    if (first) {
+                        first = false;
+                    } else {
+                        sb.append("; ");
+                    }
+                    sb.append(getCoreGrade(grade)).append(": ").append(df2.format(count));
+                }
             }
             sb.append("\n");
         }
@@ -164,8 +174,24 @@ public class MonsterStatData {
             case "Dagon" -> 45;
             case "Lamia" -> 50;
             case "Tyrant" -> 100;
+            case "Raum" -> 150;
             case "Asura" -> 165;
             default -> 0;
+        };
+    }
+
+    public static String getCoreGrade(int grade) {
+        return switch (grade) {
+            case 0 -> "F";
+            case 1 -> "E";
+            case 2 -> "D";
+            case 3 -> "C";
+            case 4 -> "B";
+            case 5 -> "A";
+            case 6 -> "S";
+            case 7 -> "SS";
+            case 8 -> "SSS";
+            default -> throw new IllegalStateException("Unexpected value: " + grade);
         };
     }
 }

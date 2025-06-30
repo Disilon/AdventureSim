@@ -1,6 +1,7 @@
 package Disilon;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -121,7 +122,9 @@ public class Actor {
     protected double hp_regen = 0;
     protected double blessed = 0;
     protected double core_mult = 1;
-    protected boolean multi_arrows = false;
+    protected double counter_strike = 0;
+    protected double multi_arrows = 0;
+    protected boolean multi_hit_override = false;
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;
@@ -145,6 +148,7 @@ public class Actor {
     protected PassiveSkill defenseBoost = new PassiveSkill("Defense Boost", 0.2, 5, 0.2);
     protected PassiveSkill dodge = new PassiveSkill("Dodge", 0.25, 10, 0.1);
     protected PassiveSkill fistMastery = new PassiveSkill("Fist Mastery", 0.2, 0, 0);
+    protected PassiveSkill counterStrike = new PassiveSkill("Counter Strike", 0.25, 15, 0.25);
 
     protected PassiveSkill bowMastery = new PassiveSkill("Bow Mastery", 0.2, 0, 0);
     protected PassiveSkill ambush = new PassiveSkill("Ambush", 0.2, 15, 0.25);
@@ -178,6 +182,8 @@ public class Actor {
             false, false);
     ActiveSkill weak_i = new ActiveSkill("Weak Magic Arrow", 1, 55.8, 68.2, 1, 1, 1, 1, Scaling.intel, Element.magic,
             false, false);
+    ActiveSkill counter_strike_log = new ActiveSkill("Counter Strike");
+    ActiveSkill counter_dodge_log = new ActiveSkill("Counter Dodge");
 
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
@@ -191,9 +197,11 @@ public class Actor {
     public ActiveSkill skill1;
     public ActiveSkill skill2;
     public ActiveSkill skill3;
+    public ActiveSkill skill4;
     public Potion potion1;
     public Potion potion2;
     public Potion potion3;
+    HashMap<String, Integer> research_lvls;
 
     public Actor() {
         coreBoost.base_bonus2 = 0.125;
@@ -271,8 +279,20 @@ public class Actor {
             case "hit" -> set_hit = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "magicdmg" -> set_magicdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "physdmg" -> set_physdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
-            case "mit1" -> set_mit1 = Math.clamp((5 + upgrade / 6.0) * (0.5 + tier / 2.0), 5, 50) / 100.0;
-            case "mit2" -> set_mit2 = Math.clamp((10 + upgrade / 5.0) * (0.5 + tier / 2.0), 10, 55) / 100.0;
+            case "mit1" -> {
+                if (Main.game_version < 1566) {
+                    set_mit1 = Math.clamp((5 + upgrade / 6.0) * (0.5 + tier / 2.0), 5, 50) / 100.0;
+                } else {
+                    set_mit1 = Math.clamp((8 + upgrade / 5.0) * (0.5 + tier / 2.0), 5, 60) / 100.0;
+                }
+            }
+            case "mit2" -> {
+                if (Main.game_version < 1566) {
+                    set_mit2 = Math.clamp((10 + upgrade / 5.0) * (0.5 + tier / 2.0), 10, 55) / 100.0;
+                } else {
+                    set_mit2 = Math.clamp((13 + upgrade / 4.0) * (0.5 + tier / 2.0), 10, 70) / 100.0;
+                }
+            }
         }
     }
 
@@ -325,7 +345,8 @@ public class Actor {
         cast_speed_mult = 1;
         delay_speed_mult = 1;
         core_mult = 1;
-        multi_arrows = false;
+        counter_strike = 0;
+        multi_arrows = 0;
 
         poison_mult *= 1.0 + poisonBoost.bonus(passives);
         dmg_mult *= 1.0 + daggerMastery.bonus(passives);
@@ -338,8 +359,7 @@ public class Actor {
         dmg_mult *= 1.0 + weaponMastery.bonus(passives);
         dmg_mult *= 1.0 + concentration.bonus(passives);
         if (multiArrows.enabled) {
-            dmg_mult *= multiArrows.bonus(passives);
-            multi_arrows = true;
+            multi_arrows = multiArrows.bonus(passives);
         }
         if (Main.game_version >= 1534) {
             dmg_mult *= 1.0 + stealth.bonus(passives);
@@ -356,6 +376,7 @@ public class Actor {
         atk_mult *= 1.0 + attackBoost.bonus(passives);
         def_mult *= 1.0 + defenseBoost.bonus(passives);
         dodge_mult *= 1.0 + dodge.bonus(passives);
+        counter_strike = counterStrike.bonus(passives);
         hit_mult *= 1.0 + hitBoost.bonus(passives);
         hit_mult *= 1.0 + concentration.bonus(passives);
         int_mult *= 1.0 + intBoost.bonus(passives);
@@ -366,7 +387,7 @@ public class Actor {
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
-        core_mult *= 1.0 + coreBoost.bonus(passives);
+        core_mult += coreBoost.bonus(passives); //Ryu said it will be additive with gear bonuses
 
         mp_cost_add = 0;
         mp_cost_mult = 1;
@@ -374,13 +395,13 @@ public class Actor {
         for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
             Equipment item = slot.getValue();
             if (item.name != null && !item.name.equals("None")) {
-                gear_atk += item.atk;
-                gear_def += item.def;
-                gear_hit += item.hit;
-                gear_speed += item.speed;
-                gear_int += item.intel;
-                gear_res += item.resist;
-                gear_hp += item.hp;
+                gear_atk += item.atk * (1 + 0.01 * research_lvls.getOrDefault("GearAtk", 0));
+                gear_def += item.def * (1 + 0.01 * research_lvls.getOrDefault("GearDef", 0));
+                gear_hit += item.hit * (1 + 0.01 * research_lvls.getOrDefault("GearHit", 0));
+                gear_speed += item.speed * (1 + 0.01 * research_lvls.getOrDefault("GearSpd", 0));
+                gear_int += item.intel * (1 + 0.01 * research_lvls.getOrDefault("GearInt", 0));
+                gear_res += item.resist * (1 + 0.01 * research_lvls.getOrDefault("GearRes", 0));
+                gear_hp += item.hp * (1 + 0.01 * research_lvls.getOrDefault("GearHp", 0));
                 gear_water += item.water;
                 gear_fire += item.fire;
                 gear_earth += item.earth;
@@ -506,6 +527,8 @@ public class Actor {
         }
         weak_a.clear_recorded_data();
         weak_i.clear_recorded_data();
+        counter_dodge_log.clear_recorded_data();
+        counter_strike_log.clear_recorded_data();
     }
 
     public void setCLML(int cl, int ml) {
@@ -846,7 +869,7 @@ public class Actor {
     }
 
     public double getExp_mult() {
-        return exp_mult;
+        return exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp", 0));
     }
 
     public void setExp_mult(double exp_mult) {
@@ -963,5 +986,20 @@ public class Actor {
 
     public void setDodge_mult(double dodge_mult) {
         this.dodge_mult = dodge_mult;
+    }
+
+    public boolean isMulti_hit_override() {
+        if (Main.game_version < 1566) return (multi_arrows > 0);
+        String casting = getCasting().name;
+        switch (casting) {
+            case "Arrow Rain":
+            case "Double Shot":
+            case "Careful Shot":
+            case "Aimed Shot":
+            case "Weakening Shot":
+                return (multi_arrows > 0);
+            default:
+                return false;
+        }
     }
 }

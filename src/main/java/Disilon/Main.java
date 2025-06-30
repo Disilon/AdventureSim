@@ -17,7 +17,7 @@ import java.util.Random;
 
 public class Main {
     public static int game_version = 1552;
-    public static Integer[] availableVersions = {1531, 1532, 1534, 1535, 1537, 1541, 1552, 1565};
+    public static Integer[] availableVersions = {1552, 1565, 1566};
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
     public static DecimalFormat df4;
@@ -120,5 +120,15 @@ public class Main {
 
     public static String padLeft(String s, int n) {
         return String.format("%" + n + "s", s);
+    }
+
+    public static String shorthand(double number) {
+        if (number < 1e6) {
+            return String.valueOf((int) number);
+        }
+        if (number < 1e9) {
+            return String.valueOf((int) number / 1000) + "k";
+        }
+        return String.valueOf((int) number / 1000000) + "m";
     }
 }

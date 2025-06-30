@@ -1,5 +1,6 @@
 package Disilon;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 import static Disilon.Main.df2;
@@ -25,8 +26,9 @@ public class Player extends Actor {
             false, false);
     ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 20, 1.5, 1.5,
             Scaling.atkhit, Element.phys,false,false);
-    ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
+    ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 50.0, 61.0, 0.7, 25, 1.5,
             1.5,Scaling.atkhit, Element.phys,false,false);
+    //not sure why, but hunter AR deals slightly more dmg than it should todo: do a test with other skills
     ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 10, 1.2, 1.1, Scaling.atk, Element.phys, false,
             false);
     ActiveSkill db = new ActiveSkill("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
@@ -71,7 +73,7 @@ public class Player extends Actor {
             Element.phys, false, false);
     ActiveSkill empowerhp = new ActiveSkill("Empower HP", 1, 0, 0, 0, 60, 2, 2, Scaling.atk, Element.none, false,
             false);
-    ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 67.5, 82.5, 0.9, 100, 1.7, 1,
+    ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 67.5, 82.5, 1.1, 90, 1.7, 1,
             Scaling.atk, Element.phys,false,false);
     ActiveSkill pierce1551 = new ActiveSkill("Pierce", 1, 45, 55, 1, 25, 0.75, 1,
             Scaling.atk, Element.phys,false,false);
@@ -104,6 +106,7 @@ public class Player extends Actor {
 
     public Player(Setup setup) {
         this();
+        this.research_lvls = setup.research_lvls;
         this.setClass(setup.playerclass);
         this.setCLML(setup.cl, setup.ml);
         this.old_cl = setup.cl;
@@ -129,14 +132,16 @@ public class Player extends Actor {
         this.disableAllActives();
         for (String skill : setup.passives_lvls.keySet()) {
             if (passives.containsKey(skill)) {
-                passives.get(skill).setLvl(setup.passives_lvls.get(skill));
-                passives.get(skill).old_lvl = passives.get(skill).lvl;
+                double lvl = setup.passives_lvls.get(skill);
+                passives.get(skill).setLvl(lvl);
+                passives.get(skill).old_lvl = lvl;
             }
         }
         for (String skill : setup.actives_lvls.keySet()) {
             if (active_skills.containsKey(skill)) {
-                active_skills.get(skill).setLvl(setup.actives_lvls.get(skill));
-                active_skills.get(skill).old_lvl = active_skills.get(skill).lvl;
+                double lvl = setup.actives_lvls.get(skill);
+                active_skills.get(skill).setLvl(lvl);
+                active_skills.get(skill).old_lvl = lvl;
             }
         }
         this.skill1 = getSkill(setup.skill1, setup.skill1_s);
@@ -150,6 +155,10 @@ public class Player extends Actor {
         this.skill3 = getSkill(setup.skill3, setup.skill3_s);
         if (this.skill3 != null) {
             this.skill3.setSkill(setup.skill3_mod);
+        }
+        this.skill4 = getSkill(setup.skill4, setup.skill4_s);
+        if (this.skill4 != null) {
+            this.skill4.setSkill(setup.skill4_mod);
         }
         this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3, setup.pskill4});
     }
@@ -247,6 +256,7 @@ public class Player extends Actor {
                 passives.put("Defense Boost", defenseBoost);
                 passives.put("Dodge", dodge);
                 passives.put("Fist Mastery", fistMastery);
+                passives.put("Counter Strike", counterStrike);
                 active_skills.put("Killing Strike", ks);
                 active_skills.put("Hide", hide);
                 active_skills.put("Dragon Punch", dp);
@@ -265,6 +275,7 @@ public class Player extends Actor {
                 passives.put("Attack Boost", attackBoost);
                 passives.put("Defense Boost", defenseBoost);
                 passives.put("Fist Mastery", fistMastery);
+                passives.put("Counter Strike", counterStrike);
                 active_skills.put("Quick Hit", qh);
                 active_skills.put("Dragon Punch", dp);
                 active_skills.put("Whirling Foot", wf);
@@ -371,6 +382,7 @@ public class Player extends Actor {
                 passives.put("Fist Mastery", fistMastery);
                 passives.put("Spear Mastery", spearMastery);
                 passives.put("HP Boost", hpBoost);
+                passives.put("Counter Strike", counterStrike);
                 active_skills.put("Empower HP", empowerhp);
                 if (Main.game_version >= 1552) {
                     active_skills.put("Pierce", pierce1552);
@@ -823,7 +835,7 @@ public class Player extends Actor {
     }
 
     public void levelActives() {
-        active_skills.forEach((key, value) -> value.gainExp());
+        active_skills.forEach((key, value) -> value.gainExp(1));
     }
 
     public void levelPassives(double time) {
@@ -867,5 +879,14 @@ public class Player extends Actor {
             sb.append(weak_i.getWeakRecordedData());
         }
         return sb.toString();
+    }
+
+    public double getCLpercent() {
+        if (cl >= 120) return 0;
+        return cl_exp / exp_to_cl(cl) * 100;
+    }
+
+    public double getMLpercent() {
+        return ml_exp / exp_to_ml(ml) * 100;
     }
 }
