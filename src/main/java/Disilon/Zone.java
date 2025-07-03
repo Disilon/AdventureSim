@@ -17,7 +17,7 @@ public enum Zone {
     z11("Dagon"),
     z12("Lamia"),
     z13("Tyrant"),
-//    z14("Fairy"),
+    z14("Fairy"),
     z15("Raum"),
     z16("Asura"),
     Dummy("Dummy"),
@@ -113,10 +113,18 @@ public enum Zone {
             case z4 -> 4;
             case z5 -> 4.5;
             case z6, z7, z8, z9 -> 5;
-            case z10, z11, z12, z13, z15 -> 6;
+            case z10, z11, z12, z13, z14, z15 -> 6;
             case z16 -> 7.5;
             default -> 6;
         };
+    }
+
+    public Enemy getRandomEnemy(String skill) {
+        if (skill.equals("Dispel")) {
+            return enemies.stream().filter(e -> e.buff_count() > 0).findFirst().get();
+        } else {
+            return getRandomEnemy();
+        }
     }
 
     public Enemy getRandomEnemy() {
@@ -143,5 +151,9 @@ public enum Zone {
 
     public double getMaxEnemyHp() {
         return enemies.stream().mapToDouble(Enemy::getHp).max().getAsDouble();
+    }
+
+    public int getEnemyBuffCount() {
+        return enemies.stream().mapToInt(Enemy::buff_count).sum();
     }
 }

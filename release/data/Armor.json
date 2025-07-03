@@ -10,6 +10,12 @@
             "WATER_RES": -2,
             "FIRE_RES": 4,
             "SET": "Blazing"
+		}, "Holy Hood": {
+            "DEF": 4,
+            "RES": 10,
+            "DARK_RES": -2,
+            "LIGHT_RES": 4,
+            "SET": "Holy"
         }, "Leather Helmet": {
             "DEF": 6,
             "RES": 4,
@@ -44,9 +50,9 @@
             "SET": "Iron"
         }, "Bronze Helmet": {
             "HP": 100,
-            "DEF": 14,
+            "DEF": 16,
             "RES": 10,
-            "HIT": -10,
+            "HIT": -8,
             "SPD": -4,
             "PHY_RES": 2,
             "SET": "Bronze"
@@ -61,6 +67,12 @@
             "FIRE": 10,
             "FIRE_RES": 2,
             "SET": "Blazing"
+        }, "Holy Boots": {
+            "RES": 6,
+            "SPD": 10,
+            "LIGHT": 10,
+            "LIGHT_RES": 2,
+            "SET": "Holy"
         }, "Leather Boots": {
             "SPD": 10,
             "SET": "Leather"
@@ -105,6 +117,12 @@
             "FIRE": 60,
             "WATER_RES": -4,
             "SET": "Blazing"
+		}, "Holy Bracers": {
+            "RES": 6,
+            "HIT": 6,
+            "LIGHT": 60,
+            "DARK_RES": -4,
+            "SET": "Holy"
         }, "Leather Bracers": {
             "HIT": 10,
             "SET": "Leather"
@@ -138,7 +156,7 @@
             "DEF": 8,
             "RES": 6,
             "HIT": 12,
-            "SPD": -8,
+            "SPD": -6,
             "PHY_RES": 2,
             "SET": "Bronze"
         }
@@ -153,6 +171,12 @@
 			"FIRE": 20,
             "FIRE_RES": 2,
             "SET": "Blazing"
+		}, "Holy Pants": {
+            "DEF": 6,
+            "RES": 12,
+			"LIGHT": 20,
+            "LIGHT_RES": 2,
+            "SET": "Holy"
         }, "Leather Pants": {
             "DEF": 10,
             "SET": "Leather"
@@ -186,7 +210,7 @@
             "HP": 100,
             "DEF": 10,
             "RES": 8,
-            "SPD": -12,
+            "SPD": -8,
             "PHY_RES": 2,
             "SET": "Bronze"
         }
@@ -203,6 +227,14 @@
             "WATER_RES": -6,
             "FIRE_RES": 6,
             "SET": "Blazing"
+		}, "Holy Chest Piece": {
+            "DEF": 8,
+            "INT": 2,
+            "RES": 16,
+			"LIGHT": 30,
+            "DARK_RES": -6,
+            "LIGHT_RES": 6,
+            "SET": "Holy"
         }, "Leather Shirt": {
             "DEF": 12,
             "RES": 6,
@@ -238,11 +270,11 @@
             "PHY_RES": 5,
             "SET": "Iron"
         }, "Bronze Chest": {
-            "HP": 200,
-            "DEF": 24,
+			"HP": 200,
+			"DEF": 28,
             "RES": 14,
-            "HIT": -12,
-            "SPD": -12,
+            "HIT": -8,
+            "SPD": -10,
             "PHY_RES": 7,
             "SET": "Bronze"
         }

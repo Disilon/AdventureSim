@@ -58,6 +58,10 @@ public class Enemy extends Actor {
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
             false,false);
 
+    ActiveSkill charge_up = new ActiveSkill("Charge Up", 1, 0, 0, 0, 0, 2.2, 2.2, Scaling.atk, Element.none, false,
+            false);
+    ActiveSkill arrow_light = new ActiveSkill("Arrow Of Light", 1, 220.5, 269.5, 1, 0, 2.7, 2.7, Scaling.atkhit,
+            Element.light,false, false);
     ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 47.25, 57.75, 1.1, 0, 1.7, 1,
             Scaling.atk, Element.phys,false,false);
 
@@ -82,6 +86,7 @@ public class Enemy extends Actor {
         mm.addDebuff("Resist Break", 3, 0.25);
         blind.addDebuff("Smoke", 3, 0);
         mark.addDebuff("Mark", 1, 0.2);
+        charge_up.addBuff("Charge Up", 1, 1.875);
         rapidstabs.dmg_mult = 1.65;
     }
 
@@ -204,6 +209,20 @@ public class Enemy extends Actor {
                 enemy_skills.add(soulslash);
                 core_mult = 100;
             }
+            case "Fairy" -> {
+                base_lvl = 150;
+                base_hp_max = 57000 / base_lvl;
+                base_exp = 45000 / base_lvl;
+                base_atk = 2250 / base_lvl;
+                base_def = 4500 / base_lvl;
+                base_int = 2250 / base_lvl;
+                base_res = 2250 / base_lvl;
+                base_hit = 11250 / base_lvl;
+                base_speed = 750 / base_lvl;
+                enemy_skills.add(charge_up);
+                enemy_skills.add(arrow_light);
+                core_mult = 125; //todo: find correct value
+            }
             case "Raum" -> {
                 base_lvl = 175;
                 base_hp_max = 87500 / base_lvl;
@@ -217,34 +236,21 @@ public class Enemy extends Actor {
                 dark_res = 0.5;
                 enemy_skills.add(rapidstabs);
                 counter_dodge = true;
-                counter_heal = true;
-                counter_strike = 0.25;
+                counter_strike = 0.3;
                 core_mult = 150;
             }
             case "Asura" -> {
                 base_lvl = 200;
                 base_hp_max = 150000 / base_lvl;
                 base_exp = 42000 / base_lvl;
-                if (Main.game_version < 1566) {
-                    base_atk = 1700 / base_lvl;
-                } else {
-                    base_atk = 1560 / base_lvl;
-                }
+                base_atk = 1560 / base_lvl;
                 base_def = 1000 / base_lvl;
-                if (Main.game_version < 1566) {
-                    base_int = 1600 / base_lvl;
-                } else {
-                    base_int = 1560 / base_lvl;
-                }
+                base_int = 1560 / base_lvl;
                 base_res = 1000 / base_lvl;
                 base_hit = 1800 / base_lvl;
-                if (Main.game_version < 1566) {
-                    base_speed = 1600 / base_lvl;
-                } else {
-                    base_speed = 1800 / base_lvl;
-                }
-                fire_res = 0.25;
-                phys_res = -0.3;
+                base_speed = 1800 / base_lvl;
+                fire_res = 0.2;
+                phys_res = -0.2;
                 enemy_skills.add(holy_slash);
                 enemy_skills.add(holy_power_slash);
                 enemy_skills.add(sense);
@@ -446,6 +452,9 @@ public class Enemy extends Actor {
             }
             case "Akuma" -> {
                 return roll < 50 ? dp : as;
+            }
+            case "Fairy" -> {
+                return (super.charge == 0 && roll < 50) ? charge_up : arrow_light;
             }
             case "Asura" -> {
                 if (player.hide_bonus > 0) {

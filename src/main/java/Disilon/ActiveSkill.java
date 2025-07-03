@@ -99,6 +99,9 @@ public class ActiveSkill {
             if (name.equals("Careful Shot") && actor.zone.getMaxEnemyHp() > use_setting) {
                 return false;
             }
+            if (name.equals("Dispel") && actor.zone.getEnemyBuffCount() == 0) {
+                return false;
+            }
             return used_in_rotation < use_setting;
         }
     }
@@ -118,7 +121,8 @@ public class ActiveSkill {
         //" delay: " + delay);
     }
 
-    public void startCastPlayer(Actor attacker, Zone zone) {
+    public void startCastPlayer(Actor attacker) {
+        Zone zone = attacker.zone;
         double speed_mult = Math.clamp((zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
         cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + zone.stealthDelay();
         if (attacker.isAmbushing()) cast = Math.max(0.01, cast - 5);
@@ -360,6 +364,7 @@ public class ActiveSkill {
     public void use(Actor attacker) {
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         double gain = 0;
+        int duration_bonus = attacker.buff_boost > 1 ? 1 : 0;
         switch (name) {
             case "Hide":
                 attacker.hide_bonus = this.min;
@@ -371,8 +376,8 @@ public class ActiveSkill {
                 gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
                 break;
             default:
-                attacker.buffs.add(new Buff(buff_name, name.equals("Charge Up") ? (int) buff_duration :
-                        (int) buff_duration + 1, buff_bonus));
+                attacker.buffs.add(new Buff(buff_name, name.equals("Charge Up") ? (int) buff_duration + duration_bonus :
+                        (int) buff_duration + 1 + duration_bonus, buff_bonus * attacker.buff_boost));
 //                System.out.println(buff_name + " added to " + attacker.name + " duration " + buff_duration);
                 break;
         }
@@ -515,6 +520,11 @@ public class ActiveSkill {
                 }
                 dmg_mult *= attacker.isMulti_hit_override() ? attacker.multi_arrows : 1;
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
+                if (this.name.equals("Dispel")) {
+                    calc_hits = defender.buff_count();
+                    defender.buffs.clear();
+                    defender.tick_buffs();
+                }
                 if (attacker.gear_stun > 0 && Main.game_version >= 1566 && Math.random() < attacker.gear_stun) {
                     defender.stun_time += 2.0;
                 }

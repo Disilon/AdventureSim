@@ -12,6 +12,7 @@ public class MonsterStatData {
     public HashMap<String, Integer> hits_total = new HashMap<>();
     public HashMap<String, Integer> casts_total = new HashMap<>();
     public HashMap<String, HashMap<Integer, Double>> cores; //Grade, Count in nested map
+    public double base_rp;
     public HashMap<String, Integer> deaths = new HashMap<>();
 
     public MonsterStatData(String[] possibleEnemies) {
@@ -55,6 +56,7 @@ public class MonsterStatData {
     }
 
     public void clear_recorded_data() {
+        base_rp = 0;
         dmg_sum.clear();
         hit_chance_sum.clear();
         debuff_chance_sum.clear();
@@ -89,6 +91,7 @@ public class MonsterStatData {
             }
             cores.put(name, nested);
         }
+        base_rp += getCoreRP(grade, name);
         double fractional = research / 100.0 - (double) (research / 100);
         int new_grade = Math.min(8, grade + research / 100);
         if (fractional > 0 && new_grade < 8) {
@@ -102,20 +105,25 @@ public class MonsterStatData {
 
     public String getSkillData(int simulations) {
         StringBuilder sb = new StringBuilder();
-        for (String name : hit_chance_sum.keySet()) {
-            double average_hit_chance = hit_chance_sum.get(name) / casts_total.get(name);
-            double average_dmg = dmg_sum.get(name) / hits_total.get(name);
-            double average_debuff_chance = debuff_chance_sum.get(name) / hits_total.get(name);
-            double average_dot = dot_sum.get(name) / hits_total.get(name);
-            double average_used = (double) casts_total.get(name) / simulations;
-            sb.append(name).append(" used: ").append(df2.format(average_used)).append(";");
-            if (!name.endsWith("Counter Strike") && !name.endsWith("Counter Dodge")) {
-                sb.append(" hit: ").append((int) (average_hit_chance * 100)).append("%;");
+        for (String name : casts_total.keySet()) {
+            if (hit_chance_sum.containsKey(name)) {
+                double average_hit_chance = hit_chance_sum.get(name) / casts_total.get(name);
+                double average_dmg = dmg_sum.get(name) / hits_total.get(name);
+                double average_debuff_chance = debuff_chance_sum.get(name) / hits_total.get(name);
+                double average_dot = dot_sum.get(name) / hits_total.get(name);
+                double average_used = (double) casts_total.get(name) / simulations;
+                sb.append(name).append(" used: ").append(df2.format(average_used)).append(";");
+                if (!name.endsWith("Counter Strike") && !name.endsWith("Counter Dodge")) {
+                    sb.append(" hit: ").append((int) (average_hit_chance * 100)).append("%;");
+                }
+                sb.append(" dmg: ").append((int) average_dmg);
+                sb.append(average_debuff_chance == 0 ? "" : "; debuff: " + (int) (average_debuff_chance * 100) + "%");
+                sb.append(average_dot == 0 ? "" : "; DoT: " + (int) (average_dot));
+                sb.append("\n");
+            } else {
+                double average_used = (double) casts_total.get(name) / simulations;
+                sb.append(name).append(" used: ").append(df2.format(average_used)).append("\n");
             }
-            sb.append(" dmg: ").append((int) average_dmg);
-            sb.append(average_debuff_chance == 0 ? "" : "; debuff: " + (int) (average_debuff_chance * 100) + "%");
-            sb.append(average_dot == 0 ? "" : "; DoT: " + (int) (average_dot));
-            sb.append("\n");
         }
         return sb.toString();
     }
@@ -123,12 +131,14 @@ public class MonsterStatData {
     public String getCoreData(Player p, double time) {
         StringBuilder sb = new StringBuilder();
         double rp = 0;
-        double drop_rate = 0.01 * p.core_mult * (1 + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0));
+        double drop_rate = 0.01 * p.core_mult;
+        double r_drop = (1 + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0));
+        double r_grade = (1 + 0.00 * p.research_lvls.getOrDefault("CoreQuality", 0));
         for (String name : cores.keySet()) {
             sb.append(name).append(": ");
             boolean first = true;
             for (Integer grade : cores.get(name).keySet()) {
-                double count = cores.get(name).get(grade) * drop_rate;
+                double count = cores.get(name).get(grade) * drop_rate * r_drop;
                 if (count > 0) {
                     rp += getCoreRP(grade, name) * count;
                     if (first) {
@@ -142,6 +152,7 @@ public class MonsterStatData {
             sb.append("\n");
         }
         sb.append("RP/h: ").append(df2.format(rp / time * 3600));
+        sb.append(" (base: ").append(df2.format(base_rp * drop_rate / time * 3600)).append(")");
         sb.append("\n");
         return sb.toString();
     }
@@ -174,6 +185,7 @@ public class MonsterStatData {
             case "Dagon" -> 45;
             case "Lamia" -> 50;
             case "Tyrant" -> 100;
+            case "Fairy" -> 125;
             case "Raum" -> 150;
             case "Asura" -> 165;
             default -> 0;

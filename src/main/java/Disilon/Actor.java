@@ -71,6 +71,7 @@ public class Actor {
     protected double gear_stun;
 
     protected double set_hit = 1;
+    protected double set_res = 1;
     protected double set_magicdmg = 1;
     protected double set_physdmg = 1;
     protected double set_mit1 = 0;
@@ -121,6 +122,7 @@ public class Actor {
     protected double empower_hp = 0;
     protected double hp_regen = 0;
     protected double blessed = 0;
+    protected double buff_boost = 1;
     protected double core_mult = 1;
     protected double counter_strike = 0;
     protected double multi_arrows = 0;
@@ -171,6 +173,9 @@ public class Actor {
     protected PassiveSkill ailmentRes = new PassiveSkill("Ailment Res", 0.75, 10, 0.2);
     protected PassiveSkill multiArrows = new PassiveSkill("Multi Arrows", 0.4, 10, 0.15);
     protected PassiveSkill coreBoost = new PassiveSkill("Core Boost", 0.5, 10, 0.1);
+
+    protected PassiveSkill lightBoost = new PassiveSkill("Light Boost", 0.3, 10, 0.3);
+    protected PassiveSkill buffMastery = new PassiveSkill("Buff Mastery", 0.3, 10, 0.3); //todo: skill values
 
     protected PassiveSkill waterBoost = new PassiveSkill("Water Boost", 0.3, 10, 0.3);
     protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
@@ -257,6 +262,10 @@ public class Actor {
         }
     }
 
+    public int buff_count() {
+        return buffs.size();
+    }
+
     public void remove_mark() {
         Iterator<Debuff> debuff_iterator = debuffs.iterator();
         while (debuff_iterator.hasNext()) {
@@ -277,6 +286,7 @@ public class Actor {
         double tier = quality.getMult();
         switch (bonus.toLowerCase()) {
             case "hit" -> set_hit = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
+            case "res" -> set_res = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "magicdmg" -> set_magicdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "physdmg" -> set_physdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
             case "mit1" -> {
@@ -298,6 +308,7 @@ public class Actor {
 
     public void disableSet() {
         set_hit = 1;
+        set_res = 1;
         set_magicdmg = 1;
         set_physdmg = 1;
         set_mit1 = 0;
@@ -347,6 +358,7 @@ public class Actor {
         core_mult = 1;
         counter_strike = 0;
         multi_arrows = 0;
+        buff_boost = 1;
 
         poison_mult *= 1.0 + poisonBoost.bonus(passives);
         dmg_mult *= 1.0 + daggerMastery.bonus(passives);
@@ -385,6 +397,7 @@ public class Actor {
         cast_speed_mult /= 1.0 + castBoost.bonus(passives);
         cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
+        buff_boost *= 1.0 + buffMastery.bonus(passives);
         hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
         core_mult += coreBoost.bonus(passives); //Ryu said it will be additive with gear bonuses
@@ -449,7 +462,7 @@ public class Actor {
         atk = (base_atk + gear_atk) * getAtk_mult();
         def = (base_def + gear_def) * getDef_mult();
         intel = (base_int + gear_int) * getInt_mult();
-        resist = (base_res + gear_res) * getRes_mult();
+        resist = (base_res + gear_res) * getRes_mult() * set_res;
         hit = (base_hit + gear_hit) * getHit_mult() * set_hit;
         speed = (base_speed + gear_speed) * getSpeed_mult();
         hp_max = (base_hp_max + gear_hp) * getHp_mult();
@@ -606,7 +619,11 @@ public class Actor {
     }
 
     public double getResist() {
-        return resist * (1.0 - mark) * (1.0 - res_break) + (base_res + gear_res) * blessed;
+        return resist * (1.0 - mark) * (1.0 - res_break) + (base_res + gear_res) * blessed * set_res * getRes_mult();
+    }
+
+    public double getGear_res() {
+        return getResist() - base_res * getRes_mult() * (1 + blessed);
     }
 
     public void setResist(double resist) {

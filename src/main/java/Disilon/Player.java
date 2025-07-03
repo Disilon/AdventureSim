@@ -87,7 +87,12 @@ public class Player extends Actor {
             Element.phys, false, false);
     ActiveSkill aimed1563 = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 60, 1.5, 1.5, Scaling.atkhit,
             Element.phys, false, false);
-
+    ActiveSkill prayer = new ActiveSkill("Prayer", 1, 0, 0, 0, 99, 1.5, 1.5, Scaling.atk, Element.none, false,
+            false);
+    ActiveSkill hray = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.resint,
+            Element.light, false, false);
+    ActiveSkill dispel = new ActiveSkill("Dispel", 1, 90, 110, 1, 50, 1, 1, Scaling.resint, Element.light, false,
+            false);
     ActiveSkill basic = new ActiveSkill("Basic Attack", 1, 81, 99, 1, 0, 1, 1, Scaling.atk,
             Element.phys, false, false);
     ActiveSkill onion_slash = new ActiveSkill("Onion Slash", 1, 252, 308, 1.25, 99, 1.4, 1.4, Scaling.atk,
@@ -96,7 +101,8 @@ public class Player extends Actor {
             Element.water, true, false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
-    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Hunter", "Onion Knight", "Cleric", "Mage", "Fighter",
+    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Hunter", "Priest",
+            "Onion Knight", "Cleric", "Mage", "Fighter",
             "Warrior", "Archer", "Student", "Thief"};
 
     public Player() {
@@ -190,6 +196,7 @@ public class Player extends Actor {
         sets.put("Dark", new EquipmentSet("physdmg", 5));
         sets.put("Metal", new EquipmentSet("mit1", 5));
         sets.put("Iron", new EquipmentSet("mit2", 5));
+        sets.put("Holy", new EquipmentSet("res", 5));
         sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
     }
 
@@ -301,6 +308,25 @@ public class Player extends Actor {
                 active_skills.put("Elemental Blast", eblast);
                 active_skills.put("Push Blast", push);
                 active_skills.put("First Aid", fa);
+            }
+            case "Priest" -> {
+                tier = 3;
+                base_dark_res = -0.5;
+                base_light_res = 0.5;
+                passives.put("Int Boost", intBoost);
+                passives.put("Res Boost", resBoost);
+                passives.put("Book Mastery", bookMastery);
+                passives.put("Ailment Res", ailmentRes);
+                passives.put("Light Boost", lightBoost);
+                passives.put("Buff Mastery", buffMastery);
+                active_skills.put("Holy Ray", hray);
+                active_skills.put("Dispel", dispel);
+                active_skills.put("Prayer", prayer);
+                active_skills.put("Holy Light", hlight);
+                active_skills.put("Magic Arrow", ma);
+                active_skills.put("Heal", heal);
+                active_skills.put("First Aid", fa);
+                active_skills.put("Bless", bless);
             }
             case "Mage" -> {
                 tier = 2;
@@ -565,6 +591,15 @@ public class Player extends Actor {
                 base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "Priest" -> {
+                base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
             case "Mage" -> {
                 base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;
                 base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
@@ -722,6 +757,9 @@ public class Player extends Actor {
             case "Assassin" -> {
                 result += (getAtk() + getIntel()) / 2;
             }
+            case "Priest" -> {
+                result += (getAtk() + getIntel()) / -2;
+            }
             default -> {
             }
         }
@@ -734,6 +772,9 @@ public class Player extends Actor {
         switch (name) {
             case "Assassin", "Sniper" -> {
                 result += (getAtk() + getIntel()) / -2;
+            }
+            case "Priest" -> {
+                result += (getAtk() + getIntel()) * (lightBoost.enabled ? 0.5 + lightBoost.bonus : 0.5);
             }
             default -> {
             }
@@ -750,7 +791,7 @@ public class Player extends Actor {
         sb.append("ATK = ").append(Math.round(getAtk())).append(" (").append(Math.round(gear_atk)).append(")\n");
         sb.append("DEF = ").append(Math.round(getDef())).append(" (").append(Math.round(gear_def)).append(")\n");
         sb.append("INT = ").append(Math.round(getIntel())).append(" (").append(Math.round(gear_int)).append(")\n");
-        sb.append("RES = ").append(Math.round(getResist())).append(" (").append(Math.round(gear_res)).append(")\n");
+        sb.append("RES = ").append(Math.round(getResist())).append(" (").append(Math.round(getGear_res())).append(")\n");
         sb.append("HIT = ").append(Math.round(getHit())).append(" (").append(Math.round(getHit() - base_hit * hit_mult)).append(")\n");
         sb.append("SPD = ").append(Math.round(getSpeed())).append(" (").append(Math.round(gear_speed)).append(")\n\n");
         if (getWater() != 0) {
@@ -803,6 +844,7 @@ public class Player extends Actor {
         if (gear_stun > 0) sb.append("Stun = ").append(df2.format(gear_stun * 100)).append("%\n");
         if ((burn_mult + gear_burn) > 1) sb.append("Burn = ").append(df2.format((burn_mult + gear_burn) * 100 - 100)).append("%\n");
         if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
+        if (set_res > 1) sb.append("Set Res = ").append(df2.format(set_res * 100 - 100)).append("%\n");
         if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
         if (set_mit1 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit1 * 100)).append("%\n");

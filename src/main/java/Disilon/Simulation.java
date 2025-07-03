@@ -83,17 +83,6 @@ public class Simulation {
             player.zone.respawn();
             player.checkAmbush();
             player.remove_charge = false;
-            if (Main.game_version < 1535 && reroll >= 1) {
-                while (player.zone.getRandomEnemy().getHp_max() >= reroll) { //won't work properly with multiple enemies
-                    player.zone.respawn();
-                    delta = time_to_respawn;
-                    time += delta;
-                    total_time += delta;
-                    player.setMp(player.getMp() + player.getMp_regen() * delta);
-                    player.checkPotion(delta);
-                    failed++;
-                }
-            }
             if (skill1 != null) skill1.used_in_rotation = 0;
             if (skill2 != null) skill2.used_in_rotation = 0;
             if (skill3 != null) skill3.used_in_rotation = 0;
@@ -115,16 +104,19 @@ public class Simulation {
                     sim_limit = 100; //sim slow fights less so that we don't freeze
                 }
                 while (player.casting == null) {
-                    if (skill1 != null && skill1.canCast(player) && skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) {
-                        player.casting = skill1;
-                        player.casting.startCastPlayer(player, player.zone);
-                        break;
+                    if (skill1 != null && skill1.canCast(player)) {
+                        if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
+                                (skill1.name.equals("Dispel") && player.zone.getEnemyBuffCount() > 0)) {
+                            player.casting = skill1;
+                            player.casting.startCastPlayer(player);
+                            break;
+                        }
                     }
                     switch (skill_cycle) {
                         case 1 -> {
                             if (skill1 != null && skill1.canCast(player) && skill1.shouldUse(player)) {
                                 player.casting = skill1;
-                                player.casting.startCastPlayer(player, player.zone);
+                                player.casting.startCastPlayer(player);
                                 cycled = 0;
                             } else {
                                 if (skill1 != null) skill1.used_in_rotation = 0;
@@ -135,7 +127,7 @@ public class Simulation {
                         case 2 -> {
                             if (skill2 != null && skill2.canCast(player) && skill2.shouldUse(player)) {
                                 player.casting = skill2;
-                                player.casting.startCastPlayer(player, player.zone);
+                                player.casting.startCastPlayer(player);
                                 cycled = 0;
                             } else {
                                 if (skill2 != null) skill2.used_in_rotation = 0;
@@ -146,7 +138,7 @@ public class Simulation {
                         case 3 -> {
                             if (skill3 != null && skill3.canCast(player) && skill3.shouldUse(player)) {
                                 player.casting = skill3;
-                                player.casting.startCastPlayer(player, player.zone);
+                                player.casting.startCastPlayer(player);
                                 cycled = 0;
                             } else {
                                 if (skill3 != null) skill3.used_in_rotation = 0;
@@ -157,7 +149,7 @@ public class Simulation {
                         case 4 -> {
                             if (skill4 != null && skill4.canCast(player) && skill4.shouldUse(player)) {
                                 player.casting = skill4;
-                                player.casting.startCastPlayer(player, player.zone);
+                                player.casting.startCastPlayer(player);
                                 cycled = 0;
                             } else {
                                 if (skill4 != null) skill4.used_in_rotation = 0;
@@ -168,7 +160,7 @@ public class Simulation {
                     }
                     if (cycled >= 5) {
                         player.casting = player.getWeakSkill();
-                        player.casting.startCastPlayer(player, player.zone);
+                        player.casting.startCastPlayer(player);
                         cycled = 0;
                         skill_cycle = 1;
                     }
@@ -212,7 +204,7 @@ public class Simulation {
                                     }
                                 } else {
                                     if (target == null) {
-                                        target = player.zone.getRandomEnemy();
+                                        target = player.zone.getRandomEnemy(player.casting.name);
                                     }
                                     if (target != null) {
                                         if (player.casting.random_targets) {
@@ -281,6 +273,7 @@ public class Simulation {
 //                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
                                 } else {
                                     enemy.casting.use(enemy);
+                                    player.zone.stats.incrementStats(enemy, enemy.casting, 0, 0, 0, 1, 0, 0);
                                 }
                                 enemy.setMp(enemy.getMp() - enemy.casting.calculate_manacost(enemy));
                                 enemy.tick_debuffs();

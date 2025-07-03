@@ -52,6 +52,11 @@ public class PassiveSkill {
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }
+            case "Buff Mastery" -> {
+                this.bonus = this.base_bonus * (1 + 0.04 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
             case "Core Boost" -> {
                 this.bonus = this.base_bonus * (1 + 0.05 * lvl);
                 this.bonus2 = this.base_bonus2 * (1 + 0.05 * lvl);
