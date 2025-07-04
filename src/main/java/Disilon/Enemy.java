@@ -214,7 +214,7 @@ public class Enemy extends Actor {
                 base_lvl = 150;
                 if (Main.game_version < 1568) {
                     base_hp_max = 57000 / base_lvl;
-                    base_exp = 45000 * 1.8 / base_lvl;
+                    base_exp = 45000 / base_lvl;
                 } else {
                     base_hp_max = 120000 / base_lvl;
                     base_exp = 70500 / base_lvl;
