@@ -185,8 +185,8 @@ public class MonsterStatData {
             case "Dagon" -> 45;
             case "Lamia" -> 50;
             case "Tyrant" -> 100;
-            case "Fairy" -> Main.game_version < 1568 ? 250 : 125;
-            case "Raum" -> Main.game_version < 1568 ? 200 : 150;
+            case "Fairy" -> Main.game_version < 1568 ? 125 : 250;
+            case "Raum" -> Main.game_version < 1568 ? 150 : 200;
             case "Asura" -> 165;
             default -> 0;
         };

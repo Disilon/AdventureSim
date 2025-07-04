@@ -87,9 +87,11 @@ public class Player extends Actor {
             Element.phys, false, false);
     ActiveSkill aimed1563 = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 60, 1.5, 1.5, Scaling.atkhit,
             Element.phys, false, false);
-    ActiveSkill prayer = new ActiveSkill("Prayer", 1, 0, 0, 0, 99, 1.5, 1.5, Scaling.atk, Element.none, false,
+    ActiveSkill prayer = new ActiveSkill("Prayer", 1, 30, 0, 0, 99, 1.5, 1.5, Scaling.atk, Element.none, false,
             false);
-    ActiveSkill hray = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.res,
+    ActiveSkill hray = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.resint,
+            Element.light, false, false);
+    ActiveSkill hray1568 = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.res,
             Element.light, false, false);
     ActiveSkill dispel = new ActiveSkill("Dispel", 1, 90, 110, 1, 50, 1, 1, Scaling.resint, Element.light, false,
             false);
@@ -319,7 +321,11 @@ public class Player extends Actor {
                 passives.put("Ailment Res", ailmentRes);
                 passives.put("Light Boost", lightBoost);
                 passives.put("Buff Mastery", buffMastery);
-                active_skills.put("Holy Ray", hray);
+                if (Main.game_version >= 1568) {
+                    active_skills.put("Holy Ray", hray1568);
+                } else {
+                    active_skills.put("Holy Ray", hray);
+                }
                 active_skills.put("Dispel", dispel);
                 active_skills.put("Prayer", prayer);
                 active_skills.put("Holy Light", hlight);
@@ -593,7 +599,11 @@ public class Player extends Actor {
             }
             case "Priest" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
-                base_atk = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                if (Main.game_version >= 1568) {
+                    base_atk = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                } else {
+                    base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                }
                 base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
                 base_int = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
                 base_res = (double) (130 * (cl + 100)) / 10000 * 4 * ml;

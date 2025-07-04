@@ -236,7 +236,7 @@ public class Simulation {
                             }
                             if (player.lvling) player.casting.gainExp(1);
                             if (player.isAmbushing()) player.setAmbushing(false);
-                            player.setMp(player.getMp() - player.casting.calculate_manacost(player));
+                            player.casting.pay_manacost(player);
                             player.tick_debuffs();
                             player.tick_buffs();
                         }
@@ -276,7 +276,7 @@ public class Simulation {
                                     enemy.casting.use(enemy);
                                     player.zone.stats.incrementStats(enemy, enemy.casting, 0, 0, 0, 1, 0, 0);
                                 }
-                                enemy.setMp(enemy.getMp() - enemy.casting.calculate_manacost(enemy));
+                                enemy.casting.pay_manacost(enemy);
                                 enemy.tick_debuffs();
                                 enemy.tick_buffs();
                             }

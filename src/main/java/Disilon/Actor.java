@@ -455,18 +455,18 @@ public class Actor {
         for (Map.Entry<String, ActiveSkill> active : active_skills.entrySet()) {
             if (active.getValue().enabled) {
                 if (active.getValue().name.equals("Elemental Blast")) eblast_enabled = true;
-                if (active.getValue().name.equals("Holy Light") || active.getValue().name.equals("Prayer"))
+                if (active.getValue().name.equals("Holy Light") || (active.getValue().name.equals("Prayer") && Main.game_version >= 1568))
                     holylight_enabled = true;
                 if (active.getValue().name.equals("Aura Blade")) aurablade_enabled = true;
             }
         }
-        atk = (base_atk + gear_atk) * getAtk_mult();
-        def = (base_def + gear_def) * getDef_mult();
-        intel = (base_int + gear_int) * getInt_mult();
-        resist = (base_res + gear_res) * getRes_mult() * set_res;
-        hit = (base_hit + gear_hit) * getHit_mult() * set_hit;
-        speed = (base_speed + gear_speed) * getSpeed_mult();
-        hp_max = (base_hp_max + gear_hp) * getHp_mult();
+        atk = (base_atk + gear_atk);
+        def = (base_def + gear_def);
+        intel = (base_int + gear_int);
+        resist = (base_res + gear_res) * set_res;
+        hit = (base_hit + gear_hit) * set_hit;
+        speed = (base_speed + gear_speed);
+        hp_max = (base_hp_max + gear_hp);
         mp_max = (resist * 3 + intel) * getMp_mult();
         hp = hp_max;
         mp = mp_max;
@@ -564,7 +564,7 @@ public class Actor {
     }
 
     public double getHp_max() {
-        return hp_max;
+        return hp_max * getHp_mult();
     }
 
     public void setHp_max(double hp_max) {
@@ -596,7 +596,7 @@ public class Actor {
     }
 
     public double getAtk() {
-        return atk + (base_atk + gear_atk) * blessed + empower_hp * getHp_max();
+        return atk * (getAtk_mult() + blessed) + empower_hp * getHp_max();
     }
 
     public void setAtk(double atk) {
@@ -604,7 +604,7 @@ public class Actor {
     }
 
     public double getDef() {
-        return def * (1.0 - def_break) * (1.0 - mark) + (base_def + gear_def) * blessed;
+        return def * (getDef_mult() + blessed - def_break - mark);
     }
 
     public void setDef(double def) {
@@ -612,7 +612,7 @@ public class Actor {
     }
 
     public double getIntel() {
-        return intel + (base_int + gear_int) * blessed;
+        return intel * (getInt_mult() + blessed);
     }
 
     public void setIntel(double intel) {
@@ -620,11 +620,11 @@ public class Actor {
     }
 
     public double getResist() {
-        return resist * (1.0 - mark) * (1.0 - res_break) + (base_res + gear_res) * blessed * set_res * getRes_mult();
+        return resist * (getRes_mult() - mark - res_break + blessed);
     }
 
     public double getGear_res() {
-        return getResist() - base_res * getRes_mult() * (1 + blessed);
+        return getResist() - base_res * (getRes_mult() - mark - res_break + blessed);
     }
 
     public void setResist(double resist) {

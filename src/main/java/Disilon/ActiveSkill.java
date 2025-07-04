@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import static Disilon.Main.df2;
 import static Disilon.Main.df4;
+import static Disilon.Main.game_version;
 
 public class ActiveSkill {
     public String name;
@@ -48,6 +49,7 @@ public class ActiveSkill {
     public double hit_chance_sum;
     public double dmg_sum;
     public double debuff_chance_sum;
+    public double mana_used;
     public int used;
     public int hits_total;
     public double old_lvl;
@@ -184,6 +186,12 @@ public class ActiveSkill {
         return (mp * mp_mult + mp_additive) * actor.getMp_cost_mult() + actor.getMp_cost_add();
     }
 
+    public void pay_manacost(Actor actor) {
+        double cost = actor.casting.calculate_manacost(actor);
+        mana_used += cost;
+        actor.setMp(actor.getMp() - cost);
+    }
+
     public void addDebuff(String name, double duration, double dmg) {
         this.debuff_name = name;
         this.base_debuff_duration = duration;
@@ -243,7 +251,7 @@ public class ActiveSkill {
         this.skillMod = type;
         switch (type) {
             case Basic:
-                if (Main.game_version >= 1563) {
+                if (game_version >= 1563) {
                     this.min = this.base_min * (1 + 0.025 * lvl);
                     this.max = this.base_max * (1 + 0.025 * lvl);
                 } else {
@@ -256,7 +264,7 @@ public class ActiveSkill {
                 this.delay_mult = this.base_delay * (1 + 0.01 * lvl);
                 break;
             case Pow:
-                if (Main.game_version >= 1563) {
+                if (game_version >= 1563) {
                     this.min = this.base_min * (1 + 0.015 * lvl);
                     this.max = this.base_max * (1 + 0.015 * lvl);
                 } else {
@@ -265,7 +273,7 @@ public class ActiveSkill {
                 }
                 break;
             case Hit:
-                if (Main.game_version >= 1563) {
+                if (game_version >= 1563) {
                     this.hit = this.base_hit * (1 + 0.025 * lvl);
                 } else {
                     this.hit = this.base_hit * (1 + 0.01 * lvl);
@@ -294,7 +302,7 @@ public class ActiveSkill {
                 this.mp_additive = lvl;
                 break;
             case SlowHit:
-                if (Main.game_version >= 1563) {
+                if (game_version >= 1563) {
                     this.hit = this.base_hit * (1 + 0.06 * lvl);
                     this.cast_mult = this.base_cast * (1 + 0.01 * lvl);
                     this.delay_mult = this.base_delay * (1 + 0.01 * lvl);
@@ -377,6 +385,31 @@ public class ActiveSkill {
                 break;
             case "Prayer":
                 double rng = Math.random() * 100;
+                double power = this.min / 100;
+                int rolls = game_version >= 1568 ? 4 : 5;
+                double chance = 100.0 / rolls;
+                if (rng < chance) {
+                    hits_total += 1;
+                    for (Enemy e : attacker.zone.enemies) {
+                        if (e.getHp() < power * e.getHp_max()) {
+                            hit_chance_sum += 1;
+                            dmg_sum += e.getHp();
+                            e.setHp(0);
+                        }
+                    }
+
+                }
+                if (rng >= chance && rng < chance * 2) {
+                    attacker.setHp(attacker.getHp() + attacker.getHp_max() * power);
+                }
+                if (rng >= chance * 2 && rng < chance * 3) {
+                    if (attacker.charge == 0) {
+                        attacker.buffs.add(new Buff("Charge Up", 1, power));
+                    }
+                }
+                if (rolls >= 5 && rng >= chance * 3 && rng < chance * 4) {
+                    attacker.setMp(attacker.getMp() + attacker.getMp_max() * power);
+                }
                 break;
             default:
                 attacker.buffs.add(new Buff(buff_name, name.equals("Charge Up") ? (int) buff_duration + duration_bonus :
@@ -478,7 +511,7 @@ public class ActiveSkill {
                         yield defender.getMagic_res(); //Not sure if it's right formula
                     }
                     case Element.physmagic -> {
-                        yield defender.getPhys_res() / 2 + defender.getMagic_res() / 2 * Main.game_version < 1532 ? -1 : 1;
+                        yield defender.getPhys_res() / 2 + defender.getMagic_res() / 2 * game_version < 1532 ? -1 : 1;
                     }
                     default -> 0;
                 };
@@ -520,7 +553,7 @@ public class ActiveSkill {
                     def = 0;
                 }
                 double atk_mit = atk;
-                if (Main.game_version < 1566) {
+                if (game_version < 1566) {
                     atk_mit *= (1 - enemy_resist);
                 } else {
                     dmg_mult *= (1 - enemy_resist);
@@ -532,11 +565,11 @@ public class ActiveSkill {
                     defender.buffs.clear();
                     defender.tick_buffs();
                 }
-                if (attacker.gear_stun > 0 && Main.game_version >= 1566 && Math.random() < attacker.gear_stun) {
+                if (attacker.gear_stun > 0 && game_version >= 1566 && Math.random() < attacker.gear_stun) {
                     defender.stun_time += 2.0;
                 }
                 for (int i = 0; i < calc_hits; i++) {
-                    if (attacker.gear_stun > 0 && Main.game_version < 1566 && Math.random() < attacker.gear_stun) {
+                    if (attacker.gear_stun > 0 && game_version < 1566 && Math.random() < attacker.gear_stun) {
                         defender.stun_time += 2.0;
                     }
                     double dmg = Math.random() * (this.max - this.min) + this.min;
@@ -576,6 +609,9 @@ public class ActiveSkill {
         double atk = defender.getAtk();
         double def = attacker.getDef();
         double dmg = (atk * 100 / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1, 1) * 2;
+        if (game_version >= 1568) {
+            dmg *= (1 - attacker.getPhys_res()) * 2;
+        }
         dmg = Math.max(1, dmg);
         ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
         if (attacker.zone != null) {
@@ -593,7 +629,7 @@ public class ActiveSkill {
         double hit_chance =
                 (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
         if (debuff_name.equals("Poison")) {
-            if (Main.game_version >= 1535) {
+            if (game_version >= 1535) {
                 hit_chance =
                         (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
             }
@@ -668,12 +704,17 @@ public class ActiveSkill {
         return hits_total > 0 ? dmg_sum / hits_total : 0;
     }
 
+    public double average_mana_used() {
+        return used > 0 ? mana_used / used : 0;
+    }
+
     public double average_debuff_chance() {
         return hits_total > 0 ? debuff_chance_sum / hits_total : 0;
     }
 
     public void clear_recorded_data() {
         used = 0;
+        mana_used = 0;
         hits_total = 0;
         hit_chance_sum = 0;
         dmg_sum = 0;
@@ -682,16 +723,19 @@ public class ActiveSkill {
     }
 
     public String getRecordedData(int simulations) {
-        if (hit == 0) {
-            if (name.equals("Counter Strike") || name.equals("Counter Dodge")) {
-                return name + " used: " + df4.format((double) used / simulations) +
-                        "; dmg: " + (int) average_dmg() + "\n";
-            } else {
-                return name + " used: " + df4.format((double) used / simulations) + "\n";
+        if (hit == 0 && !name.equals("Prayer")) {
+            switch (name) {
+                case "Counter Strike", "Counter Dodge" -> {
+                    return name + " used: " + df4.format((double) used / simulations) +
+                            "; dmg: " + (int) average_dmg() + "; mana used: " + (int) average_mana_used() + "\n";
+                }
+                default -> {
+                    return name + " used: " + df4.format((double) used / simulations) + "; mana used: " + (int) average_mana_used() + "\n";
+                }
             }
         } else {
             return name + " used: " + df4.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
-                    "; dmg: " + (int) average_dmg() +
+                    "; dmg: " + (int) average_dmg() + "; mana used: " + (int) average_mana_used() +
                     (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
                     "\n";
         }
