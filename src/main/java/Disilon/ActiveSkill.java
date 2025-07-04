@@ -375,6 +375,9 @@ public class ActiveSkill {
             case "Heal":
                 gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
                 break;
+            case "Prayer":
+                double rng = Math.random() * 100;
+                break;
             default:
                 attacker.buffs.add(new Buff(buff_name, name.equals("Charge Up") ? (int) buff_duration + duration_bonus :
                         (int) buff_duration + 1 + duration_bonus, buff_bonus * attacker.buff_boost));
@@ -480,29 +483,33 @@ public class ActiveSkill {
                     default -> 0;
                 };
                 def = switch (this.scaling) {
-                    case Scaling.atk -> {
+                    case atk -> {
                         atk += attacker.getAtk();
                         dmg_mult *= attacker.getSet_physdmg();
                         yield defender.getDef();
                     }
-                    case Scaling.atkint -> {
+                    case atkint -> {
                         atk += attacker.getAtk() / 2 + attacker.getIntel() / 2;
                         dmg_mult *= attacker.getSet_magicdmg();
                         yield defender.getDef() / 2 + defender.getResist() / 2;
                     }
-                    case Scaling.atkhit -> {
+                    case atkhit -> {
                         atk += attacker.getAtk() / 2 + attacker.getHit() / 2;
                         dmg_mult *= attacker.getSet_physdmg();
                         yield defender.getDef();
                     }
-                    case Scaling.intel -> {
+                    case intel -> {
                         atk += attacker.getIntel();
                         dmg_mult *= attacker.getSet_magicdmg();
                         yield defender.getResist();
                     }
-                    case Scaling.resint -> {
+                    case resint -> {
                         atk += attacker.getResist() / 2 + attacker.getIntel() / 2;
                         dmg_mult *= attacker.getSet_magicdmg();
+                        yield defender.getResist();
+                    }
+                    case res -> {
+                        atk += attacker.getResist();
                         yield defender.getResist();
                     }
                 };
@@ -569,6 +576,7 @@ public class ActiveSkill {
         double atk = defender.getAtk();
         double def = attacker.getDef();
         double dmg = (atk * 100 / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1, 1) * 2;
+        dmg = Math.max(1, dmg);
         ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
         if (attacker.zone != null) {
             attacker.zone.stats.incrementStats(defender, skill, dmg, 1, 0, 1, 1, 0);

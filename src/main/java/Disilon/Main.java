@@ -17,7 +17,7 @@ import java.util.Random;
 
 public class Main {
     public static int game_version = 1552;
-    public static Integer[] availableVersions = {1552, 1566};
+    public static Integer[] availableVersions = {1552, 1566, 1568};
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
     public static DecimalFormat df4;

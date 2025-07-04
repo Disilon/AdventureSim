@@ -269,6 +269,7 @@ public class Simulation {
                                     if (dmg > 0) {
                                         player.setHp(player.getHp() - dmg);
                                         enemy_dmg += dmg;
+                                        if (enemy.charge > 0) enemy.remove_charge = true;
                                     }
 //                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
                                 } else {

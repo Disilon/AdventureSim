@@ -53,7 +53,7 @@ public class Enemy extends Actor {
             false, false);
     ActiveSkill attack = new ActiveSkill("Attack", 1, 90, 110, 1, 0, 1, 1, Scaling.atk, Element.phys,
             false, false);
-    ActiveSkill charge = new ActiveSkill("Charge Attack", 1, 270, 330, 1, 0, 2.5, 2, Scaling.atk, Element.phys,
+    ActiveSkill charge_attack = new ActiveSkill("Charge Attack", 1, 270, 330, 1, 0, 2.5, 2, Scaling.atk, Element.phys,
             false, false);
     ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
             false,false);
@@ -75,6 +75,7 @@ public class Enemy extends Actor {
     double strength = 1;
     double base_lvl;
     double core_mult; //currently unused
+    String previous_spell = "";
 
     public Enemy() {
         ball.addDebuff("Burn", 3, 1);
@@ -211,8 +212,13 @@ public class Enemy extends Actor {
             }
             case "Fairy" -> {
                 base_lvl = 150;
-                base_hp_max = 57000 / base_lvl;
-                base_exp = 45000 / base_lvl;
+                if (Main.game_version < 1568) {
+                    base_hp_max = 57000 / base_lvl;
+                    base_exp = 45000 * 1.8 / base_lvl;
+                } else {
+                    base_hp_max = 114000 / base_lvl;
+                    base_exp = 76500 / base_lvl;
+                }
                 base_atk = 2250 / base_lvl;
                 base_def = 4500 / base_lvl;
                 base_int = 2250 / base_lvl;
@@ -225,7 +231,11 @@ public class Enemy extends Actor {
             }
             case "Raum" -> {
                 base_lvl = 175;
-                base_hp_max = 87500 / base_lvl;
+                if (Main.game_version < 1568) {
+                    base_hp_max = 87500 / base_lvl;
+                } else {
+                    base_hp_max = 100625 / base_lvl;
+                }
                 base_exp = 38850 / base_lvl;
                 base_atk = 5600 / base_lvl;
                 base_def = 700 / base_lvl;
@@ -394,7 +404,7 @@ public class Enemy extends Actor {
                 base_hit = 60 / base_lvl;
                 base_speed = 45 / base_lvl;
                 light_res = -0.5;
-                enemy_skills.add(charge);
+                enemy_skills.add(charge_attack);
                 core_mult = 8;
             }
         }
@@ -423,6 +433,7 @@ public class Enemy extends Actor {
 
         this.debuffs.clear();
         this.casting = null;
+        this.remove_charge = false;
     }
 
     public void rollStrength() {
@@ -454,7 +465,7 @@ public class Enemy extends Actor {
                 return roll < 50 ? dp : as;
             }
             case "Fairy" -> {
-                return (super.charge == 0 && roll < 50) ? charge_up : arrow_light;
+                return (super.charge == 0 && roll < 70) ? charge_up : arrow_light;
             }
             case "Asura" -> {
                 if (player.hide_bonus > 0) {
@@ -475,6 +486,7 @@ public class Enemy extends Actor {
     public ActiveSkill getCasting(Player player) {
         if (casting == null) {
             casting = rollAttack(player);
+            previous_spell = casting.name;
         }
         return casting;
     }

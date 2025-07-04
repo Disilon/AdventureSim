@@ -1,3 +1,3 @@
 package Disilon;
 
-public enum Scaling {atk, intel, atkint, atkhit, resint}
+public enum Scaling {atk, intel, atkint, atkhit, resint, res}

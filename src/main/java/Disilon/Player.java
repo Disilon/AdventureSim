@@ -89,7 +89,7 @@ public class Player extends Actor {
             Element.phys, false, false);
     ActiveSkill prayer = new ActiveSkill("Prayer", 1, 0, 0, 0, 99, 1.5, 1.5, Scaling.atk, Element.none, false,
             false);
-    ActiveSkill hray = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.resint,
+    ActiveSkill hray = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.res,
             Element.light, false, false);
     ActiveSkill dispel = new ActiveSkill("Dispel", 1, 90, 110, 1, 50, 1, 1, Scaling.resint, Element.light, false,
             false);
@@ -593,7 +593,7 @@ public class Player extends Actor {
             }
             case "Priest" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
-                base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_atk = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
                 base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
                 base_int = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
                 base_res = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
@@ -701,10 +701,15 @@ public class Player extends Actor {
         double result = gear_fire;
         switch (name) {
             case "Pyromancer" -> {
-                result += (getAtk() + getIntel()) * (fireBoost.enabled ? 0.5 + fireBoost.bonus : 0.5);
+                result += getAvgAtkInt();
             }
             default -> {
             }
+        }
+        if (Main.game_version < 1568) {
+            result += getAvgAtkInt() * (fireBoost.enabled ? 2 * fireBoost.bonus : 0);
+        } else {
+            result += getAvgStats() * (fireBoost.enabled ? 2 * fireBoost.bonus : 0);
         }
         result += getEblast();
         return result;
@@ -715,11 +720,15 @@ public class Player extends Actor {
         double result = gear_water;
         switch (name) {
             case "Pyromancer" -> {
-                result += (getAtk() + getIntel()) / -2;
+                result -= getAvgAtkInt();
             }
             default -> {
-                result += (getAtk() + getIntel()) * (waterBoost.enabled ? waterBoost.bonus : 0);
             }
+        }
+        if (Main.game_version < 1568) {
+            result += getAvgAtkInt() * (waterBoost.enabled ? 2 * waterBoost.bonus : 0);
+        } else {
+            result += getAvgStats() * (waterBoost.enabled ? 2 * waterBoost.bonus : 0);
         }
         result += getEblast();
         return result;
@@ -730,7 +739,7 @@ public class Player extends Actor {
         double result = gear_wind;
         switch (name) {
             case "Sniper" -> {
-                result += (getAtk() + getIntel()) / 2;
+                result += getAvgAtkInt();
             }
             default -> {
             }
@@ -755,10 +764,10 @@ public class Player extends Actor {
         double result = gear_dark;
         switch (name) {
             case "Assassin" -> {
-                result += (getAtk() + getIntel()) / 2;
+                result += getAvgAtkInt();
             }
             case "Priest" -> {
-                result += (getAtk() + getIntel()) / -2;
+                result -= getAvgAtkInt();
             }
             default -> {
             }
@@ -771,13 +780,18 @@ public class Player extends Actor {
         double result = gear_light;
         switch (name) {
             case "Assassin", "Sniper" -> {
-                result += (getAtk() + getIntel()) / -2;
+                result -= getAvgAtkInt();
             }
             case "Priest" -> {
-                result += (getAtk() + getIntel()) * (lightBoost.enabled ? 0.5 + lightBoost.bonus : 0.5);
+                result += getAvgAtkInt();
             }
             default -> {
             }
+        }
+        if (Main.game_version < 1568) {
+            result += getAvgAtkInt() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
+        } else {
+            result += getAvgStats() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
         }
         result += (holylight_enabled ? getResist() * 0.25 : 0);
         result += (aurablade_enabled ? getAtk() * 0.1 : 0);
@@ -857,7 +871,7 @@ public class Player extends Actor {
         ml_exp += exp;
         double need_cl = exp_to_cl(cl);
         double need_ml = exp_to_ml(ml);
-        if (cl_exp >= need_cl && cl < 120) {
+        if (cl_exp >= need_cl && cl < getMaxCl()) {
             cl += 1;
             cl_exp -= need_cl;
             setCLML(cl, ml);
@@ -924,11 +938,15 @@ public class Player extends Actor {
     }
 
     public double getCLpercent() {
-        if (cl >= 120) return 0;
+        if (cl >= getMaxCl()) return 0;
         return cl_exp / exp_to_cl(cl) * 100;
     }
 
     public double getMLpercent() {
         return ml_exp / exp_to_ml(ml) * 100;
+    }
+
+    public int getMaxCl() {
+        return 120 + research_lvls.getOrDefault("Max CL", 0);
     }
 }

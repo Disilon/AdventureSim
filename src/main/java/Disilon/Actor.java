@@ -455,7 +455,8 @@ public class Actor {
         for (Map.Entry<String, ActiveSkill> active : active_skills.entrySet()) {
             if (active.getValue().enabled) {
                 if (active.getValue().name.equals("Elemental Blast")) eblast_enabled = true;
-                if (active.getValue().name.equals("Holy Light")) holylight_enabled = true;
+                if (active.getValue().name.equals("Holy Light") || active.getValue().name.equals("Prayer"))
+                    holylight_enabled = true;
                 if (active.getValue().name.equals("Aura Blade")) aurablade_enabled = true;
             }
         }
@@ -1018,5 +1019,13 @@ public class Actor {
             default:
                 return false;
         }
+    }
+
+    public double getAvgStats() {
+        return (getAtk() + getDef() + getIntel() + getResist() + getSpeed() + getHit()) / 6;
+    }
+
+    public double getAvgAtkInt() {
+        return (getAtk() + getIntel()) / 2;
     }
 }

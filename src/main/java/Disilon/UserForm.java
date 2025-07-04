@@ -133,6 +133,7 @@ public class UserForm extends JFrame {
     private JSpinner ResearchCoreDrop;
     private JSpinner ResearchCraftingSpd;
     private JSpinner ResearchAlchemySpd;
+    private JSpinner ResearchMaxCl;
     private JSpinner ResearchGearHp;
     private JSpinner ResearchGearAtk;
     private JSpinner ResearchGearDef;
@@ -1211,6 +1212,19 @@ public class UserForm extends JFrame {
         gbc.gridy = 7;
         gbc.anchor = GridBagConstraints.WEST;
         LeftPanel.add(ResearchAlchemySpd, gbc);
+        final JLabel label41 = new JLabel("Max CL");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 8;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(0, 5, 0, 5);
+        LeftPanel.add(label41, gbc);
+        ResearchMaxCl = createCustomSpinner(0, 0, 100, 1);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 8;
+        gbc.anchor = GridBagConstraints.WEST;
+        LeftPanel.add(ResearchMaxCl, gbc);
 
         final JLabel label34 = new JLabel("Gear HP");
         gbc = new GridBagConstraints();
@@ -1555,7 +1569,7 @@ public class UserForm extends JFrame {
                     if (selectedOption == JOptionPane.YES_OPTION) {
                         setup.milestone = player.milestone_exp_mult * 100;
                         setup.ml = player.getMl() + player.getMLpercent() / 100;
-                        setup.cl = Math.min(120, player.getCl() + player.getCLpercent() / 100);
+                        setup.cl = Math.min(player.getMaxCl(), player.getCl() + player.getCLpercent() / 100);
                         for (String s : player.active_skills.keySet()) {
                             setup.actives_lvls.put(s, Math.min(20, player.active_skills.get(s).getLvl()));
                         }
@@ -1996,6 +2010,7 @@ public class UserForm extends JFrame {
         data.research_lvls.put("CoreQuality", (int) Double.parseDouble(ResearchCoreQuality.getValue().toString()));
         data.research_lvls.put("CraftSpd", (int) Double.parseDouble(ResearchCraftingSpd.getValue().toString()));
         data.research_lvls.put("AlchemySpd", (int) Double.parseDouble(ResearchAlchemySpd.getValue().toString()));
+        data.research_lvls.put("Max CL", (int) Double.parseDouble(ResearchMaxCl.getValue().toString()));
         data.research_lvls.put("GearHp", (int) Double.parseDouble(ResearchGearHp.getValue().toString()));
         data.research_lvls.put("GearAtk", (int) Double.parseDouble(ResearchGearAtk.getValue().toString()));
         data.research_lvls.put("GearDef", (int) Double.parseDouble(ResearchGearDef.getValue().toString()));
@@ -2134,6 +2149,7 @@ public class UserForm extends JFrame {
         ResearchCoreQuality.setValue(data.research_lvls.getOrDefault("CoreQuality", 0));
         ResearchCraftingSpd.setValue(data.research_lvls.getOrDefault("CraftSpd", 0));
         ResearchAlchemySpd.setValue(data.research_lvls.getOrDefault("AlchemySpd", 0));
+        ResearchMaxCl.setValue(data.research_lvls.getOrDefault("Max CL", 0));
         ResearchGearHp.setValue(data.research_lvls.getOrDefault("GearHp", 0));
         ResearchGearAtk.setValue(data.research_lvls.getOrDefault("GearAtk", 0));
         ResearchGearDef.setValue(data.research_lvls.getOrDefault("GearDef", 0));
