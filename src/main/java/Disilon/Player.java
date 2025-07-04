@@ -499,6 +499,7 @@ public class Player extends Actor {
                 passives.put("Weapon Mastery", weaponMastery);
                 passives.put("Attack Boost", attackBoost);
                 passives.put("Water Boost", waterBoost);
+                passives.put("Tsury Finke", tsuryFinke);
                 active_skills.put("Basic Attack", basic);
                 active_skills.put("Onion Slash", onion_slash);
                 active_skills.put("Onion Wave", onion_wave);
@@ -513,7 +514,11 @@ public class Player extends Actor {
     }
 
     public Vector<String> getAvailablePassiveSkills() {
-        Vector<String> v = new Vector<>(passives.keySet());
+        Vector<String> v = new Vector<>();
+        for (String skill : passives.keySet()) {
+            if (!skill.equals("Tsury Finke")) v.add(skill);
+        }
+//        Vector<String> v = new Vector<>(passives.keySet());
         v.insertElementAt("None", 0);
         return v;
     }
@@ -816,7 +821,7 @@ public class Player extends Actor {
         sb.append("DEF = ").append(Math.round(getDef())).append(" (").append(Math.round(gear_def)).append(")\n");
         sb.append("INT = ").append(Math.round(getIntel())).append(" (").append(Math.round(gear_int)).append(")\n");
         sb.append("RES = ").append(Math.round(getResist())).append(" (").append(Math.round(getGear_res())).append(")\n");
-        sb.append("HIT = ").append(Math.round(getHit())).append(" (").append(Math.round(getHit() - base_hit * hit_mult)).append(")\n");
+        sb.append("HIT = ").append(Math.round(getHit())).append(" (").append(Math.round(getHit() - base_hit * getHit_mult())).append(")\n");
         sb.append("SPD = ").append(Math.round(getSpeed())).append(" (").append(Math.round(gear_speed)).append(")\n\n");
         if (getWater() != 0) {
             sb.append("Water = ").append(Math.round(getWater())).append(" (").append(Math.round(gear_water)).append(

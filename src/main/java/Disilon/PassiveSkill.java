@@ -87,7 +87,7 @@ public class PassiveSkill {
     }
 
     public void gainExp(double time) {
-        if (enabled) {
+        if (enabled && !name.equals("Tsury Finke")) {
             exp += time;
             int need = need_for_lvl(lvl);
             if (exp >= need && lvl < 20) {

@@ -373,14 +373,12 @@ public class ActiveSkill {
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         double gain = 0;
         int duration_bonus = attacker.buff_boost > 1 ? 1 : 0;
+        attacker.current_skill_hit = true;
         switch (name) {
             case "Hide":
                 attacker.hide_bonus = this.min;
                 break;
-            case "First Aid":
-                gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
-                break;
-            case "Heal":
+            case "First Aid", "Heal":
                 gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
                 break;
             case "Prayer":
@@ -397,7 +395,6 @@ public class ActiveSkill {
                             e.setHp(0);
                         }
                     }
-
                 }
                 if (rng >= chance && rng < chance * 2) {
                     attacker.setHp(attacker.getHp() + attacker.getHp_max() * power);
@@ -447,7 +444,6 @@ public class ActiveSkill {
         double hit_chance = (attacker.isSmoked() ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
         if (name.equals("Back Stab") && !defender.isSmoked()) hit_chance *= 0.5;
-        hits_total++;
         hit_chance_sum += hit_chance;
         if (defender.zone != null) {
             defender.zone.stats.incrementHit(attacker, this, hit_chance);
@@ -457,6 +453,8 @@ public class ActiveSkill {
             //System.out.println(name + " has hit chance of " + hit_chance * 100 + "%, smoked=" + attacker.isSmoked());
         }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
+            attacker.current_skill_hit = true;
+            hits_total++;
             if (this.debuff_name != null) {
                 applyDebuff(attacker, defender);
             }
@@ -469,7 +467,7 @@ public class ActiveSkill {
                 double def = 0;
                 double dmg_mult = attacker.getDmg_mult();
                 dmg_mult += attacker.hide_bonus;
-                dmg_mult *= 1.0 + (attacker.isAmbushing() ? attacker.ambush.bonus : 0);
+                dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
                 if (name.equals("Back Stab") && defender.isSmoked()) dmg_mult *= 2;
                 enemy_resist = switch (this.element) {
@@ -697,15 +695,11 @@ public class ActiveSkill {
     }
 
     public double average_hit_chance() {
-        return hits_total > 0 ? hit_chance_sum / hits_total : 0;
+        return hits_total > 0 ? hit_chance_sum / used : 0;
     }
 
     public double average_dmg() {
         return hits_total > 0 ? dmg_sum / hits_total : 0;
-    }
-
-    public double average_mana_used() {
-        return used > 0 ? mana_used / used : 0;
     }
 
     public double average_debuff_chance() {
@@ -727,15 +721,15 @@ public class ActiveSkill {
             switch (name) {
                 case "Counter Strike", "Counter Dodge" -> {
                     return name + " used: " + df4.format((double) used / simulations) +
-                            "; dmg: " + (int) average_dmg() + "; mana used: " + (int) average_mana_used() + "\n";
+                            "; dmg: " + (int) average_dmg() + "; mana used: " + (int) mana_used / simulations + "\n";
                 }
                 default -> {
-                    return name + " used: " + df4.format((double) used / simulations) + "; mana used: " + (int) average_mana_used() + "\n";
+                    return name + " used: " + df4.format((double) used / simulations) + "; mana used: " + (int) mana_used / simulations + "\n";
                 }
             }
         } else {
             return name + " used: " + df4.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
-                    "; dmg: " + (int) average_dmg() + "; mana used: " + (int) average_mana_used() +
+                    "; dmg: " + (int) average_dmg() + "; mana used: " + (int) mana_used / simulations +
                     (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
                     "\n";
         }

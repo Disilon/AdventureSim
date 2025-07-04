@@ -179,6 +179,7 @@ public class Actor {
 
     protected PassiveSkill waterBoost = new PassiveSkill("Water Boost", 0.3, 10, 0.3);
     protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
+    protected PassiveSkill tsuryFinke = new PassiveSkill("Tsury Finke", 0.0, 0, 0);
 
     protected ActiveSkill casting;
     protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
@@ -206,7 +207,9 @@ public class Actor {
     public Potion potion1;
     public Potion potion2;
     public Potion potion3;
-    HashMap<String, Integer> research_lvls;
+    public HashMap<String, Integer> research_lvls;
+    public boolean current_skill_hit = false;
+    public double ambush_bonus = 0;
 
     public Actor() {
         coreBoost.base_bonus2 = 0.125;
@@ -323,6 +326,7 @@ public class Actor {
     public void checkAmbush() {
         if (ambush.enabled) {
             setAmbushing(true);
+            ambush_bonus = ambush.bonus;
         }
     }
 
@@ -468,8 +472,6 @@ public class Actor {
         speed = (base_speed + gear_speed);
         hp_max = (base_hp_max + gear_hp);
         mp_max = (resist * 3 + intel) * getMp_mult();
-        hp = hp_max;
-        mp = mp_max;
         if (set_mit1 > 0) add_resist("All", set_mit1);
         if (set_mit2 > 0) add_resist("All", set_mit2);
         if (fireResist.enabled) {
@@ -632,7 +634,7 @@ public class Actor {
     }
 
     public double getHit() {
-        return hit;
+        return hit * getHit_mult();
     }
 
     public void setHit(double hit) {
@@ -640,7 +642,7 @@ public class Actor {
     }
 
     public double getSpeed() {
-        return speed;
+        return speed * getSpeed_mult();
     }
 
     public void setSpeed(double speed) {

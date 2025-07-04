@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.EventObject;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.Vector;
 
 import static Disilon.Main.df2;
@@ -1537,7 +1538,7 @@ public class UserForm extends JFrame {
                         }
                     }
                     for (PassiveSkill a : player.passives.values()) {
-                        if (a.enabled && a.old_lvl < 20) {
+                        if (a.enabled && (a.old_lvl < 20 || a.name.equals("Tsury Finke"))) {
                             info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
                             info.append(a.name);
                             info.append("</td></tr>");
@@ -1574,7 +1575,8 @@ public class UserForm extends JFrame {
                             setup.actives_lvls.put(s, Math.min(20, player.active_skills.get(s).getLvl()));
                         }
                         for (String s : player.passives.keySet()) {
-                            setup.passives_lvls.put(s, Math.min(20, player.passives.get(s).getLvl()));
+                            int max_lvl = s.equals("Tsury Finke") ? 100 : 20;
+                            setup.passives_lvls.put(s, Math.min(max_lvl, player.passives.get(s).getLvl()));
                         }
                         loadSetup(setup);
                     }
@@ -1706,7 +1708,7 @@ public class UserForm extends JFrame {
         // Initializes the spinner.
         public SpinnerEditor() {
             super(new JTextField());
-            spinner = new JSpinner(new SpinnerNumberModel(0, 0, 20, 1));
+            spinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
             editor = ((JSpinner.DefaultEditor) spinner.getEditor());
             textField = editor.getTextField();
             textField.setFont(new Font("Dialog", Font.BOLD, 12));

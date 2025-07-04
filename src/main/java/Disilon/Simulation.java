@@ -67,7 +67,8 @@ public class Simulation {
         StringBuilder result = new StringBuilder();
         StringBuilder skills_log = new StringBuilder();
         StringBuilder lvling_log = new StringBuilder();
-
+        player.setHp(player.getHp_max());
+        player.setMp(player.getMp_max());
         player.debuffs.clear();
         player.buffs.clear();
         boolean end = false;
@@ -191,6 +192,7 @@ public class Simulation {
                     if (player.casting.cast > 0) {
                         if (player.casting.progressCast(player, delta)) {
                             player.casting.used++;
+                            player.current_skill_hit = false;
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
@@ -235,6 +237,7 @@ public class Simulation {
 //                                System.out.println("Player casted " + player.casting.name + " at " + df2.format(time));
                             }
                             if (player.lvling) player.casting.gainExp(1);
+                            if (player.current_skill_hit) player.ambush_bonus = 0;
                             if (player.isAmbushing()) player.setAmbushing(false);
                             player.casting.pay_manacost(player);
                             player.tick_debuffs();
