@@ -22,10 +22,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EventObject;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static Disilon.Main.df2;
 import static Disilon.Main.df2p;
@@ -1595,6 +1600,11 @@ public class UserForm extends JFrame {
                                 "You need to setup target CL higher than your current", "Warning",
                                 JOptionPane.WARNING_MESSAGE);
                     } else {
+                        if (checkSameItemsCombo()) {
+                            JOptionPane.showMessageDialog(RightPanel,
+                                    "You're using some of your skills twice, this can cause bugs", "Warning",
+                                    JOptionPane.WARNING_MESSAGE);
+                        }
                         long startTime = System.nanoTime();
                         try {
                             setup = saveSetup();
@@ -1783,6 +1793,22 @@ public class UserForm extends JFrame {
             }
             return super.stopCellEditing();
         }
+    }
+
+    private boolean checkSameItemsCombo() {
+        Map<Integer, Integer> elementCountMap = Arrays.stream(new Integer[]{Skill1.getSelectedIndex(), Skill2.getSelectedIndex(),
+                        Skill3.getSelectedIndex(), Skill4.getSelectedIndex()}).filter(a -> a > 0)
+                .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
+        for (int count : elementCountMap.values()) {
+            if (count > 1) return true;
+        }
+        elementCountMap = Arrays.stream(new Integer[]{Pskill1.getSelectedIndex(), Pskill2.getSelectedIndex(),
+                        Pskill3.getSelectedIndex(), Pskill4.getSelectedIndex()}).filter(a -> a > 0)
+                .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
+        for (int count : elementCountMap.values()) {
+            if (count > 1) return true;
+        }
+        return false;
     }
 
     private String findItemFromSet(String name, String slot) {
