@@ -468,7 +468,7 @@ public class Simulation {
                 lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));
                 lvling_log.append("% -> ").append(df2.format(player.milestone_exp_mult * 100)).append("%\n");
             }
-            if ((int) player.old_cl <= 120) {
+            if ((int) player.old_cl <= player.getMaxCl()) {
                 lvling_log.append("CL: ").append((int) player.old_cl).append(" -> ").append(player.cl).append(" (");
                 lvling_log.append(df2.format(player.getCLpercent())).append("%)\n");
             }

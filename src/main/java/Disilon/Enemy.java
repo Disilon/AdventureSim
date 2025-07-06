@@ -86,6 +86,7 @@ public class Enemy extends Actor {
         bash.addDebuff("Defense Break", 3, 0.2);
         mm.addDebuff("Resist Break", 3, 0.25);
         blind.addDebuff("Smoke", 3, 0);
+        compression.addDebuff("Slow", 3, 0.25);
         mark.addDebuff("Mark", 1, 0.2);
         charge_up.addBuff("Charge Up", 1, 1.875);
         rapidstabs.dmg_mult = 1.65;
@@ -318,7 +319,7 @@ public class Enemy extends Actor {
             }
             case "Akuma" -> {
                 base_lvl = 50;
-                base_hp_max = 4000 / base_lvl;
+                base_hp_max = 4000 / base_lvl / 1.02; //to make hunter damage in z8 closer to in-game
                 base_exp = 750 / base_lvl;
                 base_atk = 450 / base_lvl;
                 base_def = 175 / base_lvl;

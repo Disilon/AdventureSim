@@ -51,6 +51,7 @@ public class ActiveSkill {
     public double debuff_chance_sum;
     public double mana_used;
     public int used;
+    public int attacks_total;
     public int hits_total;
     public double old_lvl;
     public double last_casted_at = 0;
@@ -431,6 +432,7 @@ public class ActiveSkill {
 
     public double attack(Actor attacker, Actor defender, int overwrite_hits) {
         double gain = attacker.getHp_max() * attacker.hp_regen;
+        attacks_total++;
         if (gain > 0) {
             //System.out.println(gain);
             attacker.setHp(attacker.getHp() + gain);
@@ -444,7 +446,7 @@ public class ActiveSkill {
         double hit_chance = (attacker.isSmoked() ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
         if (name.equals("Back Stab") && !defender.isSmoked()) hit_chance *= 0.5;
-        hit_chance_sum += hit_chance;
+        hit_chance_sum += Math.min(hit_chance, 1);
         if (defender.zone != null) {
             defender.zone.stats.incrementHit(attacker, this, hit_chance);
         }
@@ -695,7 +697,7 @@ public class ActiveSkill {
     }
 
     public double average_hit_chance() {
-        return hits_total > 0 ? hit_chance_sum / used : 0;
+        return attacks_total > 0 ? hit_chance_sum / attacks_total : 0;
     }
 
     public double average_dmg() {
@@ -710,6 +712,7 @@ public class ActiveSkill {
         used = 0;
         mana_used = 0;
         hits_total = 0;
+        attacks_total = 0;
         hit_chance_sum = 0;
         dmg_sum = 0;
         debuff_chance_sum = 0;

@@ -118,6 +118,7 @@ public class Actor {
     protected double def_break = 0;
     protected double res_break = 0;
     protected double weaken = 0;
+    protected double slow = 0;
     protected double mark = 0;
     protected double empower_hp = 0;
     protected double hp_regen = 0;
@@ -196,6 +197,7 @@ public class Actor {
     public Zone zone = null;
     public double dot_tracking = 0;
     protected boolean holylight_enabled;
+    protected boolean prayer_enabled;
     protected boolean aurablade_enabled;
     protected boolean eblast_enabled;
     public double milestone_exp_mult = 1;
@@ -221,9 +223,7 @@ public class Actor {
         res_break = 0;
         mark = 0;
         weaken = 0;
-        if (this.getClass() == Enemy.class) {
-            debuffs.size();
-        }
+        slow = 0;
         Iterator<Debuff> debuff_iterator = debuffs.iterator();
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
@@ -233,6 +233,7 @@ public class Actor {
             if (Objects.equals(d.name, "Res Break") && d.duration > 0) res_break = d.effect;
             if (Objects.equals(d.name, "Weaken") && d.duration > 0) weaken = d.effect;
             if (Objects.equals(d.name, "Mark") && d.duration > 0) mark = d.effect;
+            if (Objects.equals(d.name, "Slow") && d.duration > 0) slow = d.effect;
             this.hp -= d.dmg;
             dot_tracking += d.dmg;
 //            if (d.dmg > 0) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
@@ -459,8 +460,10 @@ public class Actor {
         for (Map.Entry<String, ActiveSkill> active : active_skills.entrySet()) {
             if (active.getValue().enabled) {
                 if (active.getValue().name.equals("Elemental Blast")) eblast_enabled = true;
-                if (active.getValue().name.equals("Holy Light") || (active.getValue().name.equals("Prayer") && Main.game_version >= 1568))
+                if (active.getValue().name.equals("Holy Light"))
                     holylight_enabled = true;
+                if (active.getValue().name.equals("Prayer") && Main.game_version >= 1568)
+                    prayer_enabled = true;
                 if (active.getValue().name.equals("Aura Blade")) aurablade_enabled = true;
             }
         }
@@ -642,7 +645,7 @@ public class Actor {
     }
 
     public double getSpeed() {
-        return speed * getSpeed_mult();
+        return speed * getSpeed_mult() * (1 - slow);
     }
 
     public void setSpeed(double speed) {

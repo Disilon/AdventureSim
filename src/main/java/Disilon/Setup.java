@@ -145,7 +145,7 @@ public class Setup implements Serializable {
         this.stats = "Click simulate to calculate stats";
         this.enemy = "";
         this.zone = Zone.z9;
-        this.gameversion = "1552";
+        this.gameversion = "1568";
         this.reroll = 0;
         this.milestone = 162.5;
         this.crafting_lvl = 20;

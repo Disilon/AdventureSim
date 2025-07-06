@@ -26,7 +26,7 @@ public class Player extends Actor {
             false, false);
     ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 20, 1.5, 1.5,
             Scaling.atkhit, Element.phys,false,false);
-    ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 50.0, 61.0, 0.7, 25, 1.5,
+    ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
             1.5,Scaling.atkhit, Element.phys,false,false);
     //not sure why, but hunter AR deals slightly more dmg than it should todo: do a test with other skills
     ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 10, 1.2, 1.1, Scaling.atk, Element.phys, false,
@@ -809,6 +809,7 @@ public class Player extends Actor {
             result += getAvgStats() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
         }
         result += (holylight_enabled ? getResist() * 0.25 : 0);
+        result += (prayer_enabled ? getResist() * 0.25 : 0);
         result += (aurablade_enabled ? getAtk() * 0.1 : 0);
         return result;
     }
