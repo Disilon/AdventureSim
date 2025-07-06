@@ -206,7 +206,7 @@ public class Enemy extends Actor {
                 }
                 base_res = 5000 / base_lvl;
                 base_hit = 1500 / base_lvl;
-                base_speed = 600 / base_lvl;
+                base_speed = 625 / base_lvl;
                 magic_res = 0.5;
                 enemy_skills.add(soulslash);
                 core_mult = 100;
@@ -259,8 +259,8 @@ public class Enemy extends Actor {
                 base_int = 1560 / base_lvl;
                 base_res = 1000 / base_lvl;
                 base_hit = 1800 / base_lvl;
-                base_speed = 1800 / base_lvl;
-                fire_res = 0.2;
+                base_speed = 1700 / base_lvl;
+                fire_res = 0.1;
                 phys_res = -0.2;
                 enemy_skills.add(holy_slash);
                 enemy_skills.add(holy_power_slash);
@@ -417,6 +417,7 @@ public class Enemy extends Actor {
         int lvl = (int) Math.round(base_lvl * strength);
         this.hp_max = base_hp_max * lvl;
         this.hp = this.hp_max;
+//        System.out.println("HP=" + hp);
         this.exp = base_exp * lvl;
         this.atk = base_atk * lvl;
         this.def = base_def * lvl;
