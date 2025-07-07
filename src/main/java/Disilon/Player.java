@@ -891,7 +891,7 @@ public class Player extends Actor {
     public void levelTF(Enemy e) {
         if (passives.containsKey("Tsury Finke") && passives.containsKey("Weapon Mastery")
                 && passives.get("Weapon Mastery").enabled) {
-            passives.forEach((key, value) -> value.gainExpTF(e.base_lvl * e.strength));
+            passives.forEach((key, value) -> value.gainExpTF(e.base_lvl/ 10));
         }
     }
 

@@ -240,6 +240,7 @@ public class Actor {
 //            if (d.dmg > 0) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
             if (d.duration <= 0) debuff_iterator.remove();
         }
+        if (hp < 0) hp *= 0.5; //dots give 50% overkill
     }
 
     public void tick_buffs() {
