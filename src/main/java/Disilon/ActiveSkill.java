@@ -184,7 +184,9 @@ public class ActiveSkill {
     }
 
     public double calculate_manacost(Actor actor) {
-        return (mp * mp_mult + mp_additive) * actor.getMp_cost_mult() + actor.getMp_cost_add();
+        double cost = (mp * mp_mult + mp_additive) * actor.getMp_cost_mult() + actor.getMp_cost_add();
+        if (element == Element.water) cost *= 1 - actor.finke_bonus;
+        return cost;
     }
 
     public void pay_manacost(Actor actor) {
@@ -471,6 +473,7 @@ public class ActiveSkill {
                 dmg_mult += attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
+                if (element == Element.water) dmg_mult *= 1 + attacker.finke_bonus;
                 if (name.equals("Back Stab") && defender.isSmoked()) dmg_mult *= 2;
                 enemy_resist = switch (this.element) {
                     case Element.dark -> {

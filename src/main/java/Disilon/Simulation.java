@@ -34,10 +34,11 @@ public class Simulation {
         player = new Player(setup);
         crafting_lvl = setup.crafting_lvl;
         alchemy_lvl = setup.alchemy_lvl;
-        return run(setup.reroll);
+        return run();
     }
 
-    public Player run(double reroll) {
+    public Player run() {
+        long startTime = System.nanoTime();
         ActiveSkill skill1 = player.skill1;
         ActiveSkill skill2 = player.skill2;
         ActiveSkill skill3 = player.skill3;
@@ -98,11 +99,13 @@ public class Simulation {
             if (time >= time_to_respawn) {
                 status = StatusType.combat;
             }
+            if ((System.nanoTime() - startTime) / 1000000 > 10000) {
+                end = true;
+            }
             while (status == StatusType.combat) {
                 int cycled = 0;
-                if (time > 3600) {
-                    if (sim_type == 2 || sim_type == 3) sim_type = 1;
-                    sim_limit = 100; //sim slow fights less so that we don't freeze
+                if (time > 3600 || total_time > 1e10) {
+                    end = true; //stop simulations so that we don't freeze
                 }
                 while (player.casting == null) {
                     if (skill1 != null && skill1.canCast(player)) {
@@ -171,14 +174,6 @@ public class Simulation {
                     if (enemy.casting == null) {
                         ActiveSkill enemyCast = enemy.getCasting(player);
                         enemyCast.startCast(enemy, player);
-                        if (player.name.equals("Assassin1") &&
-                                enemy.name.equals("Lamia") && enemyCast.name.equals("Explosion") && enemy.getHp() > enemy.getHp_max() * 0.4) {
-                            enemy.reroll(); //todo: add user option to run away from lamia explosion
-                            player.casting = null;
-                            status = StatusType.rerolling;
-                            failed++;
-                            break;
-                        }
                     }
                 }
                 delta = 0.2;
@@ -299,7 +294,8 @@ public class Simulation {
                         exp += exp_gain;
                         kills++;
                         player.zone.stats.recordOverkill(enemy, player.research_lvls.get("CoreQuality"));
-                        if (Main.game_version >= 1535 && player.lvling) player.levelActives();
+                        player.levelActives();
+                        player.levelTF(enemy);
 //                        System.out.println("Enemy killed at " + df2.format(time) + " s \n");
                         if (target == enemy) target = null;
                         iterator.remove();
@@ -367,7 +363,7 @@ public class Simulation {
             if (player.potion3 != null) {
                 crafting_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
             }
-            if ((cleared + failed) >= 100000) end = true;
+            if ((cleared + failed) >= 1000000) end = true;
             switch (sim_type) {
                 default -> {
                     if ((cleared + failed) >= sim_limit) end = true;
@@ -460,6 +456,8 @@ public class Simulation {
         if (crafting_time > 0) {
             result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
         }
+//        long executionTime = (System.nanoTime() - startTime) / 1000000;
+//        result.append("\nSim run time: ").append(executionTime).append("\n");
         result.append("\n");
         result.append("Cores: \n");
         result.append(player.zone.stats.getCoreData(player, total_time));
@@ -481,7 +479,7 @@ public class Simulation {
                 }
             }
             for (PassiveSkill p : player.passives.values()) {
-                if (p.enabled && p.old_lvl < 20) {
+                if ((p.enabled && p.old_lvl < 20) || p.name.equals("Tsury Finke")) {
                     lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" (");
                     lvling_log.append(df2.format(p.getLpercent())).append("%)\n");
                 }

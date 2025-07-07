@@ -856,6 +856,7 @@ public class Player extends Actor {
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
         if (set_mit1 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit1 * 100)).append("%\n");
         if (set_mit2 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit2 * 100)).append("%\n");
+        if (finke_bonus > 0) sb.append("Tsury Finke bonus = ").append(df2.format(finke_bonus * 100)).append("%\n");
         return sb.toString();
     }
 
@@ -885,6 +886,13 @@ public class Player extends Actor {
 
     public void levelActives() {
         active_skills.forEach((key, value) -> value.gainExp(1));
+    }
+
+    public void levelTF(Enemy e) {
+        if (passives.containsKey("Tsury Finke") && passives.containsKey("Weapon Mastery")
+                && passives.get("Weapon Mastery").enabled) {
+            passives.forEach((key, value) -> value.gainExpTF(e.base_lvl * e.strength));
+        }
     }
 
     public void levelPassives(double time) {

@@ -95,12 +95,25 @@ public class PassiveSkill {
                 exp -= need;
                 setLvl(lvl);
             }
-        } else {
-            lvl = (int) old_lvl;
+        }
+    }
+
+    public void gainExpTF(double gain) {
+        if (name.equals("Tsury Finke")) {
+            exp += gain;
+            int need = need_for_lvl(lvl);
+            if (exp >= need && lvl < 100) {
+                lvl++;
+                exp -= need;
+//                setLvl(lvl);
+            }
         }
     }
 
     public int need_for_lvl(int lvl) {
+        if (name.equals("Tsury Finke")) {
+            return 10000 * (1 + lvl);
+        }
         return (int) ((Math.pow(Math.max(lvl, 1), 2)) * 3000);
     }
 }

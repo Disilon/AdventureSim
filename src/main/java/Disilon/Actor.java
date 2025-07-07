@@ -127,6 +127,7 @@ public class Actor {
     protected double core_mult = 1;
     protected double counter_strike = 0;
     protected double multi_arrows = 0;
+    protected double finke_bonus = 0;
     protected boolean multi_hit_override = false;
     public double cl_exp;
     public double ml_exp;
@@ -364,6 +365,7 @@ public class Actor {
         counter_strike = 0;
         multi_arrows = 0;
         buff_boost = 1;
+        finke_bonus = 0;
 
         poison_mult *= 1.0 + poisonBoost.bonus(passives);
         dmg_mult *= 1.0 + daggerMastery.bonus(passives);
@@ -410,6 +412,29 @@ public class Actor {
         mp_cost_add = 0;
         mp_cost_mult = 1;
         clear_gear_stats();
+        if (name.equals("Onion Knight") && equipment.get("MH") == null) {
+            if (passives.get("Tsury Finke") != null) {
+                int tf_lvl = passives.get("Tsury Finke").lvl;
+                double quality = switch (tf_lvl / 10) {
+                    case 0 -> 0.5;
+                    case 1 -> 0.75;
+                    case 2 -> 1;
+                    case 3 -> 1.25;
+                    case 4 -> 1.5;
+                    case 5 -> 2;
+                    case 6 -> 2.5;
+                    case 7 -> 3;
+                    case 8 -> 4;
+                    case 9, 10 -> 5;
+                    default -> 0;
+                };
+                gear_atk += 24 * quality * (1 + 0.1 * tf_lvl);
+                gear_hit += 8 * quality * (1 + 0.1 * tf_lvl);
+                gear_speed += 8 * quality * (1 + 0.1 * tf_lvl);
+                gear_water += 20 * quality * (1 + 0.1 * tf_lvl);
+                finke_bonus = (5 + (2.5 * (0.5 + quality / 2) * tf_lvl * 0.1)) * 0.01;
+            }
+        }
         for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
             Equipment item = slot.getValue();
             if (item.name != null && !item.name.equals("None")) {

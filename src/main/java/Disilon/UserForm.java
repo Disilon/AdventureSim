@@ -918,12 +918,12 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         RightPanel.add(Sim_lvl, gbc);
 
-        Simulations = new JSpinner(new SpinnerNumberModel(1000, 1, 100000, 1) {
+        Simulations = new JSpinner(new SpinnerNumberModel(1000, 1, 1000000, 1) {
             @Override
             public Object getNextValue() {
                 Object nextValue = super.getValue();
                 int x = (int) Double.parseDouble(nextValue.toString()) * 10;
-                if (x > 100000) x = 100000;
+                if (x > 1000000) x = 1000000;
                 //Object o = x;
                 return x;
             }
@@ -937,7 +937,7 @@ public class UserForm extends JFrame {
                 return x;
             }
         });
-        Simulations.setToolTipText("Maximum value 100000");
+        Simulations.setToolTipText("Maximum value 1000000");
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
         gbc.gridy = 17;
@@ -1543,7 +1543,7 @@ public class UserForm extends JFrame {
                         }
                     }
                     for (PassiveSkill a : player.passives.values()) {
-                        if (a.enabled && (a.old_lvl < 20 || a.name.equals("Tsury Finke"))) {
+                        if ((a.enabled && a.old_lvl < 20) || a.name.equals("Tsury Finke")) {
                             info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
                             info.append(a.name);
                             info.append("</td></tr>");
@@ -1605,7 +1605,6 @@ public class UserForm extends JFrame {
                                     "You're using some of your skills twice, this can cause bugs", "Warning",
                                     JOptionPane.WARNING_MESSAGE);
                         }
-                        long startTime = System.nanoTime();
                         try {
                             setup = saveSetup();
                             Main.game_version = (int) Double.parseDouble(setup.gameversion);
@@ -1617,13 +1616,8 @@ public class UserForm extends JFrame {
                             JOptionPane.showMessageDialog(RightPanel, "Some field has illegal value!", "Exception",
                                     JOptionPane.WARNING_MESSAGE);
                         }
-
-                        // Calculate the execution time in milliseconds
-                        long executionTime = (System.nanoTime() - startTime) / 1000000;
-//                    System.out.println(executionTime + "ms");
                     }
                 }
-
             }
         });
         PlayerClass.addActionListener(new ActionListener() {
