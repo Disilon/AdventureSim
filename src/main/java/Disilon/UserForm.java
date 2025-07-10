@@ -1158,15 +1158,30 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Rp_balance, gbc);
 
-        final JLabel label28 = new JLabel();
-        label28.setText("Research:");
+        final JLabel label28 = new JLabel("Research:");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 3;
         gbc.gridy = 2;
-        gbc.gridwidth = 6;
+//        gbc.gridwidth = 6;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(label28, gbc);
+        final JLabel label28_1 = new JLabel("lvl");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 4;
+        gbc.gridy = 2;
+//        gbc.gridwidth = 6;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(label28_1, gbc);
+        final JLabel label28_2 = new JLabel("weight");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 5;
+        gbc.gridy = 2;
+//        gbc.gridwidth = 6;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(label28_2, gbc);
 
         final JLabel label34 = new JLabel("Gear HP");
         gbc = new GridBagConstraints();
