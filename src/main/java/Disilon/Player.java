@@ -918,12 +918,12 @@ public class Player extends Actor {
         double r_spd = 1 + 0.01 * research_lvls.getOrDefault("ResearchSpd", 0.0).intValue();
         int can_sustain = Math.min(max_slots, calc_max_research_slots(rp_balance / time * 3600 / r_spd));
         can_sustain = Math.min(can_sustain, (int) rp_balance / 10); //to make sure we don't swing from 0 to max slots
-        research_slots_stat += can_sustain * time;
-        rp_balance -= research_slots_base_cost(can_sustain) * time / 3600 * r_spd;
+
+        int using = 0;
         if (max_slots < 15 && research_weight.getOrDefault("Slot", 0.0) > 0) {
             if (rp_balance > (research_slots_base_cost(max_slots + 1) - research_slots_base_cost(can_sustain)) * research_weight.get("Slot")) {
                 research("Slot", time * r_spd);
-                can_sustain--;
+                using++;
             }
         }
         HashMap<String, Double> weight_for_lvl = new HashMap<>(research_weight);
@@ -935,12 +935,14 @@ public class Player extends Actor {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 //        StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Double> entry : sorted.entrySet()) {
-            if (entry.getValue() > 0 && can_sustain > 0) {
+            if (entry.getValue() > 0 && can_sustain > using && (!entry.getKey().equals("ResearchSpd") || rp_balance > 1000)) {
 //                sb.append(entry.getKey()).append(" ");
                 research(entry.getKey(), time * r_spd);
-                can_sustain--;
+                using++;
             }
         }
+        rp_balance -= research_slots_base_cost(using) * time / 3600 * r_spd;
+        research_slots_stat += using * time;
 //        System.out.println(sb);
     }
 
@@ -976,6 +978,7 @@ public class Player extends Actor {
     }
 
     public double research_slots_base_cost(int slots) {
+        if (slots < 1) return 0;
         return (Math.pow(1.4, slots - 1) + slots - 1) * 180;
     }
 
