@@ -13,6 +13,7 @@ public class MonsterStatData {
     public HashMap<String, Integer> casts_total = new HashMap<>();
     public HashMap<String, HashMap<Integer, Double>> cores; //Grade, Count in nested map
     public double base_rp;
+    public double gained_rp;
     public HashMap<String, Integer> deaths = new HashMap<>();
 
     public MonsterStatData(String[] possibleEnemies) {
@@ -57,6 +58,7 @@ public class MonsterStatData {
 
     public void clear_recorded_data() {
         base_rp = 0;
+        gained_rp = 0;
         dmg_sum.clear();
         hit_chance_sum.clear();
         debuff_chance_sum.clear();
@@ -67,23 +69,25 @@ public class MonsterStatData {
         deaths.clear();
     }
 
-    public void recordOverkill(Actor e, int research) {
+    public void recordOverkill(Enemy e, Player player) {
         double percent = -e.getHp() / e.getHp_max() * 100;
         if (percent <= 1) {
-            addCore(e.name, 4, research);
+            addCore(e.name, 4, player);
         } else if (percent <= 10) {
-            addCore(e.name, 3, research);
+            addCore(e.name, 3, player);
         } else if (percent <= 25) {
-            addCore(e.name, 2, research);
+            addCore(e.name, 2, player);
         } else if (percent <= 50) {
-            addCore(e.name, 1, research);
+            addCore(e.name, 1, player);
         } else if (percent <= 200) {
-            addCore(e.name, 0, research);
+            addCore(e.name, 0, player);
         }
         deaths.put(e.getName(), deaths.containsKey(e.getName()) ? deaths.get(e.getName()) + 1 : 1);
     }
 
-    public void addCore(String name, int grade, int research) {
+    public void addCore(String name, int grade, Player p) {
+        int research = p.research_lvls.get("CoreQuality").intValue();
+        double drop_rate = 0.01 * (p.core_mult + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -91,16 +95,22 @@ public class MonsterStatData {
             }
             cores.put(name, nested);
         }
-        base_rp += getCoreRP(grade, name);
+        base_rp += getCoreRP(grade, name) * 0.01 * p.core_mult;
         double fractional = research / 100.0 - (double) (research / 100);
         int new_grade = Math.min(8, grade + research / 100);
+        double gain = 0;
         if (fractional > 0 && new_grade < 8) {
-            Double count = 1 - fractional;
+            double count = 1 - fractional;
             cores.get(name).merge(new_grade, count, Double::sum);
+            gain += getCoreRP(new_grade, name) * drop_rate * count;
             cores.get(name).merge(new_grade + 1, fractional, Double::sum);
+            gain += getCoreRP(new_grade + 1, name) * drop_rate * fractional;
         } else {
             cores.get(name).merge(new_grade, 1.0, Double::sum);
+            gain += getCoreRP(new_grade, name) * drop_rate * 1;
         }
+        if (p.lvling) p.rp_balance += gain;
+        gained_rp += gain;
     }
 
     public String getSkillData(int simulations) {
@@ -130,17 +140,13 @@ public class MonsterStatData {
 
     public String getCoreData(Player p, double time) {
         StringBuilder sb = new StringBuilder();
-        double rp = 0;
-        double drop_rate = 0.01 * p.core_mult;
-        double r_drop = (1 + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0));
-        double r_grade = (1 + 0.00 * p.research_lvls.getOrDefault("CoreQuality", 0));
+        double drop_rate = 0.01 * (p.core_mult + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
         for (String name : cores.keySet()) {
             sb.append(name).append(": ");
             boolean first = true;
             for (Integer grade : cores.get(name).keySet()) {
-                double count = cores.get(name).get(grade) * drop_rate * r_drop;
+                double count = cores.get(name).get(grade) * drop_rate;
                 if (count > 0) {
-                    rp += getCoreRP(grade, name) * count;
                     if (first) {
                         first = false;
                     } else {
@@ -151,8 +157,8 @@ public class MonsterStatData {
             }
             sb.append("\n");
         }
-        sb.append("RP/h: ").append(df2.format(rp / time * 3600));
-        sb.append(" (base: ").append(df2.format(base_rp * drop_rate / time * 3600)).append(")");
+        sb.append("RP/h: ").append(df2.format(gained_rp / time * 3600));
+        sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
         sb.append("\n");
         return sb.toString();
     }

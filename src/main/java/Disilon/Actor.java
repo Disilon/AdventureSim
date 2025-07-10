@@ -183,6 +183,8 @@ public class Actor {
     protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
     protected PassiveSkill tsuryFinke = new PassiveSkill("Tsury Finke", 0.0, 0, 0);
 
+    protected PassiveSkill expBoost = new PassiveSkill("Exp Boost", 0.15, 10, 0.1);
+
     protected ActiveSkill casting;
     protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
 
@@ -210,7 +212,9 @@ public class Actor {
     public Potion potion1;
     public Potion potion2;
     public Potion potion3;
-    public HashMap<String, Integer> research_lvls;
+    public HashMap<String, Double> research_lvls;
+    public HashMap<String, Double> research_old_lvls;
+    public HashMap<String, Double> research_weight;
     public boolean current_skill_hit = false;
     public double ambush_bonus = 0;
 
@@ -393,6 +397,7 @@ public class Actor {
         } else {
             exp_mult *= 1.0 + dropBoost.bonus(passives);
         }
+        exp_mult *= 1.0 + expBoost.bonus(passives);
         atk_mult *= 1.0 + attackBoost.bonus(passives);
         def_mult *= 1.0 + defenseBoost.bonus(passives);
         dodge_mult *= 1.0 + dodge.bonus(passives);
@@ -439,13 +444,13 @@ public class Actor {
         for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
             Equipment item = slot.getValue();
             if (item.name != null && !item.name.equals("None")) {
-                gear_atk += item.atk * (1 + 0.01 * research_lvls.getOrDefault("GearAtk", 0));
-                gear_def += item.def * (1 + 0.01 * research_lvls.getOrDefault("GearDef", 0));
-                gear_hit += item.hit * (1 + 0.01 * research_lvls.getOrDefault("GearHit", 0));
-                gear_speed += item.speed * (1 + 0.01 * research_lvls.getOrDefault("GearSpd", 0));
-                gear_int += item.intel * (1 + 0.01 * research_lvls.getOrDefault("GearInt", 0));
-                gear_res += item.resist * (1 + 0.01 * research_lvls.getOrDefault("GearRes", 0));
-                gear_hp += item.hp * (1 + 0.01 * research_lvls.getOrDefault("GearHp", 0));
+                gear_atk += item.atk * (1 + 0.01 * research_lvls.getOrDefault("GearAtk", 0.0).intValue());
+                gear_def += item.def * (1 + 0.01 * research_lvls.getOrDefault("GearDef", 0.0).intValue());
+                gear_hit += item.hit * (1 + 0.01 * research_lvls.getOrDefault("GearHit", 0.0).intValue());
+                gear_speed += item.speed * (1 + 0.01 * research_lvls.getOrDefault("GearSpd", 0.0).intValue());
+                gear_int += item.intel * (1 + 0.01 * research_lvls.getOrDefault("GearInt", 0.0).intValue());
+                gear_res += item.resist * (1 + 0.01 * research_lvls.getOrDefault("GearRes", 0.0).intValue());
+                gear_hp += item.hp * (1 + 0.01 * research_lvls.getOrDefault("GearHp", 0.0).intValue());
                 gear_water += item.water;
                 gear_fire += item.fire;
                 gear_earth += item.earth;
@@ -918,7 +923,7 @@ public class Actor {
     }
 
     public double getExp_mult() {
-        return exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp", 0));
+        return exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp", 0.0).intValue());
     }
 
     public void setExp_mult(double exp_mult) {

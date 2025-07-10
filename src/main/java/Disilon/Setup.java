@@ -78,14 +78,18 @@ public class Setup implements Serializable {
     int simulations;
     double sim_hours;
     int sim_cl;
+    int rp_balance;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
-    HashMap<String, Integer> research_lvls;
+    HashMap<String, Double> research_lvls;
+    HashMap<String, Double> research_weight;
 
     public Setup() {
         this.passives_lvls = new HashMap<>();
         this.actives_lvls = new HashMap<>();
         this.research_lvls = new HashMap<>();
+        this.research_weight = new HashMap<>();
+        this.rp_balance = 0;
         this.playerclass = "Sniper";
         this.ml = 140;
         this.cl = 75;
@@ -750,11 +754,27 @@ public class Setup implements Serializable {
         this.skill4_s = skill4_s;
     }
 
-    public HashMap<String, Integer> getResearch_lvls() {
+    public HashMap<String, Double> getResearch_lvls() {
         return research_lvls;
     }
 
-    public void setResearch_lvls(HashMap<String, Integer> research_lvls) {
+    public void setResearch_lvls(HashMap<String, Double> research_lvls) {
         this.research_lvls = research_lvls;
+    }
+
+    public int getRp_balance() {
+        return rp_balance;
+    }
+
+    public void setRp_balance(int rp_balance) {
+        this.rp_balance = rp_balance;
+    }
+
+    public HashMap<String, Double> getResearch_weight() {
+        return research_weight;
+    }
+
+    public void setResearch_weight(HashMap<String, Double> research_weight) {
+        this.research_weight = research_weight;
     }
 }

@@ -2,6 +2,7 @@ package Disilon;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static Disilon.Main.df2;
 import static Disilon.Main.shorthand;
@@ -63,6 +64,7 @@ public class Simulation {
         int failed = 0;
         double oom_time = 0;
         player.dot_tracking = 0;
+        player.research_slots_stat = 0;
         title = player.zone.toString();
         time_to_respawn = player.zone.getTime_to_respawn();
         StringBuilder result = new StringBuilder();
@@ -293,7 +295,7 @@ public class Simulation {
                         if (player.lvling) player.increment_exp(exp_gain);
                         exp += exp_gain;
                         kills++;
-                        player.zone.stats.recordOverkill(enemy, player.research_lvls.get("CoreQuality"));
+                        player.zone.stats.recordOverkill(enemy, player);
                         player.levelActives();
                         player.levelTF(enemy);
 //                        System.out.println("Enemy killed at " + df2.format(time) + " s \n");
@@ -314,6 +316,7 @@ public class Simulation {
                     death_time += 15 * 60;
                     player.setHp(player.getHp_max());
                     player.setMp(player.getMp_max());
+                    player.tick_research(15 * 60);
                     player.resetPotionCd();
                     ignore_deaths += time;
                     failed++;
@@ -351,9 +354,12 @@ public class Simulation {
                 max_casts = Math.max(max_casts, casts);
             }
             //if (status == StatusType.death) status = StatusType.respawn;
-            if (player.lvling) player.levelPassives(time);
-            int research_craft = player.research_lvls.getOrDefault("CraftSpd", 0);
-            int research_alch = player.research_lvls.getOrDefault("AlchemySpd", 0);
+            if (player.lvling) {
+                player.levelPassives(time);
+                player.tick_research(time);
+            }
+            int research_craft = player.research_lvls.getOrDefault("CraftSpd", 0.0).intValue();
+            int research_alch = player.research_lvls.getOrDefault("AlchemySpd", 0.0).intValue();
             if (player.potion1 != null) {
                 crafting_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
             }
@@ -482,6 +488,14 @@ public class Simulation {
                 if ((p.enabled && p.old_lvl < 20) || p.name.equals("Tsury Finke")) {
                     lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" (");
                     lvling_log.append(df2.format(p.getLpercent())).append("%)\n");
+                }
+            }
+            lvling_log.append("RP: ").append((int) player.rp_balance).append("\n");
+            lvling_log.append("Research slots used: ").append(df2.format(player.research_slots_stat / (total_time + death_time))).append("\n");
+            for (Map.Entry<String, Double> entry : player.research_lvls.entrySet()) {
+                double change = entry.getValue() - player.research_old_lvls.getOrDefault(entry.getKey(), 0.0);
+                if (change > 0.01) {
+                    lvling_log.append(entry.getKey()).append(" +").append(df2.format(change)).append("\n");
                 }
             }
         }
