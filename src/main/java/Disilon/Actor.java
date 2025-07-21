@@ -76,6 +76,10 @@ public class Actor {
     protected double set_physdmg = 1;
     protected double set_mit1 = 0;
     protected double set_mit2 = 0;
+    protected double set_core = 0;
+    protected double set_exp = 0;
+    protected double set_training = 0;
+    protected double set_water = 1;
 
     protected double hp_mult = 1;
     protected double mp_mult = 1;
@@ -112,7 +116,6 @@ public class Actor {
     protected double hide_bonus = 0;
     protected boolean smoked = false;
     protected boolean ambushing = false;
-    protected Actor ambush_target = null;
     protected double charge;
     protected boolean remove_charge = false;
     protected double def_break = 0;
@@ -128,7 +131,6 @@ public class Actor {
     protected double counter_strike = 0;
     protected double multi_arrows = 0;
     protected double finke_bonus = 0;
-    protected boolean multi_hit_override = false;
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;
@@ -137,6 +139,7 @@ public class Actor {
     public boolean counter_dodge = false;
     public boolean counter_heal = false;
     public double stun_time = 0;
+    public ActiveSkill last_skill;
 
     protected LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
     protected LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
@@ -233,16 +236,16 @@ public class Actor {
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
             if (!Objects.equals(d.name, "Mark")) d.duration--;
-            if (Objects.equals(d.name, "Smoke") && d.duration > 0) smoked = true;
-            if (Objects.equals(d.name, "Defense Break") && d.duration > 0) def_break = d.effect;
-            if (Objects.equals(d.name, "Res Break") && d.duration > 0) res_break = d.effect;
-            if (Objects.equals(d.name, "Weaken") && d.duration > 0) weaken = d.effect;
-            if (Objects.equals(d.name, "Mark") && d.duration > 0) mark = d.effect;
-            if (Objects.equals(d.name, "Slow") && d.duration > 0) slow = d.effect;
+            if (Objects.equals(d.name, "Smoke") && d.duration >= 0) smoked = true;
+            if (Objects.equals(d.name, "Defense Break") && d.duration >= 0) def_break = d.effect;
+            if (Objects.equals(d.name, "Res Break") && d.duration >= 0) res_break = d.effect;
+            if (Objects.equals(d.name, "Weaken") && d.duration >= 0) weaken = d.effect;
+            if (Objects.equals(d.name, "Mark") && d.duration >= 0) mark = d.effect;
+            if (Objects.equals(d.name, "Slow") && d.duration >= 0) slow = d.effect;
             this.hp -= d.dmg;
             dot_tracking += d.dmg;
 //            if (d.dmg > 0) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
-            if (d.duration <= 0) debuff_iterator.remove();
+            if (d.duration < 0) debuff_iterator.remove();
         }
         if (hp < 0) hp *= 0.5; //dots give 50% overkill
     }
@@ -295,23 +298,29 @@ public class Actor {
     public void enableSet(String bonus, Equipment.Quality quality, int upgrade) {
         double tier = quality.getMult();
         switch (bonus.toLowerCase()) {
-            case "hit" -> set_hit = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
-            case "res" -> set_res = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
-            case "magicdmg" -> set_magicdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
-            case "physdmg" -> set_physdmg = 1 + ((5 + upgrade / 2.0) * (0.5 + tier / 2.0)) / 100.0;
+            case "hit" -> set_hit = 1 + ((5 + 0.5 * upgrade) * (0.5 + tier / 2.0)) / 100.0;
+            case "res" -> set_res = 1 + ((5 + 0.5 * upgrade) * (0.5 + tier / 2.0)) / 100.0;
+            case "magicdmg" -> set_magicdmg = 1 + Math.clamp((5 + 0.5 * upgrade) * (0.5 + tier / 2.0), 5, 30) / 100.0;
+            case "physdmg" -> set_physdmg = 1 + Math.clamp((5 + 0.5 * upgrade) * (0.5 + tier / 2.0), 5, 30) / 100.0;
             case "mit1" -> {
                 if (Main.game_version < 1566) {
                     set_mit1 = Math.clamp((5 + upgrade / 6.0) * (0.5 + tier / 2.0), 5, 50) / 100.0;
                 } else {
-                    set_mit1 = Math.clamp((8 + upgrade / 5.0) * (0.5 + tier / 2.0), 5, 60) / 100.0;
+                    set_mit1 = Math.clamp((8 + 0.2 * upgrade) * (0.5 + tier / 2.0), 8, 60) / 100.0;
                 }
             }
             case "mit2" -> {
                 if (Main.game_version < 1566) {
                     set_mit2 = Math.clamp((10 + upgrade / 5.0) * (0.5 + tier / 2.0), 10, 55) / 100.0;
                 } else {
-                    set_mit2 = Math.clamp((13 + upgrade / 4.0) * (0.5 + tier / 2.0), 10, 70) / 100.0;
+                    set_mit2 = Math.clamp((13 + 0.25 * upgrade) * (0.5 + tier / 2.0), 13, 70) / 100.0;
                 }
+            }
+            case "core" -> set_core = Math.clamp((10 + 0.4 * upgrade) * (0.5 + tier / 2.0), 10, 100) / 100.0;
+            case "water" -> set_water = 1 + Math.clamp((10 + 0.5 * upgrade) * (0.5 + tier / 2.0), 10, 100) / 100.0;
+            case "training" -> {
+                set_exp = Math.clamp((15 + 0.5 * upgrade) * (0.5 + tier / 2.0), 15, 150) / 100.0;
+                set_training = Math.clamp((5 + 0.1 * upgrade) * (0.5 + tier / 2.0), 5, 25) / 100.0;
             }
         }
     }
@@ -323,6 +332,10 @@ public class Actor {
         set_physdmg = 1;
         set_mit1 = 0;
         set_mit2 = 0;
+        set_core = 0;
+        set_water = 1;
+        set_exp = 0;
+        set_training = 0;
         for (EquipmentSet set : sets.values()) {
             set.current_items = 0;
             set.min_quality = null;
@@ -393,7 +406,9 @@ public class Actor {
         }
         speed_mult *= 1.0 + speedBoost.bonus(passives);
         if (Main.game_version >= 1563 && tier >= 3) {
-            exp_mult *= 1.0 + coreBoost.bonus2(passives);
+            if (Main.game_version < 1573) {
+                exp_mult *= 1.0 + coreBoost.bonus2(passives);
+            }
         } else {
             exp_mult *= 1.0 + dropBoost.bonus(passives);
         }
@@ -413,7 +428,10 @@ public class Actor {
         buff_boost *= 1.0 + buffMastery.bonus(passives);
         hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
-        core_mult += coreBoost.bonus(passives); //Ryu said it will be additive with gear bonuses
+        if (Main.game_version >= 1573) {
+            core_mult = 1 + dropBoost.bonus(passives) * 2;
+        }
+        core_mult = 1 + coreBoost.bonus(passives); //Ryu said it will be additive with gear bonuses
 
         mp_cost_add = 0;
         mp_cost_mult = 1;
@@ -508,6 +526,8 @@ public class Actor {
         mp_max = (resist * 3 + intel) * getMp_mult();
         if (set_mit1 > 0) add_resist("All", set_mit1);
         if (set_mit2 > 0) add_resist("All", set_mit2);
+        exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0,
+                120 + research_lvls.getOrDefault("Max CL", 0.0).intValue() - cl));
         if (fireResist.enabled) {
             add_resist("Fire", fireResist.bonus(passives));
         }
@@ -976,38 +996,6 @@ public class Actor {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public double getSet_magicdmg() {
-        return set_magicdmg;
-    }
-
-    public void setSet_magicdmg(double set_magicdmg) {
-        this.set_magicdmg = set_magicdmg;
-    }
-
-    public double getSet_physdmg() {
-        return set_physdmg;
-    }
-
-    public void setSet_physdmg(double set_physdmg) {
-        this.set_physdmg = set_physdmg;
-    }
-
-    public double getSet_mit1() {
-        return set_mit1;
-    }
-
-    public void setSet_mit1(double set_mit1) {
-        this.set_mit1 = set_mit1;
-    }
-
-    public double getSet_mit2() {
-        return set_mit2;
-    }
-
-    public void setSet_mit2(double set_mit2) {
-        this.set_mit2 = set_mit2;
     }
 
     public int getMl() {

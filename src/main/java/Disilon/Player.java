@@ -8,6 +8,8 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.game_version;
+import static Disilon.Main.minIfNotZero;
 
 public class Player extends Actor {
     ActiveSkill hide = new ActiveSkill("Hide", 1, 0.3, 0, 0, 5, 0.5, 0.5, Scaling.atk, Element.none, false, false);
@@ -212,6 +214,9 @@ public class Player extends Actor {
         sets.put("Metal", new EquipmentSet("mit1", 5));
         sets.put("Iron", new EquipmentSet("mit2", 5));
         sets.put("Holy", new EquipmentSet("res", 5));
+        sets.put("Hunter", new EquipmentSet("core", 5));
+        sets.put("Training", new EquipmentSet("training", 5));
+        sets.put("Aquatic", new EquipmentSet("water", 5));
         sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
     }
 
@@ -866,8 +871,17 @@ public class Player extends Actor {
             sb.append("Burn = ").append(df2.format((burn_mult + gear_burn) * 100 - 100)).append("%\n");
         if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
         if (set_res > 1) sb.append("Set Res = ").append(df2.format(set_res * 100 - 100)).append("%\n");
+        if (set_water > 1) sb.append("Set WaterDmg = ").append(df2.format(set_water * 100 - 100)).append("%\n");
         if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
+        if (set_core > 0) {
+            sb.append("Set Overkill/Manacost = ").append(df2.format(set_core * 100)).append("%, ");
+            sb.append("Cores = ").append(df2.format(set_core * 150)).append("%\n");
+        }
+        if (set_training > 0) {
+            sb.append("Set Exp = ").append(df2.format(set_exp * 100)).append("%, ");
+            sb.append("Dmg = -").append(df2.format(set_training * 100)).append("%\n");
+        }
         if (set_mit1 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit1 * 100)).append("%\n");
         if (set_mit2 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit2 * 100)).append("%\n");
         if (finke_bonus > 0) sb.append("Tsury Finke bonus = ").append(df2.format(finke_bonus * 100)).append("%\n");
@@ -914,15 +928,23 @@ public class Player extends Actor {
     }
 
     public void tick_research(double time) {
-        int max_slots = research_lvls.getOrDefault("Slot", 1.0).intValue();
-        double r_spd = 1 + 0.01 * research_lvls.getOrDefault("ResearchSpd", 0.0).intValue();
+        int max_slots = research_lvls.getOrDefault("Research slot", 1.0).intValue();
+        double r_spd = 1 + 0.01 * research_lvls.getOrDefault("Research spd", 0.0).intValue();
         int can_sustain = Math.min(max_slots, calc_max_research_slots(rp_balance / time * 3600 / r_spd));
         can_sustain = Math.min(can_sustain, (int) rp_balance / 10); //to make sure we don't swing from 0 to max slots
 
         int using = 0;
-        if (max_slots < 15 && research_weight.getOrDefault("Slot", 0.0) > 0) {
-            if (rp_balance > (research_slots_base_cost(max_slots + 1) - research_slots_base_cost(can_sustain)) * research_weight.get("Slot")) {
-                research("Slot", time * r_spd);
+        if (max_slots < 15 && research_weight.getOrDefault("Research slot", 0.0) > 0) {
+            if (rp_balance > (research_slots_base_cost(max_slots + 1) - research_slots_base_cost(can_sustain)) * research_weight.get("Research slot")) {
+                research("Research slot", time * r_spd);
+                if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
+                using++;
+            }
+        }
+        if (max_slots < 15 && research_weight.getOrDefault("Research slot", 0.0) < 0) {
+            if (max_slots < -1 * research_weight.getOrDefault("Research slot", 0.0)) {
+                research("Research slot", time * r_spd);
+                if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
                 using++;
             }
         }
@@ -931,12 +953,13 @@ public class Player extends Actor {
             entry.setValue(entry.getValue() * 36000 / research_time(entry.getKey()));
         }
         LinkedHashMap<String, Double> sorted = weight_for_lvl.entrySet().stream()
+                .filter(e -> !e.getKey().equals("Research slot"))
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-//        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Double> entry : sorted.entrySet()) {
-            if (entry.getValue() > 0 && can_sustain > using && (!entry.getKey().equals("ResearchSpd") || rp_balance > 1000)) {
-//                sb.append(entry.getKey()).append(" ");
+            if (entry.getValue() > 0 && can_sustain > using && (!entry.getKey().equals("Research spd") || rp_balance > 1000)) {
+                sb.append(entry.getKey()).append(" ");
                 research(entry.getKey(), time * r_spd);
                 using++;
             }
@@ -947,14 +970,21 @@ public class Player extends Actor {
     }
 
     public void research(String name, double time) {
+        if (name.equals("Research slot")) {
+            int old_lvl = research_lvls.getOrDefault(name, 0.0).intValue();
+            int new_lvl = (int) (research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
+            if (new_lvl > old_lvl) {
+                research_weight.put(name, research_weight.getOrDefault(name, 0.0) * 3); //we don't want to chain slots
+            }
+        }
         research_lvls.put(name, research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
     }
 
     public double research_time(String name) {
         int lvl = research_lvls.getOrDefault(name, 0.0).intValue();
         double base_time = switch(name) {
-            case "Slot" -> 259200;
-            case "ResearchSpd" -> 10800;
+            case "Research slot" -> 259200;
+            case "Research spd" -> 10800;
             case "SideSpd" -> 36000;
             case "Max CL" -> 14400;
             case "Exp" -> 14400;
@@ -964,7 +994,7 @@ public class Player extends Actor {
             case "AlchemySpd" -> 14400;
             default -> 0;
         };
-        if (name.equals("Slot")) {
+        if (name.equals("Research slot")) {
             return base_time * (Math.pow(lvl, 2) - Math.pow(lvl - 1, 2));
         }
         return base_time * (lvl + 1);
@@ -979,6 +1009,7 @@ public class Player extends Actor {
 
     public double research_slots_base_cost(int slots) {
         if (slots < 1) return 0;
+        if (game_version < 1566) return slots * 250;
         return (Math.pow(1.4, slots - 1) + slots - 1) * 180;
     }
 
@@ -1031,6 +1062,36 @@ public class Player extends Actor {
     }
 
     public int getMaxCl() {
-        return 120 + research_lvls.getOrDefault("Max CL", 0.0).intValue();
+        return 120 + Math.max(0, research_lvls.getOrDefault("Max CL", 0.0).intValue());
+    }
+
+    public double getNextPotionTime() {
+        double time = 0;
+        if (potion1 != null && potion1.cooldown > 0) {
+            time = minIfNotZero(time, potion1.cooldown);
+        }
+        if (potion2 != null) {
+            time = minIfNotZero(time, potion2.cooldown);
+        }
+        if (potion3 != null) {
+            time = minIfNotZero(time, potion3.cooldown);
+        }
+        return time;
+    }
+
+    public double getPredictedPrepareTime() {
+        double time = 0;
+        if (prepare != null) {
+            double defecit = getHp_max() * prepare_threshold / 100 - getHp();
+            if (defecit > 0) {
+                time = minIfNotZero(time, defecit / getPrepare_hps());
+            }
+            defecit = getMp_max() * prepare_threshold / 100 - getMp();
+            if (defecit > 0) {
+                time = minIfNotZero(time, defecit / getPrepare_mps());
+
+            }
+        }
+        return time;
     }
 }

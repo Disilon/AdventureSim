@@ -58,8 +58,13 @@ public class PassiveSkill {
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }
             case "Core Boost" -> {
-                this.bonus = this.base_bonus * (1 + 0.05 * lvl);
-                this.bonus2 = this.base_bonus2 * (1 + 0.05 * lvl);
+                if (Main.game_version >= 1573) {
+                    this.base_bonus = 0.6;
+                    this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                } else {
+                    this.bonus = this.base_bonus * (1 + 0.05 * lvl);
+                    this.bonus2 = this.base_bonus2 * (1 + 0.05 * lvl);
+                }
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }

@@ -11,6 +11,7 @@ public class MonsterStatData {
     public HashMap<String, Double> dot_sum = new HashMap<>();
     public HashMap<String, Integer> hits_total = new HashMap<>();
     public HashMap<String, Integer> casts_total = new HashMap<>();
+    public HashMap<String, Integer> used_debuffed = new HashMap<>();
     public HashMap<String, HashMap<Integer, Double>> cores; //Grade, Count in nested map
     public double base_rp;
     public double gained_rp;
@@ -27,14 +28,14 @@ public class MonsterStatData {
         }
     }
 
-    public void incrementStats(Actor e, ActiveSkill s, double dmg, double hit, double debuff, int uses, int h,
+    public void incrementStats(Actor e, ActiveSkill s, double dmg, double hit_chance, double debuff, int uses, int hits,
                                double dot) {
         String key = e.getName() + ": " + s.name;
         dmg_sum.put(key, dmg_sum.containsKey(key) ? dmg_sum.get(key) + dmg : dmg);
-        hit_chance_sum.put(key, hit_chance_sum.containsKey(key) ? hit_chance_sum.get(key) + hit : hit);
+        hit_chance_sum.put(key, hit_chance_sum.containsKey(key) ? hit_chance_sum.get(key) + hit_chance : hit_chance);
         debuff_chance_sum.put(key, debuff_chance_sum.containsKey(key) ? debuff_chance_sum.get(key) + debuff : debuff);
         casts_total.put(key, casts_total.containsKey(key) ? casts_total.get(key) + uses : uses);
-        hits_total.put(key, hits_total.containsKey(key) ? hits_total.get(key) + h : h);
+        hits_total.put(key, hits_total.containsKey(key) ? hits_total.get(key) + hits : hits);
         dot_sum.put(key, dot_sum.containsKey(key) ? dot_sum.get(key) + dot : dot);
     }
 
@@ -56,6 +57,11 @@ public class MonsterStatData {
         incrementStats(e, s, 0, 0, 0, 0, 0, dmg);
     }
 
+    public void incrementUsedDebuffed(Actor e, ActiveSkill s, int increment) {
+        String key = e.getName() + ": " + s.name;
+        used_debuffed.merge(key, increment, Integer::sum);
+    }
+
     public void clear_recorded_data() {
         base_rp = 0;
         gained_rp = 0;
@@ -67,6 +73,7 @@ public class MonsterStatData {
         dot_sum.clear();
         cores.clear();
         deaths.clear();
+        used_debuffed.clear();
     }
 
     public void recordOverkill(Enemy e, Player player) {
@@ -87,7 +94,8 @@ public class MonsterStatData {
 
     public void addCore(String name, int grade, Player p) {
         int research = p.research_lvls.get("CoreQuality").intValue();
-        double drop_rate = 0.01 * (p.core_mult + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
+        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+                + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -122,6 +130,8 @@ public class MonsterStatData {
                 double average_debuff_chance = debuff_chance_sum.get(name) / hits_total.get(name);
                 double average_dot = dot_sum.get(name) / hits_total.get(name);
                 double average_used = (double) casts_total.get(name) / simulations;
+                double average_debuffed = used_debuffed.containsKey(name) ?
+                        (double) used_debuffed.get(name) / casts_total.get(name) : 0;
                 sb.append(name).append(" used: ").append(df2.format(average_used)).append(";");
                 if (!name.endsWith("Counter Strike") && !name.endsWith("Counter Dodge")) {
                     sb.append(" hit: ").append((int) (average_hit_chance * 100)).append("%;");
@@ -129,6 +139,7 @@ public class MonsterStatData {
                 sb.append(" dmg: ").append((int) average_dmg);
                 sb.append(average_debuff_chance == 0 ? "" : "; debuff: " + (int) (average_debuff_chance * 100) + "%");
                 sb.append(average_dot == 0 ? "" : "; DoT: " + (int) (average_dot));
+                sb.append(average_debuffed == 0 ? "" : "; used debuffed: " + (int) (average_debuffed * 100) + "%");
                 sb.append("\n");
             } else {
                 double average_used = (double) casts_total.get(name) / simulations;
@@ -140,7 +151,8 @@ public class MonsterStatData {
 
     public String getCoreData(Player p, double time) {
         StringBuilder sb = new StringBuilder();
-        double drop_rate = 0.01 * (p.core_mult + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
+        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+                        + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
         for (String name : cores.keySet()) {
             sb.append(name).append(": ");
             boolean first = true;
@@ -176,23 +188,23 @@ public class MonsterStatData {
 
     public static double getCoreTypeRP(String name) {
         return switch (name) {
-            case "Slime" -> 4;
-            case "Goblin" -> 5;
-            case "Imp" -> 5;
+            case "Slime","Slime2" -> 4;
+            case "Goblin","Goblin2" -> 5;
+            case "Imp","Imp2" -> 5;
             case "Wrath" -> 8;
-            case "Ghoul" -> 8;
+            case "Ghoul","Ghoul2" -> 8;
             case "Astaroth" -> 9;
             case "Shinigami" -> 9;
             case "Amon" -> 10;
             case "Tengu" -> 10;
             case "Akuma" -> 12;
             case "Devil" -> 18;
-            case "Shax" -> 40;
-            case "Dagon" -> 45;
-            case "Lamia" -> 50;
+            case "Shax" -> Main.game_version < 1568 ? 40 : 45;
+            case "Dagon" -> 60;
+            case "Lamia" -> 70;
             case "Tyrant" -> 100;
-            case "Fairy" -> Main.game_version < 1568 ? 125 : 250;
-            case "Raum" -> Main.game_version < 1568 ? 150 : 200;
+            case "Fairy" -> Main.game_version < 1568 ? 175 : 350;
+            case "Raum" -> Main.game_version < 1568 ? 150 : 180;
             case "Asura" -> 165;
             default -> 0;
         };

@@ -185,6 +185,7 @@ public class ActiveSkill {
 
     public double calculate_manacost(Actor actor) {
         double cost = (mp * mp_mult + mp_additive) * actor.getMp_cost_mult() + actor.getMp_cost_add();
+        cost *= 1 + actor.set_core;
         if (element == Element.water) cost *= 1 - actor.finke_bonus;
         return cost;
     }
@@ -323,8 +324,8 @@ public class ActiveSkill {
                 case "Burn":
                 case "Poison":
                     this.debuff_duration = switch (this.skillMod) {
-                        case SkillMod.Basic -> base_debuff_duration * (1 + 0.02 * lvl);
-                        case SkillMod.Pow -> base_debuff_duration * (1 + 0.01 * lvl);
+                        case SkillMod.Basic -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
+                        case SkillMod.Pow -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
                         case SkillMod.PowPow -> base_debuff_duration * (1 + 0.05 * lvl);
                         case SkillMod.Cheap -> base_debuff_duration * (1 - 0.01 * lvl);
                         case SkillMod.Enemy -> base_debuff_duration;
@@ -338,15 +339,15 @@ public class ActiveSkill {
                 case "Resist Break":
                 case "Weaken":
                     this.debuff_duration = switch (this.skillMod) {
-                        case SkillMod.Basic -> base_debuff_duration * (1 + 0.02 * lvl);
-                        case SkillMod.Pow -> base_debuff_duration * (1 + 0.01 * lvl);
+                        case SkillMod.Basic -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
+                        case SkillMod.Pow -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
                         case SkillMod.PowPow -> base_debuff_duration * (1 + 0.05 * lvl);
                         case SkillMod.Cheap -> base_debuff_duration * (1 - 0.01 * lvl);
                         default -> base_debuff_duration;
                     };
                     this.debuff_effect = switch (this.skillMod) {
-                        case SkillMod.Basic -> base_debuff_dmg * (1 + 0.02 * lvl);
-                        case SkillMod.Pow -> base_debuff_dmg * (1 + 0.01 * lvl);
+                        case SkillMod.Basic -> base_debuff_dmg * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
+                        case SkillMod.Pow -> base_debuff_dmg * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
                         case SkillMod.PowPow -> base_debuff_dmg * (1 + 0.05 * lvl);
                         case SkillMod.Cheap -> base_debuff_dmg * (1 - 0.01 * lvl);
                         default -> base_debuff_dmg;
@@ -400,7 +401,7 @@ public class ActiveSkill {
                     }
                 }
                 if (rng >= chance && rng < chance * 2) {
-                    attacker.setHp(attacker.getHp() + attacker.getHp_max() * power);
+                    attacker.hp = attacker.getHp() + attacker.getHp_max() * power;
                 }
                 if (rng >= chance * 2 && rng < chance * 3) {
                     if (attacker.charge == 0) {
@@ -430,6 +431,7 @@ public class ActiveSkill {
                 }
             }
         }
+        attacker.last_skill = this;
     }
 
     public double attack(Actor attacker, Actor defender, int overwrite_hits) {
@@ -451,8 +453,9 @@ public class ActiveSkill {
         hit_chance_sum += Math.min(hit_chance, 1);
         if (defender.zone != null) {
             defender.zone.stats.incrementHit(attacker, this, hit_chance);
+            if (!attacker.debuffs.isEmpty()) defender.zone.stats.incrementUsedDebuffed(attacker, this, 1);
         }
-        if (attacker.isSmoked()) used_debuffed++;
+        if (!attacker.debuffs.isEmpty()) used_debuffed++;
         if (hit_chance < 1 && attacker.cl > 0) {
             //System.out.println(name + " has hit chance of " + hit_chance * 100 + "%, smoked=" + attacker.isSmoked());
         }
@@ -490,6 +493,7 @@ public class ActiveSkill {
                     }
                     case Element.water -> {
                         atk = attacker.getWater();
+                        dmg_mult *= attacker.set_water;
                         yield defender.getWater_res();
                     }
                     case Element.wind -> {
@@ -521,27 +525,27 @@ public class ActiveSkill {
                 def = switch (this.scaling) {
                     case atk -> {
                         atk += attacker.getAtk();
-                        dmg_mult *= attacker.getSet_physdmg();
+                        dmg_mult *= attacker.set_physdmg;
                         yield defender.getDef();
                     }
                     case atkint -> {
                         atk += attacker.getAtk() / 2 + attacker.getIntel() / 2;
-                        dmg_mult *= attacker.getSet_magicdmg();
+                        dmg_mult *= attacker.set_magicdmg;
                         yield defender.getDef() / 2 + defender.getResist() / 2;
                     }
                     case atkhit -> {
                         atk += attacker.getAtk() / 2 + attacker.getHit() / 2;
-                        dmg_mult *= attacker.getSet_physdmg();
+                        dmg_mult *= attacker.set_physdmg;
                         yield defender.getDef();
                     }
                     case intel -> {
                         atk += attacker.getIntel();
-                        dmg_mult *= attacker.getSet_magicdmg();
+                        dmg_mult *= attacker.set_magicdmg;
                         yield defender.getResist();
                     }
                     case resint -> {
                         atk += attacker.getResist() / 2 + attacker.getIntel() / 2;
-                        dmg_mult *= attacker.getSet_magicdmg();
+                        dmg_mult *= attacker.set_magicdmg;
                         yield defender.getResist();
                     }
                     case res -> {
@@ -562,6 +566,7 @@ public class ActiveSkill {
                     dmg_mult *= (1 - enemy_resist);
                 }
                 dmg_mult *= attacker.isMulti_hit_override() ? attacker.multi_arrows : 1;
+                dmg_mult *= (1 - attacker.set_training);
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
                 if (this.name.equals("Dispel")) {
                     calc_hits = defender.buff_count();
@@ -580,7 +585,8 @@ public class ActiveSkill {
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
                                     calc_hits) * dmg_mult;
                     dmg = Math.max(1, dmg);
-//                    System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name + " to " + defender.name);
+//                    System.out.println(attacker.name + attacker + " dealt " + (int) dmg + " damage with " + this.name +
+//                            " to " + defender.name);
                     total += dmg;
                     //if (total > defender.getHp()) break; //doesn't work like that according to tests
                     if (total - dmg > defender.getHp() && i == calc_hits - 1) {
@@ -605,6 +611,7 @@ public class ActiveSkill {
         if (name.equals("Aimed Shot")) {
             total = Math.min(total, defender.getHp() - 1);
         }
+        attacker.last_skill = this;
         return total;
     }
 
@@ -737,6 +744,7 @@ public class ActiveSkill {
             return name + " used: " + df4.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
                     "; dmg: " + (int) average_dmg() + "; mana used: " + (int) mana_used / simulations +
                     (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
+                    (used_debuffed == 0 ? "" : "; used debuffed: " + df2.format((double) used_debuffed / attacks_total)) +
                     "\n";
         }
     }
@@ -744,5 +752,9 @@ public class ActiveSkill {
     public String getWeakRecordedData() {
         return name + " used: " + used + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
                 "; dmg: " + (int) average_dmg() + "\n";
+    }
+
+    public boolean isSingleTarget() {
+        return (!aoe && !random_targets);
     }
 }
