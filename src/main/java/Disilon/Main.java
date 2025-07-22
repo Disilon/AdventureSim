@@ -17,7 +17,7 @@ import java.util.Random;
 
 public class Main {
     public static int game_version = 1552;
-    public static Integer[] availableVersions = {1552, 1566, 1568};
+    public static Integer[] availableVersions = {1552, 1565, 1566, 1568, 1573};
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
     public static DecimalFormat df4;
@@ -130,5 +130,11 @@ public class Main {
             return String.valueOf((int) number / 1000) + "k";
         }
         return String.valueOf((int) number / 1000000) + "m";
+    }
+
+    public static double minIfNotZero(double a, double b) {
+        if (a == 0) return b;
+        if (b == 0) return a;
+        return Math.min(a, b);
     }
 }

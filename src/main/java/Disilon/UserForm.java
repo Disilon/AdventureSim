@@ -22,9 +22,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -104,6 +106,10 @@ public class UserForm extends JFrame {
     private JTextArea Result_skills;
     private JTextArea Result_lvling;
     private JTextArea Stats;
+    private JScrollPane Result_p;
+    private JScrollPane Result_skills_p;
+    private JScrollPane Result_lvling_p;
+    private JScrollPane Stats_p;
     private JButton Save;
     private JButton Load;
     private JComboBox Enemy;
@@ -111,6 +117,7 @@ public class UserForm extends JFrame {
     private JSpinner Milestone;
     private JSpinner Crafting_lvl;
     private JSpinner Alchemy_lvl;
+    private JSpinner Rp_balance;
     private JButton Run;
     private JCheckBox SetSetup;
     private JFileChooser fileChooser = null;
@@ -134,25 +141,110 @@ public class UserForm extends JFrame {
     private JPanel TopPanel;
     SkillTableModel activeSkillsModel;
     SkillTableModel passiveSkillsModel;
-    private JSpinner ResearchExp;
-    private JSpinner ResearchCoreQuality;
-    private JSpinner ResearchCoreDrop;
-    private JSpinner ResearchCraftingSpd;
-    private JSpinner ResearchAlchemySpd;
-    private JSpinner ResearchMaxCl;
-    private JSpinner ResearchGearHp;
-    private JSpinner ResearchGearAtk;
-    private JSpinner ResearchGearDef;
-    private JSpinner ResearchGearInt;
-    private JSpinner ResearchGearRes;
-    private JSpinner ResearchGearHit;
-    private JSpinner ResearchGearSpd;
+//    private JSpinner ResearchSlot;
+//    private JSpinner ResearchSpeed;
+//    private JSpinner ResearchSideCraft;
+//    private JSpinner ResearchExp;
+//    private JSpinner ResearchCoreQuality;
+//    private JSpinner ResearchCoreDrop;
+//    private JSpinner ResearchCraftingSpd;
+//    private JSpinner ResearchAlchemySpd;
+//    private JSpinner ResearchMaxCl;
+//    private JSpinner ResearchSmithingSpd;
+//    private JSpinner ResearchQualityMulti;
+//    private JSpinner ResearchQualityMin;
+//    private JSpinner ResearchCraftingExp;
+//    private JSpinner ResearchAlchemyExp;
+//    private JSpinner ResearchSmithingExp;
+//    private JSpinner ResearchDrop;
+//    private JSpinner ResearchEquipHp;
+//    private JSpinner ResearchEquipAtk;
+//    private JSpinner ResearchEquipDef;
+//    private JSpinner ResearchEquipInt;
+//    private JSpinner ResearchEquipRes;
+//    private JSpinner ResearchEquipHit;
+//    private JSpinner ResearchEquipSpd;
+//    private JSpinner ResearchGodHp;
+//    private JSpinner ResearchGodAtk;
+//    private JSpinner ResearchGodMystic;
+//    private JSpinner ResearchGodPet;
+//    private JSpinner ResearchGodBS;
+//    private JSpinner ResearchGodCS;
+//    private JSpinner ResearchGodMS;
+//    private JSpinner ResearchGodSD;
+//    private JSpinner ResearchGodMV;
+//    private JSpinner ResearchSlot_w;
+//    private JSpinner ResearchSpeed_w;
+//    private JSpinner ResearchSideCraft_w;
+//    private JSpinner ResearchExp_w;
+//    private JSpinner ResearchCoreQuality_w;
+//    private JSpinner ResearchCoreDrop_w;
+//    private JSpinner ResearchCraftingSpd_w;
+//    private JSpinner ResearchAlchemySpd_w;
+//    private JSpinner ResearchMaxCl_w;
+//    private JSpinner ResearchSmithingSpd_w;
+//    private JSpinner ResearchQualityMulti_w;
+//    private JSpinner ResearchQualityMin_w;
+//    private JSpinner ResearchCraftingExp_w;
+//    private JSpinner ResearchAlchemyExp_w;
+//    private JSpinner ResearchSmithingExp_w;
+//    private JSpinner ResearchDrop_w;
+//    private JSpinner ResearchEquipHp_w;
+//    private JSpinner ResearchEquipAtk_w;
+//    private JSpinner ResearchEquipDef_w;
+//    private JSpinner ResearchEquipInt_w;
+//    private JSpinner ResearchEquipRes_w;
+//    private JSpinner ResearchEquipHit_w;
+//    private JSpinner ResearchEquipSpd_w;
+//    private JSpinner ResearchGodHp_w;
+//    private JSpinner ResearchGodAtk_w;
+//    private JSpinner ResearchGodMystic_w;
+//    private JSpinner ResearchGodPet_w;
+//    private JSpinner ResearchGodBS_w;
+//    private JSpinner ResearchGodCS_w;
+//    private JSpinner ResearchGodMS_w;
+//    private JSpinner ResearchGodSD_w;
+//    private JSpinner ResearchGodMV_w;
+//    private JLabel ResearchSlot_l;
+//    private JLabel ResearchSpeed_l;
+//    private JLabel ResearchSideCraft_l;
+//    private JLabel ResearchExp_l;
+//    private JLabel ResearchCoreQuality_l;
+//    private JLabel ResearchCoreDrop_l;
+//    private JLabel ResearchCraftingSpd_l;
+//    private JLabel ResearchAlchemySpd_l;
+//    private JLabel ResearchMaxCl_l;
+//    private JLabel ResearchSmithingSpd_l;
+//    private JLabel ResearchQualityMulti_l;
+//    private JLabel ResearchQualityMin_l;
+//    private JLabel ResearchCraftingExp_l;
+//    private JLabel ResearchAlchemyExp_l;
+//    private JLabel ResearchSmithingExp_l;
+//    private JLabel ResearchDrop_l;
+//    private JLabel ResearchEquipHp_l;
+//    private JLabel ResearchEquipAtk_l;
+//    private JLabel ResearchEquipDef_l;
+//    private JLabel ResearchEquipInt_l;
+//    private JLabel ResearchEquipRes_l;
+//    private JLabel ResearchEquipHit_l;
+//    private JLabel ResearchEquipSpd_l;
+//    private JLabel ResearchGodHp_l;
+//    private JLabel ResearchGodAtk_l;
+//    private JLabel ResearchGodMystic_l;
+//    private JLabel ResearchGodPet_l;
+//    private JLabel ResearchGodBS_l;
+//    private JLabel ResearchGodCS_l;
+//    private JLabel ResearchGodMS_l;
+//    private JLabel ResearchGodSD_l;
+//    private JLabel ResearchGodMV_l;
     GridBagConstraints gbc = new GridBagConstraints();
 
     public Player player;
     public Simulation simulation;
     public Setup setup;
     public LinkedHashMap<JMenu, Setup> tabs = new LinkedHashMap<>();
+    public HashMap<String, JSpinner> research_l = new HashMap<>(32);
+    public HashMap<String, JSpinner> research_w = new HashMap<>(32);
     public JMenu selected_tab;
     ActionListener itemListener;
     MenuListener menuListener;
@@ -878,20 +970,6 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Load, gbc);
 
-//        final JLabel label15 = new JLabel();
-//        label15.setText("Enemy:");
-//        gbc = new GridBagConstraints();
-//        gbc.gridx = 7;
-//        gbc.gridy = 2;
-//        RightPanel.add(label15, gbc);
-//        Enemy = new JComboBox(Zone.values());
-//        gbc = new GridBagConstraints();
-//        gbc.gridx = 7;
-//        gbc.gridy = 3;
-//        gbc.anchor = GridBagConstraints.WEST;
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        Enemy.setMaximumRowCount(25);
-//        RightPanel.add(Enemy, gbc);
         Sim_type = new ButtonGroup();
         Sim_num = new JRadioButton();
         Sim_num.setText("Number of simulations:");
@@ -944,7 +1022,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Simulations, gbc);
-        SimHours = createCustomSpinner(1.0, 0, 1000, 1);
+        SimHours = createCustomSpinner(1.0, 0, 10000, 1);
         SimHours.setVisible(false);
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
@@ -1053,38 +1131,38 @@ public class UserForm extends JFrame {
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(ActiveSkills.getTableHeader(), gbc);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(ActiveSkills, gbc);
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.gridy = 0;
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(PassiveSkills.getTableHeader(), gbc);
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.gridy = 1;
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(PassiveSkills, gbc);
 
         final JLabel label25 = new JLabel();
-        label25.setText("Milestone exp bonus (%)");
+        label25.setText("Milestone exp");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(10, 5, 0, 5);
+        gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(label25, gbc);
         Milestone = createCustomSpinner(155, 100, 1000, 2.5);
         gbc = new GridBagConstraints();
@@ -1100,7 +1178,7 @@ public class UserForm extends JFrame {
         gbc.gridy = 4;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(10, 5, 0, 5);
+        gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(label26, gbc);
         Crafting_lvl = new JSpinner(new SpinnerNumberModel(22, 0, 100, 1));
         gbc = new GridBagConstraints();
@@ -1117,7 +1195,7 @@ public class UserForm extends JFrame {
         gbc.gridy = 6;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(10, 5, 0, 5);
+        gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(label27, gbc);
         Alchemy_lvl = new JSpinner(new SpinnerNumberModel(22, 0, 100, 1));
         gbc = new GridBagConstraints();
@@ -1132,7 +1210,7 @@ public class UserForm extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 8;
         gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(10, 5, 0, 5);
+        gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(label23, gbc);
         GameVersion = new JComboBox<>(Main.availableVersions);
         GameVersion.setMaximumRowCount(16);
@@ -1142,192 +1220,57 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
 //        gbc.fill = GridBagConstraints.HORIZONTAL;
         LeftPanel.add(GameVersion, gbc);
-
-        final JLabel label28 = new JLabel();
-        label28.setText("Research:");
+        final JLabel rp_balance_l = new JLabel();
+        rp_balance_l.setText("Current RP:");
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 2;
-        gbc.gridwidth = 4;
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(10, 5, 0, 5);
+        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(rp_balance_l, gbc);
+        Rp_balance = new JSpinner(new SpinnerNumberModel(1000, 0, 10000000, 1000));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.NORTH;
+        LeftPanel.add(Rp_balance, gbc);
+
+        int row = 2;
+        final JLabel label28 = new JLabel("Research:");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = row;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(5, 0, 0, 0);
         LeftPanel.add(label28, gbc);
+        final JLabel label28_1 = new JLabel("lvl");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 4;
+        gbc.gridy = row;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(5, 0, 0, 0);
+        LeftPanel.add(label28_1, gbc);
+        final JLabel label28_2 = new JLabel("weight");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 5;
+        gbc.gridy = row;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 5, 0, 0);
+        LeftPanel.add(label28_2, gbc);
 
-        final JLabel label29 = new JLabel("Exp");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label29, gbc);
-        ResearchExp = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchExp, gbc);
-        final JLabel label30 = new JLabel("Core Drop");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label30, gbc);
-        ResearchCoreDrop = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchCoreDrop, gbc);
-        final JLabel label31 = new JLabel("Core Quality");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 5;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label31, gbc);
-        ResearchCoreQuality = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 5;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchCoreQuality, gbc);
-        final JLabel label32 = new JLabel("Craft spd");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 6;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label32, gbc);
-        ResearchCraftingSpd = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 6;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchCraftingSpd, gbc);
-        final JLabel label33 = new JLabel("Alchemy spd");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 7;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label33, gbc);
-        ResearchAlchemySpd = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 7;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchAlchemySpd, gbc);
-        final JLabel label41 = new JLabel("Max CL");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 8;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label41, gbc);
-        ResearchMaxCl = createCustomSpinner(0, 0, 100, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 8;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchMaxCl, gbc);
-
-        final JLabel label34 = new JLabel("Gear HP");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label34, gbc);
-        ResearchGearHp = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchGearHp, gbc);
-        final JLabel label35 = new JLabel("Gear Atk");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label35, gbc);
-        ResearchGearAtk = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchGearAtk, gbc);
-        final JLabel label36 = new JLabel("Gear Def");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 5;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label36, gbc);
-        ResearchGearDef = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = 5;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchGearDef, gbc);
-        final JLabel label37 = new JLabel("Gear Int");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 6;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label37, gbc);
-        ResearchGearInt = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = 6;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchGearInt, gbc);
-        final JLabel label38 = new JLabel("Gear Res");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 7;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label38, gbc);
-        ResearchGearRes = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = 7;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchGearRes, gbc);
-        final JLabel label39 = new JLabel("Gear Hit");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 8;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label39, gbc);
-        ResearchGearHit = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = 8;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchGearHit, gbc);
-        final JLabel label40 = new JLabel("Gear Spd");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 9;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        LeftPanel.add(label40, gbc);
-        ResearchGearSpd = createCustomSpinner(0, 0, 900, 1);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = 9;
-        gbc.anchor = GridBagConstraints.WEST;
-        LeftPanel.add(ResearchGearSpd, gbc);
+        row++;
+        for (String name : getAllResearches()) {
+            row = addResearch(name, 3, row);
+        }
 
         LeftPane = new JScrollPane(LeftPanel);
         LeftPane.setPreferredSize(new Dimension(550, 540));
         LeftPane.getVerticalScrollBar().setUnitIncrement(16);
         LeftPane.getHorizontalScrollBar().setUnitIncrement(16);
+        LeftPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        LeftPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         RightPanel.setPreferredSize(new Dimension(640, 540));
         //RightPanel.setPreferredSize(RightPanel.getPreferredSize());
         TopPanel = new JPanel();
@@ -1338,8 +1281,10 @@ public class UserForm extends JFrame {
 
         BottomPanel = new JPanel();
         BottomPanel.setLayout(new GridBagLayout());
+
         Stats = new JTextArea();
         Stats.setEditable(false);
+        Stats.setLineWrap(true);
         Stats.setText("Stats will be shown after simulation");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -1347,12 +1292,17 @@ public class UserForm extends JFrame {
         gbc.weightx = 6;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5, 5, 5, 5);
-//        Stats.setPreferredSize(new Dimension(300, 400));
-        BottomPanel.add(Stats, gbc);
+//        gbc.insets = new Insets(5, 5, 5, 5);
+        Stats_p = new JScrollPane(Stats, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        Stats_p.getVerticalScrollBar().setUnitIncrement(16);
+        Stats_p.setMinimumSize(new Dimension(200, 50));
+        Stats_p.setPreferredSize(new Dimension(200, 400));
+        BottomPanel.add(Stats_p, gbc);
 
         Result = new JTextArea();
         Result.setEditable(false);
+        Result.setLineWrap(true);
         Result.setText("Result will be here");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
@@ -1360,12 +1310,17 @@ public class UserForm extends JFrame {
         gbc.weightx = 6;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5, 5, 5, 5);
-//        Result.setPreferredSize(new Dimension(300, 400));
-        BottomPanel.add(Result, gbc);
+//        gbc.insets = new Insets(5, 5, 5, 5);
+        Result_p = new JScrollPane(Result, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        Result_p.getVerticalScrollBar().setUnitIncrement(16);
+        Result_p.setMinimumSize(new Dimension(320, 50));
+        Result_p.setPreferredSize(new Dimension(320, 400));
+        BottomPanel.add(Result_p, gbc);
 
         Result_skills = new JTextArea();
         Result_skills.setEditable(false);
+        Result_skills.setLineWrap(true);
         Result_skills.setText("Info about used skills will be here");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
@@ -1373,12 +1328,17 @@ public class UserForm extends JFrame {
         gbc.weightx = 7;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5, 5, 5, 5);
-//        Result_skills.setPreferredSize(new Dimension(350, 400));
-        BottomPanel.add(Result_skills, gbc);
+//        gbc.insets = new Insets(5, 5, 5, 5);
+        Result_skills_p = new JScrollPane(Result_skills, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        Result_skills_p.getVerticalScrollBar().setUnitIncrement(16);
+        Result_skills_p.setMinimumSize(new Dimension(540, 50));
+        Result_skills_p.setPreferredSize(new Dimension(540, 400));
+        BottomPanel.add(Result_skills_p, gbc);
 
         Result_lvling = new JTextArea();
         Result_lvling.setEditable(false);
+        Result_lvling.setLineWrap(true);
         Result_lvling.setText("Leveling results will be here");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
@@ -1386,11 +1346,15 @@ public class UserForm extends JFrame {
         gbc.weightx = 5;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5, 5, 5, 5);
-//        Result_lvling.setPreferredSize(new Dimension(250, 400));
-        BottomPanel.add(Result_lvling, gbc);
+//        gbc.insets = new Insets(5, 5, 5, 5);
+        Result_lvling_p = new JScrollPane(Result_lvling, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        Result_lvling_p.getVerticalScrollBar().setUnitIncrement(16);
+        Result_lvling_p.setMinimumSize(new Dimension(210, 50));
+        Result_lvling_p.setPreferredSize(new Dimension(210, 400));
+        BottomPanel.add(Result_lvling_p, gbc);
 
-        BottomPanel.setPreferredSize(new Dimension(1150, 450));
+//        BottomPanel.setPreferredSize(new Dimension(1150, 450));
 
         RootPanel.setLayout(new BoxLayout(RootPanel, BoxLayout.Y_AXIS));
         RootPanel.add(TopPanel);
@@ -1404,7 +1368,7 @@ public class UserForm extends JFrame {
 //        Scroll.getHorizontalScrollBar().setUnitIncrement(16);
 //        this.add(Scroll);
 
-        this.setPreferredSize(new Dimension(1270, 910));
+        this.setPreferredSize(new Dimension(1270, 1060));
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
@@ -1568,6 +1532,20 @@ public class UserForm extends JFrame {
                             info.append("</td>");
                         }
                     }
+                    info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
+                    info.append("Research:");
+                    info.append("</td></tr>");
+                    for (String r : player.research_lvls.keySet()) {
+                        int change = player.research_lvls.getOrDefault(r, 0.0).intValue() -
+                                player.research_old_lvls.getOrDefault(r, 0.0).intValue();
+                        if (change > 0) {
+                            info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
+                            info.append(r);
+                            info.append(" +");
+                            info.append(change);
+                            info.append("</td></tr>");
+                        }
+                    }
                     info.append("</table>");
                     info.append("</body>");
                     info.append("</html>");
@@ -1583,6 +1561,7 @@ public class UserForm extends JFrame {
                             int max_lvl = s.equals("Tsury Finke") ? 100 : 20;
                             setup.passives_lvls.put(s, Math.min(max_lvl, player.passives.get(s).getLvl()));
                         }
+                        setup.rp_balance = (int) player.rp_balance;
                         loadSetup(setup);
                     }
                 }
@@ -1611,6 +1590,10 @@ public class UserForm extends JFrame {
                             player = simulation.setupAndRun(setup);
                             showResult();
                             Stats.setText(simulation.player.getAllStats());
+                            Stats.setCaretPosition(0);
+                            Result.setCaretPosition(0);
+                            Result_skills.setCaretPosition(0);
+                            Result_lvling.setCaretPosition(0);
                         } catch (IllegalArgumentException ex) {
                             ex.printStackTrace();
                             JOptionPane.showMessageDialog(RightPanel, "Some field has illegal value!", "Exception",
@@ -1781,7 +1764,7 @@ public class UserForm extends JFrame {
             try {
                 editor.commitEdit();
                 spinner.commitEdit();
-            } catch (java.text.ParseException e) {
+            } catch (ParseException e) {
 //                JOptionPane.showMessageDialog(null,
 //                        "Invalid value, discarding.");
             }
@@ -2027,19 +2010,13 @@ public class UserForm extends JFrame {
                     Double.parseDouble(PassiveSkills.getValueAt(i, 1).toString()) +
                             Double.parseDouble(PassiveSkills.getValueAt(i, 2).toString()) / 100);
         }
-        data.research_lvls.put("Exp", (int) Double.parseDouble(ResearchExp.getValue().toString()));
-        data.research_lvls.put("CoreDrop", (int) Double.parseDouble(ResearchCoreDrop.getValue().toString()));
-        data.research_lvls.put("CoreQuality", (int) Double.parseDouble(ResearchCoreQuality.getValue().toString()));
-        data.research_lvls.put("CraftSpd", (int) Double.parseDouble(ResearchCraftingSpd.getValue().toString()));
-        data.research_lvls.put("AlchemySpd", (int) Double.parseDouble(ResearchAlchemySpd.getValue().toString()));
-        data.research_lvls.put("Max CL", (int) Double.parseDouble(ResearchMaxCl.getValue().toString()));
-        data.research_lvls.put("GearHp", (int) Double.parseDouble(ResearchGearHp.getValue().toString()));
-        data.research_lvls.put("GearAtk", (int) Double.parseDouble(ResearchGearAtk.getValue().toString()));
-        data.research_lvls.put("GearDef", (int) Double.parseDouble(ResearchGearDef.getValue().toString()));
-        data.research_lvls.put("GearInt", (int) Double.parseDouble(ResearchGearInt.getValue().toString()));
-        data.research_lvls.put("GearRes", (int) Double.parseDouble(ResearchGearRes.getValue().toString()));
-        data.research_lvls.put("GearHit", (int) Double.parseDouble(ResearchGearHit.getValue().toString()));
-        data.research_lvls.put("GearSpd", (int) Double.parseDouble(ResearchGearSpd.getValue().toString()));
+        data.rp_balance = (int) Double.parseDouble(Rp_balance.getValue().toString());
+        for (String name : getAllResearches()) {
+            JSpinner l = research_l.get(name);
+            if (l != null) data.research_lvls.put(name, Double.parseDouble(l.getValue().toString()));
+            JSpinner w = research_w.get(name);
+            if (w != null) data.research_weight.put(name, Double.parseDouble(w.getValue().toString()));
+        }
         return data;
     }
 
@@ -2083,15 +2060,6 @@ public class UserForm extends JFrame {
         CL_p.setValue((data.cl - (int) data.cl) * 100);
         ML_p.setValue((data.ml - (int) data.ml) * 100);
         Crafting_lvl.setValue(data.crafting_lvl);
-        if (data.enemy.length() > 0) {
-            data.zone = switch (data.enemy) {
-                case "Devil" -> Zone.z9;
-                case "Shax" -> Zone.z10;
-                case "Dagon" -> Zone.z11;
-                case "Lamia" -> Zone.z12;
-                default -> Zone.z8;
-            };
-        }
         Enemy.setSelectedItem(data.zone);
         GameVersion.setSelectedItem((int) Double.parseDouble(data.gameversion));
         MH_lvl.setValue(data.mh_lvl);
@@ -2166,20 +2134,19 @@ public class UserForm extends JFrame {
                 PassiveSkills.setValueAt(df2.format((lvl - (int) lvl) * 100), i, 2);
             }
         }
-        ResearchExp.setValue(data.research_lvls.getOrDefault("Exp", 0));
-        ResearchCoreDrop.setValue(data.research_lvls.getOrDefault("CoreDrop", 0));
-        ResearchCoreQuality.setValue(data.research_lvls.getOrDefault("CoreQuality", 0));
-        ResearchCraftingSpd.setValue(data.research_lvls.getOrDefault("CraftSpd", 0));
-        ResearchAlchemySpd.setValue(data.research_lvls.getOrDefault("AlchemySpd", 0));
-        ResearchMaxCl.setValue(data.research_lvls.getOrDefault("Max CL", 0));
-        ResearchGearHp.setValue(data.research_lvls.getOrDefault("GearHp", 0));
-        ResearchGearAtk.setValue(data.research_lvls.getOrDefault("GearAtk", 0));
-        ResearchGearDef.setValue(data.research_lvls.getOrDefault("GearDef", 0));
-        ResearchGearInt.setValue(data.research_lvls.getOrDefault("GearInt", 0));
-        ResearchGearRes.setValue(data.research_lvls.getOrDefault("GearRes", 0));
-        ResearchGearHit.setValue(data.research_lvls.getOrDefault("GearHit", 0));
-        ResearchGearSpd.setValue(data.research_lvls.getOrDefault("GearSpd", 0));
+        Rp_balance.setValue(data.rp_balance);
+        for (String name : getAllResearches()) {
+            JSpinner l = research_l.get(name);
+            double def_value = name.equals("Research slot") ? 1.0 : 0.0;
+            if (l != null) l.setValue(data.research_lvls.getOrDefault(name, def_value));
+            JSpinner w = research_w.get(name);
+            if (w != null) w.setValue(data.research_weight.getOrDefault(name, 0.0));
+        }
         showResult();
+        Stats.setCaretPosition(0);
+        Result.setCaretPosition(0);
+        Result_skills.setCaretPosition(0);
+        Result_lvling.setCaretPosition(0);
     }
 
     private void showResult() {
@@ -2188,20 +2155,116 @@ public class UserForm extends JFrame {
         Result_lvling.setText(simulation.lvling_info);
     }
 
-    public JSpinner createCustomSpinner(double start, double min, double max, double step) {
+    private JSpinner createCustomSpinner(double start, double min, double max, double step) {
         JSpinner spinner = new JSpinner(new SpinnerNumberModel(start, min, max, step));
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "####.####");
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "#.##");
         DecimalFormat format = editor.getFormat();
         format.setDecimalFormatSymbols(dfs);
         spinner.setEditor(editor);
         return spinner;
     }
 
-    public JSpinner createCustomSpinner(int start, int min, int max, int step) {
+    private int addResearch(String name, int x, int y) {
+        JLabel label = new JLabel(name);
+        gbc = new GridBagConstraints();
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(0, 5, 0, 5);
+        LeftPanel.add(label, gbc);
+        double start_value = 0;
+        double min_value = 0;
+        double max_value = maxResearchLvl(name);
+        if (name.equals("Research slot")) {
+            start_value = 1;
+        }
+        if (name.equals("Max CL")) {
+            min_value = -30;
+        }
+        JSpinner spinner_lvl = createCustomSpinner(start_value, min_value, max_value, 1.0);
+        spinner_lvl.setName(name);
+        research_l.put(name, spinner_lvl);
+        if (name.equals("Max CL")) spinner_lvl.setToolTipText("Also used as your max CL for training set bonus");
+        gbc = new GridBagConstraints();
+        gbc.gridx = x + 1;
+        gbc.gridy = y;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        LeftPanel.add(spinner_lvl, gbc);
+        min_value = 0;
+        max_value = 999;
+        if (name.equals("Research slot")) {
+            min_value = -15;
+        }
+        JSpinner spinner_w = createCustomSpinner(0, min_value, max_value, 1.0);
+        spinner_w.setName(name + "_w");
+        research_w.put(name, spinner_w);
+        if (name.equals("Research slot")) {
+            spinner_w.setToolTipText("+1 slot if current RP > hours(this) * additional cost. \n" +
+                    "Negative numbers will prioritize this up to -weight lvl");
+        }
+        if (name.equals("Research speed")) spinner_w.setToolTipText("Won't be researched if rp < 1000");
+        gbc = new GridBagConstraints();
+        gbc.gridx = x + 2;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        LeftPanel.add(spinner_w, gbc);
+        return y + 1;
+    }
+
+    public ArrayList<String> getAllResearches() {
+        return new ArrayList<>(Arrays.asList(
+                "Research slot",
+                "Research spd",
+                "Max CL",
+                "Exp gain",
+                "Core drop",
+                "Core quality",
+                "Sidecraft spd",
+                "Crafting spd",
+                "Alchemy spd",
+                "Smithing spd",
+                "Crafting exp",
+                "Alchemy exp",
+                "Smithing exp",
+                "E. Quality mult",
+                "E. Quality min",
+                "Drop rate",
+                "Equip HP",
+                "Equip Atk",
+                "Equip Def",
+                "Equip Int",
+                "Equip Res",
+                "Equip Hit",
+                "Equip Spd",
+                "God HP",
+                "God Atk",
+                "God Mystic",
+                "God Pet",
+                "God BS",
+                "God CS",
+                "God MS",
+                "God SD",
+                "God MV"
+        ));
+    }
+
+    public static double maxResearchLvl(String name) {
+        return switch(name) {
+            case "Research slot" -> 15;
+            case "Core quality" -> 800;
+            case "Max CL" -> 80;
+            case "Sidecraft spd" -> 50;
+            case "E. Quality min" -> 100;
+            default -> 999;
+        };
+    }
+
+    private JSpinner createCustomSpinner(int start, int min, int max, int step) {
         return new JSpinner(new SpinnerNumberModel(start, min, max, step));
     }
 
-    public JSpinner createLvlSpinner() {
+    private JSpinner createLvlSpinner() {
         return createCustomSpinner(0, 0, 20, 1);
     }
 

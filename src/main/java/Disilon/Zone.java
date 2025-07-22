@@ -7,7 +7,10 @@ import java.util.LinkedHashMap;
 import static Disilon.Main.random;
 
 public enum Zone {
-    z4("Wraith/Ghoul"),
+    z1("Slime"),
+    z2("Slime2/Imp/Goblin"),
+    z3("Goblin2/Imp2/Ghoul"),
+    z4("Wraith/Ghoul2"),
     z5("Astaroth/Shinigami"),
     z6("Tengu"),
     z7("Amon"),
@@ -63,6 +66,8 @@ public enum Zone {
                 enemies.add(e);
             } else {
                 int number = random.nextInt(max_enemies - 1, max_enemies + 1);
+                if (this == z2) number = 1;
+                if (this == z3) random.nextInt(1, 2);
                 for (int i = 0; i < number; i++) {
                     Enemy e = new Enemy();
 //                if (this == z8) {
@@ -110,6 +115,9 @@ public enum Zone {
 
     public double getTime_to_respawn() {
         return switch (this) {
+            case z1 -> 2.5;
+            case z2 -> 3;
+            case z3 -> 3.5;
             case z4 -> 4;
             case z5 -> 4.5;
             case z6, z7, z8, z9 -> 5;
@@ -150,10 +158,23 @@ public enum Zone {
     }
 
     public double getMaxEnemyHp() {
-        return enemies.stream().mapToDouble(Enemy::getHp).max().getAsDouble();
+        double max = 0;
+        for (Enemy e : enemies) {
+            if (e.getHp() > max) max = e.getHp();
+        }
+        return max;
     }
 
     public int getEnemyBuffCount() {
         return enemies.stream().mapToInt(Enemy::buff_count).sum();
+    }
+
+    public double getZoneTimeCap() {
+        return switch (this) {
+            case z14 -> 30;
+            case z15 -> 20;
+            case z16 -> 60;
+            default -> -1;
+        };
     }
 }

@@ -65,10 +65,8 @@ public class Setup implements Serializable {
     String result_skills;
     String result_lvling;
     String stats;
-    String enemy;
     Zone zone;
     String gameversion;
-    int reroll;
     double milestone;
     int crafting_lvl;
     int alchemy_lvl;
@@ -78,17 +76,21 @@ public class Setup implements Serializable {
     int simulations;
     double sim_hours;
     int sim_cl;
+    int rp_balance;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
-    HashMap<String, Integer> research_lvls;
+    HashMap<String, Double> research_lvls;
+    HashMap<String, Double> research_weight;
 
     public Setup() {
         this.passives_lvls = new HashMap<>();
         this.actives_lvls = new HashMap<>();
         this.research_lvls = new HashMap<>();
+        this.research_weight = new HashMap<>();
+        this.rp_balance = 0;
         this.playerclass = "Sniper";
-        this.ml = 140;
-        this.cl = 75;
+        this.ml = 106;
+        this.cl = 45;
         this.potion1 = "HP T3";
         this.potion1_t = 50;
         this.potion2 = "MP T3";
@@ -143,10 +145,8 @@ public class Setup implements Serializable {
         this.necklace_lvl = 0;
         this.result_essential = "Click simulate to get sim data";
         this.stats = "Click simulate to calculate stats";
-        this.enemy = "";
         this.zone = Zone.z9;
-        this.gameversion = "1568";
-        this.reroll = 0;
+        this.gameversion = "1573";
         this.milestone = 162.5;
         this.crafting_lvl = 20;
         this.alchemy_lvl = 20;
@@ -590,14 +590,6 @@ public class Setup implements Serializable {
         this.stats = stats;
     }
 
-    public String getEnemy() {
-        return enemy;
-    }
-
-    public void setEnemy(String enemy) {
-        this.enemy = enemy;
-    }
-
     public int getSimulations() {
         return simulations;
     }
@@ -612,14 +604,6 @@ public class Setup implements Serializable {
 
     public void setGameversion(String gameversion) {
         this.gameversion = gameversion;
-    }
-
-    public int getReroll() {
-        return reroll;
-    }
-
-    public void setReroll(int reroll) {
-        this.reroll = reroll;
     }
 
     public double getMilestone() {
@@ -750,11 +734,27 @@ public class Setup implements Serializable {
         this.skill4_s = skill4_s;
     }
 
-    public HashMap<String, Integer> getResearch_lvls() {
+    public HashMap<String, Double> getResearch_lvls() {
         return research_lvls;
     }
 
-    public void setResearch_lvls(HashMap<String, Integer> research_lvls) {
+    public void setResearch_lvls(HashMap<String, Double> research_lvls) {
         this.research_lvls = research_lvls;
+    }
+
+    public int getRp_balance() {
+        return rp_balance;
+    }
+
+    public void setRp_balance(int rp_balance) {
+        this.rp_balance = rp_balance;
+    }
+
+    public HashMap<String, Double> getResearch_weight() {
+        return research_weight;
+    }
+
+    public void setResearch_weight(HashMap<String, Double> research_weight) {
+        this.research_weight = research_weight;
     }
 }

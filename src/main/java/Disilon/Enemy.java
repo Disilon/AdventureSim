@@ -55,8 +55,10 @@ public class Enemy extends Actor {
             false, false);
     ActiveSkill charge_attack = new ActiveSkill("Charge Attack", 1, 270, 330, 1, 0, 2.5, 2, Scaling.atk, Element.phys,
             false, false);
-    ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
+    ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 0, 0.5, 0.5, Scaling.atk, Element.none,
             false,false);
+    ActiveSkill qh = new ActiveSkill("Quick Hit", 1, 76.5, 93.5, 1, 0, 0.7, 0.7, Scaling.atk, Element.phys, false,
+            false);
 
     ActiveSkill charge_up = new ActiveSkill("Charge Up", 1, 0, 0, 0, 0, 2.2, 2.2, Scaling.atk, Element.none, false,
             false);
@@ -74,7 +76,6 @@ public class Enemy extends Actor {
 
     double strength = 1;
     double base_lvl;
-    double core_mult; //currently unused
     String previous_spell = "";
 
     public Enemy() {
@@ -146,7 +147,6 @@ public class Enemy extends Actor {
                 enemy_skills.add(waterpunch);
                 enemy_skills.add(killingstrike);
                 enemy_skills.add(tsunami);
-                core_mult = 45;
             }
             case "Lamia" -> {
                 base_lvl = 100;
@@ -164,11 +164,10 @@ public class Enemy extends Actor {
                 enemy_skills.add(ball);
                 enemy_skills.add(pillar);
                 enemy_skills.add(explosion);
-                core_mult = 50;
             }
             case "Shax" -> {
                 base_lvl = 100;
-                base_hp_max = 19200 / base_lvl;
+                base_hp_max = 19200 / base_lvl / 1.02; //to make hunter damage in z10 closer to in-game
                 if (Main.game_version < 1541) {
                     base_exp = 9200 / base_lvl;
                 } else {
@@ -191,7 +190,6 @@ public class Enemy extends Actor {
                 enemy_skills.add(compression);
                 counter_dodge = true;
                 counter_heal = true;
-                core_mult = 40;
             }
             case "Tyrant" -> {
                 base_lvl = 125;
@@ -209,7 +207,6 @@ public class Enemy extends Actor {
                 base_speed = 625 / base_lvl;
                 magic_res = 0.5;
                 enemy_skills.add(soulslash);
-                core_mult = 100;
             }
             case "Fairy" -> {
                 base_lvl = 150;
@@ -228,7 +225,6 @@ public class Enemy extends Actor {
                 base_speed = 750 / base_lvl;
                 enemy_skills.add(charge_up);
                 enemy_skills.add(arrow_light);
-                core_mult = 125; //todo: find correct value
             }
             case "Raum" -> {
                 base_lvl = 175;
@@ -244,28 +240,35 @@ public class Enemy extends Actor {
                 base_res = 2100 / base_lvl;
                 base_hit = 3500 / base_lvl;
                 base_speed = 1225 / base_lvl;
-                dark_res = 0.5;
+                if (Main.game_version < 1573) {
+                    dark_res = 0.5;
+                }
                 enemy_skills.add(rapidstabs);
                 counter_dodge = true;
-                counter_strike = 0.3;
-                core_mult = 150;
+                counter_strike = 0.25;
             }
             case "Asura" -> {
                 base_lvl = 200;
                 base_hp_max = 150000 / base_lvl;
                 base_exp = 42000 / base_lvl;
-                base_atk = 1560 / base_lvl;
                 base_def = 1000 / base_lvl;
-                base_int = 1560 / base_lvl;
+                base_int = 1600 / base_lvl;
                 base_res = 1000 / base_lvl;
                 base_hit = 1800 / base_lvl;
-                base_speed = 1700 / base_lvl;
-                fire_res = 0.1;
-                phys_res = -0.2;
+                if (Main.game_version < 1566) {
+                    base_atk = 1700 / base_lvl;
+                    base_speed = 1600 / base_lvl;
+                    fire_res = 0.25;
+                    phys_res = -0.3;
+                } else {
+                    base_atk = 1560 / base_lvl;
+                    base_speed = 1700 / base_lvl;
+                    fire_res = 0.1;
+                    phys_res = -0.2;
+                }
                 enemy_skills.add(holy_slash);
                 enemy_skills.add(holy_power_slash);
                 enemy_skills.add(sense);
-                core_mult = 165;
             }
             case "Devil" -> {
                 base_lvl = 90;
@@ -282,7 +285,6 @@ public class Enemy extends Actor {
                 light_res = -0.5;
                 enemy_skills.add(poison);
                 enemy_skills.add(slash);
-                core_mult = 18;
             }
             case "Tengu" -> {
                 base_lvl = 50;
@@ -299,7 +301,6 @@ public class Enemy extends Actor {
                 dodge_mult = 1.25;
                 enemy_skills.add(bash);
                 enemy_skills.add(da);
-                core_mult = 10;
             }
             case "Amon" -> {
                 base_lvl = 50;
@@ -315,7 +316,6 @@ public class Enemy extends Actor {
                 water_res = 1;
                 enemy_skills.add(mm);
                 enemy_skills.add(eblast);
-                core_mult = 10;
             }
             case "Akuma" -> {
                 base_lvl = 50;
@@ -331,7 +331,6 @@ public class Enemy extends Actor {
                 fire_res = 0.5;
                 enemy_skills.add(dp);
                 enemy_skills.add(as);
-                core_mult = 12;
             }
             case "Dummy" -> {
                 base_lvl = 100;
@@ -359,7 +358,6 @@ public class Enemy extends Actor {
                 fire_res = 0.6;
                 enemy_skills.add(blind);
                 enemy_skills.add(poison);
-                core_mult = 9;
             }
             case "Shinigami" -> {
                 base_lvl = 40;
@@ -375,7 +373,6 @@ public class Enemy extends Actor {
                 dark_res = 0.6;
                 enemy_skills.add(killingstrike);
                 enemy_skills.add(backstab);
-                core_mult = 9;
             }
             case "Wraith" -> {
                 base_lvl = 30;
@@ -392,9 +389,8 @@ public class Enemy extends Actor {
                 light_res = -0.5;
                 enemy_skills.add(attack);
                 enemy_skills.add(mark);
-                core_mult = 8;
             }
-            case "Ghoul" -> {
+            case "Ghoul2" -> {
                 base_lvl = 30;
                 base_hp_max = 1950 / base_lvl;
                 base_exp = 120 / base_lvl;
@@ -406,7 +402,97 @@ public class Enemy extends Actor {
                 base_speed = 45 / base_lvl;
                 light_res = -0.5;
                 enemy_skills.add(charge_attack);
-                core_mult = 8;
+            }
+            case "Slime" -> {
+                base_lvl = 1;
+                base_hp_max = 18 / base_lvl;
+                base_exp = 3 / base_lvl;
+                base_atk = 3 / base_lvl;
+                base_def = 2 / base_lvl;
+                base_int = 3 / base_lvl;
+                base_res = 7 / base_lvl;
+                base_hit = 5 / base_lvl;
+                base_speed = 2 / base_lvl;
+                water = 2;
+                enemy_skills.add(waterpunch);
+            }
+            case "Slime2" -> {
+                base_lvl = 10;
+                base_hp_max = 250 / base_lvl;
+                base_exp = 30 / base_lvl;
+                base_atk = 15 / base_lvl;
+                base_def = 10 / base_lvl;
+                base_int = 15 / base_lvl;
+                base_res = 35 / base_lvl;
+                base_hit = 25 / base_lvl;
+                base_speed = 10 / base_lvl;
+                water = 10;
+                enemy_skills.add(waterpunch);
+            }
+            case "Imp" -> {
+                base_lvl = 10;
+                base_hp_max = 300 / base_lvl;
+                base_exp = 25 / base_lvl;
+                base_atk = 10 / base_lvl;
+                base_def = 35 / base_lvl;
+                base_int = 25 / base_lvl;
+                base_res = 15 / base_lvl;
+                base_hit = 20 / base_lvl;
+                base_speed = 15 / base_lvl;
+                base_fire = 10 / base_lvl;
+                enemy_skills.add(ball);
+            }
+            case "Goblin" -> {
+                base_lvl = 10;
+                base_hp_max = 350 / base_lvl;
+                base_exp = 30 / base_lvl;
+                base_atk = 25 / base_lvl;
+                base_def = 20 / base_lvl;
+                base_int = 10 / base_lvl;
+                base_res = 15 / base_lvl;
+                base_hit = 20 / base_lvl;
+                base_speed = 25 / base_lvl;
+                enemy_skills.add(poison);
+                enemy_skills.add(qh);
+            }
+            case "Imp2" -> {
+                base_lvl = 20;
+                base_hp_max = 600 / base_lvl;
+                base_exp = 50 / base_lvl;
+                base_atk = 20 / base_lvl;
+                base_def = 70 / base_lvl;
+                base_int = 50 / base_lvl;
+                base_res = 30 / base_lvl;
+                base_hit = 40 / base_lvl;
+                base_speed = 30 / base_lvl;
+                base_fire = 20 / base_lvl;
+                enemy_skills.add(ball);
+            }
+            case "Goblin2" -> {
+                base_lvl = 20;
+                base_hp_max = 700 / base_lvl;
+                base_exp = 60 / base_lvl;
+                base_atk = 50 / base_lvl;
+                base_def = 40 / base_lvl;
+                base_int = 20 / base_lvl;
+                base_res = 30 / base_lvl;
+                base_hit = 40 / base_lvl;
+                base_speed = 50 / base_lvl;
+                enemy_skills.add(poison);
+                enemy_skills.add(qh);
+            }
+            case "Ghoul" -> {
+                base_lvl = 20;
+                base_hp_max = 1300 / base_lvl;
+                base_exp = 80 / base_lvl;
+                base_atk = 70 / base_lvl;
+                base_def = 50 / base_lvl;
+                base_int = 20 / base_lvl;
+                base_res = 20 / base_lvl;
+                base_hit = 40 / base_lvl;
+                base_speed = 30 / base_lvl;
+                light_res = -0.5;
+                enemy_skills.add(charge_attack);
             }
         }
         //reroll();
@@ -443,6 +529,7 @@ public class Enemy extends Actor {
     }
 
     public ActiveSkill rollAttack(Player player) {
+        if (enemy_skills.isEmpty()) return weak_a;
         double roll = random.nextDouble() * 100;
         switch (name) {
             case "Dagon" -> {

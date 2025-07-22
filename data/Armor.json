@@ -34,6 +34,29 @@
             "LIGHT_RES": -2,
             "DARK_RES": 4,
             "SET": "Dark"
+		}, "Hunting Hood": {
+            "DEF": 6,
+            "RES": 6,
+            "FIRE_RES": 2,
+            "WIND_RES": 2,
+			"WATER_RES": 2,
+            "EARTH_RES": 2,
+            "SET": "Hunter"
+		}, "Training Helmet": {
+            "DEF": 10,
+            "RES": 10,
+            "SPD": -10,
+            "PHY_RES": 1,
+            "SET": "Training"
+		}, "Aquatic Helmet": {
+            "DEF": 24,
+            "RES": 24,
+			"HIT": -8,
+            "SPD": -6,
+            "PHY_RES": 2,
+			"WATER_RES": 2,
+			"WATER": 10,
+            "SET": "Aquatic"
         }, "Metal Helmet": {
             "DEF": 7,
             "RES": 4,
@@ -90,6 +113,26 @@
             "DARK": 10,
             "DARK_RES": 2,
             "SET": "Dark"
+		}, "Hunting Boots": {
+            "DEF": 6,
+            "RES": 6,
+            "FIRE_RES": 2,
+            "WIND_RES": 2,
+			"WATER_RES": 2,
+            "EARTH_RES": 2,
+            "SET": "Hunter"
+		}, "Training Boots": {
+            "DEF": 10,
+            "RES": 10,
+            "SPD": -10,
+            "PHY_RES": 1,
+            "SET": "Training"
+		}, "Aquatic Boots": {
+            "DEF": 8,
+            "RES": 12,
+            "SPD": 8,
+			"WATER": 15,
+            "SET": "Aquatic"
         }, "Metal Boots": {
             "DEF": 2,
             "RES": 2,
@@ -137,6 +180,29 @@
             "DARK": 60,
             "LIGHT_RES": -4,
             "SET": "Dark"
+		}, "Hunting Bracers": {
+            "DEF": 6,
+            "RES": 6,
+            "FIRE_RES": 2,
+            "WIND_RES": 2,
+			"WATER_RES": 2,
+            "EARTH_RES": 2,
+            "SET": "Hunter"
+		}, "Training Bracers": {
+            "DEF": 10,
+            "RES": 10,
+            "SPD": -10,
+            "PHY_RES": 1,
+            "SET": "Training"
+		}, "Aquatic Bracers": {
+            "DEF": 10,
+            "RES": 10,
+			"HIT": 10,
+            "SPD": -4,
+            "PHY_RES": 1,
+			"WATER_RES": 1,
+			"WATER": 30,
+            "SET": "Aquatic"
         }, "Metal Bracers": {
             "DEF": 2,
             "RES": 2,
@@ -194,6 +260,28 @@
 			"DARK": 20,
             "DARK_RES": 2,
             "SET": "Dark"
+		}, "Hunting Pants": {
+            "DEF": 8,
+            "RES": 8,
+            "FIRE_RES": 2,
+            "WIND_RES": 2,
+			"WATER_RES": 2,
+            "EARTH_RES": 2,
+            "SET": "Hunter"
+		}, "Training Pants": {
+            "DEF": 14,
+            "RES": 14,
+            "SPD": -10,
+            "PHY_RES": 2,
+            "SET": "Training"
+		}, "Aquatic Pants": {
+            "DEF": 14,
+            "RES": 14,
+            "SPD": -6,
+            "PHY_RES": 1,
+			"WATER_RES": 1,
+			"WATER": 15,
+            "SET": "Aquatic"
         }, "Metal Pants": {
             "DEF": 5,
             "RES": 2,
@@ -254,6 +342,30 @@
             "LIGHT_RES": -6,
             "DARK_RES": 6,
             "SET": "Dark"
+		}, "Hunting Shirt": {
+            "DEF": 14,
+            "RES": 14,
+            "FIRE_RES": 2,
+            "WIND_RES": 2,
+			"WATER_RES": 2,
+            "EARTH_RES": 2,
+            "SET": "Hunter"
+		}, "Training Mail": {
+            "DEF": 30,
+            "RES": 30,
+			"HIT": -10,
+            "SPD": -10,
+            "PHY_RES": 5,
+            "SET": "Training"
+		}, "Aquatic Chest": {
+            "DEF": 40,
+            "RES": 40,
+			"HIT": -6,
+            "SPD": -8,
+            "PHY_RES": 3.5,
+			"WATER_RES": 3.5,
+			"WATER": 30,
+            "SET": "Aquatic"
         }, "Metal Chest": {
             "DEF": 12,
             "RES": 4,
