@@ -158,7 +158,11 @@ public enum Zone {
     }
 
     public double getMaxEnemyHp() {
-        return enemies.stream().mapToDouble(Enemy::getHp).max().getAsDouble();
+        double max = 0;
+        for (Enemy e : enemies) {
+            if (e.getHp() > max) max = e.getHp();
+        }
+        return max;
     }
 
     public int getEnemyBuffCount() {

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
 import static Disilon.Main.minIfNotZero;
+import static Disilon.UserForm.maxResearchLvl;
 
 public class Player extends Actor {
     ActiveSkill hide = new ActiveSkill("Hide", 1, 0.3, 0, 0, 5, 0.5, 0.5, Scaling.atk, Element.none, false, false);
@@ -116,6 +117,7 @@ public class Player extends Actor {
     double rp_balance;
     double old_rp;
     double research_slots_stat;
+    String previous_research;
 
     public Player() {
         addSkillEffects();
@@ -932,51 +934,62 @@ public class Player extends Actor {
         double r_spd = 1 + 0.01 * research_lvls.getOrDefault("Research spd", 0.0).intValue();
         int can_sustain = Math.min(max_slots, calc_max_research_slots(rp_balance / time * 3600 / r_spd));
         can_sustain = Math.min(can_sustain, (int) rp_balance / 10); //to make sure we don't swing from 0 to max slots
-
+        StringBuilder sb = new StringBuilder();
         int using = 0;
-        if (max_slots < 15 && research_weight.getOrDefault("Research slot", 0.0) > 0) {
+        if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) > 0) {
             if (rp_balance > (research_slots_base_cost(max_slots + 1) - research_slots_base_cost(can_sustain)) * research_weight.get("Research slot")) {
                 research("Research slot", time * r_spd);
                 if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
                 using++;
+                sb.append("Research slot; ");
             }
         }
-        if (max_slots < 15 && research_weight.getOrDefault("Research slot", 0.0) < 0) {
-            if (max_slots < -1 * research_weight.getOrDefault("Research slot", 0.0)) {
+        if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) < 0) {
+            if (max_slots < -1 * research_weight.getOrDefault("Research slot", 0.0).intValue()) {
                 research("Research slot", time * r_spd);
                 if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
                 using++;
+                sb.append("Research slot; ");
             }
         }
         HashMap<String, Double> weight_for_lvl = new HashMap<>(research_weight);
         for (Map.Entry<String, Double> entry : weight_for_lvl.entrySet()) {
-            entry.setValue(entry.getValue() * 36000 / research_time(entry.getKey()));
+            if (entry.getValue() > 0 && research_lvls.getOrDefault(entry.getKey(), 0.0).intValue() < maxResearchLvl(entry.getKey())) {
+                entry.setValue(entry.getValue() * 36000 / research_time(entry.getKey()));
+            } else {
+                entry.setValue(0.0);
+            }
         }
         LinkedHashMap<String, Double> sorted = weight_for_lvl.entrySet().stream()
                 .filter(e -> !e.getKey().equals("Research slot"))
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-        StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Double> entry : sorted.entrySet()) {
             if (entry.getValue() > 0 && can_sustain > using && (!entry.getKey().equals("Research spd") || rp_balance > 1000)) {
-                sb.append(entry.getKey()).append(" ");
+                sb.append(entry.getKey()).append("; ");
                 research(entry.getKey(), time * r_spd);
                 using++;
             }
         }
         rp_balance -= research_slots_base_cost(using) * time / 3600 * r_spd;
         research_slots_stat += using * time;
-//        System.out.println(sb);
+        if (!sb.toString().equals(previous_research)) {
+            previous_research = sb.toString();
+//            System.out.println(sb);
+        }
     }
 
     public void research(String name, double time) {
+        int old_lvl = research_lvls.getOrDefault(name, 0.0).intValue();
+        int new_lvl = (int) (research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
         if (name.equals("Research slot")) {
-            int old_lvl = research_lvls.getOrDefault(name, 0.0).intValue();
-            int new_lvl = (int) (research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
-            if (new_lvl > old_lvl) {
+            if (new_lvl > old_lvl && research_weight.getOrDefault(name, 0.0) > 0) {
                 research_weight.put(name, research_weight.getOrDefault(name, 0.0) * 3); //we don't want to chain slots
             }
         }
+//        if (new_lvl > old_lvl) {
+//            System.out.println(name + " new_lvl=" + new_lvl);
+//        }
         research_lvls.put(name, research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
     }
 
@@ -985,13 +998,36 @@ public class Player extends Actor {
         double base_time = switch(name) {
             case "Research slot" -> 259200;
             case "Research spd" -> 10800;
-            case "SideSpd" -> 36000;
             case "Max CL" -> 14400;
-            case "Exp" -> 14400;
-            case "CoreDrop" -> 14400;
-            case "CoreQuality" -> 1800;
-            case "CraftSpd" -> 14400;
-            case "AlchemySpd" -> 14400;
+            case "Exp gain" -> 14400;
+            case "Core drop" -> 14400;
+            case "Core quality" -> 1800;
+            case "Sidecraft spd" -> 36000;
+            case "Crafting spd" -> 14400;
+            case "Alchemy spd" -> 14400;
+            case "Smithing spd" -> 14400;
+            case "Crafting exp" -> 7200;
+            case "Alchemy exp" -> 7200;
+            case "Smithing exp" -> 7200;
+            case "E. Quality mult" -> 21600;
+            case "E. Quality min" -> 28800;
+            case "Drop rate" -> 14400;
+            case "Equip HP" -> 7200;
+            case "Equip Atk" -> 14400;
+            case "Equip Def" -> 3600;
+            case "Equip Int" -> 18000;
+            case "Equip Res" -> 7200;
+            case "Equip Hit" -> 7200;
+            case "Equip Spd" -> 14400;
+            case "God HP" -> 3600;
+            case "God Atk" -> 3600;
+            case "God Mystic" -> 3600;
+            case "God Pet" -> 14400;
+            case "God BS" -> 36000;
+            case "God CS" -> 54000;
+            case "God MS" -> 54000;
+            case "God SD" -> 54000;
+            case "God MV" -> 28800;
             default -> 0;
         };
         if (name.equals("Research slot")) {

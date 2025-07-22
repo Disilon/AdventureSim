@@ -462,13 +462,13 @@ public class Actor {
         for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
             Equipment item = slot.getValue();
             if (item.name != null && !item.name.equals("None")) {
-                gear_atk += item.atk * (1 + 0.01 * research_lvls.getOrDefault("GearAtk", 0.0).intValue());
-                gear_def += item.def * (1 + 0.01 * research_lvls.getOrDefault("GearDef", 0.0).intValue());
-                gear_hit += item.hit * (1 + 0.01 * research_lvls.getOrDefault("GearHit", 0.0).intValue());
-                gear_speed += item.speed * (1 + 0.01 * research_lvls.getOrDefault("GearSpd", 0.0).intValue());
-                gear_int += item.intel * (1 + 0.01 * research_lvls.getOrDefault("GearInt", 0.0).intValue());
-                gear_res += item.resist * (1 + 0.01 * research_lvls.getOrDefault("GearRes", 0.0).intValue());
-                gear_hp += item.hp * (1 + 0.01 * research_lvls.getOrDefault("GearHp", 0.0).intValue());
+                gear_atk += item.atk * (1 + 0.01 * research_lvls.getOrDefault("Equip Atk", 0.0).intValue());
+                gear_def += item.def * (1 + 0.01 * research_lvls.getOrDefault("Equip Def", 0.0).intValue());
+                gear_hit += item.hit * (1 + 0.01 * research_lvls.getOrDefault("Equip Hit", 0.0).intValue());
+                gear_speed += item.speed * (1 + 0.01 * research_lvls.getOrDefault("Equip Spd", 0.0).intValue());
+                gear_int += item.intel * (1 + 0.01 * research_lvls.getOrDefault("Equip Int", 0.0).intValue());
+                gear_res += item.resist * (1 + 0.01 * research_lvls.getOrDefault("Equip Res", 0.0).intValue());
+                gear_hp += item.hp * (1 + 0.01 * research_lvls.getOrDefault("Equip Hp", 0.0).intValue());
                 gear_water += item.water;
                 gear_fire += item.fire;
                 gear_earth += item.earth;
@@ -943,7 +943,7 @@ public class Actor {
     }
 
     public double getExp_mult() {
-        return exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp", 0.0).intValue());
+        return exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp gain", 0.0).intValue());
     }
 
     public void setExp_mult(double exp_mult) {

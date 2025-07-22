@@ -125,9 +125,8 @@ public class ActiveSkill {
     }
 
     public void startCastPlayer(Actor attacker) {
-        Zone zone = attacker.zone;
-        double speed_mult = Math.clamp((zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
-        cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + zone.stealthDelay();
+        double speed_mult = Math.clamp((attacker.zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
+        cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + attacker.zone.stealthDelay();
         if (attacker.isAmbushing()) cast = Math.max(0.01, cast - 5);
         delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
         used_in_rotation++;
@@ -452,8 +451,8 @@ public class ActiveSkill {
         if (name.equals("Back Stab") && !defender.isSmoked()) hit_chance *= 0.5;
         hit_chance_sum += Math.min(hit_chance, 1);
         if (defender.zone != null) {
-            defender.zone.stats.incrementHit(attacker, this, hit_chance);
-            if (!attacker.debuffs.isEmpty()) defender.zone.stats.incrementUsedDebuffed(attacker, this, 1);
+            defender.zone.stats.incrementHit(attacker.getName(), name, hit_chance);
+            if (!attacker.debuffs.isEmpty()) defender.zone.stats.incrementUsedDebuffed(attacker.getName(), name, 1);
         }
         if (!attacker.debuffs.isEmpty()) used_debuffed++;
         if (hit_chance < 1 && attacker.cl > 0) {
@@ -603,7 +602,7 @@ public class ActiveSkill {
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         dmg_sum += total;
         if (defender.zone != null) {
-            defender.zone.stats.incrementDmg(attacker, this, total);
+            defender.zone.stats.incrementDmg(attacker.getName(), name, total);
         }
         if (name.equals("Careful Shot")) {
             total = Math.min(total, defender.getHp());
@@ -625,7 +624,7 @@ public class ActiveSkill {
         dmg = Math.max(1, dmg);
         ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
         if (attacker.zone != null) {
-            attacker.zone.stats.incrementStats(defender, skill, dmg, 1, 0, 1, 1, 0);
+            attacker.zone.stats.incrementStats(defender.getName(), skill.name, dmg, 1, 0, 1, 1, 0);
         } else {
             skill.used += 1;
             skill.hits_total += 1;
@@ -664,7 +663,7 @@ public class ActiveSkill {
 //            System.out.println(attacker.name + ": " + name + " debuff chance: " + hit_chance);
             debuff_chance_sum += hit_chance;
             if (defender.zone != null) {
-                defender.zone.stats.incrementDebuff(attacker, this, hit_chance);
+                defender.zone.stats.incrementDebuff(attacker.getName(), name, hit_chance);
             }
         }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
@@ -680,7 +679,7 @@ public class ActiveSkill {
                 default -> 0;
             };
             if (defender.zone != null) {
-                defender.zone.stats.incrementDot(attacker, this, duration * dmg);
+                defender.zone.stats.incrementDot(attacker.getName(), name, duration * dmg);
             }
             defender.debuffs.add(new Debuff(this.debuff_name, duration, dmg, debuff_effect));
         }

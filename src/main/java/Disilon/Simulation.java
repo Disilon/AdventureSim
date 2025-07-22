@@ -51,6 +51,7 @@ public class Simulation {
         double death_time = 0;
         double prepare_time = 0;
         double crafting_time = 0;
+        double sidecraft_time = 0;
         double min_time = 9999;
         double max_time = 0;
         int total_casts = 0;
@@ -294,7 +295,8 @@ public class Simulation {
 //                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
                                 } else {
                                     enemy.casting.use(enemy);
-                                    player.zone.stats.incrementStats(enemy, enemy.casting, 0, 0, 0, 1, 0, 0);
+                                    player.zone.stats.incrementStats(enemy.getName(), enemy.casting.name, 0,
+                                            0, 0, 1, 0,0);
                                 }
                                 enemy.casting.pay_manacost(enemy);
                             }
@@ -393,16 +395,40 @@ public class Simulation {
                 player.levelPassives(time);
                 player.tick_research(time);
             }
-            int research_craft = player.research_lvls.getOrDefault("CraftSpd", 0.0).intValue();
-            int research_alch = player.research_lvls.getOrDefault("AlchemySpd", 0.0).intValue();
+            int research_craft = player.research_lvls.getOrDefault("Crafting spd", 0.0).intValue();
+            int research_alch = player.research_lvls.getOrDefault("Alchemy spd", 0.0).intValue();
+            double side_craft_spd = 0;
+            if (game_version >= 1573) {
+                if (crafting_lvl >= 10 && alchemy_lvl >= 10) {
+                    side_craft_spd = 0.05 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
+                }
+                if (crafting_lvl >= 20 && alchemy_lvl >= 20) side_craft_spd += 0.05;
+                if (crafting_lvl >= 30 && alchemy_lvl >= 30) side_craft_spd += 0.1;
+                if (crafting_lvl >= 40 && alchemy_lvl >= 40) side_craft_spd += 0.05;
+                if (crafting_lvl >= 50 && alchemy_lvl >= 50) side_craft_spd += 0.05;
+                if (crafting_lvl >= 60 && alchemy_lvl >= 60) side_craft_spd += 0.05;
+                if (crafting_lvl >= 70 && alchemy_lvl >= 70) side_craft_spd += 0.05;
+                if (crafting_lvl >= 80 && alchemy_lvl >= 80) side_craft_spd += 0.05;
+                if (crafting_lvl >= 90 && alchemy_lvl >= 90) side_craft_spd += 0.05;
+            } else {
+                if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
+                    side_craft_spd = 0.2 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
+                }
+            }
+            double add_time = 0;
             if (player.potion1 != null) {
-                crafting_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
+                add_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
             }
             if (player.potion2 != null) {
-                crafting_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
+                add_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
             }
             if (player.potion3 != null) {
-                crafting_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
+                add_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
+            }
+            if (add_time > 0 && side_craft_spd > 0) {
+                sidecraft_time += add_time / side_craft_spd;
+            } else {
+                crafting_time += add_time;
             }
             if ((cleared + failed) >= 1000000) end = true;
             switch (sim_type) {
@@ -410,7 +436,7 @@ public class Simulation {
                     if ((cleared + failed) >= sim_limit) end = true;
                 }
                 case 2 -> {
-                    if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
+                    if (side_craft_spd > 0) {
                         if ((total_time + death_time) >= time_limit * 3600) end = true;
                     } else {
                         if ((total_time + death_time + crafting_time) >= time_limit * 3600) end = true;
@@ -436,10 +462,6 @@ public class Simulation {
             result.append(player.potion3.getRecordedData(total_time + death_time));
         }
         if (crafting_time > 0) {
-            if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
-                double side_craft_spd = 0.2 + 0.01 * player.research_lvls.getOrDefault("SideSpd", 0.0).intValue();
-                crafting_time = Math.max(0, crafting_time - (total_time + death_time) * side_craft_spd);
-            }
             result.append("Effective exp/h: ").append(shorthand((exp / (total_time + crafting_time + death_time) * 3600))).append("\n");
         }
         if (player.prepare != null) {
@@ -458,8 +480,9 @@ public class Simulation {
         }
         result.append("Kills/h without deaths: ").append(df2.format(kills / (total_time - ignore_deaths) * 3600)).append(
                 "\n");
-        if (kills_drop > 0) {
-            result.append("Item drop mult: ").append(df2.format((kills + kills_drop) / kills)).append(
+        double item_drop = 1 + 0.01 * player.research_lvls.getOrDefault("Drop rate", 0.0).intValue();
+        if (kills_drop > 0 || item_drop > 1) {
+            result.append("Item drop mult: ").append(df2.format((kills + kills_drop) / kills * item_drop)).append(
                     "\n");
         }
         result.append("Time to clear: ").append(df2.format(min_time)).append("s - ").append(df2.format(max_time));
@@ -495,12 +518,24 @@ public class Simulation {
         skills_log.append(player.zone.stats.getSkillData(cleared + failed));
         result.append("\nSimulations: ").append(cleared).append("\n");
         result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
-        result.append("Time in combat: ").append(Main.secToTime(total_time)).append("\n");
+        result.append("Time in combat: ").append(Main.secToTime(total_time));
+        result.append(" (").append(df2.format(total_time / 3600)).append(" h)\n");
         if (death_time > 0) {
             result.append("Time dead: ").append(Main.secToTime(death_time)).append("\n");
         }
         if (crafting_time > 0) {
             result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
+        }
+        if (sidecraft_time > 0) {
+            result.append("Sidecrafting time: ").append(Main.secToTime(sidecraft_time));
+            result.append(" (").append(df2.format(sidecraft_time/(total_time + crafting_time + death_time) * 100));
+            result.append("%)\n");
+            double diff = (total_time + crafting_time + death_time) - sidecraft_time;
+            if (diff > 0) {
+                result.append("Free sidecrafting time: ").append(df2.format(diff / 3600)).append(" hours\n");
+            } else {
+                result.append("Deficient sidecrafting time: ").append(df2.format(-diff / 3600)).append(" hours\n");
+            }
         }
         long executionTime = (System.nanoTime() - startTime) / 1000000;
 //        result.append("\nSim run time: ").append(executionTime).append("\n");

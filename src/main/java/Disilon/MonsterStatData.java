@@ -28,9 +28,9 @@ public class MonsterStatData {
         }
     }
 
-    public void incrementStats(Actor e, ActiveSkill s, double dmg, double hit_chance, double debuff, int uses, int hits,
+    public void incrementStats(String e, String s, double dmg, double hit_chance, double debuff, int uses, int hits,
                                double dot) {
-        String key = e.getName() + ": " + s.name;
+        String key = e + ": " + s;
         dmg_sum.put(key, dmg_sum.containsKey(key) ? dmg_sum.get(key) + dmg : dmg);
         hit_chance_sum.put(key, hit_chance_sum.containsKey(key) ? hit_chance_sum.get(key) + hit_chance : hit_chance);
         debuff_chance_sum.put(key, debuff_chance_sum.containsKey(key) ? debuff_chance_sum.get(key) + debuff : debuff);
@@ -39,27 +39,34 @@ public class MonsterStatData {
         dot_sum.put(key, dot_sum.containsKey(key) ? dot_sum.get(key) + dot : dot);
     }
 
-    public void incrementDmg(Actor e, ActiveSkill s, double dmg) {
+    public void incrementDmg(String e, String s, double dmg) {
+        String key = e + ": " + s;
         if (dmg > 0) {
-            incrementStats(e, s, dmg, 0, 0, 0, 1, 0);
+            dmg_sum.put(key, dmg_sum.containsKey(key) ? dmg_sum.get(key) + dmg : dmg);
+            hits_total.put(key, hits_total.containsKey(key) ? hits_total.get(key) + 1 : 1);
         }
     }
 
-    public void incrementHit(Actor e, ActiveSkill s, double hit) {
-        incrementStats(e, s, 0, hit, 0, 1, 0, 0);
+    public void incrementHit(String e, String s, double hit) {
+        String key = e + ": " + s;
+        hit_chance_sum.put(key, hit_chance_sum.containsKey(key) ? hit_chance_sum.get(key) + hit : hit);
+        casts_total.put(key, casts_total.containsKey(key) ? casts_total.get(key) + 1 : 1);
     }
 
-    public void incrementDebuff(Actor e, ActiveSkill s, double debuff) {
-        incrementStats(e, s, 0, 0, debuff, 0, 0, 0);
+    public void incrementDebuff(String e, String s, double debuff) {
+        String key = e + ": " + s;
+        debuff_chance_sum.put(key, debuff_chance_sum.containsKey(key) ? debuff_chance_sum.get(key) + debuff : debuff);
     }
 
-    public void incrementDot(Actor e, ActiveSkill s, double dmg) {
-        incrementStats(e, s, 0, 0, 0, 0, 0, dmg);
+    public void incrementDot(String e, String s, double dmg) {
+        String key = e + ": " + s;
+        dot_sum.put(key, dot_sum.containsKey(key) ? dot_sum.get(key) + dmg : dmg);
     }
 
-    public void incrementUsedDebuffed(Actor e, ActiveSkill s, int increment) {
-        String key = e.getName() + ": " + s.name;
-        used_debuffed.merge(key, increment, Integer::sum);
+    public void incrementUsedDebuffed(String e, String s, int increment) {
+        String key = e + ": " + s;
+        used_debuffed.put(key, used_debuffed.containsKey(key) ? used_debuffed.get(key) + increment : increment);
+//        used_debuffed.merge(key, increment, Integer::sum);
     }
 
     public void clear_recorded_data() {
@@ -93,9 +100,9 @@ public class MonsterStatData {
     }
 
     public void addCore(String name, int grade, Player p) {
-        int research = p.research_lvls.get("CoreQuality").intValue();
+        int research = p.research_lvls.get("Core quality").intValue();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
-                + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
+                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue());
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -125,13 +132,14 @@ public class MonsterStatData {
         StringBuilder sb = new StringBuilder();
         for (String name : casts_total.keySet()) {
             if (hit_chance_sum.containsKey(name)) {
-                double average_hit_chance = hit_chance_sum.get(name) / casts_total.get(name);
-                double average_dmg = dmg_sum.get(name) / hits_total.get(name);
-                double average_debuff_chance = debuff_chance_sum.get(name) / hits_total.get(name);
-                double average_dot = dot_sum.get(name) / hits_total.get(name);
-                double average_used = (double) casts_total.get(name) / simulations;
+                double average_hit_chance = hit_chance_sum.getOrDefault(name, 0.0) / casts_total.getOrDefault(name, 0);
+                double average_dmg = dmg_sum.getOrDefault(name, 0.0) / hits_total.getOrDefault(name, 0);
+                double average_debuff_chance =
+                        debuff_chance_sum.getOrDefault(name, 0.0) / hits_total.getOrDefault(name, 0);
+                double average_dot = dot_sum.getOrDefault(name, 0.0) / hits_total.getOrDefault(name, 0);
+                double average_used = (double) casts_total.getOrDefault(name, 0) / simulations;
                 double average_debuffed = used_debuffed.containsKey(name) ?
-                        (double) used_debuffed.get(name) / casts_total.get(name) : 0;
+                        (double) used_debuffed.getOrDefault(name, 0) / casts_total.getOrDefault(name, 0) : 0;
                 sb.append(name).append(" used: ").append(df2.format(average_used)).append(";");
                 if (!name.endsWith("Counter Strike") && !name.endsWith("Counter Dodge")) {
                     sb.append(" hit: ").append((int) (average_hit_chance * 100)).append("%;");
@@ -142,7 +150,7 @@ public class MonsterStatData {
                 sb.append(average_debuffed == 0 ? "" : "; used debuffed: " + (int) (average_debuffed * 100) + "%");
                 sb.append("\n");
             } else {
-                double average_used = (double) casts_total.get(name) / simulations;
+                double average_used = (double) casts_total.getOrDefault(name, 0) / simulations;
                 sb.append(name).append(" used: ").append(df2.format(average_used)).append("\n");
             }
         }
@@ -152,7 +160,7 @@ public class MonsterStatData {
     public String getCoreData(Player p, double time) {
         StringBuilder sb = new StringBuilder();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
-                        + 0.01 * p.research_lvls.getOrDefault("CoreDrop", 0.0).intValue());
+                        + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue());
         for (String name : cores.keySet()) {
             sb.append(name).append(": ");
             boolean first = true;

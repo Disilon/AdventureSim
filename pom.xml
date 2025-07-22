@@ -4,7 +4,7 @@
 
   <groupId>Disilon</groupId>
   <artifactId>AdventureSim</artifactId>
-  <version>1.6</version>
+  <version>1.7</version>
   <packaging>jar</packaging>
 
   <name>AdventureSim</name>
