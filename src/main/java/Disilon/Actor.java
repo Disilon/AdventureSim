@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static Disilon.Main.log;
+
 public class Actor {
     protected String name;
     protected int ml;
@@ -121,7 +123,7 @@ public class Actor {
     protected double def_break = 0;
     protected double res_break = 0;
     protected double weaken = 0;
-    protected double slow = 0;
+    protected double slow = 1;
     protected double mark = 0;
     protected double empower_hp = 0;
     protected double hp_regen = 0;
@@ -202,6 +204,8 @@ public class Actor {
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
     public Zone zone = null;
     public double dot_tracking = 0;
+    public double overkill = 0;
+    public double damage_taken = 0;
     protected boolean holylight_enabled;
     protected boolean prayer_enabled;
     protected boolean aurablade_enabled;
@@ -225,38 +229,53 @@ public class Actor {
         coreBoost.base_bonus2 = 0.125;
     }
 
-    public void tick_debuffs() {
+    public void check_debuffs() {
         smoked = false;
         def_break = 0;
         res_break = 0;
         mark = 0;
         weaken = 0;
-        slow = 0;
+        slow = 1;
+        for (Debuff d : debuffs) {
+            if (Objects.equals(d.name, "Smoke")) smoked = true;
+            if (Objects.equals(d.name, "Defense Break")) def_break = d.effect;
+            if (Objects.equals(d.name, "Res Break")) res_break = d.effect;
+            if (Objects.equals(d.name, "Weaken")) weaken = d.effect;
+            if (Objects.equals(d.name, "Mark")) mark = d.effect;
+            if (Objects.equals(d.name, "Slow")) slow *= 1 - d.effect;
+        }
+    }
+
+    public void tick_debuffs() {
         Iterator<Debuff> debuff_iterator = debuffs.iterator();
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
             if (!Objects.equals(d.name, "Mark")) d.duration--;
-            if (Objects.equals(d.name, "Smoke") && d.duration >= 0) smoked = true;
-            if (Objects.equals(d.name, "Defense Break") && d.duration >= 0) def_break = d.effect;
-            if (Objects.equals(d.name, "Res Break") && d.duration >= 0) res_break = d.effect;
-            if (Objects.equals(d.name, "Weaken") && d.duration >= 0) weaken = d.effect;
-            if (Objects.equals(d.name, "Mark") && d.duration >= 0) mark = d.effect;
-            if (Objects.equals(d.name, "Slow") && d.duration >= 0) slow = d.effect;
             this.hp -= d.dmg;
             dot_tracking += d.dmg;
 //            if (d.dmg > 0) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
             if (d.duration < 0) debuff_iterator.remove();
         }
+        check_debuffs();
         if (hp < 0) hp *= 0.5; //dots give 50% overkill
     }
 
-    public void tick_buffs() {
+    public void check_buffs() {
         charge = 0;
         blessed = 0;
         empower_hp = 0;
+        for (Buff b : buffs) {
+            if (Objects.equals(b.name, "Charge Up")) charge = b.effect;
+            if (Objects.equals(b.name, "Bless")) blessed = b.effect;
+            if (Objects.equals(b.name, "Empower HP")) empower_hp = b.effect;
+        }
+    }
+
+    public void tick_buffs() {
         Iterator<Buff> buff_iterator = buffs.iterator();
         while (buff_iterator.hasNext()) {
             Buff b = buff_iterator.next();
+            if (log.contains("buff_duration")) System.out.println(b.name + " duration = " + b.duration);
             if (!Objects.equals(b.name, "Charge Up")) {
                 b.duration--;
             }
@@ -264,15 +283,14 @@ public class Actor {
                 b.duration--;
                 remove_charge = false;
             }
-            if (b.duration <= 0) {
-//                System.out.println(b.name + " was removed from " + name);
+            if (b.duration < 0 || (b.duration == 0 && Objects.equals(b.name, "Charge Up"))) {
+                if (log.contains("buff_remove") && zone != null) {
+                    System.out.println(b.name + " was removed from " + name);
+                }
                 buff_iterator.remove();
-            } else {
-                if (Objects.equals(b.name, "Charge Up")) charge = b.effect;
-                if (Objects.equals(b.name, "Bless")) blessed = b.effect;
-                if (Objects.equals(b.name, "Empower HP")) empower_hp = b.effect;
             }
         }
+        check_buffs();
     }
 
     public int buff_count() {
@@ -284,7 +302,10 @@ public class Actor {
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
             if (Objects.equals(d.name, "Mark")) d.duration--;
-            if (d.duration <= 0) debuff_iterator.remove();
+            if (d.duration <= 0) {
+                debuff_iterator.remove();
+                mark = 0; //just in case
+            }
         }
     }
 
@@ -296,31 +317,39 @@ public class Actor {
     }
 
     public void enableSet(String bonus, Equipment.Quality quality, int upgrade) {
-        double tier = quality.getMult();
+        double tier = 0.5 + quality.getMult() / 2;
+        double stat_scaling;
+        double dmg_scaling;
+        if (Main.game_version < 1574) {
+            stat_scaling = Math.clamp((5 + 0.5 * upgrade) * tier, 5, 100) / 100.0;
+        } else {
+            stat_scaling = Math.clamp((10 + 0.5 * upgrade) * tier, 10, 100) / 100.0;
+        }
+        dmg_scaling = Math.clamp((5 + 0.5 * upgrade) * tier, 5, 30) / 100.0;
         switch (bonus.toLowerCase()) {
-            case "hit" -> set_hit = 1 + ((5 + 0.5 * upgrade) * (0.5 + tier / 2.0)) / 100.0;
-            case "res" -> set_res = 1 + ((5 + 0.5 * upgrade) * (0.5 + tier / 2.0)) / 100.0;
-            case "magicdmg" -> set_magicdmg = 1 + Math.clamp((5 + 0.5 * upgrade) * (0.5 + tier / 2.0), 5, 30) / 100.0;
-            case "physdmg" -> set_physdmg = 1 + Math.clamp((5 + 0.5 * upgrade) * (0.5 + tier / 2.0), 5, 30) / 100.0;
+            case "hit" -> set_hit = 1 + stat_scaling;
+            case "res" -> set_res = 1 + stat_scaling;
+            case "magicdmg" -> set_magicdmg = 1 + dmg_scaling;
+            case "physdmg" -> set_physdmg = 1 + dmg_scaling;
             case "mit1" -> {
                 if (Main.game_version < 1566) {
-                    set_mit1 = Math.clamp((5 + upgrade / 6.0) * (0.5 + tier / 2.0), 5, 50) / 100.0;
+                    set_mit1 = Math.clamp((5 + upgrade / 6.0) * tier, 5, 50) / 100.0;
                 } else {
-                    set_mit1 = Math.clamp((8 + 0.2 * upgrade) * (0.5 + tier / 2.0), 8, 60) / 100.0;
+                    set_mit1 = Math.clamp((8 + 0.2 * upgrade) * tier, 8, 60) / 100.0;
                 }
             }
             case "mit2" -> {
                 if (Main.game_version < 1566) {
-                    set_mit2 = Math.clamp((10 + upgrade / 5.0) * (0.5 + tier / 2.0), 10, 55) / 100.0;
+                    set_mit2 = Math.clamp((10 + upgrade / 5.0) * tier, 10, 55) / 100.0;
                 } else {
-                    set_mit2 = Math.clamp((13 + 0.25 * upgrade) * (0.5 + tier / 2.0), 13, 70) / 100.0;
+                    set_mit2 = Math.clamp((13 + 0.25 * upgrade) * tier, 13, 70) / 100.0;
                 }
             }
-            case "core" -> set_core = Math.clamp((10 + 0.4 * upgrade) * (0.5 + tier / 2.0), 10, 100) / 100.0;
-            case "water" -> set_water = 1 + Math.clamp((10 + 0.5 * upgrade) * (0.5 + tier / 2.0), 10, 100) / 100.0;
+            case "core" -> set_core = Math.clamp((10 + 0.4 * upgrade) * tier, 10, 100) / 100.0;
+            case "water" -> set_water = 1 + stat_scaling;
             case "training" -> {
-                set_exp = Math.clamp((15 + 0.5 * upgrade) * (0.5 + tier / 2.0), 15, 150) / 100.0;
-                set_training = Math.clamp((5 + 0.1 * upgrade) * (0.5 + tier / 2.0), 5, 25) / 100.0;
+                set_exp = Math.clamp((15 + 0.5 * upgrade) * tier, 15, 150) / 100.0;
+                set_training = Math.clamp((5 + 0.1 * upgrade) * tier, 5, 25) / 100.0;
             }
         }
     }
@@ -422,7 +451,7 @@ public class Actor {
         int_mult *= 1.0 + intBoost.bonus(passives);
         res_mult *= 1.0 + resBoost.bonus(passives);
         ailment_res *= 1.0 + ailmentRes.bonus(passives);
-        cast_speed_mult /= 1.0 + castBoost.bonus(passives);
+        cast_speed_mult *= 1.0 - castBoost.bonus(passives);
         cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         buff_boost *= 1.0 + buffMastery.bonus(passives);
@@ -696,7 +725,7 @@ public class Actor {
     }
 
     public double getSpeed() {
-        return speed * getSpeed_mult() * (1 - slow);
+        return speed * getSpeed_mult() * slow;
     }
 
     public void setSpeed(double speed) {

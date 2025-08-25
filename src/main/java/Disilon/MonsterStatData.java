@@ -15,10 +15,15 @@ public class MonsterStatData {
     public HashMap<String, HashMap<Integer, Double>> cores; //Grade, Count in nested map
     public double base_rp;
     public double gained_rp;
+    public double gained_rp_rng;
+    public double[] rp_instance;
     public HashMap<String, Integer> deaths = new HashMap<>();
+    public double overkill_sum;
+    public int kills;
 
     public MonsterStatData(String[] possibleEnemies) {
         cores = new HashMap<>();
+        rp_instance = new double[7];
         for (String e : possibleEnemies) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -72,6 +77,9 @@ public class MonsterStatData {
     public void clear_recorded_data() {
         base_rp = 0;
         gained_rp = 0;
+        overkill_sum = 0;
+        kills = 0;
+        rp_instance = new double[7];
         dmg_sum.clear();
         hit_chance_sum.clear();
         debuff_chance_sum.clear();
@@ -85,6 +93,8 @@ public class MonsterStatData {
 
     public void recordOverkill(Enemy e, Player player) {
         double percent = -e.getHp() / e.getHp_max() * 100;
+        overkill_sum += percent;
+        kills++;
         if (percent <= 1) {
             addCore(e.name, 4, player);
         } else if (percent <= 10) {
@@ -110,7 +120,7 @@ public class MonsterStatData {
             }
             cores.put(name, nested);
         }
-        base_rp += getCoreRP(grade, name) * 0.01 * p.core_mult;
+        base_rp += getCoreRP(grade, name) * 0.01 * (p.set_core * 1.5 + p.core_mult);
         double fractional = research / 100.0 - (double) (research / 100);
         int new_grade = Math.min(8, grade + research / 100);
         double gain = 0;
@@ -124,8 +134,32 @@ public class MonsterStatData {
             cores.get(name).merge(new_grade, 1.0, Double::sum);
             gain += getCoreRP(new_grade, name) * drop_rate * 1;
         }
-        if (p.lvling) p.rp_balance += gain;
+        if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain;
         gained_rp += gain;
+        addCoreRandom(name, grade, p);
+    }
+
+    public void addCoreRandom(String name, int grade, Player p) {
+        int research = p.research_lvls.get("Core quality").intValue();
+        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue());
+        double fractional = research / 100.0 - (double) (research / 100);
+        int new_grade = Math.min(8, grade + research / 100);
+        for (int i = 1; i < rp_instance.length; i++) {
+            if (drop_rate > Math.random()) {
+                double gain = 0;
+                if (fractional > 0 && new_grade < 8) {
+                    if (fractional > Math.random()) {
+                        gain = getCoreRP(new_grade + 1, name);
+                    } else {
+                        gain = getCoreRP(new_grade, name);
+                    }
+                } else {
+                    gain = getCoreRP(new_grade, name);
+                }
+                rp_instance[i] += gain;
+            }
+        }
     }
 
     public String getSkillData(int simulations) {
@@ -177,9 +211,50 @@ public class MonsterStatData {
             }
             sb.append("\n");
         }
+        double offline_rp = 0;
+        double offline_base_rp = 0;
+        int research = p.research_lvls.get("Core quality").intValue();
+        double fractional = research / 100.0 - (double) (research / 100);
+        double percent = overkill_sum / kills;
+        int grade = -1;
+        if (percent <= 1) {
+            grade = 4;
+        } else if (percent <= 10) {
+            grade = 3;
+        } else if (percent <= 25) {
+            grade = 2;
+        } else if (percent <= 50) {
+            grade = 1;
+        } else if (percent <= 200) {
+            grade = 0;
+        }
+        if (grade >= 0) {
+            int new_grade = Math.min(8, grade + research / 100);
+            for (String name : deaths.keySet()) {
+                double count = deaths.getOrDefault(name, 0);
+                offline_base_rp += getCoreRP(grade, name) * 0.01 * (p.set_core * 1.5 + p.core_mult) * count;
+                if (fractional > 0 && new_grade < 8) {
+                    offline_rp += getCoreRP(new_grade, name) * drop_rate * count * (1 - fractional);
+                    offline_rp += getCoreRP(new_grade + 1, name) * drop_rate * count * fractional;
+                } else {
+                    offline_rp += getCoreRP(new_grade, name) * drop_rate * count;
+                }
+            }
+        }
         sb.append("RP/h: ").append(df2.format(gained_rp / time * 3600));
         sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
         sb.append("\n");
+        sb.append("Offline RP/h: ").append(df2.format(offline_rp / time * 3600));
+        sb.append(" (base: ").append(df2.format(offline_base_rp / time * 3600)).append(")");
+        sb.append("\n");
+//        if (Main.game_version < 1574) {
+//            double max = 0;
+//            for (int i = 1; i < 7; i++) {
+//                if (rp_instance[i] > max) max = rp_instance[i];
+//            }
+//            sb.append("RP/h: ").append(df2.format(rp_instance[0] / time * 3600));
+//            sb.append("\n");
+//        }
         return sb.toString();
     }
 
@@ -212,7 +287,7 @@ public class MonsterStatData {
             case "Lamia" -> 70;
             case "Tyrant" -> 100;
             case "Fairy" -> Main.game_version < 1568 ? 175 : 350;
-            case "Raum" -> Main.game_version < 1568 ? 150 : 180;
+            case "Raum" -> Main.game_version < 1568 ? 150 : (Main.game_version < 1574 ? 180 : 230);
             case "Asura" -> 165;
             default -> 0;
         };

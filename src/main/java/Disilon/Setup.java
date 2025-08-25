@@ -146,7 +146,7 @@ public class Setup implements Serializable {
         this.result_essential = "Click simulate to get sim data";
         this.stats = "Click simulate to calculate stats";
         this.zone = Zone.z9;
-        this.gameversion = "1573";
+        this.gameversion = "1580";
         this.milestone = 162.5;
         this.crafting_lvl = 20;
         this.alchemy_lvl = 20;

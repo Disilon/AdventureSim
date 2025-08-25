@@ -5,6 +5,7 @@ import java.util.Objects;
 import static Disilon.Main.df2;
 import static Disilon.Main.df4;
 import static Disilon.Main.game_version;
+import static Disilon.Main.log;
 
 public class ActiveSkill {
     public String name;
@@ -99,12 +100,16 @@ public class ActiveSkill {
             if (name.equals("Empower HP") && actor.empower_hp > 0) {
                 return false;
             }
-            if (name.equals("Careful Shot") && actor.zone.getMaxEnemyHp() > use_setting) {
+            if (name.equals("Careful Shot") || name.equals("Dispel")) {
                 return false;
             }
-            if (name.equals("Dispel") && actor.zone.getEnemyBuffCount() == 0) {
-                return false;
-            }
+//            if (name.equals("Careful Shot") && actor.zone.getMaxEnemyHp() > use_setting) {
+//                return false;
+//            }
+//            if (name.equals("Dispel") && actor.zone.getEnemyBuffCount() == 0) {
+//                return false;
+//            }
+            if (log.contains("skill_use")) System.out.println(name + " used: " + used_in_rotation + " setting: " + use_setting);
             return used_in_rotation < use_setting;
         }
     }
@@ -129,8 +134,8 @@ public class ActiveSkill {
         cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + attacker.zone.stealthDelay();
         if (attacker.isAmbushing()) cast = Math.max(0.01, cast - 5);
         delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
-        used_in_rotation++;
-//        System.out.println(attacker.name + " started casting " + name);
+//        used_in_rotation++;
+        if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name);
     }
 
     public boolean progressCast(Actor actor, double delta) {
@@ -388,33 +393,54 @@ public class ActiveSkill {
                 double rng = Math.random() * 100;
                 double power = this.min / 100;
                 int rolls = game_version >= 1568 ? 4 : 5;
+                enum Roll{execute, heal, buff, mana, nothing};
+                Roll roll = Roll.nothing;
                 double chance = 100.0 / rolls;
+                attacks_total += 1;
                 if (rng < chance) {
-                    hits_total += 1;
-                    for (Enemy e : attacker.zone.enemies) {
-                        if (e.getHp() < power * e.getHp_max()) {
-                            hit_chance_sum += 1;
-                            dmg_sum += e.getHp();
-                            e.setHp(0);
-                        }
+                    if (game_version >= 1574 && attacker.zone.getMaxEnemyHpPercent() > power){
+                        roll = Roll.heal;
+                    } else {
+                        roll = Roll.execute;
                     }
                 }
                 if (rng >= chance && rng < chance * 2) {
-                    attacker.hp = attacker.getHp() + attacker.getHp_max() * power;
+                    roll = Roll.heal;
                 }
                 if (rng >= chance * 2 && rng < chance * 3) {
-                    if (attacker.charge == 0) {
-                        attacker.buffs.add(new Buff("Charge Up", 1, power));
-                    }
+                    roll = Roll.buff;
                 }
                 if (rolls >= 5 && rng >= chance * 3 && rng < chance * 4) {
-                    attacker.setMp(attacker.getMp() + attacker.getMp_max() * power);
+                    roll = Roll.mana;
+                }
+                switch (roll) {
+                    case execute -> {
+                        hits_total += 1;
+                        for (Enemy e : attacker.zone.enemies) {
+                            if (e.getHp() < power * e.getHp_max()) {
+                                hit_chance_sum += 1;
+                                dmg_sum += e.getHp();
+                                e.setHp(0);
+                            }
+                        }
+                    }
+                    case heal -> {
+                        attacker.hp = Math.max(attacker.getHp_max(), attacker.getHp()) + attacker.getHp_max() * power;
+                    }
+                    case buff -> {
+                        if (attacker.charge == 0) {
+                            attacker.buffs.add(new Buff("Charge Up", 1, power));
+                        }
+                    }
+                    case mana -> {
+                        attacker.setMp(attacker.getMp() + attacker.getMp_max() * power);
+                    }
+                    default -> {}
                 }
                 break;
             default:
-                attacker.buffs.add(new Buff(buff_name, name.equals("Charge Up") ? (int) buff_duration + duration_bonus :
-                        (int) buff_duration + 1 + duration_bonus, buff_bonus * attacker.buff_boost));
-//                System.out.println(buff_name + " added to " + attacker.name + " duration " + buff_duration);
+                attacker.buffs.add(new Buff(buff_name, (int) (buff_duration + duration_bonus), buff_bonus * attacker.buff_boost));
+//                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) (buff_duration + duration_bonus));
                 break;
         }
         gain += attacker.getHp_max() * attacker.hp_regen;
@@ -570,7 +596,7 @@ public class ActiveSkill {
                 if (this.name.equals("Dispel")) {
                     calc_hits = defender.buff_count();
                     defender.buffs.clear();
-                    defender.tick_buffs();
+                    defender.check_buffs();
                 }
                 if (attacker.gear_stun > 0 && game_version >= 1566 && Math.random() < attacker.gear_stun) {
                     defender.stun_time += 2.0;
@@ -584,8 +610,10 @@ public class ActiveSkill {
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
                                     calc_hits) * dmg_mult;
                     dmg = Math.max(1, dmg);
-//                    System.out.println(attacker.name + attacker + " dealt " + (int) dmg + " damage with " + this.name +
-//                            " to " + defender.name);
+                    if (log.contains("skill_attack") && attacker.zone != null) {
+                        System.out.println(attacker.name + attacker + " dealt " + (int) dmg + " damage with " + this.name +
+                                " to " + defender.name);
+                    }
                     total += dmg;
                     //if (total > defender.getHp()) break; //doesn't work like that according to tests
                     if (total - dmg > defender.getHp() && i == calc_hits - 1) {
@@ -625,6 +653,7 @@ public class ActiveSkill {
         ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
         if (attacker.zone != null) {
             attacker.zone.stats.incrementStats(defender.getName(), skill.name, dmg, 1, 0, 1, 1, 0);
+            attacker.damage_taken += dmg;
         } else {
             skill.used += 1;
             skill.hits_total += 1;
@@ -748,8 +777,8 @@ public class ActiveSkill {
         }
     }
 
-    public String getWeakRecordedData() {
-        return name + " used: " + used + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
+    public String getWeakRecordedData(int simulations) {
+        return name + " used: " + df4.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
                 "; dmg: " + (int) average_dmg() + "\n";
     }
 

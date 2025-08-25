@@ -167,7 +167,7 @@ public class Enemy extends Actor {
             }
             case "Shax" -> {
                 base_lvl = 100;
-                base_hp_max = 19200 / base_lvl / 1.02; //to make hunter damage in z10 closer to in-game
+                base_hp_max = 19200 / base_lvl;
                 if (Main.game_version < 1541) {
                     base_exp = 9200 / base_lvl;
                 } else {
@@ -245,7 +245,11 @@ public class Enemy extends Actor {
                 }
                 enemy_skills.add(rapidstabs);
                 counter_dodge = true;
-                counter_strike = 0.25;
+                if (Main.game_version < 1580) {
+                    counter_strike = 0.25;
+                } else {
+                    counter_strike = 0.3;
+                }
             }
             case "Asura" -> {
                 base_lvl = 200;
@@ -319,7 +323,7 @@ public class Enemy extends Actor {
             }
             case "Akuma" -> {
                 base_lvl = 50;
-                base_hp_max = 4000 / base_lvl / 1.02; //to make hunter damage in z8 closer to in-game
+                base_hp_max = 4000 / base_lvl;
                 base_exp = 750 / base_lvl;
                 base_atk = 450 / base_lvl;
                 base_def = 175 / base_lvl;
@@ -554,7 +558,7 @@ public class Enemy extends Actor {
                 return roll < 50 ? dp : as;
             }
             case "Fairy" -> {
-                return (super.charge == 0 && roll < 70) ? charge_up : arrow_light;
+                return (super.charge == 0 && roll < 60) ? charge_up : arrow_light;
             }
             case "Asura" -> {
                 if (player.hide_bonus > 0) {

@@ -142,7 +142,7 @@ public class Potion {
             case 11 -> 2 / craft_spd + 3 / alch_spd * 1.5;
             case 12 -> 4 / craft_spd + 6 / alch_spd * 1.5;
             case 13 -> 6 / craft_spd + 9 / alch_spd * 1.5;
-            case 14 -> 8 / craft_spd + 120 / alch_spd * 1.5;
+            case 14 -> 8 / craft_spd + 12 / alch_spd * 1.5;
             case 15 -> 10 / craft_spd + 15 / alch_spd * 1.5;
             default -> 0;
         };

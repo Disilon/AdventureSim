@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import static Disilon.Main.df2;
 import static Disilon.Main.random;
 
 public enum Zone {
@@ -29,7 +30,7 @@ public enum Zone {
     final String display_name;
     final String[] possible_enemies;
     public final ArrayList<Enemy> enemies = new ArrayList<>(1);
-    final int max_enemies;
+    public int max_enemies;
     public double strength;
     public final MonsterStatData stats;
 
@@ -49,11 +50,9 @@ public enum Zone {
 
     public void respawn() {
         enemies.clear();
-        if (Main.game_version >= 1535) {
-            incrementStrength();
-        }
         if (this == z16) {
             int number = random.nextInt(2, 5);
+            max_enemies = 4;
             for (int i = 0; i < number; i++) {
                 Enemy e = new Enemy();
                 e.setEnemy(possible_enemies[0]);
@@ -70,33 +69,31 @@ public enum Zone {
                 if (this == z3) random.nextInt(1, 2);
                 for (int i = 0; i < number; i++) {
                     Enemy e = new Enemy();
-//                if (this == z8) {
-//                    double roll = random.nextDouble() * 100;
-//                    String enemy;
-//                    enemy = roll < 30 ? "Tengu" : roll >= 30 && roll < 60 ? "Amon" : "Akuma";
-//                    e.setEnemy(enemy);
-//                } else {
-//                    e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
-//                }
                     e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
                     enemies.add(e);
                 }
             }
         }
-
+        StringBuilder sb = new StringBuilder();
+        double individual_str_add = 0;
+        if (strength == 0.9) strength += 0.02 * (max_enemies - 1);
         for (Enemy e : enemies) {
             if (Main.game_version < 1535) {
                 e.rollStrength();
                 e.reroll();
             } else {
-                e.strength = strength;
+                e.strength = strength + individual_str_add;
+                sb.append(df2.format(e.strength * 100)).append("; ");
                 e.reroll();
+                individual_str_add -= 0.02;
             }
             if (this == HelplessDummy) {
                 e.atk = 1;
                 e.intel = 1;
             }
         }
+        incrementStrength();
+//        System.out.println(sb);
 //        System.out.println(enemies.stream().map(Enemy::getName).collect(Collectors.joining(", ")));
     }
 
@@ -161,6 +158,14 @@ public enum Zone {
         double max = 0;
         for (Enemy e : enemies) {
             if (e.getHp() > max) max = e.getHp();
+        }
+        return max;
+    }
+
+    public double getMaxEnemyHpPercent() {
+        double max = 0;
+        for (Enemy e : enemies) {
+            if (e.getHp() / e.getHp_max() > max) max = e.getHp() / e.getHp_max();
         }
         return max;
     }

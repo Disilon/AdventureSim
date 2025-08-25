@@ -68,6 +68,32 @@ public class PassiveSkill {
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }
+            case "HP Boost" -> {
+                if (Main.game_version >= 1580) {
+                    this.base_mp_mult = 0.1;
+                } else {
+                    this.base_mp_mult = 0.2;
+                }
+                this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                this.bonus2 = this.base_bonus2 * (1 + 0.02 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
+            case "Counter Strike" -> {
+                if (Main.game_version >= 1580) {
+                    this.base_mp_mult = 0;
+                    this.base_mp_add = 0;
+                    this.base_bonus = 0.3;
+                } else {
+                    this.base_mp_mult = 0.25;
+                    this.base_mp_add = 15;
+                    this.base_bonus = 0.25;
+                }
+                this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                this.bonus2 = this.base_bonus2 * (1 + 0.02 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
             default -> {
                 this.bonus = this.base_bonus * (1 + 0.02 * lvl);
                 this.bonus2 = this.base_bonus2 * (1 + 0.02 * lvl);

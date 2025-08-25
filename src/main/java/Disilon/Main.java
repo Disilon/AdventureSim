@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.Random;
 
 public class Main {
-    public static int game_version = 1552;
-    public static Integer[] availableVersions = {1552, 1565, 1566, 1568, 1573};
+    public static int game_version = 1580;
+    public static Integer[] availableVersions = {1552, 1565, 1566, 1568, 1573, 1575, 1580};
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
     public static DecimalFormat df4;
@@ -25,6 +25,7 @@ public class Main {
     public static DecimalFormat dfm;
     public static final Random random = new Random();
     public static EquipmentData equipmentData = new EquipmentData();
+    public static ArrayList<String> log = new ArrayList<>();
 
     public static void main(String[] args) {
         dfs = DecimalFormatSymbols.getInstance(Locale.UK);
@@ -36,6 +37,13 @@ public class Main {
         df2p.setMinimumIntegerDigits(2);
         df2p.setMaximumFractionDigits(2);
         df2p.setMinimumFractionDigits(2);
+//        log.add("skill_rotation");
+//        log.add("fight_end");
+//        log.add("buff_duration");
+//        log.add("buff_remove");
+//        log.add("skill_cast_start");
+//        log.add("skill_use");
+//        log.add("skill_attack");
         try {
             UserForm uf = new UserForm();
         } catch (Exception e) {

@@ -86,9 +86,9 @@ public class Player extends Actor {
             Scaling.atk, Element.phys, false, false);
     ActiveSkill pierce1552 = new ActiveSkill("Pierce", 1, 67.5, 82.5, 1, 40, 1.2, 1.2,
             Scaling.atk, Element.phys, false, false);
-    ActiveSkill careful = new ActiveSkill("Careful Shot", 1, 54, 66, 1.5, 15, 0.6, 0.6, Scaling.atkhit,
+    ActiveSkill careful = new ActiveSkill("Careful Shot", 1, 58.5, 71.5, 1.5, 15, 0.6, 0.6, Scaling.atkhit,
             Element.phys, false, false);
-    ActiveSkill weakening = new ActiveSkill("Weakening Shot", 1, 112.5, 137.5, 1, 50, 1.3, 1.3, Scaling.atkhit,
+    ActiveSkill weakening = new ActiveSkill("Weakening Shot", 1, 144, 176, 1, 50, 1.3, 1.3, Scaling.atkhit,
             Element.phys, false, false);
     ActiveSkill aimed = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 75, 1.5, 1.5, Scaling.atkhit,
             Element.phys, false, false);
@@ -936,20 +936,40 @@ public class Player extends Actor {
         can_sustain = Math.min(can_sustain, (int) rp_balance / 10); //to make sure we don't swing from 0 to max slots
         StringBuilder sb = new StringBuilder();
         int using = 0;
-        if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) > 0) {
-            if (rp_balance > (research_slots_base_cost(max_slots + 1) - research_slots_base_cost(can_sustain)) * research_weight.get("Research slot")) {
-                research("Research slot", time * r_spd);
-                if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
-                using++;
-                sb.append("Research slot; ");
+        if (game_version >= 1566) {
+            if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) > 0) {
+                if (rp_balance > (research_slots_base_cost(max_slots + 1) - research_slots_base_cost(can_sustain)) * research_weight.get("Research slot")) {
+                    research("Research slot", time * r_spd);
+//                    if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
+                    using++;
+                    sb.append("Research slot; ");
+                }
             }
-        }
-        if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) < 0) {
-            if (max_slots < -1 * research_weight.getOrDefault("Research slot", 0.0).intValue()) {
-                research("Research slot", time * r_spd);
-                if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
-                using++;
-                sb.append("Research slot; ");
+            if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) < 0) {
+                if (max_slots < -1 * research_weight.getOrDefault("Research slot", 0.0).intValue()) {
+                    research("Research slot", time * r_spd);
+//                    if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
+                    using++;
+                    sb.append("Research slot; ");
+                }
+            }
+        } else {
+            int slot_w = research_weight.getOrDefault("Research slot", 0.0).intValue();
+            if (max_slots < maxResearchLvl("Research slot") && slot_w < 0) {
+                if (max_slots == -1 * slot_w) {
+                    double cost = research_time("Research slot") / 3600 / 24 * 10000;
+                    if (rp_balance > cost + 1000) {
+                        rp_balance -= cost;
+                        research_weight.put("Research slot", slot_w - 1.0);
+                    }
+                }
+                if (max_slots < -1 * research_weight.getOrDefault("Research slot", 0.0).intValue()) {
+
+                    research("Research slot", time * r_spd);
+                    rp_balance += 250 * time / 3600 * r_spd; //since we're subtracting it later
+                    using++;
+                    sb.append("Research slot; ");
+                }
             }
         }
         HashMap<String, Double> weight_for_lvl = new HashMap<>(research_weight);
@@ -987,9 +1007,9 @@ public class Player extends Actor {
                 research_weight.put(name, research_weight.getOrDefault(name, 0.0) * 3); //we don't want to chain slots
             }
         }
-//        if (new_lvl > old_lvl) {
+        if (new_lvl > old_lvl) {
 //            System.out.println(name + " new_lvl=" + new_lvl);
-//        }
+        }
         research_lvls.put(name, research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
     }
 
@@ -1072,18 +1092,18 @@ public class Player extends Actor {
             case 0 -> 10;
             case 1 -> 35;
             case 2 -> 55;
-            case 3 -> Main.game_version >= 1532 ? 90 : 75;
+            case 3 -> name.equals("Onion Knight") ? 99 : 90;
             default -> 0;
         };
     }
 
-    public String getWeakAttackData() {
+    public String getWeakAttackData(int simulations) {
         StringBuilder sb = new StringBuilder();
         if (weak_a.used > 0) {
-            sb.append(weak_a.getWeakRecordedData());
+            sb.append(weak_a.getWeakRecordedData(simulations));
         }
         if (weak_i.used > 0) {
-            sb.append(weak_i.getWeakRecordedData());
+            sb.append(weak_i.getWeakRecordedData(simulations));
         }
         return sb.toString();
     }

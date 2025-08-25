@@ -8,6 +8,7 @@ import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
 import static Disilon.Main.minIfNotZero;
 import static Disilon.Main.shorthand;
+import static Disilon.Main.log;
 
 public class Simulation {
     enum StatusType {death, respawn, combat, prepare, rerolling, delay}
@@ -60,7 +61,6 @@ public class Simulation {
         double overkill = 0;
         double dot_overkill = 0;
         double ignore_deaths = 0;
-        double enemy_dmg = 0;
         double healed = 0;
         int kills = 0;
         double kills_drop = 0;
@@ -69,6 +69,7 @@ public class Simulation {
         double delta_sum = 0;
         int delta_count = 0;
         double oom_time = 0;
+        player.damage_taken = 0;
         player.dot_tracking = 0;
         player.research_slots_stat = 0;
         title = player.zone.toString();
@@ -87,6 +88,7 @@ public class Simulation {
             double cap_time = 0;
             double delta;
             int casts = 0;
+            double first_kill = 0;
             double delay_left = 0;
             int skill_cycle = 1;
             ActiveSkill previous_cast = null;
@@ -120,22 +122,15 @@ public class Simulation {
                     end = true; //stop simulations so that we don't freeze
                 }
                 while (player.casting == null) {
-                    if (skill1 != null && skill1.canCast(player)) {
-                        if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
-                                (skill1.name.equals("Dispel") && player.zone.getEnemyBuffCount() > 0)) {
-                            player.casting = skill1;
-                            player.casting.startCastPlayer(player);
-                            break;
-                        }
-                    }
                     switch (skill_cycle) {
                         case 1 -> {
                             if (skill1 != null && skill1.canCast(player) && skill1.shouldUse(player)) {
                                 player.casting = skill1;
-                                player.casting.startCastPlayer(player);
+                                skill1.used_in_rotation++;
                                 cycled = 0;
                             } else {
                                 if (skill1 != null) skill1.used_in_rotation = 0;
+                                if (log.contains("skill_rotation")) System.out.println("Skill 1 skipped");
                                 skill_cycle++;
                                 cycled++;
                             }
@@ -143,10 +138,11 @@ public class Simulation {
                         case 2 -> {
                             if (skill2 != null && skill2.canCast(player) && skill2.shouldUse(player)) {
                                 player.casting = skill2;
-                                player.casting.startCastPlayer(player);
+                                skill2.used_in_rotation++;
                                 cycled = 0;
                             } else {
                                 if (skill2 != null) skill2.used_in_rotation = 0;
+                                if (log.contains("skill_rotation")) System.out.println("Skill 2 skipped");
                                 skill_cycle++;
                                 cycled++;
                             }
@@ -154,10 +150,11 @@ public class Simulation {
                         case 3 -> {
                             if (skill3 != null && skill3.canCast(player) && skill3.shouldUse(player)) {
                                 player.casting = skill3;
-                                player.casting.startCastPlayer(player);
+                                skill3.used_in_rotation++;
                                 cycled = 0;
                             } else {
                                 if (skill3 != null) skill3.used_in_rotation = 0;
+                                if (log.contains("skill_rotation")) System.out.println("Skill 3 skipped");
                                 skill_cycle++;
                                 cycled++;
                             }
@@ -165,10 +162,11 @@ public class Simulation {
                         case 4 -> {
                             if (skill4 != null && skill4.canCast(player) && skill4.shouldUse(player)) {
                                 player.casting = skill4;
-                                player.casting.startCastPlayer(player);
+                                skill4.used_in_rotation++;
                                 cycled = 0;
                             } else {
                                 if (skill4 != null) skill4.used_in_rotation = 0;
+                                if (log.contains("skill_rotation")) System.out.println("Skill 4 skipped");
                                 skill_cycle = 1;
                                 cycled++;
                             }
@@ -176,9 +174,38 @@ public class Simulation {
                     }
                     if (cycled >= 5) {
                         player.casting = player.getWeakSkill();
-                        player.casting.startCastPlayer(player);
                         cycled = 0;
                         skill_cycle = 1;
+                    }
+                    if (skill1 != null && skill1.canCast(player)) {
+                        if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
+                                (skill1.name.equals("Dispel") && player.zone.getEnemyBuffCount() > 0)) {
+                            player.casting = skill1;
+                            switch (skill_cycle) {
+                                case 1 -> {
+                                    if (skill1 != null) skill1.used_in_rotation++;
+                                }
+                                case 2 -> {
+                                    if (skill2 != null) skill2.used_in_rotation++;
+                                }
+                                case 3 -> {
+                                    if (skill3 != null) skill3.used_in_rotation++;
+                                }
+                                case 4 -> {
+                                    if (skill4 != null) skill4.used_in_rotation++;
+                                }
+                            }
+//                            skill_cycle++;
+//                            if (skill_cycle > 4) skill_cycle = 1;
+//                            skill_cycle = 1; //dispel resets rotation, should be fine for CS
+//                            if (skill1 != null) skill1.used_in_rotation = 0;
+//                            if (skill2 != null) skill2.used_in_rotation = 0;
+//                            if (skill3 != null) skill3.used_in_rotation = 0;
+//                            if (skill4 != null) skill4.used_in_rotation = 0;
+                        }
+                    }
+                    if (player.casting != null) {
+                        player.casting.startCastPlayer(player);
                     }
                 }
                 for (Iterator<Enemy> iterator = player.zone.enemies.iterator(); iterator.hasNext(); ) {
@@ -203,8 +230,8 @@ public class Simulation {
                         if (player.casting.progressCast(player, delta)) {
                             player.casting.used++;
                             player.current_skill_hit = false;
-                            player.tick_debuffs();
-                            player.tick_buffs();
+                            player.check_debuffs();
+                            player.check_buffs();
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
@@ -257,6 +284,8 @@ public class Simulation {
                             if (player.lvling) player.casting.gainExp(1);
                             if (player.current_skill_hit) player.ambush_bonus = 0;
                             if (player.isAmbushing()) player.setAmbushing(false);
+                            player.tick_debuffs();
+                            player.tick_buffs();
                             player.casting.pay_manacost(player);
                         }
                     } else if (player.casting.delay > 0) {
@@ -273,8 +302,8 @@ public class Simulation {
                     if (enemy.casting != null) {
                         if (enemy.casting.cast > 0) {
                             if (enemy.casting.progressCast(enemy, delta)) {
-                                enemy.tick_debuffs();
-                                enemy.tick_buffs();
+                                enemy.check_debuffs();
+                                enemy.check_buffs();
                                 if (enemy.casting.hit > 0) {
                                     double dmg = 0;
                                     if (previous_cast != null && (time - previous_cast.last_casted_at) < 0.5) {
@@ -284,12 +313,9 @@ public class Simulation {
                                         previous_cast = enemy.casting;
                                         previous_cast.last_casted_at = time;
                                     }
-                                    if (previous_cast == null || (time - previous_cast.last_casted_at) >= 0.5) {
-
-                                    }
                                     if (dmg > 0) {
                                         player.setHp(player.getHp() - dmg);
-                                        enemy_dmg += dmg;
+                                        player.damage_taken += dmg;
                                         if (enemy.charge > 0) enemy.remove_charge = true;
                                     }
 //                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
@@ -298,6 +324,8 @@ public class Simulation {
                                     player.zone.stats.incrementStats(enemy.getName(), enemy.casting.name, 0,
                                             0, 0, 1, 0,0);
                                 }
+                                enemy.tick_debuffs();
+                                enemy.tick_buffs();
                                 enemy.casting.pay_manacost(enemy);
                             }
                         } else if (enemy.casting.delay > 0) {
@@ -307,10 +335,11 @@ public class Simulation {
                         }
                     }
                     if (enemy.getHp() <= 0) {
+                        if (first_kill == 0) first_kill = time;
                         if (player.last_skill.isSingleTarget() && player.set_core > 0 && player.set_core > Math.random()) {
                             enemy.setHp(0.0);
                         } else {
-                            overkill -= enemy.getHp();
+                            player.overkill -= enemy.getHp();
                         }
 //                        for (Debuff d : enemy.debuffs) {
 //                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
@@ -320,8 +349,25 @@ public class Simulation {
                         exp += exp_gain;
                         kills++;
                         player.zone.stats.recordOverkill(enemy, player);
-                        player.levelActives();
-                        player.levelTF(enemy);
+                        double max = 0;
+                        if (game_version < 1574 && 0.2 > Math.random()) {
+                            for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
+                                if (player.zone.stats.rp_instance[i] > 0 && max == 0) {
+                                    max = player.zone.stats.rp_instance[i];
+                                }
+                            }
+                            if (max > 0) {
+                                for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
+                                    player.zone.stats.rp_instance[i] = 0;
+                                }
+                                if (player.lvling) player.rp_balance += max;
+                                player.zone.stats.rp_instance[0] += max;
+                            }
+                        }
+                        if (player.lvling) {
+                            player.levelActives();
+                            player.levelTF(enemy);
+                        }
 //                        System.out.println("Enemy killed at " + df2.format(time) + " s \n");
                         if (target == enemy) target = null;
                         iterator.remove();
@@ -334,6 +380,7 @@ public class Simulation {
                         delay_left = player.casting.delay;
                         player.casting = null;
                     }
+//                    System.out.println(df2.format(time - first_kill));
                 }
                 if (player.getHp() <= 0 || time >= 3600) {
                     status = StatusType.death;
@@ -412,7 +459,7 @@ public class Simulation {
                 if (crafting_lvl >= 90 && alchemy_lvl >= 90) side_craft_spd += 0.05;
             } else {
                 if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
-                    side_craft_spd = 0.2 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
+                    side_craft_spd = game_version >= 1568 ? 0.2 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue() : 0.2;
                 }
             }
             double add_time = 0;
@@ -430,7 +477,7 @@ public class Simulation {
             } else {
                 crafting_time += add_time;
             }
-            if ((cleared + failed) >= 1000000) end = true;
+            if ((cleared + failed) >= 10000000) end = true;
             switch (sim_type) {
                 default -> {
                     if ((cleared + failed) >= sim_limit) end = true;
@@ -446,6 +493,7 @@ public class Simulation {
                     if (player.cl >= cl_limit) end = true;
                 }
             }
+            if (log.contains("fight_end")) System.out.println("Fight ended\n\n");
         }
         double exph = (exp / (total_time + death_time) * 3600);
         double exp_total_bonus = player.getExp_mult() * player.milestone_exp_mult;
@@ -489,10 +537,11 @@ public class Simulation {
         result.append("s; avg: ").append(df2.format(total_time / cleared)).append("s \n");
         skills_log.append("Damage skill casts: ").append(min_casts).append(" - ").append(max_casts);
         skills_log.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
-        skills_log.append("Average Overkill: ").append((int) (overkill / kills));
+        skills_log.append("Average Overkill: ").append((int) (player.overkill / kills)).append("(");
+        skills_log.append(df2.format(player.zone.stats.overkill_sum / player.zone.stats.kills)).append("%)");
         if (dot_overkill > 0) skills_log.append("; DoT: ").append((int) (dot_overkill / kills));
         skills_log.append("\n");
-        skills_log.append(player.getWeakAttackData());
+        skills_log.append(player.getWeakAttackData(cleared + failed));
         if (skill1 != null && !skill1.name.equals("Prepare"))
             skills_log.append(skill1.getRecordedData(cleared + failed));
         if (skill2 != null && !skill2.name.equals("Prepare"))
@@ -506,8 +555,8 @@ public class Simulation {
         if (player.counter_dodge_log.used > 0)
             skills_log.append(player.counter_dodge_log.getRecordedData(cleared + failed));
         skills_log.append("\n");
-        if (enemy_dmg > 0 && cleared > 0) {
-            skills_log.append("Average enemy dmg per fight: ").append((int) enemy_dmg / cleared);
+        if (player.damage_taken > 0 && cleared > 0) {
+            skills_log.append("Average enemy dmg per fight: ").append((int) player.damage_taken / cleared);
             if (player.dot_tracking > 0) skills_log.append("; DoT: ").append((int) (player.dot_tracking / cleared));
             skills_log.append("\n");
         }
