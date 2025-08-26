@@ -367,8 +367,8 @@ public class ActiveSkill {
         }
         if (buff_name != null) {
             this.buff_bonus = switch (this.skillMod) {
-                case SkillMod.Basic -> base_buff_bonus * (1 + 0.02 * lvl);
-                case SkillMod.Pow -> base_buff_bonus * (1 + 0.01 * lvl);
+                case SkillMod.Basic -> base_buff_bonus * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
+                case SkillMod.Pow -> base_buff_bonus * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
                 case SkillMod.PowPow -> base_buff_bonus * (1 + 0.05 * lvl);
                 case SkillMod.Cheap -> base_buff_bonus * (1 - 0.01 * lvl);
                 default -> base_buff_bonus;

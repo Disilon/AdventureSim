@@ -1229,7 +1229,7 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(rp_balance_l, gbc);
-        Rp_balance = new JSpinner(new SpinnerNumberModel(1000, 0, 10000000, 1000));
+        Rp_balance = new JSpinner(new SpinnerNumberModel(1000, 0, 1000000000, 1000));
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 11;

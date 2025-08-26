@@ -182,7 +182,7 @@ public class Actor {
     protected PassiveSkill coreBoost = new PassiveSkill("Core Boost", 0.5, 10, 0.1);
 
     protected PassiveSkill lightBoost = new PassiveSkill("Light Boost", 0.3, 10, 0.3);
-    protected PassiveSkill buffMastery = new PassiveSkill("Buff Mastery", 0.3, 10, 0.3); //todo: skill values
+    protected PassiveSkill buffMastery = new PassiveSkill("Buff Mastery", 0.3, 10, 0.3);
 
     protected PassiveSkill waterBoost = new PassiveSkill("Water Boost", 0.3, 10, 0.3);
     protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
@@ -668,6 +668,10 @@ public class Actor {
         return getResist() * 3 + getIntel();
     }
 
+    public double getMp_max_no_buffs() {
+        return getResist_no_buffs() * 3 + getIntel_no_buffs();
+    }
+
     public void setMp_max(double mp_max) {
         this.mp_max = mp_max;
     }
@@ -684,12 +688,20 @@ public class Actor {
         return atk * (getAtk_mult() + blessed) + empower_hp * getHp_max();
     }
 
+    public double getAtk_no_buffs() {
+        return atk * (getAtk_mult());
+    }
+
     public void setAtk(double atk) {
         this.atk = atk;
     }
 
     public double getDef() {
         return def * (getDef_mult() + blessed - def_break - mark);
+    }
+
+    public double getDef_no_buffs() {
+        return def * (getDef_mult());
     }
 
     public void setDef(double def) {
@@ -700,12 +712,20 @@ public class Actor {
         return intel * (getInt_mult() + blessed);
     }
 
+    public double getIntel_no_buffs() {
+        return intel * (getInt_mult());
+    }
+
     public void setIntel(double intel) {
         this.intel = intel;
     }
 
     public double getResist() {
         return resist * (getRes_mult() - mark - res_break + blessed);
+    }
+
+    public double getResist_no_buffs() {
+        return resist * (getRes_mult());
     }
 
     public double getGear_res() {
@@ -720,12 +740,20 @@ public class Actor {
         return hit * getHit_mult();
     }
 
+    public double getHit_no_buffs() {
+        return hit * getHit_mult();
+    }
+
     public void setHit(double hit) {
         this.hit = hit;
     }
 
     public double getSpeed() {
         return speed * getSpeed_mult() * slow;
+    }
+
+    public double getSpeed_no_buffs() {
+        return speed * getSpeed_mult();
     }
 
     public void setSpeed(double speed) {
@@ -1080,5 +1108,13 @@ public class Actor {
 
     public double getAvgAtkInt() {
         return (getAtk() + getIntel()) / 2;
+    }
+
+    public double getAvgStats_no_buffs() {
+        return (getAtk_no_buffs() + getDef_no_buffs() + getIntel_no_buffs() + getResist_no_buffs() + getSpeed_no_buffs() + getHit_no_buffs()) / 6;
+    }
+
+    public double getAvgAtkInt_no_buffs() {
+        return (getAtk_no_buffs() + getIntel_no_buffs()) / 2;
     }
 }

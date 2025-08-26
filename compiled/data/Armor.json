@@ -317,8 +317,7 @@
             "SET": "Blazing"
 		}, "Holy Chest Piece": {
             "DEF": 8,
-            "INT": 2,
-            "RES": 16,
+            "RES": 18,
 			"LIGHT": 30,
             "DARK_RES": -6,
             "LIGHT_RES": 6,

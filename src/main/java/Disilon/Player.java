@@ -117,6 +117,7 @@ public class Player extends Actor {
     double rp_balance;
     double old_rp;
     double research_slots_stat;
+    double rp_drain;
     String previous_research;
 
     public Player() {
@@ -801,9 +802,9 @@ public class Player extends Actor {
             }
         }
         if (Main.game_version < 1568) {
-            result += getAvgAtkInt() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
+            result += getAvgAtkInt_no_buffs() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
         } else {
-            result += getAvgStats() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
+            result += getAvgStats_no_buffs() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
         }
         result += (holylight_enabled ? getResist() * 0.25 : 0);
         result += (prayer_enabled ? getResist() * 0.25 : 0);
@@ -993,6 +994,7 @@ public class Player extends Actor {
         }
         rp_balance -= research_slots_base_cost(using) * time / 3600 * r_spd;
         research_slots_stat += using * time;
+        rp_drain += research_slots_base_cost(using) * time / 3600 * r_spd;
         if (!sb.toString().equals(previous_research)) {
             previous_research = sb.toString();
 //            System.out.println(sb);

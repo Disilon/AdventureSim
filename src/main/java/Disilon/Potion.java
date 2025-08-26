@@ -49,7 +49,7 @@ public class Potion {
                     }
                     break;
                 case "mp":
-                    if (player.getMp() < player.getMp_max() * threshold / 100) {
+                    if (player.getMp() < player.getMp_max_no_buffs() * threshold / 100) {
                         player.setMp(player.getMp() + mp_gain());
                         cooldown = mp_cd();
                         used++;

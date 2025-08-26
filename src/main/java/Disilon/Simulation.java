@@ -72,6 +72,7 @@ public class Simulation {
         player.damage_taken = 0;
         player.dot_tracking = 0;
         player.research_slots_stat = 0;
+        player.rp_drain = 0;
         title = player.zone.toString();
         time_to_respawn = player.zone.getTime_to_respawn();
         StringBuilder result = new StringBuilder();
@@ -617,6 +618,7 @@ public class Simulation {
             }
             lvling_log.append("RP: ").append((int) player.rp_balance).append("\n");
             lvling_log.append("Research slots used: ").append(df2.format(player.research_slots_stat / (total_time + death_time))).append("\n");
+            lvling_log.append("Cost per hour: ").append(df2.format(player.rp_drain / (total_time + death_time) * 3600)).append("\n");
             for (Map.Entry<String, Double> entry : player.research_lvls.entrySet()) {
                 double change = entry.getValue() - player.research_old_lvls.getOrDefault(entry.getKey(), 0.0);
                 if (change > 0.01) {
