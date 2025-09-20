@@ -11,13 +11,15 @@ import java.text.DecimalFormatSymbols;
 import java.time.format.DecimalStyle;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.Vector;
 
 public class Main {
-    public static int game_version = 1580;
-    public static Integer[] availableVersions = {1552, 1565, 1566, 1568, 1573, 1575, 1580};
+    public static Vector<Integer> availableVersions = new Vector<>(List.of(1565, 1566, 1568, 1573, 1575, 1580, 1587, 1591));
+    public static int game_version = availableVersions.getLast();
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
     public static DecimalFormat df4;

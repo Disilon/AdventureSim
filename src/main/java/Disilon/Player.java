@@ -212,6 +212,7 @@ public class Player extends Actor {
 
     public void initializeSets() {
         sets.put("Cloth", new EquipmentSet("magicdmg", 5));
+        sets.put("Blazing", new EquipmentSet("fire", 5));
         sets.put("Leather", new EquipmentSet("hit", 5));
         sets.put("Dark", new EquipmentSet("physdmg", 5));
         sets.put("Metal", new EquipmentSet("mit1", 5));
@@ -221,6 +222,7 @@ public class Player extends Actor {
         sets.put("Training", new EquipmentSet("training", 5));
         sets.put("Aquatic", new EquipmentSet("water", 5));
         sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
+        sets.put("CobaltAcc", new EquipmentSet("mana", 3));
     }
 
     public void setupPotions(String type1, int threshold1, String type2, int threshold2,
@@ -812,16 +814,28 @@ public class Player extends Actor {
         return result;
     }
 
+    public void gearStat(StringBuilder sb, String label, double stat, double gear_stat, boolean show_percent) {
+        sb.append(label).append(" = ");
+        sb.append(Math.round(stat));
+        sb.append(" (").append(Math.round(gear_stat));
+        if (show_percent) {
+            sb.append(" = ").append(df2.format(gear_stat * 100 / stat)).append("%");
+        }
+        sb.append(")");
+        sb.append("\n");
+    }
+
     public String getAllStats() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HP = ").append(Math.round(getHp_max())).append(" (").append(Math.round(gear_hp)).append(")\n");
+        gearStat(sb, "HP", getHp_max(), gear_hp, true);
         sb.append("MP = ").append(Math.round(getMp_max())).append("\n");
-        sb.append("ATK = ").append(Math.round(getAtk())).append(" (").append(Math.round(gear_atk)).append(")\n");
-        sb.append("DEF = ").append(Math.round(getDef())).append(" (").append(Math.round(gear_def)).append(")\n");
-        sb.append("INT = ").append(Math.round(getIntel())).append(" (").append(Math.round(gear_int)).append(")\n");
-        sb.append("RES = ").append(Math.round(getResist())).append(" (").append(Math.round(getGear_res())).append(")\n");
-        sb.append("HIT = ").append(Math.round(getHit())).append(" (").append(Math.round(getHit() - base_hit * getHit_mult())).append(")\n");
-        sb.append("SPD = ").append(Math.round(getSpeed())).append(" (").append(Math.round(gear_speed)).append(")\n\n");
+        gearStat(sb, "ATK", getAtk(), gear_atk, true);
+        gearStat(sb, "DEF", getDef(), gear_def, true);
+        gearStat(sb, "INT", getIntel(), gear_int, true);
+        gearStat(sb, "RES", getResist(), getGear_res(), true);
+        gearStat(sb, "HIT", getHit(), getHit() - base_hit * getHit_mult(), true);
+        gearStat(sb, "SPD", getSpeed(), gear_speed, true);
+        sb.append("\n");
         if (getWater() != 0) {
             sb.append("Water = ").append(Math.round(getWater())).append(" (").append(Math.round(gear_water)).append(
                     ")\n");
@@ -875,6 +889,7 @@ public class Player extends Actor {
         if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
         if (set_res > 1) sb.append("Set Res = ").append(df2.format(set_res * 100 - 100)).append("%\n");
         if (set_water > 1) sb.append("Set WaterDmg = ").append(df2.format(set_water * 100 - 100)).append("%\n");
+        if (set_fire > 1) sb.append("Set FireDmg = ").append(df2.format(set_fire * 100 - 100)).append("%\n");
         if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
         if (set_core > 0) {
@@ -887,6 +902,7 @@ public class Player extends Actor {
         }
         if (set_mit1 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit1 * 100)).append("%\n");
         if (set_mit2 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit2 * 100)).append("%\n");
+        if (set_mana > 0) sb.append("Set Manacost = ").append(df2.format(set_mana * -100)).append("%\n");
         if (finke_bonus > 0) sb.append("Tsury Finke bonus = ").append(df2.format(finke_bonus * 100)).append("%\n");
         return sb.toString();
     }

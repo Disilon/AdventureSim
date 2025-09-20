@@ -120,7 +120,7 @@ public class MonsterStatData {
             }
             cores.put(name, nested);
         }
-        base_rp += getCoreRP(grade, name) * 0.01 * (p.set_core * 1.5 + p.core_mult);
+        base_rp += getCoreRP(grade, name) * 0.01;
         double fractional = research / 100.0 - (double) (research / 100);
         int new_grade = Math.min(8, grade + research / 100);
         double gain = 0;
@@ -191,7 +191,7 @@ public class MonsterStatData {
         return sb.toString();
     }
 
-    public String getCoreData(Player p, double time) {
+    public String getCoreData(Player p, double time, boolean offline) {
         StringBuilder sb = new StringBuilder();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
                         + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue());
@@ -232,7 +232,7 @@ public class MonsterStatData {
             int new_grade = Math.min(8, grade + research / 100);
             for (String name : deaths.keySet()) {
                 double count = deaths.getOrDefault(name, 0);
-                offline_base_rp += getCoreRP(grade, name) * 0.01 * (p.set_core * 1.5 + p.core_mult) * count;
+                offline_base_rp += getCoreRP(grade, name) * 0.01 * count;
                 if (fractional > 0 && new_grade < 8) {
                     offline_rp += getCoreRP(new_grade, name) * drop_rate * count * (1 - fractional);
                     offline_rp += getCoreRP(new_grade + 1, name) * drop_rate * count * fractional;
@@ -241,11 +241,13 @@ public class MonsterStatData {
                 }
             }
         }
-        sb.append("RP/h: ").append(df2.format(gained_rp / time * 3600));
-        sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
-        sb.append("\n");
-        sb.append("Offline RP/h: ").append(df2.format(offline_rp / time * 3600));
-        sb.append(" (base: ").append(df2.format(offline_base_rp / time * 3600)).append(")");
+        if (offline) {
+            sb.append("Offline RP/h: ").append(df2.format(offline_rp / time * 3600));
+            sb.append(" (base: ").append(df2.format(offline_base_rp / time * 3600)).append(")");
+        } else {
+            sb.append("RP/h: ").append(df2.format(gained_rp / time * 3600));
+            sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
+        }
         sb.append("\n");
 //        if (Main.game_version < 1574) {
 //            double max = 0;

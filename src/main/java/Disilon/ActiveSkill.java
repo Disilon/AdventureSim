@@ -119,22 +119,34 @@ public class ActiveSkill {
         return actor.getMp() >= calculate_manacost(actor);
     }
 
-    public void startCast(Actor attacker, Actor target) {
+    public static double offlineTime(double add, double total_time) {
+        double exact = total_time + add;
+        double next_tick = Math.ceil(exact / 0.18) * 0.18;
+//        System.out.println("exact=" + add + "; next_tick=" + (next_tick - total_time));
+//        System.out.println(next_tick);
+        return next_tick - total_time;
+    }
+
+    public void startCast(Actor attacker, Actor target, boolean offline, double total_time) {
         double speed_mult = Math.clamp((target.getSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
         cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + target.stealthDelay();
-        if (attacker.isAmbushing()) cast = Math.max(0.01, cast - 5);
+        if (attacker.isAmbushing()) cast = Math.max(0.0, cast - 5);
+        if (offline) cast = offlineTime(cast, total_time); //offline tick test
+        cast = Math.max(0.01, cast);
         delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
-        used_in_rotation++;
+        if (offline) delay = offlineTime(delay, total_time); //offline tick test
         //System.out.println(attacker.getName() + " casting " + name + " at " + target.getName() + " cast: " + cast +
         //" delay: " + delay);
     }
 
-    public void startCastPlayer(Actor attacker) {
+    public void startCastPlayer(Actor attacker, boolean offline, double total_time) {
         double speed_mult = Math.clamp((attacker.zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
         cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + attacker.zone.stealthDelay();
-        if (attacker.isAmbushing()) cast = Math.max(0.01, cast - 5);
+        if (attacker.isAmbushing()) cast = Math.max(0.0, cast - 5);
+        if (offline) cast = offlineTime(cast, total_time); //offline tick test
+        cast = Math.max(0.01, cast);
         delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
-//        used_in_rotation++;
+        if (offline) delay = offlineTime(delay, total_time); //offline tick test
         if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name);
     }
 
@@ -190,6 +202,7 @@ public class ActiveSkill {
     public double calculate_manacost(Actor actor) {
         double cost = (mp * mp_mult + mp_additive) * actor.getMp_cost_mult() + actor.getMp_cost_add();
         cost *= 1 + actor.set_core;
+        cost *= 1 - actor.set_mana;
         if (element == Element.water) cost *= 1 - actor.finke_bonus;
         return cost;
     }
@@ -501,7 +514,6 @@ public class ActiveSkill {
                 dmg_mult += attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
-                if (element == Element.water) dmg_mult *= 1 + attacker.finke_bonus;
                 if (name.equals("Back Stab") && defender.isSmoked()) dmg_mult *= 2;
                 enemy_resist = switch (this.element) {
                     case Element.dark -> {
@@ -510,6 +522,7 @@ public class ActiveSkill {
                     }
                     case Element.fire -> {
                         atk = attacker.getFire();
+                        dmg_mult *= attacker.set_fire;
                         yield defender.getFire_res();
                     }
                     case Element.light -> {
@@ -518,6 +531,7 @@ public class ActiveSkill {
                     }
                     case Element.water -> {
                         atk = attacker.getWater();
+                        dmg_mult *= 1 + attacker.finke_bonus;
                         dmg_mult *= attacker.set_water;
                         yield defender.getWater_res();
                     }

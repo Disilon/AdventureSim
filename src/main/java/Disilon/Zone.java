@@ -182,4 +182,11 @@ public enum Zone {
             default -> -1;
         };
     }
+
+    public double getZoneOfflineMult() {
+        return switch (this) {
+            case z1, z2, z3, z4, z5, z6, z7, z8, z9, z11, z12 -> 1.03;
+            default -> 1;
+        };
+    }
 }

@@ -77,6 +77,7 @@ public class Setup implements Serializable {
     double sim_hours;
     int sim_cl;
     int rp_balance;
+    boolean offline;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
     HashMap<String, Double> research_lvls;
@@ -146,7 +147,7 @@ public class Setup implements Serializable {
         this.result_essential = "Click simulate to get sim data";
         this.stats = "Click simulate to calculate stats";
         this.zone = Zone.z9;
-        this.gameversion = "1580";
+        this.gameversion = String.valueOf(Main.availableVersions.getLast());
         this.milestone = 162.5;
         this.crafting_lvl = 20;
         this.alchemy_lvl = 20;
@@ -156,6 +157,7 @@ public class Setup implements Serializable {
         this.simulations = 1000;
         this.sim_hours = 12;
         this.sim_cl = 90;
+        this.offline = false;
     }
 
     public Zone getZone() {
@@ -756,5 +758,13 @@ public class Setup implements Serializable {
 
     public void setResearch_weight(HashMap<String, Double> research_weight) {
         this.research_weight = research_weight;
+    }
+
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
     }
 }

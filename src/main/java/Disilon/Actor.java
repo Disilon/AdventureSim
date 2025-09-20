@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static Disilon.Main.game_version;
 import static Disilon.Main.log;
 
 public class Actor {
@@ -82,6 +83,8 @@ public class Actor {
     protected double set_exp = 0;
     protected double set_training = 0;
     protected double set_water = 1;
+    protected double set_fire = 1;
+    protected double set_mana = 0;
 
     protected double hp_mult = 1;
     protected double mp_mult = 1;
@@ -347,9 +350,13 @@ public class Actor {
             }
             case "core" -> set_core = Math.clamp((10 + 0.4 * upgrade) * tier, 10, 100) / 100.0;
             case "water" -> set_water = 1 + stat_scaling;
+            case "fire" -> set_fire = 1 + stat_scaling;
             case "training" -> {
                 set_exp = Math.clamp((15 + 0.5 * upgrade) * tier, 15, 150) / 100.0;
                 set_training = Math.clamp((5 + 0.1 * upgrade) * tier, 5, 25) / 100.0;
+            }
+            case "mana" -> {
+                set_mana = Math.clamp((10 + 0.25 * upgrade) * tier, 10, 75) / 100.0;
             }
         }
     }
@@ -363,8 +370,10 @@ public class Actor {
         set_mit2 = 0;
         set_core = 0;
         set_water = 1;
+        set_fire = 1;
         set_exp = 0;
         set_training = 0;
+        set_mana = 0;
         for (EquipmentSet set : sets.values()) {
             set.current_items = 0;
             set.min_quality = null;
@@ -458,10 +467,11 @@ public class Actor {
         hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
         if (Main.game_version >= 1573) {
-            core_mult = 1 + dropBoost.bonus(passives) * 2;
+            core_mult = 1 + dropBoost.bonus(passives);
         }
-        core_mult = 1 + coreBoost.bonus(passives); //Ryu said it will be additive with gear bonuses
-
+        if (coreBoost.enabled) {
+            core_mult = 1 + coreBoost.bonus(passives);
+        }
         mp_cost_add = 0;
         mp_cost_mult = 1;
         clear_gear_stats();
@@ -516,7 +526,13 @@ public class Actor {
                 add_resist("Magic", item.magic_res * 0.01);
                 add_resist("Physical", item.phys_res * 0.01);
                 String set_type = item.displayName;
-                if (set_type.equals("Blazing")) set_type = "Cloth";
+                if (set_type.equals("Blazing")) {
+                    if (game_version >= 1591) {
+                        set_type = "Blazing";
+                    } else {
+                        set_type = "Cloth";
+                    }
+                }
                 if (set_type.equals("Windy")) set_type = "Leather";
                 if (set_type.equals("Bronze")) set_type = "Iron";
                 if (sets.containsKey(set_type)) {

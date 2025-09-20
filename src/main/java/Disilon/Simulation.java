@@ -16,6 +16,8 @@ public class Simulation {
     int sim_limit;
     double time_limit;
     int cl_limit;
+    boolean offline;
+    double time_mult = 1;
     Player player;
     StatusType status = StatusType.respawn;
     String title = "Default simulation.";
@@ -32,12 +34,14 @@ public class Simulation {
 
     public Player setupAndRun(Setup setup) {
         sim_type = setup.sim_type;
+        if (sim_type == 3) setup.leveling = true;
         sim_limit = setup.simulations;
         cl_limit = setup.sim_cl;
         time_limit = setup.sim_hours;
         player = new Player(setup);
         crafting_lvl = setup.crafting_lvl;
         alchemy_lvl = setup.alchemy_lvl;
+        offline = setup.offline;
         return run();
     }
 
@@ -75,6 +79,8 @@ public class Simulation {
         player.rp_drain = 0;
         title = player.zone.toString();
         time_to_respawn = player.zone.getTime_to_respawn();
+        time_mult = offline ? player.zone.getZoneOfflineMult() : 1;
+        time_limit = time_limit * time_mult;
         StringBuilder result = new StringBuilder();
         StringBuilder skills_log = new StringBuilder();
         StringBuilder lvling_log = new StringBuilder();
@@ -206,14 +212,14 @@ public class Simulation {
                         }
                     }
                     if (player.casting != null) {
-                        player.casting.startCastPlayer(player);
+                        player.casting.startCastPlayer(player, offline, total_time);
                     }
                 }
                 for (Iterator<Enemy> iterator = player.zone.enemies.iterator(); iterator.hasNext(); ) {
                     Enemy enemy = iterator.next();
                     if (enemy.casting == null) {
                         ActiveSkill enemyCast = enemy.getCasting(player);
-                        enemyCast.startCast(enemy, player);
+                        enemyCast.startCast(enemy, player, offline, total_time);
                     }
                 }
                 delta = 60;
@@ -351,20 +357,20 @@ public class Simulation {
                         kills++;
                         player.zone.stats.recordOverkill(enemy, player);
                         double max = 0;
-                        if (game_version < 1574 && 0.2 > Math.random()) {
-                            for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
-                                if (player.zone.stats.rp_instance[i] > 0 && max == 0) {
-                                    max = player.zone.stats.rp_instance[i];
-                                }
-                            }
-                            if (max > 0) {
-                                for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
-                                    player.zone.stats.rp_instance[i] = 0;
-                                }
-                                if (player.lvling) player.rp_balance += max;
-                                player.zone.stats.rp_instance[0] += max;
-                            }
-                        }
+//                        if (game_version < 1574 && 0.2 > Math.random()) {
+//                            for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
+//                                if (player.zone.stats.rp_instance[i] > 0 && max == 0) {
+//                                    max = player.zone.stats.rp_instance[i];
+//                                }
+//                            }
+//                            if (max > 0) {
+//                                for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
+//                                    player.zone.stats.rp_instance[i] = 0;
+//                                }
+//                                if (player.lvling) player.rp_balance += max;
+//                                player.zone.stats.rp_instance[0] += max;
+//                            }
+//                        }
                         if (player.lvling) {
                             player.levelActives();
                             player.levelTF(enemy);
@@ -496,6 +502,10 @@ public class Simulation {
             }
             if (log.contains("fight_end")) System.out.println("Fight ended\n\n");
         }
+
+        total_time /= time_mult;
+        min_time /= time_mult;
+        max_time /= time_mult;
         double exph = (exp / (total_time + death_time) * 3600);
         double exp_total_bonus = player.getExp_mult() * player.milestone_exp_mult;
         result.append("Exp/h: ").append(shorthand(exph)).append(" (");
@@ -592,7 +602,7 @@ public class Simulation {
 //        result.append("\nAverage delta: ").append((int) (delta_sum * 1000 / delta_count)).append("\n");
         result.append("\n");
         result.append("Cores: \n");
-        result.append(player.zone.stats.getCoreData(player, total_time));
+        result.append(player.zone.stats.getCoreData(player, total_time, offline));
         if (player.lvling) {
             if (player.milestone_exp_mult != player.old_milestone_exp_mult) {
                 lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));

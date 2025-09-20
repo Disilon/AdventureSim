@@ -7,6 +7,10 @@
 			"INT": 8,
 			"RES": 4,
 			"SET": "BronzeAcc"
+		}, "Cobalt Necklace": {
+			"INT": 10,
+			"RES": 10,
+			"SET": "CobaltAcc"
 		}
 	}, "RING": {
 		"Metal Ring": {
@@ -26,6 +30,10 @@
 			"SPD": 3,
 			"HIT": 3,
 			"SET": "BronzeAcc"
+		}, "Cobalt Ring": {
+			"ATK": 10,
+			"DEF": 10,
+			"SET": "CobaltAcc"
 		}
 	}
 }

@@ -254,21 +254,29 @@ public class Enemy extends Actor {
             case "Asura" -> {
                 base_lvl = 200;
                 base_hp_max = 150000 / base_lvl;
-                base_exp = 42000 / base_lvl;
+                if (Main.game_version >= 1587) {
+                    base_exp = 50500 / base_lvl;
+                } else {
+                    base_exp = 42000 / base_lvl;
+                }
                 base_def = 1000 / base_lvl;
                 base_int = 1600 / base_lvl;
                 base_res = 1000 / base_lvl;
                 base_hit = 1800 / base_lvl;
-                if (Main.game_version < 1566) {
+                if (Main.game_version >= 1566) {
+                    base_atk = 1560 / base_lvl;
+                    base_speed = 1700 / base_lvl;
+                    phys_res = -0.2;
+                    if (Main.game_version >= 1591) {
+                        fire_res = 0.3;
+                    } else {
+                        fire_res = 0.1;
+                    }
+                } else {
                     base_atk = 1700 / base_lvl;
                     base_speed = 1600 / base_lvl;
                     fire_res = 0.25;
                     phys_res = -0.3;
-                } else {
-                    base_atk = 1560 / base_lvl;
-                    base_speed = 1700 / base_lvl;
-                    fire_res = 0.1;
-                    phys_res = -0.2;
                 }
                 enemy_skills.add(holy_slash);
                 enemy_skills.add(holy_power_slash);
