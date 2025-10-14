@@ -131,7 +131,8 @@ public class Actor {
     protected double empower_hp = 0;
     protected double hp_regen = 0;
     protected double blessed = 0;
-    protected double buff_boost = 1;
+    protected double bless_boost = 1;
+    protected double bless_duration = 0;
     protected double core_mult = 1;
     protected double counter_strike = 0;
     protected double multi_arrows = 0;
@@ -185,7 +186,7 @@ public class Actor {
     protected PassiveSkill coreBoost = new PassiveSkill("Core Boost", 0.5, 10, 0.1);
 
     protected PassiveSkill lightBoost = new PassiveSkill("Light Boost", 0.3, 10, 0.3);
-    protected PassiveSkill buffMastery = new PassiveSkill("Buff Mastery", 0.3, 10, 0.3);
+    protected PassiveSkill blessMastery = new PassiveSkill("Bless Mastery", 0.3, 10, 0.3);
 
     protected PassiveSkill waterBoost = new PassiveSkill("Water Boost", 0.3, 10, 0.3);
     protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
@@ -420,7 +421,8 @@ public class Actor {
         core_mult = 1;
         counter_strike = 0;
         multi_arrows = 0;
-        buff_boost = 1;
+        bless_boost = 1;
+        bless_duration = 0;
         finke_bonus = 0;
 
         poison_mult *= 1.0 + poisonBoost.bonus(passives);
@@ -463,7 +465,8 @@ public class Actor {
         cast_speed_mult *= 1.0 - castBoost.bonus(passives);
         cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
-        buff_boost *= 1.0 + buffMastery.bonus(passives);
+        bless_boost *= 1.0 + blessMastery.bonus(passives);
+        bless_duration = blessMastery.bonus2(passives);
         hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
         if (Main.game_version >= 1573) {
@@ -1103,10 +1106,9 @@ public class Actor {
         this.dodge_mult = dodge_mult;
     }
 
-    public boolean isMulti_hit_override() {
+    public boolean isMulti_hit_override(String skill_name) {
         if (Main.game_version < 1566) return (multi_arrows > 0);
-        String casting = getCasting().name;
-        switch (casting) {
+        switch (skill_name) {
             case "Arrow Rain":
             case "Double Shot":
             case "Careful Shot":

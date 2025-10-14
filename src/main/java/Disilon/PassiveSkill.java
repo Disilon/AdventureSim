@@ -52,10 +52,11 @@ public class PassiveSkill {
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }
-            case "Buff Mastery" -> {
+            case "Bless Mastery" -> {
                 this.bonus = this.base_bonus * (1 + 0.04 * lvl);
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+                this.bonus2 = Main.game_version >= 1605 ? 1 + (int) (lvl / 10) : 1;
             }
             case "Core Boost" -> {
                 if (Main.game_version >= 1573) {

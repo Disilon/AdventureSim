@@ -131,8 +131,12 @@ public class Simulation {
                 while (player.casting == null) {
                     switch (skill_cycle) {
                         case 1 -> {
-                            if (skill1 != null && skill1.canCast(player) && skill1.shouldUse(player)) {
-                                player.casting = skill1;
+                            if (skill1 != null && skill1.shouldUse(player)) {
+                                if (skill1.canCast(player)) {
+                                    player.casting = skill1;
+                                } else {
+                                    player.casting = player.getWeakSkill();
+                                }
                                 skill1.used_in_rotation++;
                                 cycled = 0;
                             } else {
@@ -143,8 +147,12 @@ public class Simulation {
                             }
                         }
                         case 2 -> {
-                            if (skill2 != null && skill2.canCast(player) && skill2.shouldUse(player)) {
-                                player.casting = skill2;
+                            if (skill2 != null && skill2.shouldUse(player)) {
+                                if (skill2.canCast(player)) {
+                                    player.casting = skill2;
+                                } else {
+                                    player.casting = player.getWeakSkill();
+                                }
                                 skill2.used_in_rotation++;
                                 cycled = 0;
                             } else {
@@ -155,8 +163,12 @@ public class Simulation {
                             }
                         }
                         case 3 -> {
-                            if (skill3 != null && skill3.canCast(player) && skill3.shouldUse(player)) {
-                                player.casting = skill3;
+                            if (skill3 != null && skill3.shouldUse(player)) {
+                                if (skill3.canCast(player)) {
+                                    player.casting = skill3;
+                                } else {
+                                    player.casting = player.getWeakSkill();
+                                }
                                 skill3.used_in_rotation++;
                                 cycled = 0;
                             } else {
@@ -167,8 +179,12 @@ public class Simulation {
                             }
                         }
                         case 4 -> {
-                            if (skill4 != null && skill4.canCast(player) && skill4.shouldUse(player)) {
-                                player.casting = skill4;
+                            if (skill4 != null && skill4.shouldUse(player)) {
+                                if (skill4.canCast(player)) {
+                                    player.casting = skill4;
+                                } else {
+                                    player.casting = player.getWeakSkill();
+                                }
                                 skill4.used_in_rotation++;
                                 cycled = 0;
                             } else {
@@ -242,7 +258,7 @@ public class Simulation {
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
-                                if (player.casting.aoe || player.isMulti_hit_override()) {
+                                if (player.casting.aoe || player.isMulti_hit_override(player.casting.name)) {
                                     for (Enemy enemy : player.zone.enemies) {
                                         double dmg = player.casting.attack(player, enemy, 0);
                                         if (dmg > 0) {
@@ -343,7 +359,7 @@ public class Simulation {
                     }
                     if (enemy.getHp() <= 0) {
                         if (first_kill == 0) first_kill = time;
-                        if (player.last_skill.isSingleTarget() && player.set_core > 0 && player.set_core > Math.random()) {
+                        if (player.last_skill.isSingleTarget() && !player.isMulti_hit_override(player.last_skill.name) && player.set_core > 0 && player.set_core > Math.random()) {
                             enemy.setHp(0.0);
                         } else {
                             player.overkill -= enemy.getHp();
@@ -356,21 +372,6 @@ public class Simulation {
                         exp += exp_gain;
                         kills++;
                         player.zone.stats.recordOverkill(enemy, player);
-                        double max = 0;
-//                        if (game_version < 1574 && 0.2 > Math.random()) {
-//                            for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
-//                                if (player.zone.stats.rp_instance[i] > 0 && max == 0) {
-//                                    max = player.zone.stats.rp_instance[i];
-//                                }
-//                            }
-//                            if (max > 0) {
-//                                for (int i = 1; i < player.zone.stats.rp_instance.length; i++) {
-//                                    player.zone.stats.rp_instance[i] = 0;
-//                                }
-//                                if (player.lvling) player.rp_balance += max;
-//                                player.zone.stats.rp_instance[0] += max;
-//                            }
-//                        }
                         if (player.lvling) {
                             player.levelActives();
                             player.levelTF(enemy);
@@ -500,7 +501,7 @@ public class Simulation {
                     if (player.cl >= cl_limit) end = true;
                 }
             }
-            if (log.contains("fight_end")) System.out.println("Fight ended\n\n");
+            if (log.contains("fight_end")) System.out.println("Fight ended\n");
         }
 
         total_time /= time_mult;

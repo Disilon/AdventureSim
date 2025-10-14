@@ -323,6 +323,8 @@ public class Player extends Actor {
                 active_skills.put("Explosion", explosion);
                 active_skills.put("Elemental Blast", eblast);
                 active_skills.put("Push Blast", push);
+                active_skills.put("Magic Arrow", ma);
+                active_skills.put("Magic Missile", mm);
             }
             case "Priest" -> {
                 tier = 3;
@@ -333,7 +335,7 @@ public class Player extends Actor {
                 passives.put("Book Mastery", bookMastery);
                 passives.put("Ailment Res", ailmentRes);
                 passives.put("Light Boost", lightBoost);
-                passives.put("Buff Mastery", buffMastery);
+                passives.put("Bless Mastery", blessMastery);
                 if (Main.game_version >= 1568) {
                     active_skills.put("Holy Ray", hray1568);
                 } else {
@@ -1048,7 +1050,7 @@ public class Player extends Actor {
             case "Alchemy exp" -> 7200;
             case "Smithing exp" -> 7200;
             case "E. Quality mult" -> 21600;
-            case "E. Quality min" -> 28800;
+            case "E. Quality min" -> 21600;
             case "Drop rate" -> 14400;
             case "Equip HP" -> 7200;
             case "Equip Atk" -> 14400;

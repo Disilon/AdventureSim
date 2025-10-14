@@ -112,6 +112,7 @@ public class UserForm extends JFrame {
     private JScrollPane Stats_p;
     private JButton Save;
     private JButton Load;
+    private JButton LoadResearch;
     private JComboBox Enemy;
     private JComboBox GameVersion;
     private JSpinner Milestone;
@@ -1150,6 +1151,16 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Rp_balance, gbc);
+        LoadResearch = new JButton();
+        LoadResearch.setText("Load research/skills");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.gridheight = 2;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(10, 5, 0, 5);
+//        gbc.fill = GridBagConstraints.HORIZONTAL;
+        LeftPanel.add(LoadResearch, gbc);
 
         int row = 2;
         final JLabel label28 = new JLabel("Research:");
@@ -1319,6 +1330,25 @@ public class UserForm extends JFrame {
                         selected_tab.setText(fileChooser.getSelectedFile().getName().replaceFirst("[.][^.]+$", ""));
                     }
                     loadTab(selected_tab);
+                }
+            }
+        });
+        LoadResearch.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileChooser.setDialogTitle("Load setup from json file");
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int result = fileChooser.showOpenDialog(UserForm.this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    String path = fileChooser.getSelectedFile().getAbsolutePath();
+                    if (!path.endsWith(".json")) {
+                        path += ".json";
+                    }
+                    Setup file = loadFile(path);
+                    if (file != null) {
+                        Setup show_setup = file;
+                        if (show_setup != null) loadResearch(show_setup);
+                    }
                 }
             }
         });
@@ -1935,12 +1965,25 @@ public class UserForm extends JFrame {
         return data;
     }
 
+    private void migrateSetup(Setup data) {
+        if (data.playerclass.equals("Priest")) {
+            if (data.pskill1.equals("Buff Mastery")) data.pskill1 = "Bless Mastery";
+            if (data.pskill2.equals("Buff Mastery")) data.pskill2 = "Bless Mastery";
+            if (data.pskill3.equals("Buff Mastery")) data.pskill3 = "Bless Mastery";
+            if (data.pskill4.equals("Buff Mastery")) data.pskill4 = "Bless Mastery";
+            if (data.passives_lvls.containsKey("Buff Mastery")) {
+                data.passives_lvls.put("Bless Mastery", data.passives_lvls.get("Buff Mastery"));
+            }
+        }
+    }
+
     private Setup loadFile(String path) {
         Setup file = null;
         try {
             File def = new File(path);
             JsonReader reader = new JsonReader(new FileReader(def));
             file = gson.fromJson(reader, Setup.class);
+            migrateSetup(file);
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(RightPanel, ex.getMessage(), "Exception",
@@ -1954,7 +1997,6 @@ public class UserForm extends JFrame {
         Helmet_lvl.setValue(data.helmet_lvl);
         Helmet_name.setSelectedItem(data.helmet_name);
         Helmet_tier.setSelectedItem(data.helmet_tier);
-        Alchemy_lvl.setValue(data.alchemy_lvl);
         Accessory1_lvl.setValue(data.accessory1_lvl);
         Accessory1_name.setSelectedItem(data.accessory1_name);
         Accessory1_tier.setSelectedItem(data.accessory1_tier);
@@ -1974,13 +2016,11 @@ public class UserForm extends JFrame {
         ML.setValue((int) data.ml);
         CL_p.setValue((data.cl - (int) data.cl) * 100);
         ML_p.setValue((data.ml - (int) data.ml) * 100);
-        Crafting_lvl.setValue(data.crafting_lvl);
         Enemy.setSelectedItem(data.zone);
         GameVersion.setSelectedItem((int) Double.parseDouble(data.gameversion));
         MH_lvl.setValue(data.mh_lvl);
         MH_name.setSelectedItem(data.mh_name);
         MH_tier.setSelectedItem(data.mh_tier);
-        Milestone.setValue(data.milestone);
         Necklace_lvl.setValue(data.necklace_lvl);
         Necklace_name.setSelectedItem(data.necklace_name);
         Necklace_tier.setSelectedItem(data.necklace_tier);
@@ -2034,6 +2074,18 @@ public class UserForm extends JFrame {
         SimCL.setValue(data.sim_cl);
         Leveling.setSelected(data.leveling);
         Offline.setSelected(data.offline);
+        loadResearch(data);
+        showResult();
+        Stats.setCaretPosition(0);
+        Result.setCaretPosition(0);
+        Result_skills.setCaretPosition(0);
+        Result_lvling.setCaretPosition(0);
+    }
+
+    private void loadResearch(Setup data) {
+        Alchemy_lvl.setValue(data.alchemy_lvl);
+        Crafting_lvl.setValue(data.crafting_lvl);
+        Milestone.setValue(data.milestone);
         for (int i = 0; i < ActiveSkills.getRowCount(); i++) {
             String name = ActiveSkills.getValueAt(i, 0).toString();
             if (data.actives_lvls.containsKey(name)) {
@@ -2058,11 +2110,6 @@ public class UserForm extends JFrame {
             JSpinner w = research_w.get(name);
             if (w != null) w.setValue(data.research_weight.getOrDefault(name, 0.0));
         }
-        showResult();
-        Stats.setCaretPosition(0);
-        Result.setCaretPosition(0);
-        Result_skills.setCaretPosition(0);
-        Result_lvling.setCaretPosition(0);
     }
 
     private void showResult() {

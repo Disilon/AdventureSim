@@ -134,7 +134,7 @@ public class MonsterStatData {
             cores.get(name).merge(new_grade, 1.0, Double::sum);
             gain += getCoreRP(new_grade, name) * drop_rate * 1;
         }
-        if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain;
+        if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain; //todo:fix it
         gained_rp += gain;
         addCoreRandom(name, grade, p);
     }

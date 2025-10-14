@@ -87,6 +87,7 @@ public class ActiveSkill {
     }
 
     public boolean shouldUse(Actor actor) {
+        if (name.equals("Prepare")) return false;
         if (heal) {
             used_in_rotation++;
             return actor.getHp() / actor.getHp_max() * 100.0 < use_setting;
@@ -115,8 +116,9 @@ public class ActiveSkill {
     }
 
     public boolean canCast(Actor actor) {
-        if (name.equals("Prepare")) return false;
-        return actor.getMp() >= calculate_manacost(actor);
+        boolean enough_mp = actor.getMp() >= calculate_manacost(actor);
+        if (!enough_mp && log.contains("skill_enough_mp")) System.out.println(name + " skipped, not enough mp");
+        return enough_mp;
     }
 
     public static double offlineTime(double add, double total_time) {
@@ -393,7 +395,6 @@ public class ActiveSkill {
     public void use(Actor attacker) {
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         double gain = 0;
-        int duration_bonus = attacker.buff_boost > 1 ? 1 : 0;
         attacker.current_skill_hit = true;
         switch (name) {
             case "Hide":
@@ -451,8 +452,13 @@ public class ActiveSkill {
                     default -> {}
                 }
                 break;
+            case "Bless":
+                attacker.buffs.add(new Buff(buff_name, (int) (buff_duration + attacker.bless_duration),
+                        buff_bonus * attacker.bless_boost));
+//                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) (buff_duration + attacker.bless_duration));
+                break;
             default:
-                attacker.buffs.add(new Buff(buff_name, (int) (buff_duration + duration_bonus), buff_bonus * attacker.buff_boost));
+                attacker.buffs.add(new Buff(buff_name, (int) (buff_duration), buff_bonus));
 //                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) (buff_duration + duration_bonus));
                 break;
         }
@@ -463,6 +469,9 @@ public class ActiveSkill {
         }
         Zone zone = attacker.zone;
         if (zone != null) {
+            if (log.contains("skill_attack")) {
+                System.out.println(attacker.name + " used " + name);
+            }
             for (Enemy enemy : zone.enemies) {
                 if (heal && enemy.counter_heal) {
                     counter_attack(attacker, enemy, true); //Counter heal will log as Counter Strike
@@ -604,7 +613,7 @@ public class ActiveSkill {
                 } else {
                     dmg_mult *= (1 - enemy_resist);
                 }
-                dmg_mult *= attacker.isMulti_hit_override() ? attacker.multi_arrows : 1;
+                dmg_mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
                 dmg_mult *= (1 - attacker.set_training);
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
                 if (this.name.equals("Dispel")) {
@@ -625,7 +634,7 @@ public class ActiveSkill {
                                     calc_hits) * dmg_mult;
                     dmg = Math.max(1, dmg);
                     if (log.contains("skill_attack") && attacker.zone != null) {
-                        System.out.println(attacker.name + attacker + " dealt " + (int) dmg + " damage with " + this.name +
+                        System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name +
                                 " to " + defender.name);
                     }
                     total += dmg;
@@ -797,6 +806,6 @@ public class ActiveSkill {
     }
 
     public boolean isSingleTarget() {
-        return (!aoe && !random_targets);
+        return (!aoe);
     }
 }

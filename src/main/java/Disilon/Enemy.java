@@ -268,7 +268,7 @@ public class Enemy extends Actor {
                     base_speed = 1700 / base_lvl;
                     phys_res = -0.2;
                     if (Main.game_version >= 1591) {
-                        fire_res = 0.3;
+                        fire_res = 0.25;
                     } else {
                         fire_res = 0.1;
                     }
