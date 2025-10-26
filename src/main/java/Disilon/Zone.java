@@ -1,21 +1,21 @@
 package Disilon;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 import static Disilon.Main.df2;
 import static Disilon.Main.random;
 
 public enum Zone {
     z1("Slime"),
-    z2("Slime2/Imp/Goblin"),
-    z3("Goblin2/Imp2/Ghoul"),
-    z4("Wraith/Ghoul2"),
-    z5("Astaroth/Shinigami"),
+    z2("Slime2/Imp/Goblin", 1, 1),
+    z3("Goblin2/Imp2/Ghoul", 1, 2),
+    z4("Wraith/Ghoul2", 1, 2),
+    z5("Astaroth/Shinigami", 1, 2),
     z6("Tengu"),
     z7("Amon"),
-    z8("Tengu/Amon/Akuma"),
+    z8("Tengu/Amon/Akuma", 2, 3),
     z9("Devil"),
     z10("Shax"),
     z11("Dagon"),
@@ -23,60 +23,58 @@ public enum Zone {
     z13("Tyrant"),
     z14("Fairy"),
     z15("Raum"),
-    z16("Asura"),
+    z16("Asura", 2, 4),
     Dummy("Dummy"),
     HelplessDummy("Dummy");
 
     final String display_name;
     final String[] possible_enemies;
     public final ArrayList<Enemy> enemies = new ArrayList<>(1);
-    public int max_enemies;
+    public final int min_enemies;
+    public final int max_enemies;
     public double strength;
     public final MonsterStatData stats;
+    public int enemy_num;
+    public int initial_seed;
 
     Zone(String enemies) {
-        this.display_name = this.name() + "(" + enemies + ")";
-        max_enemies = enemies.split("/").length;
-        possible_enemies = new String[max_enemies];
-        System.arraycopy(enemies.split("/"), 0, possible_enemies, 0, max_enemies);
-        stats = new MonsterStatData(possible_enemies);
-        strength = 0.9;
+        this(enemies, 1, 1);
     }
 
-    @Override
-    public String toString() {
-        return display_name;
+    Zone(String enemies, int min, int max) {
+        min_enemies = min;
+        max_enemies = max;
+        this.display_name = this.name() + "(" + enemies + ")";
+        possible_enemies = new String[enemies.split("/").length];
+        System.arraycopy(enemies.split("/"), 0, possible_enemies, 0, enemies.split("/").length);
+        stats = new MonsterStatData(possible_enemies);
+        strength = 0.9;
+//        rerollSeed();
+    }
+
+    public void rerollSeed() {
+        if (max_enemies != 1) {
+            enemy_num = random.nextInt(min_enemies, max_enemies + 1);
+        } else {
+            enemy_num = 1;
+        }
+        strength = 0.9;
+        initial_seed = enemy_num;
+    }
+
+    public void incrementEnemyNum() {
+        enemy_num = enemy_num < max_enemies ? enemy_num + 1 : min_enemies;
     }
 
     public void respawn() {
         enemies.clear();
-        if (this == z16) {
-            int number = random.nextInt(2, 5);
-            max_enemies = 4;
-            for (int i = 0; i < number; i++) {
-                Enemy e = new Enemy();
-                e.setEnemy(possible_enemies[0]);
-                enemies.add(e);
-            }
-        } else {
-            if (max_enemies == 1) {
-                Enemy e = new Enemy();
-                e.setEnemy(possible_enemies[0]);
-                enemies.add(e);
-            } else {
-                int number = random.nextInt(max_enemies - 1, max_enemies + 1);
-                if (this == z2) number = 1;
-                if (this == z3) random.nextInt(1, 2);
-                for (int i = 0; i < number; i++) {
-                    Enemy e = new Enemy();
-                    e.setEnemy(possible_enemies[random.nextInt(0, max_enemies)]);
-                    enemies.add(e);
-                }
-            }
+        for (int i = 0; i < enemy_num; i++) {
+            Enemy e = new Enemy();
+            e.setEnemy(possible_enemies[random.nextInt(0, possible_enemies.length)]);
+            enemies.add(e);
         }
         StringBuilder sb = new StringBuilder();
         double individual_str_add = 0;
-        if (strength == 0.9) strength += 0.02 * (max_enemies - 1);
         for (Enemy e : enemies) {
             if (Main.game_version < 1535) {
                 e.rollStrength();
@@ -85,7 +83,11 @@ public enum Zone {
                 e.strength = strength + individual_str_add;
                 sb.append(df2.format(e.strength * 100)).append("; ");
                 e.reroll();
-                individual_str_add -= 0.02;
+                if (strength > 1) {
+                    individual_str_add -= 0.02;
+                } else {
+                    individual_str_add += 0.02;
+                }
             }
             if (this == HelplessDummy) {
                 e.atk = 1;
@@ -93,8 +95,10 @@ public enum Zone {
             }
         }
         incrementStrength();
+        incrementEnemyNum();
 //        System.out.println(sb);
 //        System.out.println(enemies.stream().map(Enemy::getName).collect(Collectors.joining(", ")));
+//        System.out.println(enemies.stream().map(Enemy::getHp_max_string).collect(Collectors.joining(", ")));
     }
 
     public double getAvgSpeed() {
@@ -188,5 +192,10 @@ public enum Zone {
             case z1, z2, z3, z4, z5, z6, z7, z8, z9, z11, z12 -> 1.03;
             default -> 1;
         };
+    }
+
+    @Override
+    public String toString() {
+        return display_name;
     }
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static Disilon.Main.dfm;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
 
@@ -134,6 +135,7 @@ public class Actor {
     protected double bless_boost = 1;
     protected double bless_duration = 0;
     protected double core_mult = 1;
+    protected double drop_mult = 1;
     protected double counter_strike = 0;
     protected double multi_arrows = 0;
     protected double finke_bonus = 0;
@@ -215,6 +217,7 @@ public class Actor {
     protected boolean aurablade_enabled;
     protected boolean eblast_enabled;
     public double milestone_exp_mult = 1;
+    public double r_spd_bonus = 0;
     public double old_milestone_exp_mult = 1;
     public ActiveSkill skill1;
     public ActiveSkill skill2;
@@ -469,6 +472,7 @@ public class Actor {
         bless_duration = blessMastery.bonus2(passives);
         hp_mult *= 1.0 + hpBoost.bonus(passives);
         hp_regen = hpRegen.bonus(passives);
+        drop_mult = 1 + dropBoost.bonus(passives);
         if (Main.game_version >= 1573) {
             core_mult = 1 + dropBoost.bonus(passives);
         }
@@ -669,6 +673,17 @@ public class Actor {
 
     public double getHp_max() {
         return hp_max * getHp_mult();
+    }
+
+    public String getHp_max_string() {
+        double num = getHp_max();
+        String pretty;
+        if (num > 15000) {
+            pretty = dfm.format(num / 1000) + "k";
+        } else {
+            pretty = String.valueOf((int) num);
+        }
+        return pretty;
     }
 
     public void setHp_max(double hp_max) {

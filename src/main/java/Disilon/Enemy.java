@@ -22,7 +22,7 @@ public class Enemy extends Actor {
             false, false);
 
     ActiveSkill soulslash = new ActiveSkill("Soul Slash", 1, 2250, 2750, 2, 0, 0.3, 75, Scaling.atk,
-            Element.phys, false, false);
+            Element.phys, true, false);
 
     ActiveSkill slash = new ActiveSkill("Dark Slash", 1, 135, 165, 1, 0, 0.9, 0.9, Scaling.atk, Element.dark,
             false, false);

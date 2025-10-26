@@ -672,6 +672,7 @@ public class ActiveSkill {
         if (game_version >= 1568) {
             dmg *= (1 - attacker.getPhys_res()) * 2;
         }
+        dmg *= (1 - defender.set_training) * defender.getDmg_mult();;
         dmg = Math.max(1, dmg);
         ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
         if (attacker.zone != null) {

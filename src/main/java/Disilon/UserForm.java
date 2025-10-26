@@ -118,6 +118,7 @@ public class UserForm extends JFrame {
     private JSpinner Milestone;
     private JSpinner Crafting_lvl;
     private JSpinner Alchemy_lvl;
+    private JSpinner R_spd_bonus;
     private JSpinner Rp_balance;
     private JButton Run;
     private JCheckBox SetSetup;
@@ -1071,7 +1072,7 @@ public class UserForm extends JFrame {
         LeftPanel.add(PassiveSkills, gbc);
 
         final JLabel label25 = new JLabel();
-        label25.setText("Milestone exp");
+        label25.setText("Milestone exp %");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -1135,11 +1136,29 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
 //        gbc.fill = GridBagConstraints.HORIZONTAL;
         LeftPanel.add(GameVersion, gbc);
+
+        final JLabel r_spd = new JLabel();
+        r_spd.setText("Research spd bonus %");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(r_spd, gbc);
+        R_spd_bonus = createCustomSpinner(0, 0, 1000, 1);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.NORTH;
+        LeftPanel.add(R_spd_bonus, gbc);
+
         final JLabel rp_balance_l = new JLabel();
         rp_balance_l.setText("Current RP:");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 10;
+        gbc.gridy = 12;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
@@ -1147,7 +1166,7 @@ public class UserForm extends JFrame {
         Rp_balance = new JSpinner(new SpinnerNumberModel(1000, 0, 1000000000, 1000));
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 11;
+        gbc.gridy = 13;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Rp_balance, gbc);
@@ -1155,7 +1174,7 @@ public class UserForm extends JFrame {
         LoadResearch.setText("Load research/skills");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 12;
+        gbc.gridy = 14;
         gbc.gridheight = 2;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(10, 5, 0, 5);
@@ -1898,6 +1917,7 @@ public class UserForm extends JFrame {
         data.mh_name = MH_name.getSelectedItem().toString();
         data.mh_tier = (Equipment.Quality) MH_tier.getSelectedItem();
         data.milestone = Double.parseDouble(Milestone.getValue().toString());
+        data.r_spd_bonus = Double.parseDouble(R_spd_bonus.getValue().toString());
         data.ml = ((int) Double.parseDouble(ML.getValue().toString()) + Double.parseDouble(ML_p.getValue().toString()) / 100);
         data.necklace_lvl = (int) Double.parseDouble(Necklace_lvl.getValue().toString());
         data.necklace_name = Necklace_name.getSelectedItem().toString();
@@ -2013,9 +2033,7 @@ public class UserForm extends JFrame {
         Chest_name.setSelectedItem(data.chest_name);
         Chest_tier.setSelectedItem(data.chest_tier);
         CL.setValue((int) data.cl);
-        ML.setValue((int) data.ml);
         CL_p.setValue((data.cl - (int) data.cl) * 100);
-        ML_p.setValue((data.ml - (int) data.ml) * 100);
         Enemy.setSelectedItem(data.zone);
         GameVersion.setSelectedItem((int) Double.parseDouble(data.gameversion));
         MH_lvl.setValue(data.mh_lvl);
@@ -2086,6 +2104,9 @@ public class UserForm extends JFrame {
         Alchemy_lvl.setValue(data.alchemy_lvl);
         Crafting_lvl.setValue(data.crafting_lvl);
         Milestone.setValue(data.milestone);
+        R_spd_bonus.setValue(data.r_spd_bonus);
+        ML.setValue((int) data.ml);
+        ML_p.setValue((data.ml - (int) data.ml) * 100);
         for (int i = 0; i < ActiveSkills.getRowCount(); i++) {
             String name = ActiveSkills.getValueAt(i, 0).toString();
             if (data.actives_lvls.containsKey(name)) {
@@ -2219,7 +2240,7 @@ public class UserForm extends JFrame {
             case "Max CL" -> 80;
             case "Sidecraft spd" -> 50;
             case "E. Quality min" -> 100;
-            default -> 999;
+            default -> 9999;
         };
     }
 

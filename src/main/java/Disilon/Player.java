@@ -35,9 +35,12 @@ public class Player extends Actor {
             Scaling.atkhit, Element.phys, false, false);
     ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
             1.5, Scaling.atkhit, Element.phys, false, false);
-    //not sure why, but hunter AR deals slightly more dmg than it should todo: do a test with other skills
     ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 10, 1.2, 1.1, Scaling.atk, Element.phys, false,
             false);
+    ActiveSkill attack = new ActiveSkill("Attack", 1, 90, 110, 1, 0, 1, 1, Scaling.atk, Element.phys, false,
+            false);
+    ActiveSkill aura_shot = new ActiveSkill("Aura Shot", 1, 112.5, 137.5, 1, 15, 0.9, 0.9, Scaling.atkint, Element.fire,
+            false,false);
     ActiveSkill db = new ActiveSkill("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
             false);
     ActiveSkill qh = new ActiveSkill("Quick Hit", 1, 76.5, 93.5, 1, 10, 0.7, 0.7, Scaling.atk, Element.phys, false,
@@ -110,9 +113,10 @@ public class Player extends Actor {
             Element.water, true, false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
-    public static String[] availableClasses = {"Sniper", "Assassin", "Pyromancer", "Knight", "Hunter", "Priest",
-            "Onion Knight", "Cleric", "Mage", "Fighter",
-            "Warrior", "Archer", "Student", "Thief", "Newbie"};
+    public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
+            "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
+            "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter",
+            "Onion Knight"};
 
     double rp_balance;
     double old_rp;
@@ -155,6 +159,7 @@ public class Player extends Actor {
         this.setEquip("Necklace", setup.necklace_name, setup.necklace_tier, setup.necklace_lvl);
         this.milestone_exp_mult = setup.milestone / 100;
         this.old_milestone_exp_mult = this.milestone_exp_mult;
+        this.r_spd_bonus = setup.r_spd_bonus / 100;
         this.disableAllActives();
         for (String skill : setup.passives_lvls.keySet()) {
             if (passives.containsKey(skill)) {
@@ -303,7 +308,9 @@ public class Player extends Actor {
                 passives.put("Defense Boost", defenseBoost);
                 passives.put("Fist Mastery", fistMastery);
                 passives.put("Counter Strike", counterStrike);
+                active_skills.put("Attack", attack);
                 active_skills.put("Quick Hit", qh);
+                active_skills.put("Aura Shot", aura_shot);
                 active_skills.put("Dragon Punch", dp);
                 active_skills.put("Whirling Foot", wf);
                 active_skills.put("First Aid", fa);
@@ -433,10 +440,18 @@ public class Player extends Actor {
                 passives.put("Defense Boost", defenseBoost);
                 passives.put("HP Regen", hpRegen);
                 passives.put("Sword Mastery", swordMastery);
+                active_skills.put("Attack", attack);
                 active_skills.put("Quick Hit", qh);
                 active_skills.put("Aura Blade", ab);
                 active_skills.put("Defense Break", db);
                 active_skills.put("Sword Rush", sr);
+            }
+            case "Squire" -> {
+                tier = 1;
+                passives.put("Attack Boost", attackBoost);
+                passives.put("Defense Boost", defenseBoost);
+                active_skills.put("Attack", attack);
+                active_skills.put("Quick Hit", qh);
             }
             case "Cleric" -> {
                 tier = 2;
@@ -455,9 +470,16 @@ public class Player extends Actor {
                 passives.put("Dagger Mastery", daggerMastery);
                 passives.put("Speed Boost", speedBoost);
                 passives.put("Dodge", dodge);
-                active_skills.put("Bash", bash);
                 active_skills.put("Double Attack", doubleattack);
+                active_skills.put("Bash", bash);
                 active_skills.put("Hide", hide);
+                active_skills.put("Prepare", prep);
+            }
+            case "Adventurer" -> {
+                tier = 1;
+                passives.put("Drop Boost", dropBoost);
+                passives.put("Speed Boost", speedBoost);
+                active_skills.put("Bash", bash);
                 active_skills.put("Prepare", prep);
             }
             case "Hunter" -> {
@@ -617,6 +639,24 @@ public class Player extends Actor {
                 base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Squire" -> {
+                base_hp_max = (double) (110 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Adventurer" -> {
+                base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Student" -> {
                 base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;
@@ -951,6 +991,7 @@ public class Player extends Actor {
     public void tick_research(double time) {
         int max_slots = research_lvls.getOrDefault("Research slot", 1.0).intValue();
         double r_spd = 1 + 0.01 * research_lvls.getOrDefault("Research spd", 0.0).intValue();
+        r_spd *= 1 + r_spd_bonus;
         int can_sustain = Math.min(max_slots, calc_max_research_slots(rp_balance / time * 3600 / r_spd));
         can_sustain = Math.min(can_sustain, (int) rp_balance / 10); //to make sure we don't swing from 0 to max slots
         StringBuilder sb = new StringBuilder();

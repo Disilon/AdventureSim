@@ -88,6 +88,7 @@ public class Simulation {
         player.setMp(player.getMp_max());
         player.debuffs.clear();
         player.buffs.clear();
+        player.zone.rerollSeed();
         boolean end = false;
         while (!end) {
             Enemy target = null;
@@ -541,6 +542,7 @@ public class Simulation {
         result.append("Kills/h without deaths: ").append(df2.format(kills / (total_time - ignore_deaths) * 3600)).append(
                 "\n");
         double item_drop = 1 + 0.01 * player.research_lvls.getOrDefault("Drop rate", 0.0).intValue();
+        item_drop *= player.drop_mult;
         if (kills_drop > 0 || item_drop > 1) {
             result.append("Item drop mult: ").append(df2.format((kills + kills_drop) / kills * item_drop)).append(
                     "\n");
@@ -576,8 +578,13 @@ public class Simulation {
             skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
         }
         skills_log.append("\n");
+        if (player.zone.max_enemies > 1) {
+            skills_log.append("Initial number of enemies seed: ").append(player.zone.initial_seed).append("\n");
+//            System.out.println("seed = " + player.zone.initial_seed + " exph = " + shorthand(exph));
+        }
         skills_log.append(player.zone.stats.getSkillData(cleared + failed));
         result.append("\nSimulations: ").append(cleared).append("\n");
+        result.append("Kills: ").append(kills).append("\n");
         result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
         result.append("Time in combat: ").append(Main.secToTime(total_time));
         result.append(" (").append(df2.format(total_time / 3600)).append(" h)\n");

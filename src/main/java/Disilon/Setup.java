@@ -78,6 +78,7 @@ public class Setup implements Serializable {
     int sim_cl;
     int rp_balance;
     boolean offline;
+    double r_spd_bonus;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
     HashMap<String, Double> research_lvls;
@@ -158,6 +159,7 @@ public class Setup implements Serializable {
         this.sim_hours = 12;
         this.sim_cl = 90;
         this.offline = false;
+        this.r_spd_bonus = 0;
     }
 
     public Zone getZone() {
@@ -766,5 +768,13 @@ public class Setup implements Serializable {
 
     public void setOffline(boolean offline) {
         this.offline = offline;
+    }
+
+    public double getResearch_spd() {
+        return r_spd_bonus;
+    }
+
+    public void setResearch_spd(double r_spd_bonus) {
+        this.r_spd_bonus = r_spd_bonus;
     }
 }
