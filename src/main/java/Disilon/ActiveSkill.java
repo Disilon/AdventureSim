@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import static Disilon.Main.df2;
 import static Disilon.Main.df4;
+import static Disilon.Main.dfm;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
 
@@ -129,14 +130,26 @@ public class ActiveSkill {
         return next_tick - total_time;
     }
 
+    public static double onlineTime(double add, double total_time) {
+        double exact = total_time + add;
+        double next_tick = Math.ceil(exact / 0.03) * 0.03;
+//        System.out.println("exact=" + add + "; next_tick=" + (next_tick - total_time));
+//        System.out.println(next_tick);
+        return next_tick - total_time;
+    }
+
     public void startCast(Actor attacker, Actor target, boolean offline, double total_time) {
         double speed_mult = Math.clamp((target.getSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
         cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + target.stealthDelay();
         if (attacker.isAmbushing()) cast = Math.max(0.0, cast - 5);
-        if (offline) cast = offlineTime(cast, total_time); //offline tick test
+        if (offline) {
+            cast = offlineTime(cast, total_time);
+        } else {
+            cast = onlineTime(cast, total_time);
+        }
         cast = Math.max(0.01, cast);
         delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
-        if (offline) delay = offlineTime(delay, total_time); //offline tick test
+        if (offline) delay = offlineTime(delay, total_time);
         //System.out.println(attacker.getName() + " casting " + name + " at " + target.getName() + " cast: " + cast +
         //" delay: " + delay);
     }
@@ -145,10 +158,14 @@ public class ActiveSkill {
         double speed_mult = Math.clamp((attacker.zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
         cast = 3 * speed_mult * attacker.getCast_speed_mult() * cast_mult + attacker.zone.stealthDelay();
         if (attacker.isAmbushing()) cast = Math.max(0.0, cast - 5);
-        if (offline) cast = offlineTime(cast, total_time); //offline tick test
+        if (offline) {
+            cast = offlineTime(cast, total_time);
+        } else {
+            cast = onlineTime(cast, total_time);
+        }
         cast = Math.max(0.01, cast);
         delay = 1 * speed_mult * attacker.getDelay_speed_mult() * delay_mult;
-        if (offline) delay = offlineTime(delay, total_time); //offline tick test
+        if (offline) delay = offlineTime(delay, total_time);
         if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name);
     }
 
@@ -411,6 +428,8 @@ public class ActiveSkill {
                 Roll roll = Roll.nothing;
                 double chance = 100.0 / rolls;
                 attacks_total += 1;
+//                System.out.println("Enemy hp = " + df2.format(attacker.zone.getMaxEnemyHpPercent())
+//                        + " Prayer execute = " + df2.format(power));
                 if (rng < chance) {
                     if (game_version >= 1574 && attacker.zone.getMaxEnemyHpPercent() > power){
                         roll = Roll.heal;
@@ -668,11 +687,15 @@ public class ActiveSkill {
     public void counter_attack(Actor attacker, Actor defender, boolean counter_dodge) {
         double atk = defender.getAtk();
         double def = attacker.getDef();
-        double dmg = (atk * 100 / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1, 1) * 2;
+        double enemy_mult = 2;
+        double dmg = (atk * 100 / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1, 1);
         if (game_version >= 1568) {
-            dmg *= (1 - attacker.getPhys_res()) * 2;
+            dmg *= (1 - attacker.getPhys_res());
+            enemy_mult = 4;
         }
-        dmg *= (1 - defender.set_training) * defender.getDmg_mult();;
+        if (attacker.zone != null) {
+            dmg *= enemy_mult;
+        }
         dmg = Math.max(1, dmg);
         ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
         if (attacker.zone != null) {
@@ -683,7 +706,7 @@ public class ActiveSkill {
             skill.hits_total += 1;
             skill.dmg_sum += dmg;
         }
-//        System.out.println(skill.name + ": " + dmg);
+//        System.out.println(skill.name + ": " + dmg + " defender hp: " + attacker.getHp_max_string() + " attacker hp: " + defender.getHp_max_string());
         attacker.setHp(attacker.getHp() - dmg);
     }
 
