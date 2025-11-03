@@ -368,7 +368,8 @@ public class Simulation {
 //                        for (Debuff d : enemy.debuffs) {
 //                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
 //                        }
-                        double exp_gain = enemy.getExp() * player.getExp_mult() * player.milestone_exp_mult;
+                        double exp_gain =
+                                enemy.getExp() * player.getExp_mult() * player.milestone_exp_mult * player.hard_reward;
                         if (player.lvling) player.increment_exp(exp_gain);
                         exp += exp_gain;
                         kills++;
@@ -643,6 +644,16 @@ public class Simulation {
                     lvling_log.append(entry.getKey()).append(" +").append(df2.format(change)).append("\n");
                 }
             }
+//            StringBuilder research = new StringBuilder();
+//            research.append(df2.format(player.research_lvls.get("Research slot"))).append("\t");
+//            research.append(df2.format(player.research_lvls.get("Research spd"))).append("\t");
+//            research.append(df2.format(player.research_lvls.get("Max CL"))).append("\t");
+//            research.append(df2.format(player.research_lvls.get("Exp gain"))).append("\t");
+//            research.append(df2.format(player.research_lvls.get("Core drop"))).append("\t");
+//            research.append(df2.format(player.research_lvls.get("Core quality"))).append("\t");
+//            research.append(df2.format(player.research_lvls.get("Sidecraft spd"))).append("\t");
+//            research.append(df2.format(player.research_lvls.get("E. Quality mult"))).append("\t");
+//            System.out.println(research);
         }
         lvling_info = "";
         if (!lvling_log.isEmpty()) {

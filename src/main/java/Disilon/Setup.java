@@ -79,6 +79,9 @@ public class Setup implements Serializable {
     int rp_balance;
     boolean offline;
     double r_spd_bonus;
+    double hard_hp;
+    double hard_stats;
+    double hard_reward;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
     HashMap<String, Double> research_lvls;
@@ -160,6 +163,9 @@ public class Setup implements Serializable {
         this.sim_cl = 90;
         this.offline = false;
         this.r_spd_bonus = 0;
+        this.hard_hp = 100;
+        this.hard_stats = 100;
+        this.hard_reward = 100;
     }
 
     public Zone getZone() {
@@ -776,5 +782,37 @@ public class Setup implements Serializable {
 
     public void setResearch_spd(double r_spd_bonus) {
         this.r_spd_bonus = r_spd_bonus;
+    }
+
+    public double getR_spd_bonus() {
+        return r_spd_bonus;
+    }
+
+    public void setR_spd_bonus(double r_spd_bonus) {
+        this.r_spd_bonus = r_spd_bonus;
+    }
+
+    public double getHard_hp() {
+        return hard_hp;
+    }
+
+    public void setHard_hp(double hard_hp) {
+        this.hard_hp = hard_hp;
+    }
+
+    public double getHard_stats() {
+        return hard_stats;
+    }
+
+    public void setHard_stats(double hard_stats) {
+        this.hard_stats = hard_stats;
+    }
+
+    public double getHard_reward() {
+        return hard_reward;
+    }
+
+    public void setHard_reward(double hard_reward) {
+        this.hard_reward = hard_reward;
     }
 }

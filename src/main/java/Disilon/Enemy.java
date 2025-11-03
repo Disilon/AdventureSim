@@ -510,26 +510,25 @@ public class Enemy extends Actor {
         //reroll();
     }
 
-    @Override
-    public void reroll() {
+    public void reroll(double hp_mult, double stats_mult) {
         int lvl = (int) Math.round(base_lvl * strength);
-        this.hp_max = base_hp_max * lvl;
+        this.hp_max = base_hp_max * lvl * hp_mult;
         this.hp = this.hp_max;
 //        System.out.println("HP=" + hp);
         this.exp = base_exp * lvl;
-        this.atk = base_atk * lvl;
-        this.def = base_def * lvl;
-        this.intel = base_int * lvl;
-        this.resist = base_res * lvl;
-        this.hit = base_hit * lvl;
-        this.speed = base_speed * lvl;
+        this.atk = base_atk * lvl * stats_mult;
+        this.def = base_def * lvl * stats_mult;
+        this.intel = base_int * lvl * stats_mult;
+        this.resist = base_res * lvl * stats_mult;
+        this.hit = base_hit * lvl * stats_mult;
+        this.speed = base_speed * lvl * stats_mult;
 
-        this.fire = base_fire * lvl;
-        this.water = base_water * lvl;
-        this.wind = base_wind * lvl;
-        this.earth = base_earth * lvl;
-        this.light = base_light * lvl;
-        this.dark = base_dark * lvl;
+        this.fire = base_fire * lvl * stats_mult;
+        this.water = base_water * lvl * stats_mult;
+        this.wind = base_wind * lvl * stats_mult;
+        this.earth = base_earth * lvl * stats_mult;
+        this.light = base_light * lvl * stats_mult;
+        this.dark = base_dark * lvl * stats_mult;
 
         this.debuffs.clear();
         this.casting = null;

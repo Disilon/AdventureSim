@@ -33,6 +33,8 @@ public enum Zone {
     public final int min_enemies;
     public final int max_enemies;
     public double strength;
+    public double hard_hp = 1;
+    public double hard_stats = 1;
     public final MonsterStatData stats;
     public int enemy_num;
     public int initial_seed;
@@ -78,11 +80,11 @@ public enum Zone {
         for (Enemy e : enemies) {
             if (Main.game_version < 1535) {
                 e.rollStrength();
-                e.reroll();
+                e.reroll(hard_hp, hard_stats);
             } else {
                 e.strength = strength + individual_str_add;
                 sb.append(df2.format(e.strength * 100)).append("; ");
-                e.reroll();
+                e.reroll(hard_hp, hard_stats);
                 if (strength > 1) {
                     individual_str_add -= 0.02;
                 } else {

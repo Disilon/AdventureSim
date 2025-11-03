@@ -122,6 +122,7 @@ public class Player extends Actor {
     double old_rp;
     double research_slots_stat;
     double rp_drain;
+    double hard_reward = 1;
     String previous_research;
 
     public Player() {
@@ -143,6 +144,9 @@ public class Player extends Actor {
         this.old_ml = setup.ml;
         this.lvling = setup.leveling;
         this.zone = setup.zone;
+        if (setup.hard_hp > 0) zone.hard_hp = setup.hard_hp / 100;
+        if (setup.hard_stats > 0) zone.hard_stats = setup.hard_stats / 100;
+        if (setup.hard_reward > 0) hard_reward = setup.hard_reward / 100;
         this.zone.stats.clear_recorded_data();
         this.setupPotions(setup.potion1, setup.potion1_t, setup.potion2, setup.potion2_t, setup.potion3, setup.potion3_t);
         this.clear_skills_recorded_data();

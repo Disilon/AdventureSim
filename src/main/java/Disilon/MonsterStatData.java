@@ -112,7 +112,7 @@ public class MonsterStatData {
     public void addCore(String name, int grade, Player p) {
         int research = p.research_lvls.get("Core quality").intValue();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
-                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue());
+                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -142,7 +142,7 @@ public class MonsterStatData {
     public void addCoreRandom(String name, int grade, Player p) {
         int research = p.research_lvls.get("Core quality").intValue();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
-                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue());
+                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
         double fractional = research / 100.0 - (double) (research / 100);
         int new_grade = Math.min(8, grade + research / 100);
         for (int i = 1; i < rp_instance.length; i++) {
@@ -194,7 +194,7 @@ public class MonsterStatData {
     public String getCoreData(Player p, double time, boolean offline) {
         StringBuilder sb = new StringBuilder();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
-                        + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue());
+                        + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
         for (String name : cores.keySet()) {
             sb.append(name).append(": ");
             boolean first = true;
