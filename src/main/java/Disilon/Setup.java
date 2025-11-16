@@ -90,6 +90,13 @@ public class Setup implements Serializable {
     public Setup() {
         this.passives_lvls = new HashMap<>();
         this.actives_lvls = new HashMap<>();
+        Player player = new Player();
+        for (String s : player.passives.keySet()) {
+            passives_lvls.put(s, 0.0);
+        }
+        for (String s : player.active_skills.keySet()) {
+            actives_lvls.put(s, 0.0);
+        }
         this.research_lvls = new HashMap<>();
         this.research_weight = new HashMap<>();
         this.rp_balance = 0;

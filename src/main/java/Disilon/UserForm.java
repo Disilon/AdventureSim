@@ -1206,7 +1206,7 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(r_spd, gbc);
-        R_spd_bonus = createCustomSpinner(0, 0, 1000, 1);
+        R_spd_bonus = createCustomSpinner(0, 0, 1000, 0.5);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 7;
@@ -1607,8 +1607,8 @@ public class UserForm extends JFrame {
                     int selectedOption = JOptionPane.showConfirmDialog(RightPanel, info, "Confirm", JOptionPane.YES_NO_OPTION);
                     if (selectedOption == JOptionPane.YES_OPTION) {
                         setup.milestone = player.milestone_exp_mult * 100;
-                        setup.ml = player.getMl() + player.getMLpercent() / 100;
-                        setup.cl = Math.min(player.getMaxCl(), player.getCl() + player.getCLpercent() / 100);
+                        setup.ml = player.ml + player.getMLpercent() / 100;
+                        setup.cl = Math.min(player.getMaxCl(), player.cl + player.getCLpercent() / 100);
                         for (String s : player.active_skills.keySet()) {
                             setup.actives_lvls.put(s, Math.min(20, player.active_skills.get(s).getLvl()));
                         }
@@ -2202,33 +2202,16 @@ public class UserForm extends JFrame {
         Pants_lvl.setValue(data.pants_lvl);
         Pants_name.setSelectedItem(data.pants_name);
         Pants_tier.setSelectedItem(data.pants_tier);
-        PlayerClass.setSelectedItem(data.playerclass);
         Potion1.setSelectedItem(data.potion1);
         Potion1_t.setValue(data.potion1_t);
         Potion2.setSelectedItem(data.potion2);
         Potion2_t.setValue(data.potion2_t);
         Potion3.setSelectedItem(data.potion3);
         Potion3_t.setValue(data.potion3_t);
-        Pskill1.setSelectedItem(data.pskill1);
-        Pskill2.setSelectedItem(data.pskill2);
-        Pskill3.setSelectedItem(data.pskill3);
-        Pskill4.setSelectedItem(data.pskill4);
         simulation.result_info = data.result_essential;
         simulation.skills_info = data.result_skills;
         simulation.lvling_info = data.result_lvling;
         SetSetup.setSelected(data.setsetup);
-        Skill1.setSelectedItem(data.skill1);
-        Skill1_mod.setSelectedItem(data.skill1_mod != null ? data.skill1_mod : SkillMod.Basic);
-        Skill1_s.setValue(data.skill1_s);
-        Skill2.setSelectedItem(data.skill2);
-        Skill2_mod.setSelectedItem(data.skill2_mod != null ? data.skill2_mod : SkillMod.Basic);
-        Skill2_s.setValue(data.skill2_s);
-        Skill3.setSelectedItem(data.skill3);
-        Skill3_mod.setSelectedItem(data.skill3_mod != null ? data.skill3_mod : SkillMod.Basic);
-        Skill3_s.setValue(data.skill3_s);
-        Skill4.setSelectedItem(data.skill4);
-        Skill4_mod.setSelectedItem(data.skill4_mod != null ? data.skill4_mod : SkillMod.Basic);
-        Skill4_s.setValue(data.skill4_s);
         Stats.setText(data.stats);
         switch (data.sim_type) {
             case 2:
@@ -2250,6 +2233,23 @@ public class UserForm extends JFrame {
         Hard_stats.setValue(data.hard_stats);
         Hard_reward.setValue(data.hard_reward);
         loadResearch(data);
+        PlayerClass.setSelectedItem(data.playerclass);
+        Pskill1.setSelectedItem(data.pskill1);
+        Pskill2.setSelectedItem(data.pskill2);
+        Pskill3.setSelectedItem(data.pskill3);
+        Pskill4.setSelectedItem(data.pskill4);
+        Skill1.setSelectedItem(data.skill1);
+        Skill1_mod.setSelectedItem(data.skill1_mod != null ? data.skill1_mod : SkillMod.Basic);
+        Skill1_s.setValue(data.skill1_s);
+        Skill2.setSelectedItem(data.skill2);
+        Skill2_mod.setSelectedItem(data.skill2_mod != null ? data.skill2_mod : SkillMod.Basic);
+        Skill2_s.setValue(data.skill2_s);
+        Skill3.setSelectedItem(data.skill3);
+        Skill3_mod.setSelectedItem(data.skill3_mod != null ? data.skill3_mod : SkillMod.Basic);
+        Skill3_s.setValue(data.skill3_s);
+        Skill4.setSelectedItem(data.skill4);
+        Skill4_mod.setSelectedItem(data.skill4_mod != null ? data.skill4_mod : SkillMod.Basic);
+        Skill4_s.setValue(data.skill4_s);
         showResult();
         Stats.setCaretPosition(0);
         Result.setCaretPosition(0);

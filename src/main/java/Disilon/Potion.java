@@ -12,14 +12,8 @@ public class Potion {
     int used;
     int count;
 
-    public Potion(String type, int tier, int threshold) {
-        this.type = type;
-        this.tier = tier;
-        this.threshold = threshold;
-    }
-
     public Potion(String type, int threshold) {
-        this.type = type.substring(0, 2);
+        this.type = type.toLowerCase().substring(0, 2);
         this.tier = Integer.parseInt(type.substring(4, 5));
         if (type.length() > 5) {
             this.tier += 10;
@@ -27,22 +21,15 @@ public class Potion {
         this.threshold = threshold;
     }
 
-    public Potion(String type, int tier, int threshold, int count) {
-        this.type = type;
-        this.tier = tier;
-        this.threshold = threshold;
-        this.count = count;
-    }
-
     public void checkPotion(Actor player, double time) {
         if (cooldown > 0) {
             cooldown -= time;
         }
         if (cooldown <= 0) {
-            switch (type.toLowerCase()) {
+            switch (type) {
                 case "hp":
-                    if (player.getHp() < player.getHp_max() * threshold / 100) {
-                        player.setHp(player.getHp() + hp_gain());
+                    if (player.hp < player.getHp_max() * threshold / 100) {
+                        player.setHp(player.hp + hp_gain());
                         cooldown = hp_cd();
                         used++;
                         count--;

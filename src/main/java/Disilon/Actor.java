@@ -12,150 +12,9 @@ import static Disilon.Main.dfm;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
 
-public class Actor {
-    protected String name;
-    protected int ml;
-    protected int cl;
-    protected int tier;
-    protected double hp_max;
-    protected double hp;
-    protected double mp_max;
-    protected double mp;
-    protected double atk;
-    protected double def;
-    protected double intel;
-    protected double resist;
-    protected double hit;
-    protected double speed;
-    protected double water;
-    protected double fire;
-    protected double wind;
-    protected double earth;
-    protected double light;
-    protected double dark;
-
-    protected double base_hp_max;
-    protected double base_atk;
-    protected double base_def;
-    protected double base_int;
-    protected double base_res;
-    protected double base_hit;
-    protected double base_speed;
-    protected double base_fire;
-    protected double base_water;
-    protected double base_wind;
-    protected double base_earth;
-    protected double base_light;
-    protected double base_dark;
-    protected double base_exp;
-    protected double base_water_res;
-    protected double base_fire_res;
-    protected double base_wind_res;
-    protected double base_earth_res;
-    protected double base_light_res;
-    protected double base_dark_res;
-    protected double base_phys_res;
-    protected double base_magic_res;
-
-    protected double gear_atk;
-    protected double gear_def;
-    protected double gear_int;
-    protected double gear_res;
-    protected double gear_hit;
-    protected double gear_speed;
-    protected double gear_hp;
-    protected double gear_water;
-    protected double gear_fire;
-    protected double gear_wind;
-    protected double gear_earth;
-    protected double gear_light;
-    protected double gear_dark;
-    protected double gear_crit;
-    protected double gear_burn;
-    protected double gear_stun;
-
-    protected double set_hit = 1;
-    protected double set_res = 1;
-    protected double set_magicdmg = 1;
-    protected double set_physdmg = 1;
-    protected double set_mit1 = 0;
-    protected double set_mit2 = 0;
-    protected double set_core = 0;
-    protected double set_exp = 0;
-    protected double set_training = 0;
-    protected double set_water = 1;
-    protected double set_fire = 1;
-    protected double set_mana = 0;
-
-    protected double hp_mult = 1;
-    protected double mp_mult = 1;
-    protected double atk_mult = 1;
-    protected double int_mult = 1;
-    protected double def_mult = 1;
-    protected double res_mult = 1;
-    protected double hit_mult = 1;
-    protected double speed_mult = 1;
-    protected double dodge_mult = 1;
-
-    protected double water_res;
-    protected double fire_res;
-    protected double wind_res;
-    protected double earth_res;
-    protected double light_res;
-    protected double dark_res;
-    protected double phys_res;
-    protected double magic_res;
-
-    protected double dmg_mult = 1;
-    protected double burn_mult = 1;
-    protected double poison_mult = 1;
-    protected double ailment_res = 1;
-    protected ActiveSkill prepare;
-    protected double prepare_threshold;
-    protected double exp;
-    protected double exp_mult = 1;
-    protected double mp_cost_add;
-    protected double mp_cost_mult = 1;
-    protected double cast_speed_mult = 1;
-    protected double delay_speed_mult = 1;
-
-    protected double hide_bonus = 0;
-    protected boolean smoked = false;
-    protected boolean ambushing = false;
-    protected double charge;
-    protected boolean remove_charge = false;
-    protected double def_break = 0;
-    protected double res_break = 0;
-    protected double weaken = 0;
-    protected double slow = 1;
-    protected double mark = 0;
-    protected double empower_hp = 0;
-    protected double hp_regen = 0;
-    protected double blessed = 0;
-    protected double bless_boost = 1;
-    protected double bless_duration = 0;
-    protected double core_mult = 1;
-    protected double drop_mult = 1;
-    protected double counter_strike = 0;
-    protected double multi_arrows = 0;
-    protected double finke_bonus = 0;
-    public double cl_exp;
-    public double ml_exp;
-    public boolean lvling = false;
-    protected double old_ml;
-    protected double old_cl;
-    public boolean counter_dodge = false;
-    public boolean counter_heal = false;
-    public double stun_time = 0;
-    public ActiveSkill last_skill;
-
-    protected LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
-    protected LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
-    protected LinkedHashMap<String, Equipment> equipment = new LinkedHashMap<String, Equipment>();
-    protected LinkedHashMap<String, EquipmentSet> sets = new LinkedHashMap<String, EquipmentSet>();
-
+public class Actor extends ActorStats {
     protected PassiveSkill attackBoost = new PassiveSkill("Attack Boost", 0.2, 10, 0.1);
-    protected PassiveSkill dropBoost = new PassiveSkill("Drop Boost", 0.15, 10, 0.1);
+    protected PassiveSkill dropBoost = new PassiveSkill("Drop Boost", 0.3, 10, 0.1);
     protected PassiveSkill daggerMastery = new PassiveSkill("Dagger Mastery", 0.2, 0, 0);
     protected PassiveSkill stealth = new PassiveSkill("Stealth", 0.2, 15, 0.15);
     protected PassiveSkill speedBoost = new PassiveSkill("Speed Boost", 0.2, 5, 0.2);
@@ -194,10 +53,9 @@ public class Actor {
     protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
     protected PassiveSkill tsuryFinke = new PassiveSkill("Tsury Finke", 0.0, 0, 0);
 
-    protected PassiveSkill expBoost = new PassiveSkill("Exp Boost", 0.15, 10, 0.1);
+    protected PassiveSkill extra_attack = new PassiveSkill("Extra Attack", 0.75, 15, 0.1);
 
-    protected ActiveSkill casting;
-    protected ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
+    protected PassiveSkill expBoost = new PassiveSkill("Exp Boost", 0.15, 10, 0.1);
 
     ActiveSkill weak_a = new ActiveSkill("Weak Attack", 1, 54, 66, 1, 0, 1, 1, Scaling.atk, Element.phys,
             false, false);
@@ -206,34 +64,7 @@ public class Actor {
     ActiveSkill counter_strike_log = new ActiveSkill("Counter Strike");
     ActiveSkill counter_dodge_log = new ActiveSkill("Counter Dodge");
 
-    public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
-    public ArrayList<Buff> buffs = new ArrayList<Buff>();
-    public Zone zone = null;
-    public double dot_tracking = 0;
-    public double overkill = 0;
-    public double damage_taken = 0;
-    protected boolean holylight_enabled;
-    protected boolean prayer_enabled;
-    protected boolean aurablade_enabled;
-    protected boolean eblast_enabled;
-    public double milestone_exp_mult = 1;
-    public double r_spd_bonus = 0;
-    public double old_milestone_exp_mult = 1;
-    public ActiveSkill skill1;
-    public ActiveSkill skill2;
-    public ActiveSkill skill3;
-    public ActiveSkill skill4;
-    public Potion potion1;
-    public Potion potion2;
-    public Potion potion3;
-    public HashMap<String, Double> research_lvls;
-    public HashMap<String, Double> research_old_lvls;
-    public HashMap<String, Double> research_weight;
-    public boolean current_skill_hit = false;
-    public double ambush_bonus = 0;
-
     public Actor() {
-        coreBoost.base_bonus2 = 0.125;
     }
 
     public void check_debuffs() {
@@ -260,7 +91,7 @@ public class Actor {
             if (!Objects.equals(d.name, "Mark")) d.duration--;
             this.hp -= d.dmg;
             dot_tracking += d.dmg;
-//            if (d.dmg > 0) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
+            if (d.dmg > 0 && log.contains("dot_dmg")) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
             if (d.duration < 0) debuff_iterator.remove();
         }
         check_debuffs();
@@ -271,10 +102,12 @@ public class Actor {
         charge = 0;
         blessed = 0;
         empower_hp = 0;
+        elemental_buff = 0;
         for (Buff b : buffs) {
             if (Objects.equals(b.name, "Charge Up")) charge = b.effect;
             if (Objects.equals(b.name, "Bless")) blessed = b.effect;
             if (Objects.equals(b.name, "Empower HP")) empower_hp = b.effect;
+            if (Objects.equals(b.name, "Elemental Buff")) elemental_buff = b.effect;
         }
     }
 
@@ -291,7 +124,7 @@ public class Actor {
                 remove_charge = false;
             }
             if (b.duration < 0 || (b.duration == 0 && Objects.equals(b.name, "Charge Up"))) {
-                if (log.contains("buff_remove") && zone != null) {
+                if (log.contains("buff_remove")) {
                     System.out.println(b.name + " was removed from " + name);
                 }
                 buff_iterator.remove();
@@ -321,6 +154,21 @@ public class Actor {
         Equipment e = Main.equipmentData.items.get(name).clone();
         e.setQualityLvl(quality, lvl);
         equipment.put(slot, e);
+    }
+
+    public void initializeSets() {
+        sets.put("Cloth", new EquipmentSet("magicdmg", 5));
+        sets.put("Blazing", new EquipmentSet("fire", 5));
+        sets.put("Leather", new EquipmentSet("hit", 5));
+        sets.put("Dark", new EquipmentSet("physdmg", 5));
+        sets.put("Metal", new EquipmentSet("mit1", 5));
+        sets.put("Iron", new EquipmentSet("mit2", 5));
+        sets.put("Holy", new EquipmentSet("res", 5));
+        sets.put("Hunter", new EquipmentSet("core", 5));
+        sets.put("Training", new EquipmentSet("training", 5));
+        sets.put("Aquatic", new EquipmentSet("water", 5));
+        sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
+        sets.put("CobaltAcc", new EquipmentSet("mana", 3));
     }
 
     public void enableSet(String bonus, Equipment.Quality quality, int upgrade) {
@@ -387,7 +235,7 @@ public class Actor {
 
     public void checkAmbush() {
         if (ambush.enabled) {
-            setAmbushing(true);
+            ambushing = true;
             ambush_bonus = ambush.bonus;
         }
     }
@@ -575,7 +423,7 @@ public class Actor {
         hit = (base_hit + gear_hit) * set_hit;
         speed = (base_speed + gear_speed);
         hp_max = (base_hp_max + gear_hp);
-        mp_max = (resist * 3 + intel) * getMp_mult();
+        mp_max = (resist * 3 + intel) * mp_mult;
         if (set_mit1 > 0) add_resist("All", set_mit1);
         if (set_mit2 > 0) add_resist("All", set_mit2);
         exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0,
@@ -656,9 +504,6 @@ public class Actor {
     public void setCLML(int cl, int ml) {
     }
 
-    public void reroll() {
-    }
-
     public double getPrepare_hps() {
         return getHp_max() * (0.011 + 0.000225 * prepare.lvl);
     }
@@ -672,7 +517,7 @@ public class Actor {
     }
 
     public double getHp_max() {
-        return hp_max * getHp_mult();
+        return hp_max * hp_mult;
     }
 
     public String getHp_max_string() {
@@ -686,10 +531,6 @@ public class Actor {
         return pretty;
     }
 
-    public void setHp_max(double hp_max) {
-        this.hp_max = hp_max;
-    }
-
     public double getHp() {
         return hp;
     }
@@ -698,16 +539,16 @@ public class Actor {
         this.hp = Math.min(getHp_max(), hp);
     }
 
+    public void setHp(double hp, double overheal) {
+        this.hp = Math.min(getHp_max() * (1 + overheal), hp);
+    }
+
     public double getMp_max() {
         return getResist() * 3 + getIntel();
     }
 
     public double getMp_max_no_buffs() {
         return getResist_no_buffs() * 3 + getIntel_no_buffs();
-    }
-
-    public void setMp_max(double mp_max) {
-        this.mp_max = mp_max;
     }
 
     public double getMp() {
@@ -719,119 +560,75 @@ public class Actor {
     }
 
     public double getAtk() {
-        return atk * (getAtk_mult() + blessed) + empower_hp * getHp_max();
+        return atk * (atk_mult + blessed) + empower_hp * getHp_max();
     }
 
     public double getAtk_no_buffs() {
-        return atk * (getAtk_mult());
-    }
-
-    public void setAtk(double atk) {
-        this.atk = atk;
+        return atk * (atk_mult);
     }
 
     public double getDef() {
-        return def * (getDef_mult() + blessed - def_break - mark);
+        return def * (def_mult + blessed - def_break - mark);
     }
 
     public double getDef_no_buffs() {
-        return def * (getDef_mult());
-    }
-
-    public void setDef(double def) {
-        this.def = def;
+        return def * (def_mult);
     }
 
     public double getIntel() {
-        return intel * (getInt_mult() + blessed);
+        return intel * (int_mult + blessed);
     }
 
     public double getIntel_no_buffs() {
-        return intel * (getInt_mult());
-    }
-
-    public void setIntel(double intel) {
-        this.intel = intel;
+        return intel * (int_mult);
     }
 
     public double getResist() {
-        return resist * (getRes_mult() - mark - res_break + blessed);
+        return resist * (res_mult - mark - res_break + blessed);
     }
 
     public double getResist_no_buffs() {
-        return resist * (getRes_mult());
+        return resist * (res_mult);
     }
 
     public double getGear_res() {
-        return getResist() - base_res * (getRes_mult() - mark - res_break + blessed);
-    }
-
-    public void setResist(double resist) {
-        this.resist = resist;
+        return getResist() - base_res * (res_mult - mark - res_break + blessed);
     }
 
     public double getHit() {
-        return hit * getHit_mult();
+        return hit * hit_mult;
     }
 
     public double getHit_no_buffs() {
-        return hit * getHit_mult();
-    }
-
-    public void setHit(double hit) {
-        this.hit = hit;
+        return hit * hit_mult;
     }
 
     public double getSpeed() {
-        return speed * getSpeed_mult() * slow;
+        return speed * speed_mult * slow;
     }
 
     public double getSpeed_no_buffs() {
-        return speed * getSpeed_mult();
-    }
-
-    public void setSpeed(double speed) {
-        this.speed = speed;
+        return speed * speed_mult;
     }
 
     public double getDark() {
         return dark;
     }
 
-    public void setDark(double dark) {
-        this.dark = dark;
-    }
-
     public double getWater() {
         return water;
-    }
-
-    public void setWater(double water) {
-        this.water = water;
     }
 
     public double getFire() {
         return fire;
     }
 
-    public void setFire(double fire) {
-        this.fire = fire;
-    }
-
     public double getWind() {
         return wind;
     }
 
-    public void setWind(double wind) {
-        this.wind = wind;
-    }
-
     public double getEarth() {
         return earth;
-    }
-
-    public void setEarth(double earth) {
-        this.earth = earth;
     }
 
     public double getLight() {
@@ -846,64 +643,32 @@ public class Actor {
         return water_res;
     }
 
-    public void setWater_res(double water_res) {
-        this.water_res = water_res;
-    }
-
     public double getFire_res() {
         return fire_res;
-    }
-
-    public void setFire_res(double fire_res) {
-        this.fire_res = fire_res;
     }
 
     public double getWind_res() {
         return wind_res;
     }
 
-    public void setWind_res(double wind_res) {
-        this.wind_res = wind_res;
-    }
-
     public double getEarth_res() {
         return earth_res;
-    }
-
-    public void setEarth_res(double earth_res) {
-        this.earth_res = earth_res;
     }
 
     public double getLight_res() {
         return light_res;
     }
 
-    public void setLight_res(double light_res) {
-        this.light_res = light_res;
-    }
-
     public double getDark_res() {
         return dark_res;
-    }
-
-    public void setDark_res(double dark_res) {
-        this.dark_res = dark_res;
     }
 
     public double getPhys_res() {
         return phys_res;
     }
 
-    public void setPhys_res(double phys_res) {
-        this.phys_res = phys_res;
-    }
-
     public double getMagic_res() {
         return magic_res;
-    }
-
-    public void setMagic_res(double magic_res) {
-        this.magic_res = magic_res;
     }
 
     public double getDmg_mult() {
@@ -913,212 +678,12 @@ public class Actor {
         return dmg_mult * mult;
     }
 
-    public void setDmg_mult(double dmg_mult) {
-        this.dmg_mult = dmg_mult;
-    }
-
     public double stealthDelay() {
-        if (Main.game_version >= 1534) {
-            return stealth.enabled ? 1.2 * (1 + 0.02 * stealth.lvl) : 0;
-        } else {
-            return stealth.enabled ? 1 : 0;
-        }
-    }
-
-    public boolean isPoison_boost() {
-        return poisonBoost.enabled;
-    }
-
-    public double getHp_mult() {
-        return hp_mult;
-    }
-
-    public void setHp_mult(double hp_mult) {
-        this.hp_mult = hp_mult;
-    }
-
-    public double getMp_mult() {
-        return mp_mult;
-    }
-
-    public void setMp_mult(double mp_mult) {
-        this.mp_mult = mp_mult;
-    }
-
-    public double getAtk_mult() {
-        return atk_mult;
-    }
-
-    public void setAtk_mult(double atk_mult) {
-        this.atk_mult = atk_mult;
-    }
-
-    public double getInt_mult() {
-        return int_mult;
-    }
-
-    public void setInt_mult(double int_mult) {
-        this.int_mult = int_mult;
-    }
-
-    public double getDef_mult() {
-        return def_mult;
-    }
-
-    public void setDef_mult(double def_mult) {
-        this.def_mult = def_mult;
-    }
-
-    public double getRes_mult() {
-        return res_mult;
-    }
-
-    public void setRes_mult(double res_mult) {
-        this.res_mult = res_mult;
-    }
-
-    public double getHit_mult() {
-        return hit_mult;
-    }
-
-    public void setHit_mult(double hit_mult) {
-        this.hit_mult = hit_mult;
-    }
-
-    public double getSpeed_mult() {
-        return speed_mult;
-    }
-
-    public void setSpeed_mult(double speed_mult) {
-        this.speed_mult = speed_mult;
-    }
-
-    public double getPoison_mult() {
-        return poison_mult;
-    }
-
-    public void setPoison_mult(double poison_mult) {
-        this.poison_mult = poison_mult;
-    }
-
-    public double getAilment_res() {
-        return ailment_res;
-    }
-
-    public void setAilment_res(double ailment_res) {
-        this.ailment_res = ailment_res;
-    }
-
-    public boolean isSmoked() {
-        return smoked;
-    }
-
-    public void setSmoked(boolean smoked) {
-        this.smoked = smoked;
-    }
-
-    public double getDef_break() {
-        return def_break;
-    }
-
-    public void setDef_break(double def_break) {
-        this.def_break = def_break;
-    }
-
-    public double getExp() {
-        return exp;
-    }
-
-    public void setExp(double exp) {
-        this.exp = exp;
-    }
-
-    public double getExp_mult() {
-        return exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp gain", 0.0).intValue());
-    }
-
-    public void setExp_mult(double exp_mult) {
-        this.exp_mult = exp_mult;
-    }
-
-    public ActiveSkill getCasting() {
-        return casting;
-    }
-
-    public void setCasting(ActiveSkill casting) {
-        this.casting = casting;
-    }
-
-    public double getMp_cost_add() {
-        return mp_cost_add;
-    }
-
-    public void setMp_cost_add(double mp_cost_add) {
-        this.mp_cost_add = mp_cost_add;
-    }
-
-    public double getMp_cost_mult() {
-        return mp_cost_mult;
-    }
-
-    public void setMp_cost_mult(double mp_cost_mult) {
-        this.mp_cost_mult = mp_cost_mult;
-    }
-
-    public double getCast_speed_mult() {
-        return cast_speed_mult;
-    }
-
-    public void setCast_speed_mult(double cast_speed_mult) {
-        this.cast_speed_mult = cast_speed_mult;
-    }
-
-    public boolean isAmbushing() {
-        return ambushing;
-    }
-
-    public void setAmbushing(boolean ambushing) {
-        this.ambushing = ambushing;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getMl() {
-        return ml;
-    }
-
-    public void setMl(int ml) {
-        this.ml = ml;
-    }
-
-    public int getCl() {
-        return cl;
-    }
-
-    public void setCl(int cl) {
-        this.cl = cl;
-    }
-
-    public double getDelay_speed_mult() {
-        return delay_speed_mult;
-    }
-
-    public void setDelay_speed_mult(double delay_speed_mult) {
-        this.delay_speed_mult = delay_speed_mult;
+        return stealth.enabled ? 1.2 * (1 + 0.02 * stealth.lvl) : 0;
     }
 
     public double getDodge_mult() {
         return dodge_mult * (1.0 - mark);
-    }
-
-    public void setDodge_mult(double dodge_mult) {
-        this.dodge_mult = dodge_mult;
     }
 
     public boolean isMulti_hit_override(String skill_name) {

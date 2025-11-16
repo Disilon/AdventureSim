@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
+import static Disilon.Main.log;
 import static Disilon.Main.minIfNotZero;
 import static Disilon.UserForm.maxResearchLvl;
 
@@ -31,9 +32,7 @@ public class Player extends Actor {
             false, false);
     ActiveSkill ds = new ActiveSkill("Double Shot", 2, 76.5, 93.5, 1, 12, 1.1, 1.1, Scaling.atkhit, Element.phys,
             false, false);
-    ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 20, 1.5, 1.5,
-            Scaling.atkhit, Element.phys, false, false);
-    ActiveSkill ar1535 = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
+    ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
             1.5, Scaling.atkhit, Element.phys, false, false);
     ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 10, 1.2, 1.1, Scaling.atk, Element.phys, false,
             false);
@@ -55,14 +54,8 @@ public class Player extends Actor {
             false);
     ActiveSkill fball = new ActiveSkill("Fire Ball", 1, 99, 121, 1.35, 20, 1.15, 1, Scaling.intel, Element.fire,
             false, false);
-    ActiveSkill fpillar = new ActiveSkill("Fire Pillar", 1, 180, 220, 1.0, 36, 1.5,
-            1.5,
-            Scaling.intel,
-            Element.fire, false, false);
-    ActiveSkill fpillar1537 = new ActiveSkill("Fire Pillar", 1, 180, 220, 1.0, 50, 1.5,
-            1.5,
-            Scaling.intel,
-            Element.fire, false, false);
+    ActiveSkill fpillar = new ActiveSkill("Fire Pillar", 1, 180, 220, 1.0, 50, 1.5,
+            1.5, Scaling.intel, Element.fire, false, false);
     ActiveSkill explosion = new ActiveSkill("Explosion", 1, 1350, 1650, 1.15, 500, 8, 30, Scaling.intel,
             Element.fire, true, false);
     ActiveSkill eblast = new ActiveSkill("Elemental Blast", 1, 117, 143, 1.0, 20, 1.2, 1.2, Scaling.intel,
@@ -111,11 +104,17 @@ public class Player extends Actor {
             Element.water, false, false);
     ActiveSkill onion_wave = new ActiveSkill("Onion Wave", 1, 299.7, 366.3, 0.99, 333, 2.9, 5, Scaling.atk,
             Element.water, true, false);
+    ActiveSkill throw_sand = new ActiveSkill("Throw Sand", 1, 0, 0, 0, 20, 0.8, 0.5, Scaling.atk, Element.phys,
+            false, false);
+    ActiveSkill backstab = new ActiveSkill("Back Stab", 1, 225, 275, 2, 80, 2, 2, Scaling.atk, Element.water,
+            false, false);
+    ActiveSkill extra_attack_proc = new ActiveSkill("Extra Attack", 1, 75, 75, 100, 0, 0, 0, Scaling.atk,
+            Element.water,false, false);
     ActiveSkill prep = new ActiveSkill("Prepare");
 
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
-            "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter",
+            "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue",
             "Onion Knight"};
 
     double rp_balance;
@@ -123,7 +122,10 @@ public class Player extends Actor {
     double research_slots_stat;
     double rp_drain;
     double hard_reward = 1;
+    double total_exp_mult = 1;
     String previous_research;
+    boolean decide_research = false;
+    LinkedHashMap<String, Double> research_weight_sorted = new LinkedHashMap<>(32);
 
     public Player() {
         addSkillEffects();
@@ -196,6 +198,7 @@ public class Player extends Actor {
             this.skill4.setSkill(setup.skill4_mod);
         }
         this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3, setup.pskill4});
+        calc_exp_mult();
     }
 
     public void addSkillEffects() {
@@ -209,29 +212,15 @@ public class Player extends Actor {
         charge_up.addBuff("Charge Up", 1, 1.5);
         fball.addDebuff("Burn", 3, 1);
         fpillar.addDebuff("Burn", 3, 1);
-        fpillar1537.addDebuff("Burn", 3, 1);
         explosion.addDebuff("Burn", 3, 1);
         bless.addBuff("Bless", 2, 0.3);
         empowerhp.addBuff("Empower HP", 7, 0.05);
         weakening.addDebuff("Weaken", 4, 0.25);
+        throw_sand.addDebuff("Smoke", 3, 0);
+        throw_sand.addBuff("Elemental Buff", 3, 0.3);
         ar.random_targets = true;
         careful.overkill = false;
         aimed.can_kill = false;
-    }
-
-    public void initializeSets() {
-        sets.put("Cloth", new EquipmentSet("magicdmg", 5));
-        sets.put("Blazing", new EquipmentSet("fire", 5));
-        sets.put("Leather", new EquipmentSet("hit", 5));
-        sets.put("Dark", new EquipmentSet("physdmg", 5));
-        sets.put("Metal", new EquipmentSet("mit1", 5));
-        sets.put("Iron", new EquipmentSet("mit2", 5));
-        sets.put("Holy", new EquipmentSet("res", 5));
-        sets.put("Hunter", new EquipmentSet("core", 5));
-        sets.put("Training", new EquipmentSet("training", 5));
-        sets.put("Aquatic", new EquipmentSet("water", 5));
-        sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
-        sets.put("CobaltAcc", new EquipmentSet("mana", 3));
     }
 
     public void setupPotions(String type1, int threshold1, String type2, int threshold2,
@@ -329,7 +318,7 @@ public class Player extends Actor {
                 passives.put("Casting Boost", castBoost);
                 passives.put("Fire Boost", fireBoost);
                 passives.put("Fire Resistance", fireResist);
-                active_skills.put("Fire Pillar", fpillar1537);
+                active_skills.put("Fire Pillar", fpillar);
                 active_skills.put("Fireball", fball);
                 active_skills.put("Explosion", explosion);
                 active_skills.put("Elemental Blast", eblast);
@@ -389,7 +378,7 @@ public class Player extends Actor {
                 passives.put("HP Regen", hpRegen);
                 passives.put("Concentration", concentration);
                 passives.put("Hit Boost", hitBoost);
-                active_skills.put("Arrow Rain", ar1535);
+                active_skills.put("Arrow Rain", ar);
                 active_skills.put("Sharpshooter", ss);
                 active_skills.put("Mark", mark);
                 active_skills.put("Charge Up", charge_up);
@@ -406,7 +395,7 @@ public class Player extends Actor {
                 passives.put("Speed Boost", speedBoost);
                 passives.put("Ambush", ambush);
                 active_skills.put("Double Shot", ds);
-                active_skills.put("Arrow Rain", ar1535);
+                active_skills.put("Arrow Rain", ar);
                 active_skills.put("Prepare", prep);
                 active_skills.put("Bash", bash);
             }
@@ -506,7 +495,26 @@ public class Player extends Actor {
                     active_skills.put("Aimed Shot", aimed);
                 }
                 active_skills.put("Double Shot", ds);
-                active_skills.put("Arrow Rain", ar1535);
+                active_skills.put("Arrow Rain", ar);
+                active_skills.put("Prepare", prep);
+                active_skills.put("Bash", bash);
+            }
+            case "Rogue" -> {
+                tier = 3;
+                base_water_res = -0.5;
+                passives.put("Drop Boost", dropBoost);
+                passives.put("Bow Mastery", bowMastery);
+                passives.put("Dagger Mastery", daggerMastery);
+                passives.put("Speed Boost", speedBoost);
+                passives.put("Dodge", dodge);
+                passives.put("Ambush", ambush);
+                passives.put("Extra Attack", extra_attack);
+                active_skills.put("Throw Sand", throw_sand);
+                active_skills.put("Backstab", backstab);
+                active_skills.put("Arrow Rain", ar);
+                active_skills.put("Double Attack", doubleattack);
+                active_skills.put("Hide", hide);
+                active_skills.put("Double Shot", ds);
                 active_skills.put("Prepare", prep);
                 active_skills.put("Bash", bash);
             }
@@ -529,7 +537,10 @@ public class Player extends Actor {
     }
 
     public Vector<String> getAvailableActiveSkills() {
-        Vector<String> v = new Vector<>(active_skills.keySet());
+        Vector<String> v = new Vector<>();
+        for (String skill : active_skills.keySet()) {
+            if (!skill.equals("Tsury Finke")) v.add(skill);
+        }
         v.insertElementAt("None", 0);
         return v;
     }
@@ -620,6 +631,15 @@ public class Player extends Actor {
                 base_int = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
                 base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Geomancer" -> {
+                base_hp_max = (double) (80 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Priest" -> {
@@ -716,6 +736,15 @@ public class Player extends Actor {
                 base_hit = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "Rogue" -> {
+                base_hp_max = (double) (100 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (125 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml;
+            }
             case "Onion Knight" -> {
                 if (cl >= 99) {
                     base_hp_max = (double) (120 * (cl + 100)) / 10000 * 30 * ml;
@@ -783,6 +812,9 @@ public class Player extends Actor {
             case "Pyromancer" -> {
                 result -= getAvgAtkInt();
             }
+            case "Rogue" -> {
+                result += getAvgAtkInt();
+            }
             default -> {
             }
         }
@@ -802,6 +834,9 @@ public class Player extends Actor {
             case "Sniper" -> {
                 result += getAvgAtkInt();
             }
+            case "Geomancer" -> {
+                result -= getAvgAtkInt();
+            }
             default -> {
             }
         }
@@ -813,6 +848,9 @@ public class Player extends Actor {
     public double getEarth() {
         double result = gear_earth;
         switch (name) {
+            case "Geomancer" -> {
+                result += getAvgAtkInt();
+            }
             default -> {
             }
         }
@@ -879,7 +917,7 @@ public class Player extends Actor {
         gearStat(sb, "DEF", getDef(), gear_def, true);
         gearStat(sb, "INT", getIntel(), gear_int, true);
         gearStat(sb, "RES", getResist(), getGear_res(), true);
-        gearStat(sb, "HIT", getHit(), getHit() - base_hit * getHit_mult(), true);
+        gearStat(sb, "HIT", getHit(), getHit() - base_hit * hit_mult, true);
         gearStat(sb, "SPD", getSpeed(), gear_speed, true);
         sb.append("\n");
         if (getWater() != 0) {
@@ -1004,17 +1042,15 @@ public class Player extends Actor {
             if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) > 0) {
                 if (rp_balance > (research_slots_base_cost(max_slots + 1) - research_slots_base_cost(can_sustain)) * research_weight.get("Research slot")) {
                     research("Research slot", time * r_spd);
-//                    if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
                     using++;
-                    sb.append("Research slot; ");
+                    if (log.contains("research")) sb.append("Research slot; ");
                 }
             }
             if (max_slots < maxResearchLvl("Research slot") && research_weight.getOrDefault("Research slot", 0.0) < 0) {
                 if (max_slots < -1 * research_weight.getOrDefault("Research slot", 0.0).intValue()) {
                     research("Research slot", time * r_spd);
-//                    if (game_version < 1566) rp_balance -= 166 * time / 3600 * r_spd;
                     using++;
-                    sb.append("Research slot; ");
+                    if (log.contains("research")) sb.append("Research slot; ");
                 }
             }
         } else {
@@ -1032,25 +1068,14 @@ public class Player extends Actor {
                     research("Research slot", time * r_spd);
                     rp_balance += 250 * time / 3600 * r_spd; //since we're subtracting it later
                     using++;
-                    sb.append("Research slot; ");
+                    if (log.contains("research")) sb.append("Research slot; ");
                 }
             }
         }
-        HashMap<String, Double> weight_for_lvl = new HashMap<>(research_weight);
-        for (Map.Entry<String, Double> entry : weight_for_lvl.entrySet()) {
-            if (entry.getValue() > 0 && research_lvls.getOrDefault(entry.getKey(), 0.0).intValue() < maxResearchLvl(entry.getKey())) {
-                entry.setValue(entry.getValue() * 36000 / research_time(entry.getKey()));
-            } else {
-                entry.setValue(0.0);
-            }
-        }
-        LinkedHashMap<String, Double> sorted = weight_for_lvl.entrySet().stream()
-                .filter(e -> !e.getKey().equals("Research slot"))
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-        for (Map.Entry<String, Double> entry : sorted.entrySet()) {
+
+        for (Map.Entry<String, Double> entry : research_weight_sorted.entrySet()) {
             if (entry.getValue() > 0 && can_sustain > using && (!entry.getKey().equals("Research spd") || rp_balance > 1000)) {
-                sb.append(entry.getKey()).append("; ");
+                if (log.contains("research")) sb.append(entry.getKey()).append("; ");
                 research(entry.getKey(), time * r_spd);
                 using++;
             }
@@ -1060,8 +1085,28 @@ public class Player extends Actor {
         rp_drain += research_slots_base_cost(using) * time / 3600 * r_spd;
         if (!sb.toString().equals(previous_research)) {
             previous_research = sb.toString();
-//            System.out.println(sb);
+            if (log.contains("research")) System.out.println(sb);
         }
+        if (decide_research) {
+            sortResearchWeights();
+            decide_research = false;
+        }
+    }
+
+    public void sortResearchWeights() {
+        research_weight_sorted.clear();
+        HashMap<String, Double> temp = new HashMap<>(32);
+        for (Map.Entry<String, Double> entry : research_weight.entrySet()) {
+            if (!entry.getKey().equals("Research slot")) {
+                if (entry.getValue() > 0) {
+                    if (research_lvls.getOrDefault(entry.getKey(), 0.0).intValue() < maxResearchLvl(entry.getKey())) {
+                        temp.put(entry.getKey(), entry.getValue() * 36000 / research_time(entry.getKey()));
+                    }
+                }
+            }
+        }
+        research_weight_sorted = temp.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
     public void research(String name, double time) {
@@ -1073,6 +1118,8 @@ public class Player extends Actor {
             }
         }
         if (new_lvl > old_lvl) {
+            decide_research = true;
+            if (name.equals("Exp gain")) calc_exp_mult();
 //            System.out.println(name + " new_lvl=" + new_lvl);
         }
         research_lvls.put(name, research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
@@ -1132,6 +1179,10 @@ public class Player extends Actor {
         if (slots < 1) return 0;
         if (game_version < 1566) return slots * 250;
         return (Math.pow(1.4, slots - 1) + slots - 1) * 180;
+    }
+
+    public void calc_exp_mult() {
+        total_exp_mult = exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp gain", 0.0).intValue());
     }
 
     public double exp_to_cl(int lvl) {
@@ -1203,7 +1254,7 @@ public class Player extends Actor {
     public double getPredictedPrepareTime() {
         double time = 0;
         if (prepare != null) {
-            double defecit = getHp_max() * prepare_threshold / 100 - getHp();
+            double defecit = getHp_max() * prepare_threshold / 100 - hp;
             if (defecit > 0) {
                 time = minIfNotZero(time, defecit / getPrepare_hps());
             }

@@ -1,6 +1,6 @@
 package Disilon;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
@@ -29,7 +29,8 @@ public enum Zone {
 
     final String display_name;
     final String[] possible_enemies;
-    public final ArrayList<Enemy> enemies = new ArrayList<>(1);
+//    public final ArrayList<Enemy> enemies = new ArrayList<>(1);
+    public final Enemy[] enemies = new Enemy[9];
     public final int min_enemies;
     public final int max_enemies;
     public double strength;
@@ -44,6 +45,9 @@ public enum Zone {
     }
 
     Zone(String enemies, int min, int max) {
+        for (int i = 0; i < 9; i++) {
+            this.enemies[i] = new Enemy();
+        }
         min_enemies = min;
         max_enemies = max;
         this.display_name = this.name() + "(" + enemies + ")";
@@ -69,46 +73,70 @@ public enum Zone {
     }
 
     public void respawn() {
-        enemies.clear();
+        clear();
         for (int i = 0; i < enemy_num; i++) {
-            Enemy e = new Enemy();
-            e.setEnemy(possible_enemies[random.nextInt(0, possible_enemies.length)]);
-            enemies.add(e);
+            enemies[i].setEnemy(possible_enemies[random.nextInt(0, possible_enemies.length)]);
         }
-        StringBuilder sb = new StringBuilder();
+//        StringBuilder sb = new StringBuilder();
         double individual_str_add = 0;
         for (Enemy e : enemies) {
-            if (Main.game_version < 1535) {
-                e.rollStrength();
-                e.reroll(hard_hp, hard_stats);
-            } else {
-                e.strength = strength + individual_str_add;
-                sb.append(df2.format(e.strength * 100)).append("; ");
-                e.reroll(hard_hp, hard_stats);
-                if (strength > 1) {
-                    individual_str_add -= 0.02;
+            if (e.active) {
+                if (Main.game_version < 1535) {
+                    e.rollStrength();
+                    e.reroll(hard_hp, hard_stats);
                 } else {
-                    individual_str_add += 0.02;
+                    e.strength = strength + individual_str_add;
+//                sb.append(df2.format(e.strength * 100)).append("; ");
+                    e.reroll(hard_hp, hard_stats);
+                    if (strength > 1) {
+                        individual_str_add -= 0.02;
+                    } else {
+                        individual_str_add += 0.02;
+                    }
                 }
-            }
-            if (this == HelplessDummy) {
-                e.atk = 1;
-                e.intel = 1;
+                if (this == HelplessDummy) {
+                    e.atk = 1;
+                    e.intel = 1;
+                }
             }
         }
         incrementStrength();
         incrementEnemyNum();
 //        System.out.println(sb);
-//        System.out.println(enemies.stream().map(Enemy::getName).collect(Collectors.joining(", ")));
-//        System.out.println(enemies.stream().map(Enemy::getHp_max_string).collect(Collectors.joining(", ")));
+//        System.out.println(Arrays.stream(enemies).filter(e -> e.active).map(Enemy::getName).collect(Collectors.joining(", ")));
+//        System.out.println(Arrays.stream(enemies).map(Enemy::getHp_max_string).collect(Collectors.joining(", ")));
     }
 
     public double getAvgSpeed() {
-        return enemies.stream().mapToDouble(Enemy::getSpeed).average().getAsDouble();
+        double sum = 0;
+        int counter = 0;
+        for (int i = 0; i < 9; i++) {
+            if (enemies[i].active) {
+                counter++;
+                sum += enemies[i].getSpeed();
+            }
+        }
+        if (counter > 0) {
+            return sum / counter;
+        } else {
+            return 0;
+        }
     }
 
     public double stealthDelay() {
-        return enemies.stream().mapToDouble(Enemy::stealthDelay).max().getAsDouble();
+        double sum = 0;
+        int counter = 0;
+        for (int i = 0; i < 9; i++) {
+            if (enemies[i].active) {
+                counter++;
+                sum += enemies[i].stealthDelay();
+            }
+        }
+        if (counter > 0) {
+            return sum / counter;
+        } else {
+            return 0;
+        }
     }
 
     public void incrementStrength() {
@@ -132,21 +160,31 @@ public enum Zone {
 
     public Enemy getRandomEnemy(String skill) {
         if (skill.equals("Dispel")) {
-            return enemies.stream().filter(e -> e.buff_count() > 0).findFirst().get();
+            return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.buff_count() > 0).findFirst().get();
         } else {
             return getRandomEnemy();
         }
     }
 
     public Enemy getRandomEnemy() {
-        int index = random.nextInt(enemies.size()); //todo:implement mark for targeting
-        return enemies.get(index);
+        int index = random.nextInt(aliveEnemies()); //todo:implement mark for targeting
+//        System.out.println("Alive: " + aliveEnemies() + " picked index: " + index);
+        for (int i = 0; i < 9; i++) {
+            if (enemies[i].active) {
+                if (index == 0) {
+//                    System.out.println("i=" + i);
+                    return enemies[i];
+                }
+                index--;
+            }
+        }
+        return null;
     }
 
     public double calculateDelta() {
         double delta = 3600;
         for (Enemy enemy : enemies) {
-            if (enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta(enemy));
+            if (enemy.active && enemy.casting != null) delta = Math.min(delta, enemy.casting.calculate_delta(enemy));
         }
         return delta;
     }
@@ -155,7 +193,7 @@ public enum Zone {
         LinkedHashMap<Enemy, Integer> targets = new LinkedHashMap<>();
         for (int i = 0; i < hits; i++) {
             Enemy e = getRandomEnemy();
-            targets.put(e, targets.containsKey(e) ? targets.get(e) + 1 : 1);
+            targets.put(e, targets.getOrDefault(e, 0) + 1);
         }
         return targets;
     }
@@ -163,7 +201,9 @@ public enum Zone {
     public double getMaxEnemyHp() {
         double max = 0;
         for (Enemy e : enemies) {
-            if (e.getHp() > max) max = e.getHp();
+            if (e.active) {
+                if (e.hp > max) max = e.hp;
+            }
         }
         return max;
     }
@@ -171,13 +211,21 @@ public enum Zone {
     public double getMaxEnemyHpPercent() {
         double max = 0;
         for (Enemy e : enemies) {
-            if (e.getHp() / e.getHp_max() > max) max = e.getHp() / e.getHp_max();
+            if (e.active) {
+                if (e.hp / e.getHp_max() > max) max = e.hp / e.getHp_max();
+            }
         }
         return max;
     }
 
     public int getEnemyBuffCount() {
-        return enemies.stream().mapToInt(Enemy::buff_count).sum();
+        int sum = 0;
+        for (int i = 0; i < 9; i++) {
+            if (enemies[i].active) {
+                sum += enemies[i].buff_count();
+            }
+        }
+        return sum;
     }
 
     public double getZoneTimeCap() {
@@ -199,5 +247,26 @@ public enum Zone {
     @Override
     public String toString() {
         return display_name;
+    }
+
+    public boolean cleared() {
+        for (Enemy e : enemies) {
+            if (e.active) return false;
+        }
+        return true;
+    }
+
+    public void clear() {
+        for (Enemy e : enemies) {
+            e.active = false;
+        }
+    }
+
+    public int aliveEnemies() {
+        int counter = 0;
+        for (Enemy e : enemies) {
+            if (e.active) counter++;
+        }
+        return counter;
     }
 }

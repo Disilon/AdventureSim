@@ -5,8 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.df4;
 import static Disilon.Main.game_version;
 import static Disilon.Main.minIfNotZero;
+import static Disilon.Main.minTickTime;
 import static Disilon.Main.shorthand;
 import static Disilon.Main.log;
 
@@ -70,6 +72,7 @@ public class Simulation {
         double kills_drop = 0;
         int cleared = 0;
         int failed = 0;
+        double delta;
         double delta_sum = 0;
         int delta_count = 0;
         double oom_time = 0;
@@ -88,13 +91,19 @@ public class Simulation {
         player.setMp(player.getMp_max());
         player.debuffs.clear();
         player.buffs.clear();
+        player.check_buffs();
+        player.check_debuffs();
         player.zone.rerollSeed();
+        player.sortResearchWeights();
         boolean end = false;
+        if (offline && player.zone.getZoneTimeCap() > 0) {
+            time_limit /= (120*60 + player.zone.getZoneTimeCap()) / (120*60);
+        }
+        delta = offline ? 0.180 : 0.030;
         while (!end) {
             Enemy target = null;
             double time = 0;
             double cap_time = 0;
-            double delta;
             int casts = 0;
             double first_kill = 0;
             double delay_left = 0;
@@ -111,6 +120,7 @@ public class Simulation {
             while (time < time_to_respawn) {
                 player.checkPotion(0); //just in case
                 delta = minIfNotZero(time_to_respawn - time, player.getNextPotionTime());
+                delta = minTickTime(delta, offline);
                 time += delta;
                 total_time += delta;
                 delta_sum += delta;
@@ -229,20 +239,22 @@ public class Simulation {
                         }
                     }
                     if (player.casting != null) {
-                        player.casting.startCastPlayer(player, offline, total_time);
+                        player.casting.startCastPlayer(player, offline, time, total_time);
                     }
                 }
-                for (Iterator<Enemy> iterator = player.zone.enemies.iterator(); iterator.hasNext(); ) {
-                    Enemy enemy = iterator.next();
-                    if (enemy.casting == null) {
-                        ActiveSkill enemyCast = enemy.getCasting(player);
-                        enemyCast.startCast(enemy, player, offline, total_time);
+                for (int i = 0; i < 9; i++) {
+                    Enemy enemy = player.zone.enemies[i];
+                    if (enemy.active) {
+                        if (enemy.casting == null) {
+                            ActiveSkill enemyCast = enemy.getCasting(player);
+                            enemyCast.startCast(enemy, player, offline, time, total_time);
+                        }
                     }
                 }
-                delta = 60;
                 if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta(player));
                 delta = Math.min(delta, player.zone.calculateDelta());
                 delta = minIfNotZero(delta, player.getNextPotionTime());
+                delta = minTickTime(delta, offline);
                 time += delta;
                 total_time += delta;
                 delta_sum += delta;
@@ -261,13 +273,18 @@ public class Simulation {
                                 total_casts++;
                                 if (player.casting.aoe || player.isMulti_hit_override(player.casting.name)) {
                                     for (Enemy enemy : player.zone.enemies) {
-                                        double dmg = player.casting.attack(player, enemy, 0);
-                                        if (dmg > 0) {
-                                            enemy.setHp(enemy.getHp() - dmg);
-                                            if (player.casting.name.equals("Careful Shot") && enemy.getHp() <= 0) {
-                                                kills_drop += 0.5;
+                                        if (enemy.active) {
+                                            double dmg = player.casting.attack(player, enemy, 0, time);
+                                            if (player.extra_attack.enabled) {
+                                                dmg += player.extra_attack_proc.attack(player, enemy, 0, time);
                                             }
-                                            if (player.charge > 0) player.remove_charge = true;
+                                            if (dmg > 0) {
+                                                enemy.setHp(enemy.hp - dmg);
+                                                if (player.casting.name.equals("Careful Shot") && enemy.hp <= 0) {
+                                                    kills_drop += 0.5;
+                                                }
+                                                if (player.charge > 0) player.remove_charge = true;
+                                            }
                                         }
                                     }
                                 } else {
@@ -279,35 +296,41 @@ public class Simulation {
                                             LinkedHashMap<Enemy, Integer> targets =
                                                     player.zone.getRandomTargets(player.casting.hits);
                                             targets.forEach((key, value) -> {
-                                                double dmg = player.casting.attack(player, key, value);
+                                                double dmg = player.casting.attack(player, key, value, 0);
+                                                if (player.extra_attack.enabled) {
+                                                    dmg += player.extra_attack_proc.attack(player, key, 0, 0);
+                                                }
                                                 if (dmg > 0) {
-                                                    key.setHp(key.getHp() - dmg);
+                                                    key.setHp(key.hp - dmg);
                                                     if (player.charge > 0) player.remove_charge = true;
                                                 }
                                             });
                                         } else {
-                                            double dmg = player.casting.attack(player, target, 0);
+                                            double dmg = player.casting.attack(player, target, 0, time);
+                                            if (player.extra_attack.enabled) {
+                                                dmg += player.extra_attack_proc.attack(player, target, 0, time);
+                                            }
                                             if (dmg > 0) {
-                                                target.setHp(target.getHp() - dmg);
-                                                if (player.casting.name.equals("Careful Shot") && target.getHp() <= 0) {
+                                                target.setHp(target.hp - dmg);
+                                                if (player.casting.name.equals("Careful Shot") && target.hp <= 0) {
                                                     kills_drop += 0.5;
                                                 }
                                                 if (player.charge > 0) player.remove_charge = true;
                                             }
                                         }
+                                        target = null;
                                     }
                                 }
                             } else {
-                                double previous_hp = player.getHp();
-                                player.casting.use(player);
+                                double previous_hp = player.hp;
+                                player.casting.use(player, time);
                                 if (player.casting.heal) {
-                                    healed += player.getHp() - previous_hp;
+                                    healed += player.hp - previous_hp;
                                 }
-//                                System.out.println("Player casted " + player.casting.name + " at " + df2.format(time));
                             }
                             if (player.lvling) player.casting.gainExp(1);
                             if (player.current_skill_hit) player.ambush_bonus = 0;
-                            if (player.isAmbushing()) player.setAmbushing(false);
+                            if (player.ambushing) player.ambushing = false;
                             player.tick_debuffs();
                             player.tick_buffs();
                             player.casting.pay_manacost(player);
@@ -320,79 +343,73 @@ public class Simulation {
                 } else {
                     oom_time += delta;
                 }
-                Iterator<Enemy> iterator = player.zone.enemies.iterator();
-                while (iterator.hasNext()) {
-                    Enemy enemy = iterator.next();
-                    if (enemy.casting != null) {
-                        if (enemy.casting.cast > 0) {
-                            if (enemy.casting.progressCast(enemy, delta)) {
-                                enemy.check_debuffs();
-                                enemy.check_buffs();
-                                if (enemy.casting.hit > 0) {
-                                    double dmg = 0;
-                                    if (previous_cast != null && (time - previous_cast.last_casted_at) < 0.5) {
-                                        dmg = previous_cast.attack(enemy, player, enemy.casting.hits);
-                                    } else {
-                                        dmg = enemy.casting.attack(enemy, player, 0);
-                                        previous_cast = enemy.casting;
-                                        previous_cast.last_casted_at = time;
-                                    }
-                                    if (dmg > 0) {
-                                        player.setHp(player.getHp() - dmg);
-                                        player.damage_taken += dmg;
-                                        if (enemy.charge > 0) enemy.remove_charge = true;
-                                    }
-//                                System.out.println("Player: " + (int) player.getHp() + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.getHp() + "/" + (int) enemy.getHp_max());
-                                } else {
-                                    enemy.casting.use(enemy);
-                                    player.zone.stats.incrementStats(enemy.getName(), enemy.casting.name, 0,
-                                            0, 0, 1, 0,0);
-                                }
-                                enemy.tick_debuffs();
-                                enemy.tick_buffs();
-                                enemy.casting.pay_manacost(enemy);
+                for (int i = 0; i < 9; i++) {
+                    Enemy enemy = player.zone.enemies[i];
+                    if (enemy.active) {
+                        if (enemy.hp <= 0) {
+                            if (first_kill == 0) first_kill = time;
+                            if (player.last_skill.isSingleTarget() && !player.isMulti_hit_override(player.last_skill.name) && player.set_core > 0 && player.set_core > Math.random()) {
+                                enemy.setHp(0.0);
+                            } else {
+                                player.overkill -= enemy.hp;
                             }
-                        } else if (enemy.casting.delay > 0) {
-                            if (enemy.casting.progressDelay(enemy, delta)) {
-                                enemy.casting = null;
-                            }
-                        }
-                    }
-                    if (enemy.getHp() <= 0) {
-                        if (first_kill == 0) first_kill = time;
-                        if (player.last_skill.isSingleTarget() && !player.isMulti_hit_override(player.last_skill.name) && player.set_core > 0 && player.set_core > Math.random()) {
-                            enemy.setHp(0.0);
-                        } else {
-                            player.overkill -= enemy.getHp();
-                        }
 //                        for (Debuff d : enemy.debuffs) {
 //                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
 //                        }
-                        double exp_gain =
-                                enemy.getExp() * player.getExp_mult() * player.milestone_exp_mult * player.hard_reward;
-                        if (player.lvling) player.increment_exp(exp_gain);
-                        exp += exp_gain;
-                        kills++;
-                        player.zone.stats.recordOverkill(enemy, player);
-                        if (player.lvling) {
-                            player.levelActives();
-                            player.levelTF(enemy);
+                            double exp_gain =
+                                    enemy.exp * player.total_exp_mult * player.milestone_exp_mult * player.hard_reward;
+                            if (player.lvling) player.increment_exp(exp_gain);
+                            exp += exp_gain;
+                            kills++;
+                            player.zone.stats.recordOverkill(enemy, player);
+                            if (player.lvling) {
+                                player.levelActives();
+                                player.levelTF(enemy);
+                            }
+                            if (log.contains("enemy_death_stat") && enemy.casting != null) System.out.println(enemy.name +
+                                    " died while " +
+                                    "casting " + enemy.casting.name + " cast time left: " + df4.format(enemy.casting.cast) + " delay left: " + df4.format(enemy.casting.delay) + " at " + df2.format(time));
+                            if (target == enemy) target = null;
+                            enemy.active = false;
                         }
-//                        System.out.println("Enemy killed at " + df2.format(time) + " s \n");
-                        if (target == enemy) target = null;
-                        iterator.remove();
+                        if (enemy.active && enemy.casting != null) {
+                            if (enemy.casting.cast > 0) {
+                                if (enemy.casting.progressCast(enemy, delta)) {
+                                    enemy.check_debuffs();
+                                    enemy.check_buffs();
+                                    if (enemy.casting.hit > 0) {
+                                        double dmg = 0;
+                                        if (previous_cast != null && (time - previous_cast.last_casted_at) < 0.5) {
+                                            dmg = previous_cast.attack(enemy, player, enemy.casting.hits, time);
+                                        } else {
+                                            dmg = enemy.casting.attack(enemy, player, 0, time);
+                                            previous_cast = enemy.casting;
+                                            previous_cast.last_casted_at = time;
+                                        }
+                                        if (dmg > 0) {
+                                            player.setHp(player.hp - dmg);
+                                            player.damage_taken += dmg;
+                                            if (enemy.charge > 0) enemy.remove_charge = true;
+                                        }
+//                                System.out.println("Player: " + (int) player.hp + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.hp + "/" + (int) enemy.getHp_max());
+                                    } else {
+                                        enemy.casting.use(enemy, time);
+                                        player.zone.stats.incrementStats(enemy.name, enemy.casting.name, 0,
+                                                0, 0, 1, 0,0);
+                                    }
+                                    enemy.tick_debuffs();
+                                    enemy.tick_buffs();
+                                    enemy.casting.pay_manacost(enemy);
+                                }
+                            } else if (enemy.casting.delay > 0) {
+                                if (enemy.casting.progressDelay(enemy, delta)) {
+                                    enemy.casting = null;
+                                }
+                            }
+                        }
                     }
                 }
-                if (player.zone.enemies.isEmpty()) {
-                    status = StatusType.delay;
-                    cleared++;
-                    if (player.casting != null) {
-                        delay_left = player.casting.delay;
-                        player.casting = null;
-                    }
-//                    System.out.println(df2.format(time - first_kill));
-                }
-                if (player.getHp() <= 0 || time >= 3600) {
+                if (player.hp <= 0 || time >= 3600) {
                     status = StatusType.death;
                     death_time += 15 * 60;
                     player.setHp(player.getHp_max());
@@ -401,13 +418,29 @@ public class Simulation {
                     player.resetPotionCd();
                     ignore_deaths += time;
                     failed++;
-                    //System.out.println("Player died at " + time);
+                    if (log.contains("death") || log.contains("player_death_stat")) {
+                        if (player.casting != null && log.contains("player_death_stat")) {
+                            System.out.println("Player died while casting " +
+                                    player.casting.name + " time left: " + df4.format(player.casting.cast) + " delay left: " + df4.format(player.casting.delay) +
+                                    " at " + df2.format(time));
+                        } else {
+                            System.out.println("Player died at " + df2.format(time));
+                        }
+                    }
+                }
+                if (player.zone.cleared()) {
+                    status = StatusType.delay;
+                    cleared++;
+                    if (player.casting != null) {
+                        delay_left = player.casting.delay;
+                        player.casting = null;
+                    }
                 }
             }
             if (player.prepare != null && (status == StatusType.respawn || status == StatusType.rerolling || status == StatusType.delay)) {
                 while (player.getPredictedPrepareTime() > 0) {
-                    //status = StatusType.prepare;
                     delta = minIfNotZero(player.getPredictedPrepareTime(), player.getNextPotionTime());
+                    delta = minTickTime(delta, offline);
                     total_time += delta;
                     time += delta;
                     delta_sum += delta;
@@ -415,7 +448,7 @@ public class Simulation {
                     prepare_time += delta;
                     delay_left = Math.max(delay_left - delta, 0);
                     if (player.lvling) player.prepare.gainExp(delta);
-                    player.setHp(player.getHp() + player.getPrepare_hps() * delta);
+                    player.setHp(player.hp + player.getPrepare_hps() * delta);
                     player.setMp(player.getMp() + player.getPrepare_mps() * delta);
                     if (Main.game_version >= 1534) {
                         player.tickPotion(delta);
@@ -432,6 +465,7 @@ public class Simulation {
             delay_left += cap_time;
             while (delay_left > 0) {
                 delta = minIfNotZero(delay_left, player.getNextPotionTime());
+                delta = minTickTime(delta, offline);
                 time += delta;
                 total_time += delta;
                 delay_left -= delta;
@@ -505,15 +539,18 @@ public class Simulation {
             }
             if (log.contains("fight_end")) System.out.println("Fight ended\n");
         }
+        if (offline && player.zone.getZoneTimeCap() > 0) {
+            total_time *= (120*60 + player.zone.getZoneTimeCap()) / (120*60);
+        }
 
         total_time /= time_mult;
         min_time /= time_mult;
         max_time /= time_mult;
         double exph = (exp / (total_time + death_time) * 3600);
-        double exp_total_bonus = player.getExp_mult() * player.milestone_exp_mult;
+        double exp_total_bonus = player.total_exp_mult * player.milestone_exp_mult;
         result.append("Exp/h: ").append(shorthand(exph)).append(" (");
         result.append(df2.format(exp_total_bonus * 100)).append("%; ");
-        result.append(shorthand(exph / (player.getExp_mult() * player.milestone_exp_mult))).append(" at 100%)\n");
+        result.append(shorthand(exph / (player.total_exp_mult * player.milestone_exp_mult))).append(" at 100%)\n");
         if (player.potion1 != null) {
             result.append(player.potion1.getRecordedData(total_time + death_time));
         }
@@ -565,6 +602,8 @@ public class Simulation {
             skills_log.append(skill3.getRecordedData(cleared + failed));
         if (skill4 != null && !skill4.name.equals("Prepare"))
             skills_log.append(skill4.getRecordedData(cleared + failed));
+        if (player.extra_attack_proc.used > 0)
+            skills_log.append(player.extra_attack_proc.getRecordedData(cleared + failed));
         if (player.counter_strike_log.used > 0)
             skills_log.append(player.counter_strike_log.getRecordedData(cleared + failed));
         if (player.counter_dodge_log.used > 0)
@@ -607,7 +646,7 @@ public class Simulation {
             }
         }
         long executionTime = (System.nanoTime() - startTime) / 1000000;
-//        result.append("\nSim run time: ").append(executionTime).append("\n");
+        result.append("\nSim run time: ").append(executionTime).append("\n");
 //        result.append("\nAverage delta: ").append((int) (delta_sum * 1000 / delta_count)).append("\n");
         result.append("\n");
         result.append("Cores: \n");

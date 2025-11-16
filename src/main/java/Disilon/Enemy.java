@@ -76,6 +76,7 @@ public class Enemy extends Actor {
 
     double strength = 1;
     double base_lvl;
+    boolean active = false;
     String previous_spell = "";
 
     public Enemy() {
@@ -508,6 +509,7 @@ public class Enemy extends Actor {
             }
         }
         //reroll();
+        active = true;
     }
 
     public void reroll(double hp_mult, double stats_mult) {
@@ -530,9 +532,12 @@ public class Enemy extends Actor {
         this.light = base_light * lvl * stats_mult;
         this.dark = base_dark * lvl * stats_mult;
 
+        this.buffs.clear();
         this.debuffs.clear();
         this.casting = null;
         this.remove_charge = false;
+        check_buffs();
+        check_debuffs();
     }
 
     public void rollStrength() {

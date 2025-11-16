@@ -22,6 +22,9 @@ public class PassiveSkill {
         this.base_bonus = base_bonus;
         this.base_mp_add = base_mp_add;
         this.base_mp_mult = base_mp_mult;
+        if (name.equals("Core Boost")) {
+            base_bonus2 = 0.125;
+        }
     }
 
     public double getLvl() {

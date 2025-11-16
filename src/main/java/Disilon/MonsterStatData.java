@@ -36,42 +36,41 @@ public class MonsterStatData {
     public void incrementStats(String e, String s, double dmg, double hit_chance, double debuff, int uses, int hits,
                                double dot) {
         String key = e + ": " + s;
-        dmg_sum.put(key, dmg_sum.containsKey(key) ? dmg_sum.get(key) + dmg : dmg);
-        hit_chance_sum.put(key, hit_chance_sum.containsKey(key) ? hit_chance_sum.get(key) + hit_chance : hit_chance);
-        debuff_chance_sum.put(key, debuff_chance_sum.containsKey(key) ? debuff_chance_sum.get(key) + debuff : debuff);
-        casts_total.put(key, casts_total.containsKey(key) ? casts_total.get(key) + uses : uses);
-        hits_total.put(key, hits_total.containsKey(key) ? hits_total.get(key) + hits : hits);
-        dot_sum.put(key, dot_sum.containsKey(key) ? dot_sum.get(key) + dot : dot);
+        dmg_sum.put(key, dmg_sum.getOrDefault(key, 0.0) + dmg);
+        hit_chance_sum.put(key, hit_chance_sum.getOrDefault(key, 0.0) + hit_chance);
+        debuff_chance_sum.put(key, debuff_chance_sum.getOrDefault(key, 0.0) + debuff);
+        casts_total.put(key, casts_total.getOrDefault(key, 0) + uses);
+        hits_total.put(key, hits_total.getOrDefault(key, 0) + hits);
+        dot_sum.put(key, dot_sum.getOrDefault(key, 0.0) + dot);
     }
 
     public void incrementDmg(String e, String s, double dmg) {
         String key = e + ": " + s;
         if (dmg > 0) {
-            dmg_sum.put(key, dmg_sum.containsKey(key) ? dmg_sum.get(key) + dmg : dmg);
-            hits_total.put(key, hits_total.containsKey(key) ? hits_total.get(key) + 1 : 1);
+            dmg_sum.put(key, dmg_sum.getOrDefault(key, 0.0) + dmg);
+            hits_total.put(key, hits_total.getOrDefault(key, 0) + 1);
         }
     }
 
     public void incrementHit(String e, String s, double hit) {
         String key = e + ": " + s;
-        hit_chance_sum.put(key, hit_chance_sum.containsKey(key) ? hit_chance_sum.get(key) + hit : hit);
-        casts_total.put(key, casts_total.containsKey(key) ? casts_total.get(key) + 1 : 1);
+        hit_chance_sum.put(key, hit_chance_sum.getOrDefault(key, 0.0) + hit);
+        casts_total.put(key, casts_total.getOrDefault(key, 0) + 1);
     }
 
     public void incrementDebuff(String e, String s, double debuff) {
         String key = e + ": " + s;
-        debuff_chance_sum.put(key, debuff_chance_sum.containsKey(key) ? debuff_chance_sum.get(key) + debuff : debuff);
+        debuff_chance_sum.put(key, debuff_chance_sum.getOrDefault(key, 0.0) + debuff);
     }
 
     public void incrementDot(String e, String s, double dmg) {
         String key = e + ": " + s;
-        dot_sum.put(key, dot_sum.containsKey(key) ? dot_sum.get(key) + dmg : dmg);
+        dot_sum.put(key, dot_sum.getOrDefault(key, 0.0) + dmg);
     }
 
     public void incrementUsedDebuffed(String e, String s, int increment) {
         String key = e + ": " + s;
-        used_debuffed.put(key, used_debuffed.containsKey(key) ? used_debuffed.get(key) + increment : increment);
-//        used_debuffed.merge(key, increment, Integer::sum);
+        used_debuffed.put(key, used_debuffed.getOrDefault(key, 0) + increment);
     }
 
     public void clear_recorded_data() {
@@ -92,7 +91,7 @@ public class MonsterStatData {
     }
 
     public void recordOverkill(Enemy e, Player player) {
-        double percent = -e.getHp() / e.getHp_max() * 100;
+        double percent = -e.hp / e.getHp_max() * 100;
         overkill_sum += percent;
         kills++;
         if (percent <= 1) {
@@ -106,7 +105,7 @@ public class MonsterStatData {
         } else if (percent <= 200) {
             addCore(e.name, 0, player);
         }
-        deaths.put(e.getName(), deaths.containsKey(e.getName()) ? deaths.get(e.getName()) + 1 : 1);
+        deaths.put(e.name, deaths.getOrDefault(e.name, 0) + 1);
     }
 
     public void addCore(String name, int grade, Player p) {
@@ -120,7 +119,7 @@ public class MonsterStatData {
             }
             cores.put(name, nested);
         }
-        base_rp += getCoreRP(grade, name) * 0.01;
+        base_rp += getCoreRP(grade, name) * 0.01 * p.hard_reward;
         double fractional = research / 100.0 - (double) (research / 100);
         int new_grade = Math.min(8, grade + research / 100);
         double gain = 0;
@@ -136,7 +135,7 @@ public class MonsterStatData {
         }
         if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain; //todo:fix it
         gained_rp += gain;
-        addCoreRandom(name, grade, p);
+//        addCoreRandom(name, grade, p);
     }
 
     public void addCoreRandom(String name, int grade, Player p) {
@@ -249,14 +248,6 @@ public class MonsterStatData {
             sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
         }
         sb.append("\n");
-//        if (Main.game_version < 1574) {
-//            double max = 0;
-//            for (int i = 1; i < 7; i++) {
-//                if (rp_instance[i] > max) max = rp_instance[i];
-//            }
-//            sb.append("RP/h: ").append(df2.format(rp_instance[0] / time * 3600));
-//            sb.append("\n");
-//        }
         return sb.toString();
     }
 

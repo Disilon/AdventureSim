@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DecimalStyle;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -27,7 +28,7 @@ public class Main {
     public static DecimalFormat dfm;
     public static final Random random = new Random();
     public static EquipmentData equipmentData = new EquipmentData();
-    public static ArrayList<String> log = new ArrayList<>();
+    public static final HashSet<String> log = new HashSet<>();
 
     public static void main(String[] args) {
         dfs = DecimalFormatSymbols.getInstance(Locale.UK);
@@ -41,12 +42,17 @@ public class Main {
         df2p.setMinimumFractionDigits(2);
 //        log.add("skill_rotation");
 //        log.add("fight_end");
+//        log.add("death");
+//        log.add("enemy_death_stat");
+//        log.add("player_death_stat");
 //        log.add("buff_duration");
 //        log.add("buff_remove");
+//        log.add("dot_dmg");
 //        log.add("skill_cast_start");
 //        log.add("skill_use");
 //        log.add("skill_attack");
 //        log.add("skill_enough_mp");
+//        log.add("research");
         try {
             UserForm uf = new UserForm();
         } catch (Exception e) {
@@ -147,5 +153,12 @@ public class Main {
         if (a == 0) return b;
         if (b == 0) return a;
         return Math.min(a, b);
+    }
+
+    public static double minTickTime(double time, boolean offline) {
+        double tick = offline ? 0.18 : 0.03;
+        int n = (int) Math.ceil(time / tick);
+        if (n == 0) n = 1;
+        return n * tick;
     }
 }
