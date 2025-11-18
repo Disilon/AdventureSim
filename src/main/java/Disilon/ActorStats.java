@@ -113,6 +113,7 @@ public class ActorStats {
 
     public double hide_bonus = 0;
     public boolean smoked = false;
+    public double bound = 0;
     public boolean ambushing = false;
     public double charge;
     public boolean remove_charge = false;
@@ -155,8 +156,6 @@ public class ActorStats {
     public double old_milestone_exp_mult = 1;
     public boolean current_skill_hit = false;
     public double ambush_bonus = 0;
-    
-    public ArrayList<ActiveSkill> enemy_skills = new ArrayList<ActiveSkill>();
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;
@@ -170,6 +169,7 @@ public class ActorStats {
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
     public LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
     public LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
+    public SkillData skills = new SkillData(active_skills, passives);
     public LinkedHashMap<String, Equipment> equipment = new LinkedHashMap<String, Equipment>();
     public LinkedHashMap<String, EquipmentSet> sets = new LinkedHashMap<String, EquipmentSet>();
     public HashMap<String, Double> research_lvls;

@@ -60,12 +60,22 @@ public class ActiveSkill {
     public boolean random_targets = false;
     public boolean enabled = false;
     public int use_setting;
-    public boolean overkill = true;
-    public boolean can_kill = true;
+    public boolean available = true;
+    public boolean weapon_required = true;
 
     public ActiveSkill(String name) {
         this.name = name;
         this.lvl = 0;
+    }
+
+    public ActiveSkill(String name, double mp, double cast_mult, double delay_mult) {
+        this.name = name;
+        this.base_mp = mp;
+        this.base_cast = cast_mult;
+        this.base_delay = delay_mult;
+        this.lvl = 0;
+        this.mp_mult = 1;
+        setSkill(lvl, SkillMod.Enemy);
     }
 
     public ActiveSkill(String name, int hits, double min, double max, double hit, double mp, double cast_mult, double delay_mult,
@@ -487,6 +497,11 @@ public class ActiveSkill {
                         buff_bonus * attacker.bless_boost));
 //                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) (buff_duration + attacker.bless_duration));
                 break;
+            case "Stone Barrier":
+                double absorb = min * (attacker.getDef() + attacker.getResist()) * (1 + attacker.getEarth_res());
+                attacker.remove_buff(name);
+                attacker.buffs.add(new Buff(name, 1, absorb));
+                break;
             default:
                 attacker.buffs.add(new Buff(buff_name, (int) (buff_duration), buff_bonus));
 //                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) (buff_duration + duration_bonus));
@@ -533,7 +548,9 @@ public class ActiveSkill {
         }
         double hit_chance = (attacker.smoked ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
-        if (name.equals("Back Stab") && !defender.smoked) hit_chance *= 0.5;
+        if (name.equals("Back Stab") && !(defender.smoked || defender.bound > 0)) {
+            hit_chance *= 0.5;
+        }
         hit_chance_sum += Math.min(hit_chance, 1);
         if (defender.zone != null) {
             defender.zone.stats.incrementHit(attacker.name, name, hit_chance);
@@ -550,7 +567,7 @@ public class ActiveSkill {
                 applyDebuff(attacker, defender);
             }
             if (max > 0) {
-                if (defender.counter_strike > 0 && defender.counter_strike > Math.random()) {
+                if (defender.counter_strike > 0 && !name.equals("Extra Attack") && defender.counter_strike > Math.random()) {
                     counter_attack(attacker, defender, false);
                 }
                 double enemy_resist;
@@ -560,7 +577,9 @@ public class ActiveSkill {
                 dmg_mult += attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
-                if (name.equals("Back Stab") && defender.smoked) dmg_mult *= 2;
+                if (name.equals("Back Stab") && (defender.smoked || defender.bound > 0)) {
+                    dmg_mult *= 2;
+                }
                 enemy_resist = switch (this.element) {
                     case Element.dark -> {
                         atk = attacker.getDark();
@@ -642,7 +661,8 @@ public class ActiveSkill {
                         yield defender.getResist();
                     }
                 };
-                if (attacker.gear_crit > 0 && Math.random() < attacker.gear_crit) {
+                double crit_chance = defender.bound + attacker.gear_crit;
+                if (crit_chance > 0 && Math.random() < crit_chance) {
                     atk *= 1.5;
                 }
                 if (name.equals("Pierce")) {
@@ -670,10 +690,15 @@ public class ActiveSkill {
                         defender.stun_time += 2.0;
                     }
                     double dmg = Math.random() * (this.max - this.min) + this.min;
+                    int extra = (attacker.passives.get("Extra Attack").enabled && !name.equals("Extra Attack")) ? 1 : 0;
+                    if (attacker.zone == null && weapon_required) {
+                        dmg *= 0.7;
+                    }
                     dmg =
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
-                                    calc_hits) * dmg_mult;
+                                    calc_hits + extra) * dmg_mult;
                     dmg = Math.max(1, dmg);
+                    dmg = Math.max(0, dmg - defender.getBarrier());
                     if (log.contains("skill_attack")) {
                         System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name +
                                 " to " + defender.name + " at " + df2.format(time));
@@ -686,7 +711,7 @@ public class ActiveSkill {
                 }
             }
         } else {
-            if (defender.counter_dodge) {
+            if (defender.counter_dodge && !name.equals("Extra Attack")) {
                 counter_attack(attacker, defender, true);
             }
         }
@@ -729,18 +754,15 @@ public class ActiveSkill {
             skill.dmg_sum += dmg;
         }
 //        System.out.println(skill.name + ": " + dmg + " defender hp: " + attacker.getHp_max_string() + " attacker hp: " + defender.getHp_max_string());
+        dmg = Math.max(0, dmg - attacker.getBarrier());
         attacker.setHp(attacker.hp - dmg);
     }
 
     public void applyDebuff(Actor attacker, Actor defender) {
-        double hit_chance =
-                (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
+        double hit_chance = (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
         if (debuff_name.equals("Poison")) {
-            if (game_version >= 1535) {
-                hit_chance =
-                        (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
-            }
-            if (attacker.poisonBoost.enabled) hit_chance *= 2;
+            hit_chance = (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
+            if (attacker.passives.get("Poison Boost").enabled) hit_chance *= 2;
 //            System.out.println(name + " poison chance: " + hit_chance);
         }
         if (debuff_name.equals("Burn")) {
@@ -779,7 +801,11 @@ public class ActiveSkill {
             if (defender.zone != null) {
                 defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
             }
-            defender.debuffs.add(new Debuff(this.debuff_name, duration, dmg, debuff_effect));
+            if (debuff_name.equals("Stun")) {
+                defender.stun_time += debuff_effect;
+            } else {
+                defender.debuffs.add(new Debuff(this.debuff_name, duration, dmg, debuff_effect));
+            }
         }
     }
 

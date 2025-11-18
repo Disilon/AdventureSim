@@ -1,102 +1,23 @@
 package Disilon;
 
+import java.util.ArrayList;
+
 import static Disilon.Main.random;
 
 public class Enemy extends Actor {
-    ActiveSkill waterpunch = new ActiveSkill("Water Punch", 1, 99, 121, 1, 0, 0.9, 0.9, Scaling.atkint, Element.water,
-            false, false);
-    ActiveSkill killingstrike = new ActiveSkill("Killing Strike", 1, 207.9, 254.1, 0.7, 0, 2, 2, Scaling.atk,
-            Element.dark, false, false);
-    ActiveSkill tsunami = new ActiveSkill("Tsunami", 1, 252, 308, 1, 0, 4, 6, Scaling.intel, Element.water, true, false);
-
-    ActiveSkill ball = new ActiveSkill("Fire Ball", 1, 69.3, 84.7, 1.35, 0, 1.15, 1, Scaling.intel, Element.fire,
-            false, false);
-    ActiveSkill pillar = new ActiveSkill("Fire Pillar", 1, 126, 154, 1, 0, 1.5, 1.5, Scaling.intel,
-            Element.fire, false, false);
-    ActiveSkill explosion = new ActiveSkill("Explosion", 1, 945, 1155, 1.15, 0, 8, 30, Scaling.intel, Element.fire, true, false);
-
-    ActiveSkill gust = new ActiveSkill("Gust", 1, 56.7, 69.3, 1, 0, 0.8, 0.8, Scaling.intel, Element.wind,
-            false, false);
-    ActiveSkill compression = new ActiveSkill("Air Compression", 1, 91.35, 111.65, 1, 0, 1.2, 1.2, Scaling.intel,
-            Element.wind,
-            false, false);
-
-    ActiveSkill soulslash = new ActiveSkill("Soul Slash", 1, 2250, 2750, 2, 0, 0.3, 75, Scaling.atk,
-            Element.phys, true, false);
-
-    ActiveSkill slash = new ActiveSkill("Dark Slash", 1, 135, 165, 1, 0, 0.9, 0.9, Scaling.atk, Element.dark,
-            false, false);
-    ActiveSkill poison = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 0, 0.4, 0.9, Scaling.atk, Element.phys,
-            false, false);
-
-    ActiveSkill dp = new ActiveSkill("Dragon Punch", 3, 76.5, 93.5, 0.8, 0, 1, 3, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill as = new ActiveSkill("Aura Shot", 1, 112.5, 137.5, 1, 0, 0.9, 0.9, Scaling.atkint, Element.fire,
-            false, false);
-
-    ActiveSkill eblast = new ActiveSkill("Elemental Blast", 1, 81.9, 100.1, 1.0, 0, 1.2, 1.2, Scaling.intel,
-            Element.magic, false, false);
-    ActiveSkill mm = new ActiveSkill("Magic Missile", 1, 103.95, 127.05, 1.5, 0, 1.5, 1.5, Scaling.intel,
-            Element.magic, false, false);
-
-    ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 0, 1.2, 1.1, Scaling.atk, Element.phys, false,
-            false);
-    ActiveSkill da = new ActiveSkill("Double Attack", 2, 64.8, 79.2, 1, 0, 1, 1, Scaling.atk, Element.phys, false,
-            false);
-
-    ActiveSkill cupid_atkint = new ActiveSkill("Cupid Hard Love Shot", 1, 189, 231, 1.75, 0, 1.4, 1.4, Scaling.atkint, Element.physmagic,
-            false, false);
-
-    ActiveSkill blind = new ActiveSkill("Blind", 1, 76.5, 93.5, 1, 0, 1, 1, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill backstab = new ActiveSkill("Back Stab", 1, 225, 275, 2, 0, 2, 2, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill attack = new ActiveSkill("Attack", 1, 90, 110, 1, 0, 1, 1, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill charge_attack = new ActiveSkill("Charge Attack", 1, 270, 330, 1, 0, 2.5, 2, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 0, 0.5, 0.5, Scaling.atk, Element.none,
-            false,false);
-    ActiveSkill qh = new ActiveSkill("Quick Hit", 1, 76.5, 93.5, 1, 0, 0.7, 0.7, Scaling.atk, Element.phys, false,
-            false);
-
-    ActiveSkill charge_up = new ActiveSkill("Charge Up", 1, 0, 0, 0, 0, 2.2, 2.2, Scaling.atk, Element.none, false,
-            false);
-    ActiveSkill arrow_light = new ActiveSkill("Arrow Of Light", 1, 220.5, 269.5, 1, 0, 2.7, 2.7, Scaling.atkhit,
-            Element.light,false, false);
-    ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 47.25, 57.75, 1.1, 0, 1.7, 1,
-            Scaling.atk, Element.phys,false,false);
-
-    ActiveSkill holy_slash = new ActiveSkill("Holy Slash", 1, 141.75, 173.25, 1, 0, 1.8, 1.8, Scaling.atk,
-            Element.light,false, false);
-    ActiveSkill holy_power_slash = new ActiveSkill("Holy Power Slash", 1, 252, 308, 1, 0, 3.4, 3.4, Scaling.atk,
-            Element.light,false, false);
-    ActiveSkill sense = new ActiveSkill("Sense", 1, 90, 110, 2.5, 0, 0.5, 0.5, Scaling.atk,
-            Element.magic,false, false);
-
     double strength = 1;
     double base_lvl;
     boolean active = false;
     String previous_spell = "";
 
     public Enemy() {
-        ball.addDebuff("Burn", 3, 1);
-        pillar.addDebuff("Burn", 3, 1);
-        explosion.addDebuff("Burn", 3, 1);
-        poison.addDebuff("Poison", 3, 0.1);
-        tsunami.addDebuff("Poison", 3, 0.1);
-        bash.addDebuff("Defense Break", 3, 0.2);
-        mm.addDebuff("Resist Break", 3, 0.25);
-        blind.addDebuff("Smoke", 3, 0);
-        compression.addDebuff("Slow", 3, 0.25);
-        mark.addDebuff("Mark", 1, 0.2);
-        charge_up.addBuff("Charge Up", 1, 1.875);
-        rapidstabs.dmg_mult = 1.65;
+        super();
+        poison_mult = 13.0 / 15.0;
     }
 
     public void setEnemy(String name) {
         this.name = name;
-        enemy_skills.clear();
+        skills.disableAll();
         counter_dodge = false;
         counter_heal = false;
         base_lvl = 0;
@@ -145,9 +66,9 @@ public class Enemy extends Actor {
                 base_water = 400 / base_lvl;
                 fire_res = 0.5;
                 wind_res = 0.5;
-                enemy_skills.add(waterpunch);
-                enemy_skills.add(killingstrike);
-                enemy_skills.add(tsunami);
+                skills.enableActive("Water Punch");
+                skills.enableActive("Killing Strike");
+                skills.enableActive("Tsunami");
             }
             case "Lamia" -> {
                 base_lvl = 100;
@@ -162,9 +83,9 @@ public class Enemy extends Actor {
                 base_fire = 400 / base_lvl;
                 earth_res = 0.5;
                 wind_res = 0.5;
-                enemy_skills.add(ball);
-                enemy_skills.add(pillar);
-                enemy_skills.add(explosion);
+                skills.enableActive("Fire Ball");
+                skills.enableActive("Fire Pillar");
+                skills.enableActive("Explosion");
             }
             case "Shax" -> {
                 base_lvl = 100;
@@ -187,8 +108,8 @@ public class Enemy extends Actor {
                 base_wind = 100 / base_lvl;
                 earth_res = 0.5;
                 wind_res = -0.5;
-                enemy_skills.add(gust);
-                enemy_skills.add(compression);
+                skills.enableActive("Gust");
+                skills.enableActive("Air Compression");
                 counter_dodge = true;
                 counter_heal = true;
             }
@@ -207,7 +128,7 @@ public class Enemy extends Actor {
                 base_hit = 1500 / base_lvl;
                 base_speed = 625 / base_lvl;
                 magic_res = 0.5;
-                enemy_skills.add(soulslash);
+                skills.enableActive("Soul Slash");
             }
             case "Fairy" -> {
                 base_lvl = 150;
@@ -224,8 +145,9 @@ public class Enemy extends Actor {
                 base_res = 2250 / base_lvl;
                 base_hit = 11250 / base_lvl;
                 base_speed = 750 / base_lvl;
-                enemy_skills.add(charge_up);
-                enemy_skills.add(arrow_light);
+                active_skills.get("Charge Up").setSkill(10, SkillMod.Basic);
+                skills.enableActive("Charge Up");
+                skills.enableActive("Arrow Of Light");
             }
             case "Raum" -> {
                 base_lvl = 175;
@@ -244,7 +166,8 @@ public class Enemy extends Actor {
                 if (Main.game_version < 1573) {
                     dark_res = 0.5;
                 }
-                enemy_skills.add(rapidstabs);
+                active_skills.get("Rapid Stabs").setSkill(13, SkillMod.Damage);
+                skills.enableActive("Rapid Stabs");
                 counter_dodge = true;
                 if (Main.game_version < 1580) {
                     counter_strike = 0.25;
@@ -279,9 +202,9 @@ public class Enemy extends Actor {
                     fire_res = 0.25;
                     phys_res = -0.3;
                 }
-                enemy_skills.add(holy_slash);
-                enemy_skills.add(holy_power_slash);
-                enemy_skills.add(sense);
+                skills.enableActive("Holy Slash");
+                skills.enableActive("Holy Power Slash");
+                skills.enableActive("Sense");
             }
             case "Devil" -> {
                 base_lvl = 90;
@@ -296,8 +219,8 @@ public class Enemy extends Actor {
                 base_dark = 180 / base_lvl;
                 dark_res = 0.5;
                 light_res = -0.5;
-                enemy_skills.add(poison);
-                enemy_skills.add(slash);
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Dark Slash");
             }
             case "Tengu" -> {
                 base_lvl = 50;
@@ -312,8 +235,8 @@ public class Enemy extends Actor {
                 base_wind = 100 / base_lvl;
                 wind_res = 1;
                 dodge_mult = 1.25;
-                enemy_skills.add(bash);
-                enemy_skills.add(da);
+                skills.enableActive("Bash");
+                skills.enableActive("Double Attack");
             }
             case "Amon" -> {
                 base_lvl = 50;
@@ -327,8 +250,8 @@ public class Enemy extends Actor {
                 base_speed = 100 / base_lvl;
                 base_water = 100 / base_lvl;
                 water_res = 1;
-                enemy_skills.add(mm);
-                enemy_skills.add(eblast);
+                skills.enableActive("Magic Missile");
+                skills.enableActive("Elemental Blast");
             }
             case "Akuma" -> {
                 base_lvl = 50;
@@ -342,8 +265,8 @@ public class Enemy extends Actor {
                 base_speed = 200 / base_lvl;
                 base_fire = 100 / base_lvl;
                 fire_res = 0.5;
-                enemy_skills.add(dp);
-                enemy_skills.add(as);
+                skills.enableActive("Dragon Punch");
+                skills.enableActive("Aura Shot");
             }
             case "Dummy" -> {
                 base_lvl = 100;
@@ -355,7 +278,7 @@ public class Enemy extends Actor {
                 base_res = 600 / base_lvl;
                 base_hit = 600 / base_lvl;
                 base_speed = 600 / base_lvl;
-                enemy_skills.add(cupid_atkint);
+                skills.enableActive("Cupid Hard Love Shot");
             }
             case "Astaroth" -> {
                 base_lvl = 40;
@@ -369,8 +292,9 @@ public class Enemy extends Actor {
                 base_speed = 100 / base_lvl;
                 base_fire = 60 / base_lvl;
                 fire_res = 0.6;
-                enemy_skills.add(blind);
-                enemy_skills.add(poison);
+                skills.enableActive("Tsunami");
+                skills.enableActive("Blind Enemy");
+                skills.enableActive("Poison Attack");
             }
             case "Shinigami" -> {
                 base_lvl = 40;
@@ -384,8 +308,8 @@ public class Enemy extends Actor {
                 base_speed = 60 / base_lvl;
                 base_dark = 60 / base_lvl;
                 dark_res = 0.6;
-                enemy_skills.add(killingstrike);
-                enemy_skills.add(backstab);
+                skills.enableActive("Killing Strike");
+                skills.enableActive("Back Stab");
             }
             case "Wraith" -> {
                 base_lvl = 30;
@@ -400,8 +324,8 @@ public class Enemy extends Actor {
                 base_wind = 45 / base_lvl;
                 wind_res = 0.6;
                 light_res = -0.5;
-                enemy_skills.add(attack);
-                enemy_skills.add(mark);
+                skills.enableActive("Attack");
+                skills.enableActive("Mark Target");
             }
             case "Ghoul2" -> {
                 base_lvl = 30;
@@ -414,7 +338,7 @@ public class Enemy extends Actor {
                 base_hit = 60 / base_lvl;
                 base_speed = 45 / base_lvl;
                 light_res = -0.5;
-                enemy_skills.add(charge_attack);
+                skills.enableActive("Charge Attack");
             }
             case "Slime" -> {
                 base_lvl = 1;
@@ -427,7 +351,7 @@ public class Enemy extends Actor {
                 base_hit = 5 / base_lvl;
                 base_speed = 2 / base_lvl;
                 water = 2;
-                enemy_skills.add(waterpunch);
+                skills.enableActive("Water Punch");
             }
             case "Slime2" -> {
                 base_lvl = 10;
@@ -440,7 +364,7 @@ public class Enemy extends Actor {
                 base_hit = 25 / base_lvl;
                 base_speed = 10 / base_lvl;
                 water = 10;
-                enemy_skills.add(waterpunch);
+                skills.enableActive("Water Punch");
             }
             case "Imp" -> {
                 base_lvl = 10;
@@ -453,7 +377,7 @@ public class Enemy extends Actor {
                 base_hit = 20 / base_lvl;
                 base_speed = 15 / base_lvl;
                 base_fire = 10 / base_lvl;
-                enemy_skills.add(ball);
+                skills.enableActive("Fire Ball");
             }
             case "Goblin" -> {
                 base_lvl = 10;
@@ -465,8 +389,8 @@ public class Enemy extends Actor {
                 base_res = 15 / base_lvl;
                 base_hit = 20 / base_lvl;
                 base_speed = 25 / base_lvl;
-                enemy_skills.add(poison);
-                enemy_skills.add(qh);
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Quick Hit");
             }
             case "Imp2" -> {
                 base_lvl = 20;
@@ -479,7 +403,7 @@ public class Enemy extends Actor {
                 base_hit = 40 / base_lvl;
                 base_speed = 30 / base_lvl;
                 base_fire = 20 / base_lvl;
-                enemy_skills.add(ball);
+                skills.enableActive("Fire Ball");
             }
             case "Goblin2" -> {
                 base_lvl = 20;
@@ -491,8 +415,8 @@ public class Enemy extends Actor {
                 base_res = 30 / base_lvl;
                 base_hit = 40 / base_lvl;
                 base_speed = 50 / base_lvl;
-                enemy_skills.add(poison);
-                enemy_skills.add(qh);
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Quick Hit");
             }
             case "Ghoul" -> {
                 base_lvl = 20;
@@ -505,10 +429,9 @@ public class Enemy extends Actor {
                 base_hit = 40 / base_lvl;
                 base_speed = 30 / base_lvl;
                 light_res = -0.5;
-                enemy_skills.add(charge_attack);
+                skills.enableActive("Charge Attack");
             }
         }
-        //reroll();
         active = true;
     }
 
@@ -545,47 +468,55 @@ public class Enemy extends Actor {
     }
 
     public ActiveSkill rollAttack(Player player) {
-        if (enemy_skills.isEmpty()) return weak_a;
         double roll = random.nextDouble() * 100;
         switch (name) {
             case "Dagon" -> {
-                return roll < 50 ? waterpunch : roll >= 50 && roll < 80 ? killingstrike : tsunami;
+                return roll < 50 ? active_skills.get("Water Punch") : roll >= 50 && roll < 80 ? active_skills.get("Killing Strike") : active_skills.get("Tsunami");
             }
             case "Lamia" -> {
-                return roll < 50 ? ball : roll >= 50 && roll < 85 ? pillar : explosion;
+                return roll < 50 ? active_skills.get("Fire Ball") : roll >= 50 && roll < 85 ? active_skills.get("Fire Pillar") : active_skills.get("Explosion");
             }
             case "Shax" -> {
-                return roll < 30 ? compression : gust; //Hadn't measured chances, I don't think it matters
+                return roll < 30 ? active_skills.get("Air Compression") : active_skills.get("Gust"); //Hadn't measured chances, I don't think it matters
             }
             case "Devil" -> {
-                return roll < 70 ? slash : poison; //Chances to select skills were calculated empirically
+                return roll < 70 ? active_skills.get("Dark Slash") : active_skills.get("Poison Attack"); //Chances to select skills were calculated empirically
             }
             case "Tengu" -> {
-                return roll < 50 ? bash : da;
+                return roll < 50 ? active_skills.get("Bash") : active_skills.get("Double Attack");
             }
             case "Amon" -> {
-                return roll < 50 ? mm : eblast;
+                return roll < 50 ? active_skills.get("Magic Missile") : active_skills.get("Elemental Blast");
             }
             case "Akuma" -> {
-                return roll < 50 ? dp : as;
+                return roll < 50 ? active_skills.get("Dragon Punch") : active_skills.get("Aura Shot");
             }
             case "Fairy" -> {
-                return (super.charge == 0 && roll < 60) ? charge_up : arrow_light;
+                return (charge == 0 && roll < 60) ? active_skills.get("Charge Up") : active_skills.get("Arrow Of Light");
             }
             case "Asura" -> {
                 if (player.hide_bonus > 0) {
-                    return sense;
+                    return active_skills.get("Sense");
                 } else {
-                    return roll < 30 ? holy_power_slash : holy_slash;
+                    return roll < 30 ? active_skills.get("Holy Power Slash") : active_skills.get("Holy Slash");
                 }
             }
             case "Dummy" -> {
-                return cupid_atkint;
+                return active_skills.get("Cupid Hard Love Shot");
             }
             default -> {
-                return enemy_skills.get(random.nextInt(enemy_skills.size()));
+                return getRandomSkill();
             }
         }
+    }
+
+    public ActiveSkill getRandomSkill() {
+        ArrayList<ActiveSkill> enemy_skills = new ArrayList<>();
+        for (String n : active_skills.keySet()) {
+            if (active_skills.get(n).available) enemy_skills.add(active_skills.get(n));
+        }
+        if (enemy_skills.isEmpty()) return getWeakSkill();
+        return enemy_skills.get(random.nextInt(enemy_skills.size()));
     }
 
     public ActiveSkill getCasting(Player player) {

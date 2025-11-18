@@ -14,107 +14,9 @@ import static Disilon.Main.minIfNotZero;
 import static Disilon.UserForm.maxResearchLvl;
 
 public class Player extends Actor {
-    ActiveSkill hide = new ActiveSkill("Hide", 1, 0.3, 0, 0, 5, 0.5, 0.5, Scaling.atk, Element.none, false, false);
-    ActiveSkill ks = new ActiveSkill("Killing Strike", 1, 297, 363, 0.7, 80, 2, 2, Scaling.atk, Element.dark,
-            false, false);
-    ActiveSkill dp = new ActiveSkill("Dragon Punch", 3, 76.5, 93.5, 0.8, 20, 1, 3, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill wf = new ActiveSkill("Whirling Foot", 3, 49.5, 60.5, 0.8, 30, 1.2, 2, Scaling.atk, Element.phys,
-            true, false);
-    ActiveSkill pa = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 4, 0.4, 0.9, Scaling.atk, Element.phys, false
-            , false);
-    ActiveSkill pa1541 = new ActiveSkill("Poison Attack", 1, 36, 44, 1, 4, 0.4, 0.9, Scaling.atk, Element.phys, false
-            , false);
-    ActiveSkill smoke = new ActiveSkill("Smoke Screen", 1, 0, 0, 0.85, 25, 0.8, 1, Scaling.atk, Element.none, true, false);
-    ActiveSkill fa = new ActiveSkill("First Aid", 1, 15, 15, 0, 5, 0.9, 1.1, Scaling.atk, Element.none, false,
-            true);
-    ActiveSkill ss = new ActiveSkill("Sharp Shooting", 1, 207, 253, 1.5, 80, 2, 3, Scaling.atkhit, Element.wind,
-            false, false);
-    ActiveSkill ds = new ActiveSkill("Double Shot", 2, 76.5, 93.5, 1, 12, 1.1, 1.1, Scaling.atkhit, Element.phys,
-            false, false);
-    ActiveSkill ar = new ActiveSkill("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
-            1.5, Scaling.atkhit, Element.phys, false, false);
-    ActiveSkill bash = new ActiveSkill("Bash", 1, 103.5, 126.5, 1, 10, 1.2, 1.1, Scaling.atk, Element.phys, false,
-            false);
-    ActiveSkill attack = new ActiveSkill("Attack", 1, 90, 110, 1, 0, 1, 1, Scaling.atk, Element.phys, false,
-            false);
-    ActiveSkill aura_shot = new ActiveSkill("Aura Shot", 1, 112.5, 137.5, 1, 15, 0.9, 0.9, Scaling.atkint, Element.fire,
-            false,false);
-    ActiveSkill db = new ActiveSkill("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
-            false);
-    ActiveSkill qh = new ActiveSkill("Quick Hit", 1, 76.5, 93.5, 1, 10, 0.7, 0.7, Scaling.atk, Element.phys, false,
-            false);
-    ActiveSkill ab = new ActiveSkill("Aura Blade", 1, 121.5, 148.5, 1, 15, 1.3, 1.3, Scaling.atk, Element.light,
-            false, false);
-    ActiveSkill sr = new ActiveSkill("Sword Rush", 3, 67.5, 82.5, 1, 15, 1.5, 1.5, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill mark = new ActiveSkill("Mark Target", 1, 0, 0, 1.5, 10, 0.5, 0.5, Scaling.atk, Element.none,
-            false, false);
-    ActiveSkill charge_up = new ActiveSkill("Charge Up", 1, 0, 0, 0, 50, 2, 2, Scaling.atk, Element.none, false,
-            false);
-    ActiveSkill fball = new ActiveSkill("Fire Ball", 1, 99, 121, 1.35, 20, 1.15, 1, Scaling.intel, Element.fire,
-            false, false);
-    ActiveSkill fpillar = new ActiveSkill("Fire Pillar", 1, 180, 220, 1.0, 50, 1.5,
-            1.5, Scaling.intel, Element.fire, false, false);
-    ActiveSkill explosion = new ActiveSkill("Explosion", 1, 1350, 1650, 1.15, 500, 8, 30, Scaling.intel,
-            Element.fire, true, false);
-    ActiveSkill eblast = new ActiveSkill("Elemental Blast", 1, 117, 143, 1.0, 20, 1.2, 1.2, Scaling.intel,
-            Element.eleblast, false, false);
-    ActiveSkill mm = new ActiveSkill("Magic Missile", 1, 148.5, 181.5, 1.5, 25, 1.5, 1.5, Scaling.intel,
-            Element.magic, false, false);
-    ActiveSkill ma = new ActiveSkill("Magic Arrow", 1, 90, 110, 1, 15, 1, 1, Scaling.intel,
-            Element.magic, false, false);
-    ActiveSkill hlight = new ActiveSkill("Holy Light", 1, 112.5, 137.5, 1.0, 25, 1, 1.1, Scaling.resint,
-            Element.light, false, false);
-    ActiveSkill heal = new ActiveSkill("Heal", 1, 250, 45, 0, 30, 0.8, 1.5, Scaling.atk, Element.none, false,
-            true);
-    ActiveSkill bless = new ActiveSkill("Bless", 1, 0, 0, 0, 40, 0.5, 0.5, Scaling.atk, Element.none, false,
-            false);
-    ActiveSkill push = new ActiveSkill("Push Blast", 1, 99, 121, 0.9, 30, 1.3, 1.3, Scaling.intel,
-            Element.magic, true, false);
-    ActiveSkill doubleattack = new ActiveSkill("Double Attack", 2, 64.8, 79.2, 1, 7, 1, 1, Scaling.atk,
-            Element.phys, false, false);
-    ActiveSkill empowerhp = new ActiveSkill("Empower HP", 1, 0, 0, 0, 60, 2, 2, Scaling.atk, Element.none, false,
-            false);
-    ActiveSkill rapidstabs = new ActiveSkill("Rapid Stabs", 5, 67.5, 82.5, 1.1, 90, 1.7, 1,
-            Scaling.atk, Element.phys, false, false);
-    ActiveSkill pierce1551 = new ActiveSkill("Pierce", 1, 45, 55, 1, 25, 0.75, 1,
-            Scaling.atk, Element.phys, false, false);
-    ActiveSkill pierce1552 = new ActiveSkill("Pierce", 1, 67.5, 82.5, 1, 40, 1.2, 1.2,
-            Scaling.atk, Element.phys, false, false);
-    ActiveSkill careful = new ActiveSkill("Careful Shot", 1, 58.5, 71.5, 1.5, 15, 0.6, 0.6, Scaling.atkhit,
-            Element.phys, false, false);
-    ActiveSkill weakening = new ActiveSkill("Weakening Shot", 1, 144, 176, 1, 50, 1.3, 1.3, Scaling.atkhit,
-            Element.phys, false, false);
-    ActiveSkill aimed = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 75, 1.5, 1.5, Scaling.atkhit,
-            Element.phys, false, false);
-    ActiveSkill aimed1563 = new ActiveSkill("Aimed Shot", 1, 270, 330, 1.5, 60, 1.5, 1.5, Scaling.atkhit,
-            Element.phys, false, false);
-    ActiveSkill prayer = new ActiveSkill("Prayer", 1, 30, 0, 0, 99, 1.5, 1.5, Scaling.atk, Element.none, false,
-            false);
-    ActiveSkill hray = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.resint,
-            Element.light, false, false);
-    ActiveSkill hray1568 = new ActiveSkill("Holy Ray", 1, 198, 242, 1.0, 66, 1.8, 1.8, Scaling.res,
-            Element.light, false, false);
-    ActiveSkill dispel = new ActiveSkill("Dispel", 1, 90, 110, 1, 50, 1, 1, Scaling.resint, Element.light, false,
-            false);
-    ActiveSkill basic = new ActiveSkill("Basic Attack", 1, 81, 99, 1, 0, 1, 1, Scaling.atk,
-            Element.phys, false, false);
-    ActiveSkill onion_slash = new ActiveSkill("Onion Slash", 1, 252, 308, 1.25, 99, 1.4, 1.4, Scaling.atk,
-            Element.water, false, false);
-    ActiveSkill onion_wave = new ActiveSkill("Onion Wave", 1, 299.7, 366.3, 0.99, 333, 2.9, 5, Scaling.atk,
-            Element.water, true, false);
-    ActiveSkill throw_sand = new ActiveSkill("Throw Sand", 1, 0, 0, 0, 20, 0.8, 0.5, Scaling.atk, Element.phys,
-            false, false);
-    ActiveSkill backstab = new ActiveSkill("Back Stab", 1, 225, 275, 2, 80, 2, 2, Scaling.atk, Element.water,
-            false, false);
-    ActiveSkill extra_attack_proc = new ActiveSkill("Extra Attack", 1, 75, 75, 100, 0, 0, 0, Scaling.atk,
-            Element.water,false, false);
-    ActiveSkill prep = new ActiveSkill("Prepare");
-
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
-            "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue",
+            "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer",
             "Onion Knight"};
 
     double rp_balance;
@@ -128,7 +30,7 @@ public class Player extends Actor {
     LinkedHashMap<String, Double> research_weight_sorted = new LinkedHashMap<>(32);
 
     public Player() {
-        addSkillEffects();
+        super();
         initializeSets();
     }
 
@@ -201,28 +103,6 @@ public class Player extends Actor {
         calc_exp_mult();
     }
 
-    public void addSkillEffects() {
-        pa.addDebuff("Poison", 3, 0.1);
-        pa1541.addDebuff("Poison", 3, 0.15);
-        smoke.addDebuff("Smoke", 3, 0);
-        bash.addDebuff("Defense Break", 3, 0.2);
-        db.addDebuff("Defense Break", 3, 0.25);
-        mm.addDebuff("Resist Break", 3, 0.25);
-        mark.addDebuff("Mark", 1, 0.2);
-        charge_up.addBuff("Charge Up", 1, 1.5);
-        fball.addDebuff("Burn", 3, 1);
-        fpillar.addDebuff("Burn", 3, 1);
-        explosion.addDebuff("Burn", 3, 1);
-        bless.addBuff("Bless", 2, 0.3);
-        empowerhp.addBuff("Empower HP", 7, 0.05);
-        weakening.addDebuff("Weaken", 4, 0.25);
-        throw_sand.addDebuff("Smoke", 3, 0);
-        throw_sand.addBuff("Elemental Buff", 3, 0.3);
-        ar.random_targets = true;
-        careful.overkill = false;
-        aimed.can_kill = false;
-    }
-
     public void setupPotions(String type1, int threshold1, String type2, int threshold2,
                              String type3, int threshold3) {
         if (!type1.equals("None")) {
@@ -262,8 +142,7 @@ public class Player extends Actor {
 
     public void setClass(String name) {
         this.name = name;
-        passives.clear();
-        active_skills.clear();
+        skills.disableAll();
         base_phys_res = 0;
         base_magic_res = 0;
         base_water_res = 0;
@@ -277,127 +156,143 @@ public class Player extends Actor {
                 tier = 3;
                 base_dark_res = 0.5;
                 base_light_res = -0.5;
-                passives.put("Attack Boost", attackBoost);
-                passives.put("Drop Boost", dropBoost);
-                passives.put("Dagger Mastery", daggerMastery);
-                passives.put("Stealth", stealth);
-                passives.put("Speed Boost", speedBoost);
-                passives.put("Poison Boost", poisonBoost);
-                passives.put("Defense Boost", defenseBoost);
-                passives.put("Dodge", dodge);
-                passives.put("Fist Mastery", fistMastery);
-                passives.put("Counter Strike", counterStrike);
-                active_skills.put("Killing Strike", ks);
-                active_skills.put("Hide", hide);
-                active_skills.put("Dragon Punch", dp);
-                active_skills.put("Whirling Foot", wf);
-                active_skills.put("Poison Attack", pa1541);
-                active_skills.put("Smoke Screen", smoke);
-                active_skills.put("Prepare", prep);
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Dagger Mastery");
+                skills.enablePassive("Stealth");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Poison Boost");
+                skills.enablePassive("Defense Boost");
+                skills.enablePassive("Dodge");
+                skills.enablePassive("Fist Mastery");
+                skills.enablePassive("Counter Strike");
+                skills.enableActive("Killing Strike");
+                skills.enableActive("Hide");
+                skills.enableActive("Dragon Punch");
+                skills.enableActive("Whirling Foot");
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Smoke Screen");
+                skills.enableActive("Prepare");
             }
             case "Fighter" -> {
                 tier = 2;
-                passives.put("Attack Boost", attackBoost);
-                passives.put("Defense Boost", defenseBoost);
-                passives.put("Fist Mastery", fistMastery);
-                passives.put("Counter Strike", counterStrike);
-                active_skills.put("Attack", attack);
-                active_skills.put("Quick Hit", qh);
-                active_skills.put("Aura Shot", aura_shot);
-                active_skills.put("Dragon Punch", dp);
-                active_skills.put("Whirling Foot", wf);
-                active_skills.put("First Aid", fa);
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Defense Boost");
+                skills.enablePassive("Fist Mastery");
+                skills.enablePassive("Counter Strike");
+                skills.enableActive("Attack");
+                skills.enableActive("Quick Hit");
+                skills.enableActive("Aura Shot");
+                skills.enableActive("Dragon Punch");
+                skills.enableActive("Whirling Foot");
+                skills.enableActive("First Aid");
             }
             case "Pyromancer" -> {
                 tier = 3;
                 base_fire_res = 0.5;
                 base_water_res = -0.5;
-                passives.put("Int Boost", intBoost);
-                passives.put("Res Boost", resBoost);
-                passives.put("Wand Mastery", wandMastery);
-                passives.put("Casting Boost", castBoost);
-                passives.put("Fire Boost", fireBoost);
-                passives.put("Fire Resistance", fireResist);
-                active_skills.put("Fire Pillar", fpillar);
-                active_skills.put("Fireball", fball);
-                active_skills.put("Explosion", explosion);
-                active_skills.put("Elemental Blast", eblast);
-                active_skills.put("Push Blast", push);
-                active_skills.put("Magic Arrow", ma);
-                active_skills.put("Magic Missile", mm);
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enablePassive("Casting Boost");
+                skills.enablePassive("Wand Mastery");
+                skills.enablePassive("Fire Boost");
+                skills.enablePassive("Fire Resistance");
+                skills.enableActive("Fire Pillar");
+                skills.enableActive("Fire Ball");
+                skills.enableActive("Explosion");
+                skills.enableActive("Elemental Blast");
+                skills.enableActive("Push Blast");
+                skills.enableActive("Magic Arrow");
+                skills.enableActive("Magic Missile");
+            }
+            case "Geomancer" -> {
+                tier = 3;
+                base_earth_res = 0.5;
+                base_wind_res = -0.5;
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enablePassive("Casting Boost");
+                skills.enablePassive("Wand Mastery");
+                skills.enablePassive("Earth Boost");
+                skills.enablePassive("Earth Resistance");
+                skills.enableActive("Rock Shot");
+                skills.enableActive("Stone Barrier");
+                skills.enableActive("Earth Quake");
+                skills.enableActive("Elemental Blast");
+                skills.enableActive("Push Blast");
+                skills.enableActive("Magic Arrow");
+                skills.enableActive("Magic Missile");
             }
             case "Priest" -> {
                 tier = 3;
                 base_dark_res = -0.5;
                 base_light_res = 0.5;
-                passives.put("Int Boost", intBoost);
-                passives.put("Res Boost", resBoost);
-                passives.put("Book Mastery", bookMastery);
-                passives.put("Ailment Res", ailmentRes);
-                passives.put("Light Boost", lightBoost);
-                passives.put("Bless Mastery", blessMastery);
-                if (Main.game_version >= 1568) {
-                    active_skills.put("Holy Ray", hray1568);
-                } else {
-                    active_skills.put("Holy Ray", hray);
-                }
-                active_skills.put("Dispel", dispel);
-                active_skills.put("Prayer", prayer);
-                active_skills.put("Holy Light", hlight);
-                active_skills.put("Magic Arrow", ma);
-                active_skills.put("Heal", heal);
-                active_skills.put("Bless", bless);
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enablePassive("Light Boost");
+                skills.enablePassive("Book Mastery");
+                skills.enablePassive("Bless Mastery");
+                skills.enablePassive("Ailment Res");
+                skills.enableActive("Holy Ray");
+                skills.enableActive("Dispel");
+                skills.enableActive("Prayer");
+                skills.enableActive("Holy Light");
+                skills.enableActive("Magic Arrow");
+                skills.enableActive("Heal");
+                skills.enableActive("Bless");
             }
             case "Mage" -> {
                 tier = 2;
-                passives.put("Int Boost", intBoost);
-                passives.put("Res Boost", resBoost);
-                passives.put("Wand Mastery", wandMastery);
-                passives.put("Casting Boost", castBoost);
-                active_skills.put("Elemental Blast", eblast);
-                active_skills.put("Push Blast", push);
-                active_skills.put("Magic Arrow", ma);
-                active_skills.put("Magic Missile", mm);
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enablePassive("Casting Boost");
+                skills.enablePassive("Wand Mastery");
+                skills.enableActive("Elemental Blast");
+                skills.enableActive("Push Blast");
+                skills.enableActive("Magic Arrow");
+                skills.enableActive("Magic Missile");
             }
             case "Student" -> {
                 tier = 1;
-                passives.put("Int Boost", intBoost);
-                passives.put("Res Boost", resBoost);
-                active_skills.put("Magic Arrow", ma);
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enableActive("Magic Arrow");
             }
             case "Sniper" -> {
                 tier = 3;
                 base_wind_res = 0.5;
                 base_fire_res = -0.5;
-                passives.put("Attack Boost", attackBoost);
-                passives.put("Drop Boost", dropBoost);
-                passives.put("Bow Mastery", bowMastery);
-                passives.put("Speed Boost", speedBoost);
-                passives.put("Defense Boost", defenseBoost);
-                passives.put("Ambush", ambush);
-                passives.put("HP Regen", hpRegen);
-                passives.put("Concentration", concentration);
-                passives.put("Hit Boost", hitBoost);
-                active_skills.put("Arrow Rain", ar);
-                active_skills.put("Sharpshooter", ss);
-                active_skills.put("Mark", mark);
-                active_skills.put("Charge Up", charge_up);
-                active_skills.put("Defense Break", db);
-                active_skills.put("Prepare", prep);
-                active_skills.put("Bash", bash);
-                active_skills.put("Double Shot", ds);
-                active_skills.put("Quick Hit", qh);
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Bow Mastery");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Defense Boost");
+                skills.enablePassive("Ambush");
+                skills.enablePassive("HP Regen");
+                skills.enablePassive("Concentration");
+                skills.enablePassive("Hit Boost");
+                skills.enableActive("Arrow Rain");
+                skills.enableActive("Sharp Shooting");
+                skills.enableActive("Mark Target");
+                skills.enableActive("Charge Up");
+                skills.enableActive("Defense Break");
+                skills.enableActive("Prepare");
+                skills.enableActive("Bash");
+                skills.enableActive("Trap");
+                skills.enableActive("Double Shot");
+                skills.enableActive("Quick Hit");
             }
             case "Archer" -> {
                 tier = 2;
-                passives.put("Drop Boost", dropBoost);
-                passives.put("Bow Mastery", bowMastery);
-                passives.put("Speed Boost", speedBoost);
-                passives.put("Ambush", ambush);
-                active_skills.put("Double Shot", ds);
-                active_skills.put("Arrow Rain", ar);
-                active_skills.put("Prepare", prep);
-                active_skills.put("Bash", bash);
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Bow Mastery");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Ambush");
+                skills.enableActive("Double Shot");
+                skills.enableActive("Arrow Rain");
+                skills.enableActive("Prepare");
+                skills.enableActive("Bash");
+                skills.enableActive("Trap");
             }
             case "Knight" -> {
                 tier = 3;
@@ -409,71 +304,72 @@ public class Player extends Actor {
                 base_light_res = 0.1;
                 base_dark_res = 0.1;
                 base_magic_res = -0.5;
-                passives.put("Attack Boost", attackBoost);
-                passives.put("Defense Boost", defenseBoost);
-                passives.put("HP Regen", hpRegen);
-                passives.put("Sword Mastery", swordMastery);
-                passives.put("Fist Mastery", fistMastery);
-                passives.put("Spear Mastery", spearMastery);
-                passives.put("HP Boost", hpBoost);
-                passives.put("Counter Strike", counterStrike);
-                active_skills.put("Empower HP", empowerhp);
-                active_skills.put("Pierce", pierce1552);
-                active_skills.put("Rapid Stabs", rapidstabs);
-                active_skills.put("Dragon Punch", dp);
-                active_skills.put("Whirling Foot", wf);
-                active_skills.put("Quick Hit", qh);
-                active_skills.put("Aura Blade", ab);
-                active_skills.put("Defense Break", db);
-                active_skills.put("Sword Rush", sr);
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Sword Mastery");
+                skills.enablePassive("Fist Mastery");
+                skills.enablePassive("Spear Mastery");
+                skills.enablePassive("HP Boost");
+                skills.enablePassive("Defense Boost");
+                skills.enablePassive("HP Regen");
+                skills.enablePassive("Counter Strike");
+                skills.enableActive("Empower HP");
+                skills.enableActive("Pierce");
+                skills.enableActive("Rapid Stabs");
+                skills.enableActive("Dragon Punch");
+                skills.enableActive("Whirling Foot");
+                skills.enableActive("Quick Hit");
+                skills.enableActive("Aura Blade");
+                skills.enableActive("Defense Break");
+                skills.enableActive("Sword Rush");
             }
             case "Warrior" -> {
                 tier = 2;
-                passives.put("Attack Boost", attackBoost);
-                passives.put("Defense Boost", defenseBoost);
-                passives.put("HP Regen", hpRegen);
-                passives.put("Sword Mastery", swordMastery);
-                active_skills.put("Attack", attack);
-                active_skills.put("Quick Hit", qh);
-                active_skills.put("Aura Blade", ab);
-                active_skills.put("Defense Break", db);
-                active_skills.put("Sword Rush", sr);
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Sword Mastery");
+                skills.enablePassive("Defense Boost");
+                skills.enablePassive("HP Regen");
+                skills.enableActive("Attack");
+                skills.enableActive("Quick Hit");
+                skills.enableActive("Aura Blade");
+                skills.enableActive("Defense Break");
+                skills.enableActive("Sword Rush");
             }
             case "Squire" -> {
                 tier = 1;
-                passives.put("Attack Boost", attackBoost);
-                passives.put("Defense Boost", defenseBoost);
-                active_skills.put("Attack", attack);
-                active_skills.put("Quick Hit", qh);
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Defense Boost");
+                skills.enableActive("Attack");
+                skills.enableActive("Quick Hit");
             }
             case "Cleric" -> {
                 tier = 2;
-                passives.put("Int Boost", intBoost);
-                passives.put("Res Boost", resBoost);
-                passives.put("Book Mastery", bookMastery);
-                passives.put("Ailment Res", ailmentRes);
-                active_skills.put("Holy Light", hlight);
-                active_skills.put("Magic Arrow", ma);
-                active_skills.put("Heal", heal);
-                active_skills.put("Bless", bless);
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enablePassive("Book Mastery");
+                skills.enablePassive("Ailment Res");
+
+                skills.enableActive("Holy Light");
+                skills.enableActive("Magic Arrow");
+                skills.enableActive("Heal");
+                skills.enableActive("Bless");
             }
             case "Thief" -> {
                 tier = 2;
-                passives.put("Drop Boost", dropBoost);
-                passives.put("Dagger Mastery", daggerMastery);
-                passives.put("Speed Boost", speedBoost);
-                passives.put("Dodge", dodge);
-                active_skills.put("Double Attack", doubleattack);
-                active_skills.put("Bash", bash);
-                active_skills.put("Hide", hide);
-                active_skills.put("Prepare", prep);
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Dagger Mastery");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Dodge");
+                skills.enableActive("Double Attack");
+                skills.enableActive("Bash");
+                skills.enableActive("Hide");
+                skills.enableActive("Prepare");
             }
             case "Adventurer" -> {
                 tier = 1;
-                passives.put("Drop Boost", dropBoost);
-                passives.put("Speed Boost", speedBoost);
-                active_skills.put("Bash", bash);
-                active_skills.put("Prepare", prep);
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Speed Boost");
+                skills.enableActive("Bash");
+                skills.enableActive("Prepare");
             }
             case "Hunter" -> {
                 tier = 3;
@@ -481,65 +377,66 @@ public class Player extends Actor {
                 base_water_res = 0.2;
                 base_wind_res = 0.2;
                 base_earth_res = 0.2;
-                passives.put("Drop Boost", dropBoost);
-                passives.put("Bow Mastery", bowMastery);
-                passives.put("Speed Boost", speedBoost);
-                passives.put("Ambush", ambush);
-                passives.put("Multi Arrows", multiArrows);
-                passives.put("Core Boost", coreBoost);
-                active_skills.put("Careful Shot", careful);
-                active_skills.put("Weakening Shot", weakening);
-                if (Main.game_version >= 1563) {
-                    active_skills.put("Aimed Shot", aimed1563);
-                } else {
-                    active_skills.put("Aimed Shot", aimed);
-                }
-                active_skills.put("Double Shot", ds);
-                active_skills.put("Arrow Rain", ar);
-                active_skills.put("Prepare", prep);
-                active_skills.put("Bash", bash);
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Bow Mastery");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Ambush");
+                skills.enablePassive("Multi Arrows");
+                skills.enablePassive("Core Boost");
+                skills.enableActive("Careful Shot");
+                skills.enableActive("Weakening Shot");
+                skills.enableActive("Aimed Shot");
+                skills.enableActive("Double Shot");
+                skills.enableActive("Arrow Rain");
+                skills.enableActive("Prepare");
+                skills.enableActive("Bash");
+                skills.enableActive("Trap");
             }
             case "Rogue" -> {
                 tier = 3;
                 base_water_res = -0.5;
-                passives.put("Drop Boost", dropBoost);
-                passives.put("Bow Mastery", bowMastery);
-                passives.put("Dagger Mastery", daggerMastery);
-                passives.put("Speed Boost", speedBoost);
-                passives.put("Dodge", dodge);
-                passives.put("Ambush", ambush);
-                passives.put("Extra Attack", extra_attack);
-                active_skills.put("Throw Sand", throw_sand);
-                active_skills.put("Backstab", backstab);
-                active_skills.put("Arrow Rain", ar);
-                active_skills.put("Double Attack", doubleattack);
-                active_skills.put("Hide", hide);
-                active_skills.put("Double Shot", ds);
-                active_skills.put("Prepare", prep);
-                active_skills.put("Bash", bash);
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Bow Mastery");
+                skills.enablePassive("Dagger Mastery");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Ambush");
+                skills.enablePassive("Dodge");
+                skills.enablePassive("Extra Attack");
+                skills.enablePassive("Dual Wield");
+                skills.enableActive("Throw Sand");
+                skills.enableActive("Binding Shot");
+                skills.enableActive("Back Stab");
+                skills.enableActive("Arrow Rain");
+                skills.enableActive("Double Attack");
+                skills.enableActive("Hide");
+                skills.enableActive("Double Shot");
+                skills.enableActive("Prepare");
+                skills.enableActive("Bash");
             }
             case "Onion Knight" -> {
                 tier = 3;
-                passives.put("Weapon Mastery", weaponMastery);
-                passives.put("Attack Boost", attackBoost);
-                passives.put("Water Boost", waterBoost);
-                passives.put("Tsury Finke", tsuryFinke);
-                active_skills.put("Onion Slash", onion_slash);
-                active_skills.put("Onion Wave", onion_wave);
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Weapon Mastery");
+                skills.enablePassive("Tsury Finke");
+                skills.enablePassive("Water Boost");
+                skills.enableActive("Onion Slash");
+                skills.enableActive("Onion Wave");
             }
             case "Newbie" -> {
                 tier = 1;
             }
         }
-        active_skills.put("Basic Attack", basic);
-        active_skills.put("First Aid", fa);
-        passives.put("Exp Boost", expBoost);
+        skills.enableActive("Basic Attack");
+        skills.enableActive("First Aid");
+        skills.enablePassive("Exp Boost");
     }
 
     public Vector<String> getAvailableActiveSkills() {
         Vector<String> v = new Vector<>();
         for (String skill : active_skills.keySet()) {
-            if (!skill.equals("Tsury Finke")) v.add(skill);
+            if (active_skills.get(skill).available) {
+                v.add(skill);
+            }
         }
         v.insertElementAt("None", 0);
         return v;
@@ -548,7 +445,9 @@ public class Player extends Actor {
     public Vector<String> getAvailablePassiveSkills() {
         Vector<String> v = new Vector<>();
         for (String skill : passives.keySet()) {
-            if (!skill.equals("Tsury Finke")) v.add(skill);
+            if (!skill.equals("Tsury Finke") && passives.get(skill).available) {
+                v.add(skill);
+            }
         }
         v.insertElementAt("None", 0);
         return v;
@@ -565,14 +464,6 @@ public class Player extends Actor {
             skill.enabled = true;
         }
         return skill;
-    }
-
-    public ActiveSkill getWeakSkill() {
-        if (atk > intel) {
-            return weak_a;
-        } else {
-            return weak_i;
-        }
     }
 
     public void setCLML(double cl, double ml) {
@@ -644,11 +535,7 @@ public class Player extends Actor {
             }
             case "Priest" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
-                if (Main.game_version >= 1568) {
-                    base_atk = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
-                } else {
-                    base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
-                }
+                base_atk = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
                 base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
                 base_int = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
                 base_res = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
@@ -796,11 +683,7 @@ public class Player extends Actor {
             default -> {
             }
         }
-        if (Main.game_version < 1568) {
-            result += getAvgAtkInt() * (fireBoost.enabled ? 2 * fireBoost.bonus : 0);
-        } else {
-            result += getAvgStats() * (fireBoost.enabled ? 2 * fireBoost.bonus : 0);
-        }
+        result += getAvgStats() * 2 * passives.get("Fire Boost").getBonus();
         result += getEblast();
         return result;
     }
@@ -818,11 +701,7 @@ public class Player extends Actor {
             default -> {
             }
         }
-        if (Main.game_version < 1568) {
-            result += getAvgAtkInt() * (waterBoost.enabled ? 2 * waterBoost.bonus : 0);
-        } else {
-            result += getAvgStats() * (waterBoost.enabled ? 2 * waterBoost.bonus : 0);
-        }
+        result += getAvgStats() * 2 * passives.get("Water Boost").getBonus();
         result += getEblast();
         return result;
     }
@@ -854,6 +733,7 @@ public class Player extends Actor {
             default -> {
             }
         }
+        result += getAvgStats() * 2 * passives.get("Earth Boost").getBonus();
         result += getEblast();
         return result;
     }
@@ -887,11 +767,7 @@ public class Player extends Actor {
             default -> {
             }
         }
-        if (Main.game_version < 1568) {
-            result += getAvgAtkInt_no_buffs() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
-        } else {
-            result += getAvgStats_no_buffs() * (lightBoost.enabled ? 2 * lightBoost.bonus : 0);
-        }
+        result += getAvgStats() * 2 * passives.get("Light Boost").getBonus();
         result += (holylight_enabled ? getResist() * 0.25 : 0);
         result += (prayer_enabled ? getResist() * 0.25 : 0);
         result += (aurablade_enabled ? getAtk() * 0.1 : 0);
@@ -1016,18 +892,21 @@ public class Player extends Actor {
     }
 
     public void levelActives() {
-        active_skills.forEach((key, value) -> value.gainExp(1));
+        active_skills.forEach((key, value) -> {
+            if (value.enabled) value.gainExp(1);
+        });
     }
 
     public void levelTF(Enemy e) {
-        if (passives.containsKey("Tsury Finke") && passives.containsKey("Weapon Mastery")
-                && passives.get("Weapon Mastery").enabled) {
-            passives.forEach((key, value) -> value.gainExpTF(e.base_lvl / 10));
+        if (passives.get("Tsury Finke").available && passives.get("Weapon Mastery").enabled) {
+            passives.get("Tsury Finke").gainExpTF(e.base_lvl / 10);
         }
     }
 
     public void levelPassives(double time) {
-        passives.forEach((key, value) -> value.gainExp(time));
+        passives.forEach((key, value) -> {
+            if (value.enabled) value.gainExp(time);
+        });
     }
 
     public void tick_research(double time) {

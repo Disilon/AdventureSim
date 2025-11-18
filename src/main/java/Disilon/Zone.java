@@ -81,18 +81,13 @@ public enum Zone {
         double individual_str_add = 0;
         for (Enemy e : enemies) {
             if (e.active) {
-                if (Main.game_version < 1535) {
-                    e.rollStrength();
-                    e.reroll(hard_hp, hard_stats);
-                } else {
-                    e.strength = strength + individual_str_add;
+                e.strength = strength + individual_str_add;
 //                sb.append(df2.format(e.strength * 100)).append("; ");
-                    e.reroll(hard_hp, hard_stats);
-                    if (strength > 1) {
-                        individual_str_add -= 0.02;
-                    } else {
-                        individual_str_add += 0.02;
-                    }
+                e.reroll(hard_hp, hard_stats);
+                if (strength > 1) {
+                    individual_str_add -= 0.02;
+                } else {
+                    individual_str_add += 0.02;
                 }
                 if (this == HelplessDummy) {
                     e.atk = 1;

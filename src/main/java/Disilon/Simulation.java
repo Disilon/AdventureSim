@@ -271,12 +271,16 @@ public class Simulation {
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
+                                if (player.passives.get("Extra Attack").enabled) {
+                                    player.applyExtraAtkStats(player.casting);
+                                }
                                 if (player.casting.aoe || player.isMulti_hit_override(player.casting.name)) {
                                     for (Enemy enemy : player.zone.enemies) {
                                         if (enemy.active) {
                                             double dmg = player.casting.attack(player, enemy, 0, time);
-                                            if (player.extra_attack.enabled) {
-                                                dmg += player.extra_attack_proc.attack(player, enemy, 0, time);
+                                            if (player.passives.get("Extra Attack").enabled) {
+                                                dmg += player.active_skills.get("Extra Attack").attack(player, enemy, 0,
+                                                        time);
                                             }
                                             if (dmg > 0) {
                                                 enemy.setHp(enemy.hp - dmg);
@@ -297,8 +301,8 @@ public class Simulation {
                                                     player.zone.getRandomTargets(player.casting.hits);
                                             targets.forEach((key, value) -> {
                                                 double dmg = player.casting.attack(player, key, value, 0);
-                                                if (player.extra_attack.enabled) {
-                                                    dmg += player.extra_attack_proc.attack(player, key, 0, 0);
+                                                if (player.passives.get("Extra Attack").enabled) {
+                                                    dmg += player.active_skills.get("Extra Attack").attack(player, key, 0, 0);
                                                 }
                                                 if (dmg > 0) {
                                                     key.setHp(key.hp - dmg);
@@ -307,8 +311,8 @@ public class Simulation {
                                             });
                                         } else {
                                             double dmg = player.casting.attack(player, target, 0, time);
-                                            if (player.extra_attack.enabled) {
-                                                dmg += player.extra_attack_proc.attack(player, target, 0, time);
+                                            if (player.passives.get("Extra Attack").enabled) {
+                                                dmg += player.active_skills.get("Extra Attack").attack(player, target, 0, time);
                                             }
                                             if (dmg > 0) {
                                                 target.setHp(target.hp - dmg);
@@ -450,16 +454,14 @@ public class Simulation {
                     if (player.lvling) player.prepare.gainExp(delta);
                     player.setHp(player.hp + player.getPrepare_hps() * delta);
                     player.setMp(player.getMp() + player.getPrepare_mps() * delta);
-                    if (Main.game_version >= 1534) {
-                        player.tickPotion(delta);
-                    }
+                    player.tickPotion(delta);
                 }
             }
             if (game_version >= 1573 && player.zone.getZoneTimeCap() > 0) {
                 if ((time + delay_left + cap_time) < player.zone.getZoneTimeCap())
                     cap_time += player.zone.getZoneTimeCap() - time - delay_left;
             }
-            if (cap_time > 0 && player.onion_wave.enabled) {
+            if (cap_time > 0 && player.active_skills.get("Onion Wave").enabled) {
                 cap_time = Math.min(cap_time, 10 - player.zone.getTime_to_respawn());
             }
             delay_left += cap_time;
@@ -602,8 +604,8 @@ public class Simulation {
             skills_log.append(skill3.getRecordedData(cleared + failed));
         if (skill4 != null && !skill4.name.equals("Prepare"))
             skills_log.append(skill4.getRecordedData(cleared + failed));
-        if (player.extra_attack_proc.used > 0)
-            skills_log.append(player.extra_attack_proc.getRecordedData(cleared + failed));
+        if (player.active_skills.get("Extra Attack").used > 0)
+            skills_log.append(player.active_skills.get("Extra Attack").getRecordedData(cleared + failed));
         if (player.counter_strike_log.used > 0)
             skills_log.append(player.counter_strike_log.getRecordedData(cleared + failed));
         if (player.counter_dodge_log.used > 0)
@@ -669,7 +671,7 @@ public class Simulation {
                 }
             }
             for (PassiveSkill p : player.passives.values()) {
-                if ((p.enabled && p.old_lvl < 20) || p.name.equals("Tsury Finke")) {
+                if ((p.enabled && p.old_lvl < 20) || (p.available && p.name.equals("Tsury Finke"))) {
                     lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" (");
                     lvling_log.append(df2.format(p.getLpercent())).append("%)\n");
                 }

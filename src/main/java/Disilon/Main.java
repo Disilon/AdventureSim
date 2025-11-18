@@ -19,7 +19,7 @@ import java.util.Random;
 import java.util.Vector;
 
 public class Main {
-    public static Vector<Integer> availableVersions = new Vector<>(List.of(1565, 1566, 1568, 1573, 1575, 1580, 1587, 1591, 1605));
+    public static Vector<Integer> availableVersions = new Vector<>(List.of(1575, 1580, 1587, 1591, 1605));
     public static int game_version = availableVersions.getLast();
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;

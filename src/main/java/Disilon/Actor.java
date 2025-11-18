@@ -13,50 +13,6 @@ import static Disilon.Main.game_version;
 import static Disilon.Main.log;
 
 public class Actor extends ActorStats {
-    protected PassiveSkill attackBoost = new PassiveSkill("Attack Boost", 0.2, 10, 0.1);
-    protected PassiveSkill dropBoost = new PassiveSkill("Drop Boost", 0.3, 10, 0.1);
-    protected PassiveSkill daggerMastery = new PassiveSkill("Dagger Mastery", 0.2, 0, 0);
-    protected PassiveSkill stealth = new PassiveSkill("Stealth", 0.2, 15, 0.15);
-    protected PassiveSkill speedBoost = new PassiveSkill("Speed Boost", 0.2, 5, 0.2);
-    protected PassiveSkill poisonBoost = new PassiveSkill("Poison Boost", 0.5, 10, 0.1);
-    protected PassiveSkill defenseBoost = new PassiveSkill("Defense Boost", 0.2, 5, 0.2);
-    protected PassiveSkill dodge = new PassiveSkill("Dodge", 0.25, 10, 0.1);
-    protected PassiveSkill fistMastery = new PassiveSkill("Fist Mastery", 0.2, 0, 0);
-    protected PassiveSkill counterStrike = new PassiveSkill("Counter Strike", 0.25, 15, 0.25);
-
-    protected PassiveSkill bowMastery = new PassiveSkill("Bow Mastery", 0.2, 0, 0);
-    protected PassiveSkill ambush = new PassiveSkill("Ambush", 0.2, 15, 0.25);
-    protected PassiveSkill hpRegen = new PassiveSkill("HP Regen", 0.02, 5, 0.2);
-    protected PassiveSkill concentration = new PassiveSkill("Concentration", 0.3, 15, 0.15);
-    protected PassiveSkill hitBoost = new PassiveSkill("Hit Boost", 0.2, 10, 0.1);
-    protected PassiveSkill swordMastery = new PassiveSkill("Sword Mastery", 0.2, 0, 0);
-
-    protected PassiveSkill spearMastery = new PassiveSkill("Spear Mastery", 0.2, 0, 0);
-    protected PassiveSkill hpBoost = new PassiveSkill("HP Boost", 0.25, 5, 0.2);
-
-    protected PassiveSkill intBoost = new PassiveSkill("Int Boost", 0.2, 5, 0.3);
-    protected PassiveSkill resBoost = new PassiveSkill("Res Boost", 0.2, 5, 0.3);
-    protected PassiveSkill wandMastery = new PassiveSkill("Wand Mastery", 0.2, 0, 0.0);
-    protected PassiveSkill castBoost = new PassiveSkill("Casting Boost", 0.15, 10, 0.2);
-    protected PassiveSkill fireBoost = new PassiveSkill("Fire Boost", 0.3, 10, 0.3);
-    protected PassiveSkill fireResist = new PassiveSkill("Fire Resistance", 0.5, 10, 0.3);
-
-    protected PassiveSkill bookMastery = new PassiveSkill("Book Mastery", 0.2, 0, 0.0);
-    protected PassiveSkill ailmentRes = new PassiveSkill("Ailment Res", 0.75, 10, 0.2);
-    protected PassiveSkill multiArrows = new PassiveSkill("Multi Arrows", 0.4, 10, 0.15);
-    protected PassiveSkill coreBoost = new PassiveSkill("Core Boost", 0.5, 10, 0.1);
-
-    protected PassiveSkill lightBoost = new PassiveSkill("Light Boost", 0.3, 10, 0.3);
-    protected PassiveSkill blessMastery = new PassiveSkill("Bless Mastery", 0.3, 10, 0.3);
-
-    protected PassiveSkill waterBoost = new PassiveSkill("Water Boost", 0.3, 10, 0.3);
-    protected PassiveSkill weaponMastery = new PassiveSkill("Weapon Mastery", 0.2, 0, 0);
-    protected PassiveSkill tsuryFinke = new PassiveSkill("Tsury Finke", 0.0, 0, 0);
-
-    protected PassiveSkill extra_attack = new PassiveSkill("Extra Attack", 0.75, 15, 0.1);
-
-    protected PassiveSkill expBoost = new PassiveSkill("Exp Boost", 0.15, 10, 0.1);
-
     ActiveSkill weak_a = new ActiveSkill("Weak Attack", 1, 54, 66, 1, 0, 1, 1, Scaling.atk, Element.phys,
             false, false);
     ActiveSkill weak_i = new ActiveSkill("Weak Magic Arrow", 1, 55.8, 68.2, 1, 1, 1, 1, Scaling.intel, Element.magic,
@@ -65,6 +21,8 @@ public class Actor extends ActorStats {
     ActiveSkill counter_dodge_log = new ActiveSkill("Counter Dodge");
 
     public Actor() {
+        skills.passiveSkillData();
+        skills.activeSkillData();
     }
 
     public void check_debuffs() {
@@ -74,13 +32,15 @@ public class Actor extends ActorStats {
         mark = 0;
         weaken = 0;
         slow = 1;
+        bound = 0;
         for (Debuff d : debuffs) {
-            if (Objects.equals(d.name, "Smoke")) smoked = true;
-            if (Objects.equals(d.name, "Defense Break")) def_break = d.effect;
-            if (Objects.equals(d.name, "Res Break")) res_break = d.effect;
-            if (Objects.equals(d.name, "Weaken")) weaken = d.effect;
-            if (Objects.equals(d.name, "Mark")) mark = d.effect;
-            if (Objects.equals(d.name, "Slow")) slow *= 1 - d.effect;
+            if (d.name.equals("Smoke")) smoked = true;
+            if (d.name.equals("Defense Break")) def_break = d.effect;
+            if (d.name.equals("Res Break")) res_break = d.effect;
+            if (d.name.equals("Weaken")) weaken = d.effect;
+            if (d.name.equals("Mark")) mark = d.effect;
+            if (d.name.equals("Bound")) bound = d.effect;
+            if (d.name.equals("Slow")) slow *= 1 - d.effect;
         }
     }
 
@@ -88,7 +48,7 @@ public class Actor extends ActorStats {
         Iterator<Debuff> debuff_iterator = debuffs.iterator();
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
-            if (!Objects.equals(d.name, "Mark")) d.duration--;
+            if (!d.name.equals("Mark")) d.duration--;
             this.hp -= d.dmg;
             dot_tracking += d.dmg;
             if (d.dmg > 0 && log.contains("dot_dmg")) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
@@ -104,10 +64,10 @@ public class Actor extends ActorStats {
         empower_hp = 0;
         elemental_buff = 0;
         for (Buff b : buffs) {
-            if (Objects.equals(b.name, "Charge Up")) charge = b.effect;
-            if (Objects.equals(b.name, "Bless")) blessed = b.effect;
-            if (Objects.equals(b.name, "Empower HP")) empower_hp = b.effect;
-            if (Objects.equals(b.name, "Elemental Buff")) elemental_buff = b.effect;
+            if (b.name.equals("Charge Up")) charge = b.effect;
+            if (b.name.equals("Bless")) blessed = b.effect;
+            if (b.name.equals("Empower HP")) empower_hp = b.effect;
+            if (b.name.equals("Elemental Buff")) elemental_buff = b.effect;
         }
     }
 
@@ -116,14 +76,14 @@ public class Actor extends ActorStats {
         while (buff_iterator.hasNext()) {
             Buff b = buff_iterator.next();
             if (log.contains("buff_duration")) System.out.println(b.name + " duration = " + b.duration);
-            if (!Objects.equals(b.name, "Charge Up")) {
+            if (!b.name.equals("Charge Up") && !b.name.contains("Barrier")) {
                 b.duration--;
             }
-            if (Objects.equals(b.name, "Charge Up") && remove_charge) {
+            if (b.name.equals("Charge Up") && remove_charge) {
                 b.duration--;
                 remove_charge = false;
             }
-            if (b.duration < 0 || (b.duration == 0 && Objects.equals(b.name, "Charge Up"))) {
+            if (b.duration < 0 || (b.duration == 0 && b.name.equals("Charge Up"))) {
                 if (log.contains("buff_remove")) {
                     System.out.println(b.name + " was removed from " + name);
                 }
@@ -131,6 +91,31 @@ public class Actor extends ActorStats {
             }
         }
         check_buffs();
+    }
+
+    public void remove_buff(String name) {
+        buffs.removeIf(b -> b.name.equals(name));
+    }
+
+    public double getBarrier() {
+        double barrier = 0;
+        boolean elem_buff = false;
+        Iterator<Buff> buff_iterator = buffs.iterator();
+        while (buff_iterator.hasNext()) {
+            Buff b = buff_iterator.next();
+            if (b.name.contains("Barrier")) {
+                barrier = b.effect;
+                buff_iterator.remove();
+                if (b.name.equals("Stone Barrier")) {
+                    elem_buff = true;
+                }
+            }
+        }
+        if (elem_buff) {
+            buffs.add(new Buff("Elemental Buff", 1, 0.3));
+        }
+//        if (barrier > 0 ) System.out.println(name + " was defended by barrier " + (int) barrier);
+        return barrier;
     }
 
     public int buff_count() {
@@ -234,9 +219,9 @@ public class Actor extends ActorStats {
     }
 
     public void checkAmbush() {
-        if (ambush.enabled) {
+        if (passives.get("Ambush").enabled) {
             ambushing = true;
-            ambush_bonus = ambush.bonus;
+            ambush_bonus = passives.get("Ambush").getBonus();
         }
     }
 
@@ -276,62 +261,49 @@ public class Actor extends ActorStats {
         bless_duration = 0;
         finke_bonus = 0;
 
-        poison_mult *= 1.0 + poisonBoost.bonus(passives);
-        dmg_mult *= 1.0 + daggerMastery.bonus(passives);
-        dmg_mult *= 1.0 + fistMastery.bonus(passives);
-        dmg_mult *= 1.0 + swordMastery.bonus(passives);
-        dmg_mult *= 1.0 + spearMastery.bonus(passives);
-        dmg_mult *= 1.0 + bowMastery.bonus(passives);
-        dmg_mult *= 1.0 + wandMastery.bonus(passives);
-        dmg_mult *= 1.0 + bookMastery.bonus(passives);
-        dmg_mult *= 1.0 + weaponMastery.bonus(passives);
-        dmg_mult *= 1.0 + concentration.bonus(passives);
-        if (multiArrows.enabled) {
-            multi_arrows = multiArrows.bonus(passives);
+        atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
+        poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
+        dmg_mult *= 1.0 + passives.get("Dagger Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Fist Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Sword Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Spear Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Bow Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Wand Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Book Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Weapon Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Concentration").getBonus();
+        dmg_mult *= 1.0 + passives.get("Stealth").getBonus();
+        poison_mult *= 1.0 + passives.get("Stealth").getBonus();
+        speed_mult *= 1.0 + passives.get("Speed Boost").getBonus();
+        exp_mult *= 1.0 + passives.get("Exp Boost").getBonus();
+        def_mult *= 1.0 + passives.get("Defense Boost").getBonus();
+        dodge_mult *= 1.0 + passives.get("Dodge").getBonus();
+        counter_strike = passives.get("Counter Strike").getBonus();
+        hit_mult *= 1.0 + passives.get("Hit Boost").getBonus();
+        hit_mult *= 1.0 + passives.get("Concentration").getBonus();
+        int_mult *= 1.0 + passives.get("Int Boost").getBonus();
+        res_mult *= 1.0 + passives.get("Res Boost").getBonus();
+        ailment_res *= 1.0 + passives.get("Ailment Res").getBonus();
+        cast_speed_mult *= 1.0 - passives.get("Casting Boost").getBonus();
+        cast_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
+        delay_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
+        bless_boost *= 1.0 + passives.get("Bless Mastery").getBonus();
+        bless_duration = passives.get("Bless Mastery").getBonus2();
+        hp_mult *= 1.0 + passives.get("HP Boost").getBonus();
+        hp_regen = passives.get("HP Regen").getBonus();
+        drop_mult = 1 + passives.get("Drop Boost").getBonus();
+        core_mult = 1 + passives.get("Drop Boost").getBonus();
+        if (passives.get("Multi Arrows").enabled) {
+            multi_arrows = passives.get("Multi Arrows").getBonus();
         }
-        if (Main.game_version >= 1534) {
-            dmg_mult *= 1.0 + stealth.bonus(passives);
-            poison_mult *= 1.0 + stealth.bonus(passives);
-        } else {
-            atk_mult *= 1.0 + stealth.bonus(passives);
-        }
-        speed_mult *= 1.0 + speedBoost.bonus(passives);
-        if (Main.game_version >= 1563 && tier >= 3) {
-            if (Main.game_version < 1573) {
-                exp_mult *= 1.0 + coreBoost.bonus2(passives);
-            }
-        } else {
-            exp_mult *= 1.0 + dropBoost.bonus(passives);
-        }
-        exp_mult *= 1.0 + expBoost.bonus(passives);
-        atk_mult *= 1.0 + attackBoost.bonus(passives);
-        def_mult *= 1.0 + defenseBoost.bonus(passives);
-        dodge_mult *= 1.0 + dodge.bonus(passives);
-        counter_strike = counterStrike.bonus(passives);
-        hit_mult *= 1.0 + hitBoost.bonus(passives);
-        hit_mult *= 1.0 + concentration.bonus(passives);
-        int_mult *= 1.0 + intBoost.bonus(passives);
-        res_mult *= 1.0 + resBoost.bonus(passives);
-        ailment_res *= 1.0 + ailmentRes.bonus(passives);
-        cast_speed_mult *= 1.0 - castBoost.bonus(passives);
-        cast_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
-        delay_speed_mult *= 1.0 + (concentration.bonus(passives) > 0 ? 0.25 : 0);
-        bless_boost *= 1.0 + blessMastery.bonus(passives);
-        bless_duration = blessMastery.bonus2(passives);
-        hp_mult *= 1.0 + hpBoost.bonus(passives);
-        hp_regen = hpRegen.bonus(passives);
-        drop_mult = 1 + dropBoost.bonus(passives);
-        if (Main.game_version >= 1573) {
-            core_mult = 1 + dropBoost.bonus(passives);
-        }
-        if (coreBoost.enabled) {
-            core_mult = 1 + coreBoost.bonus(passives);
+        if (passives.get("Core Boost").enabled) {
+            core_mult = 1 + passives.get("Core Boost").getBonus();
         }
         mp_cost_add = 0;
         mp_cost_mult = 1;
         clear_gear_stats();
         if (name.equals("Onion Knight") && equipment.get("MH") == null) {
-            if (passives.get("Tsury Finke") != null) {
+            if (passives.get("Tsury Finke").available) {
                 int tf_lvl = passives.get("Tsury Finke").lvl;
                 double quality = switch (tf_lvl / 10) {
                     case 0 -> 0.5;
@@ -428,8 +400,11 @@ public class Actor extends ActorStats {
         if (set_mit2 > 0) add_resist("All", set_mit2);
         exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0,
                 120 + research_lvls.getOrDefault("Max CL", 0.0).intValue() - cl));
-        if (fireResist.enabled) {
-            add_resist("Fire", fireResist.bonus(passives));
+        if (passives.get("Fire Resistance").enabled) {
+            add_resist("Fire", passives.get("Fire Resistance").getBonus());
+        }
+        if (passives.get("Earth Resistance").enabled) {
+            add_resist("Earth", passives.get("Earth Resistance").getBonus());
         }
     }
 
@@ -485,11 +460,6 @@ public class Actor extends ActorStats {
     }
 
     public void clear_skills_recorded_data() {
-        for (ActiveSkill skill : enemy_skills) {
-            if (skill != null) {
-                skill.clear_recorded_data();
-            }
-        }
         for (ActiveSkill skill : active_skills.values()) {
             if (skill != null) {
                 skill.clear_recorded_data();
@@ -502,6 +472,26 @@ public class Actor extends ActorStats {
     }
 
     public void setCLML(int cl, int ml) {
+    }
+
+    public ActiveSkill getWeakSkill() {
+        if (atk > intel) {
+            return weak_a;
+        } else {
+            return weak_i;
+        }
+    }
+
+    public void applyExtraAtkStats(ActiveSkill trigger) {
+        int lvl = passives.get("Extra Attack").lvl;
+//        active_skills.get("Extra Attack").dmg_mult = trigger.dmg_mult;
+        active_skills.get("Extra Attack").hit = trigger.hit;
+        active_skills.get("Extra Attack").scaling = trigger.scaling;
+        double mult = 1 + hide_bonus;
+        mult *= 1.0 + ambush_bonus;
+        active_skills.get("Extra Attack").dmg_mult = Math.pow(1.1, trigger.hits) * mult;
+        active_skills.get("Extra Attack").min = 75 * (1 + 0.02 * lvl);
+        active_skills.get("Extra Attack").max = 75 * (1 + 0.02 * lvl);
     }
 
     public double getPrepare_hps() {
@@ -679,11 +669,11 @@ public class Actor extends ActorStats {
     }
 
     public double stealthDelay() {
-        return stealth.enabled ? 1.2 * (1 + 0.02 * stealth.lvl) : 0;
+        return passives.get("Stealth").enabled ? 1.2 * (1 + 0.02 * passives.get("Stealth").lvl) : 0;
     }
 
     public double getDodge_mult() {
-        return dodge_mult * (1.0 - mark);
+        return dodge_mult * (1.0 - mark) * (1.0 - bound);
     }
 
     public boolean isMulti_hit_override(String skill_name) {

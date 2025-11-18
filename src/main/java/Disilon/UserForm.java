@@ -1562,7 +1562,7 @@ public class UserForm extends JFrame {
                         }
                     }
                     for (PassiveSkill a : player.passives.values()) {
-                        if ((a.enabled && a.old_lvl < 20) || a.name.equals("Tsury Finke")) {
+                        if ((a.enabled && a.old_lvl < 20) || (a.available && a.name.equals("Tsury Finke"))) {
                             info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
                             info.append(a.name);
                             info.append("</td></tr>");
@@ -1934,13 +1934,17 @@ public class UserForm extends JFrame {
         saveSkillLvls();
         activeSkillsModel.setRowCount(0);
         for (String skill : player.active_skills.keySet()) {
-            activeSkillsModel.addRow(new Object[]{skill, player.active_skills.get(skill).lvl,
-                    (player.active_skills.get(skill).getLvl() - player.active_skills.get(skill).lvl) * 100});
+            if (player.active_skills.get(skill).available) {
+                activeSkillsModel.addRow(new Object[]{skill, player.active_skills.get(skill).lvl,
+                        (player.active_skills.get(skill).getLvl() - player.active_skills.get(skill).lvl) * 100});
+            }
         }
         passiveSkillsModel.setRowCount(0);
         for (String skill : player.passives.keySet()) {
-            passiveSkillsModel.addRow(new Object[]{skill, player.passives.get(skill).lvl,
-                    (player.passives.get(skill).getLvl() - player.passives.get(skill).lvl) * 100});
+            if (player.passives.get(skill).available) {
+                passiveSkillsModel.addRow(new Object[]{skill, player.passives.get(skill).lvl,
+                        (player.passives.get(skill).getLvl() - player.passives.get(skill).lvl) * 100});
+            }
         }
         loadSkillLvls();
     }
@@ -2145,9 +2149,18 @@ public class UserForm extends JFrame {
             if (data.pskill2.equals("Buff Mastery")) data.pskill2 = "Bless Mastery";
             if (data.pskill3.equals("Buff Mastery")) data.pskill3 = "Bless Mastery";
             if (data.pskill4.equals("Buff Mastery")) data.pskill4 = "Bless Mastery";
-            if (data.passives_lvls.containsKey("Buff Mastery")) {
-                data.passives_lvls.put("Bless Mastery", data.passives_lvls.get("Buff Mastery"));
-            }
+        }
+        if (data.playerclass.equals("Pyromancer")) {
+            if (data.skill1.equals("Fireball")) data.skill1 = "Fire Ball";
+            if (data.skill2.equals("Fireball")) data.skill2 = "Fire Ball";
+            if (data.skill3.equals("Fireball")) data.skill3 = "Fire Ball";
+            if (data.skill4.equals("Fireball")) data.skill4 = "Fire Ball";
+        }
+        if (data.passives_lvls.containsKey("Buff Mastery")) {
+            data.passives_lvls.put("Bless Mastery", data.passives_lvls.get("Buff Mastery"));
+        }
+        if (data.actives_lvls.containsKey("Fireball")) {
+            data.actives_lvls.put("Fire Ball", data.actives_lvls.get("Fireball"));
         }
     }
 

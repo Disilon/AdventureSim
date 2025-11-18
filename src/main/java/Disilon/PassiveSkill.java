@@ -1,7 +1,5 @@
 package Disilon;
 
-import java.util.Map;
-
 public class PassiveSkill {
     public int lvl;
     public String name;
@@ -14,6 +12,7 @@ public class PassiveSkill {
     public double mp_add;
     public double mp_mult;
     public boolean enabled;
+    public boolean available;
     public double exp;
     public double old_lvl;
 
@@ -45,7 +44,7 @@ public class PassiveSkill {
     public void setLvl(int lvl) {
         this.lvl = lvl;
         switch (name) {
-            case "Fire Resist" -> {
+            case "Fire Resist", "Earth Resist" -> {
                 this.bonus = this.base_bonus * (1 + 0.03 * lvl);
                 this.mp_add = this.base_mp_add * (1 + 0.03 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.03 * lvl);
@@ -107,17 +106,11 @@ public class PassiveSkill {
         }
     }
 
-    public double bonus(Map passives) {
-        if (!passives.containsValue(this)) {
-            return 0;
-        }
+    public double getBonus() {
         return enabled ? bonus : 0;
     }
 
-    public double bonus2(Map passives) {
-        if (!passives.containsValue(this)) {
-            return 0;
-        }
+    public double getBonus2() {
         return enabled ? bonus2 : 0;
     }
 
