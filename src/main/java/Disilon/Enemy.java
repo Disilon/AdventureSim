@@ -15,8 +15,7 @@ public class Enemy extends Actor {
         poison_mult = 13.0 / 15.0;
     }
 
-    public void setEnemy(String name) {
-        this.name = name;
+    public void resetStats() {
         skills.disableAll();
         counter_dodge = false;
         counter_heal = false;
@@ -44,6 +43,31 @@ public class Enemy extends Actor {
         base_light = 0;
         base_dark = 0;
         dodge_mult = 1;
+    }
+
+    public void makeSquirrel(int lvl) {
+        name = "Squirrel Mage";
+        resetStats();
+        base_lvl = lvl;
+        base_hp_max = lvl * 500 / base_lvl;
+        base_exp = lvl * 4000 / base_lvl;
+        base_atk = Math.pow(lvl, 0.9) * 5 / base_lvl;
+        base_def = Math.pow(lvl, 0.9) * 10 / base_lvl;
+        base_int = Math.pow(lvl, 0.95) * 10 / base_lvl;
+        base_res = Math.pow(lvl, 0.9) * 10 / base_lvl;
+        base_hit = Math.pow(lvl, 0.95) * 10 / base_lvl;
+        base_speed = Math.pow(lvl, 0.95) * 25 / base_lvl;
+        skills.enableActive("Elemental Blast");
+        active_skills.get("Elemental Blast").setSkill(10, SkillMod.Basic);
+        skills.enableActive("Flee");
+//        passives.get("Stealth").enabled = true;
+//        passives.get("Stealth").setLvl(20);
+        active = true;
+    }
+
+    public void setEnemy(String name) {
+        this.name = name;
+        resetStats();
         switch (name) {
             case "Dagon" -> {
                 base_lvl = 100;
@@ -459,6 +483,7 @@ public class Enemy extends Actor {
         this.debuffs.clear();
         this.casting = null;
         this.remove_charge = false;
+        stun_time = 0;
         check_buffs();
         check_debuffs();
     }

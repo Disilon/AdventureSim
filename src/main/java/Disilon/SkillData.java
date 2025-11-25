@@ -31,6 +31,7 @@ public class SkillData {
     public void disableAll() {
         for (PassiveSkill p : passives.values()) {
             p.available = false;
+            p.enabled = false;
             p.setLvl(0);
         }
         for (ActiveSkill a : active_skills.values()) {
@@ -84,13 +85,14 @@ public class SkillData {
         addPassive("Water Boost", 0.3, 10, 0.3);
         addPassive("Weapon Mastery", 0.2, 0, 0);
         addPassive("Tsury Finke", 0.0, 0, 0);
-        addPassive("Extra Attack", 0.75, 15, 0.1);
-        addPassive("Dual Wield", 0.25, 10, 0.1);
+        addPassive("Extra Attack", 0.8, 15, 0.1);
+        addPassive("Dual Wield", 0.25, 0, 0);
         addPassive("Exp Boost", 0.15, 10, 0.1);
     }
 
     public void activeSkillData() {
         addActive("Hide", 1, 0.3, 0, 0, 5, 0.5, 0.5, Scaling.atk, Element.none, false, false);
+        addActive("Flee", 1, 0, 0, 0, 0, 0.5, 1, Scaling.atk, Element.none, false, false);
         addActive("Killing Strike", 1, 297, 363, 0.7, 80, 2, 2, Scaling.atk, Element.dark,
                 false, false);
         addActive("Dragon Punch", 3, 76.5, 93.5, 0.8, 20, 1, 3, Scaling.atk, Element.phys,
@@ -147,11 +149,11 @@ public class SkillData {
         addActive("Explosion", 1, 1350, 1650, 1.15, 500, 8, 30, Scaling.intel,
                 Element.fire, true, false);
         active_skills.get("Explosion").addDebuff("Burn", 3, 1);
-        addActive("Rock Shot", 1, 198, 242, 1.0, 50, 1.8,1.0, Scaling.intel, Element.earth, false, false);
+        addActive("Rock Shot", 1, 198, 242, 1.0, 55, 1.8,1.0, Scaling.intel, Element.earth, false, false);
         active_skills.get("Rock Shot").addDebuff("Stun", 0, 3);
-        addActive("Earth Quake", 1, 315, 385, 1.2, 400, 3,6, Scaling.intel, Element.earth, true, false);
+        addActive("Earth Quake", 1, 315, 385, 1.2, 350, 3,6, Scaling.intel, Element.earth, true, false);
         active_skills.get("Earth Quake").addDebuff("Stun", 0, 2.5);
-        addActive("Stone Barrier", 1, 0.8, 0, 0, 24, 1, 1, Scaling.atk, Element.none, false, false);
+        addActive("Stone Barrier", 1, 0.8, 0, 0, 0, 1, 1, Scaling.atk, Element.none, false, false);
         addActive("Elemental Blast", 1, 117, 143, 1.0, 20, 1.2, 1.2, Scaling.intel,
                 Element.eleblast, false, false);
         addActive("Magic Missile", 1, 148.5, 181.5, 1.5, 25, 1.5, 1.5, Scaling.intel,
@@ -195,13 +197,14 @@ public class SkillData {
                 Element.water, false, false);
         addActive("Onion Wave", 1, 299.7, 366.3, 0.99, 333, 2.9, 5, Scaling.atk,
                 Element.water, true, false);
-        addActive("Throw Sand", 1, 0, 0, 0, 20, 0.8, 0.5, Scaling.atk, Element.phys,
+        addActive("Throw Sand", 1, 0, 0, 1, 20, 0.8, 0.5, Scaling.atk, Element.phys,
                 false, false);
         active_skills.get("Throw Sand").addDebuff("Smoke", 3, 0);
-        active_skills.get("Throw Sand").addBuff("Elemental Buff", 3, 0.3);
+        active_skills.get("Throw Sand").addBuff("Elemental Buff", 1, 0.25);
         addActive("Back Stab", 1, 225, 275, 2, 80, 2, 2, Scaling.atk, Element.water,
                 false, false);
-        addActive("Binding Shot", 1, 45, 55, 1.5, 50, 0.7, 1, Scaling.atkhit,
+        active_skills.get("Back Stab").weapon_required = false;
+        addActive("Binding Shot", 1, 45, 55, 1.5, 40, 0.2, 2.5, Scaling.atk,
                 Element.phys, false, false);
         active_skills.get("Binding Shot").addDebuff("Bound", 3, 0.25);
         addActive("Water Punch", 1, 99, 121, 1, 10, 0.9, 0.9, Scaling.atkint, Element.water,

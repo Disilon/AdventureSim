@@ -65,6 +65,7 @@ public class ActorStats {
     public double gear_crit;
     public double gear_burn;
     public double gear_stun;
+    public double gear_barrier;
 
     public double set_hit = 1;
     public double set_res = 1;
@@ -77,7 +78,10 @@ public class ActorStats {
     public double set_training = 0;
     public double set_water = 1;
     public double set_fire = 1;
+    public double set_earth = 1;
     public double set_mana = 0;
+    public double set_squirrel_drop = 1;
+    public double set_squirrel_rate = 100;
 
     public double hp_mult = 1;
     public double mp_mult = 1;
@@ -156,6 +160,7 @@ public class ActorStats {
     public double old_milestone_exp_mult = 1;
     public boolean current_skill_hit = false;
     public double ambush_bonus = 0;
+    public Actor target;
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;

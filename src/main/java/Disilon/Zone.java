@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.game_version;
 import static Disilon.Main.random;
 
 public enum Zone {
@@ -39,6 +40,7 @@ public enum Zone {
     public final MonsterStatData stats;
     public int enemy_num;
     public int initial_seed;
+    public double squirrel_counter = 0;
 
     Zone(String enemies) {
         this(enemies, 1, 1);
@@ -55,6 +57,7 @@ public enum Zone {
         System.arraycopy(enemies.split("/"), 0, possible_enemies, 0, enemies.split("/").length);
         stats = new MonsterStatData(possible_enemies);
         strength = 0.9;
+        squirrel_counter = 0;
 //        rerollSeed();
     }
 
@@ -72,34 +75,42 @@ public enum Zone {
         enemy_num = enemy_num < max_enemies ? enemy_num + 1 : min_enemies;
     }
 
-    public void respawn() {
+    public void respawn(double squirrel_threshold) {
         clear();
-        for (int i = 0; i < enemy_num; i++) {
-            enemies[i].setEnemy(possible_enemies[random.nextInt(0, possible_enemies.length)]);
-        }
+        if (squirrel_counter >= squirrel_threshold && game_version >= 1620) {
+            enemies[0].makeSquirrel(getLvl());
+            enemies[0].strength = 1;
+            enemies[0].reroll(hard_hp, hard_stats);
+            squirrel_counter -= squirrel_threshold;
+            stats.squirrel_spawns++;
+        } else {
+            for (int i = 0; i < enemy_num; i++) {
+                enemies[i].setEnemy(possible_enemies[random.nextInt(0, possible_enemies.length)]);
+            }
 //        StringBuilder sb = new StringBuilder();
-        double individual_str_add = 0;
-        for (Enemy e : enemies) {
-            if (e.active) {
-                e.strength = strength + individual_str_add;
+            double individual_str_add = 0;
+            for (Enemy e : enemies) {
+                if (e.active) {
+                    e.strength = strength + individual_str_add;
 //                sb.append(df2.format(e.strength * 100)).append("; ");
-                e.reroll(hard_hp, hard_stats);
-                if (strength > 1) {
-                    individual_str_add -= 0.02;
-                } else {
-                    individual_str_add += 0.02;
-                }
-                if (this == HelplessDummy) {
-                    e.atk = 1;
-                    e.intel = 1;
+                    e.reroll(hard_hp, hard_stats);
+                    if (strength > 1) {
+                        individual_str_add -= 0.02;
+                    } else {
+                        individual_str_add += 0.02;
+                    }
+                    if (this == HelplessDummy) {
+                        e.atk = 1;
+                        e.intel = 1;
+                    }
                 }
             }
-        }
-        incrementStrength();
-        incrementEnemyNum();
+            incrementStrength();
+            incrementEnemyNum();
 //        System.out.println(sb);
 //        System.out.println(Arrays.stream(enemies).filter(e -> e.active).map(Enemy::getName).collect(Collectors.joining(", ")));
 //        System.out.println(Arrays.stream(enemies).map(Enemy::getHp_max_string).collect(Collectors.joining(", ")));
+        }
     }
 
     public double getAvgSpeed() {
@@ -137,6 +148,24 @@ public enum Zone {
     public void incrementStrength() {
         strength += 0.01;
         if (strength > 1.1) strength = 0.9;
+    }
+
+    public int getLvl() {
+        return switch (this) {
+            case z1 -> 1;
+            case z2 -> 10;
+            case z3 -> 20;
+            case z4 -> 30;
+            case z5 -> 40;
+            case z6, z7, z8 -> 50;
+            case z9 -> 90;
+            case z10, z11, z12 -> 100;
+            case z13 -> 125;
+            case z14 -> 150;
+            case z15 -> 175;
+            case z16 -> 200;
+            default -> 200;
+        };
     }
 
     public double getTime_to_respawn() {
@@ -184,12 +213,34 @@ public enum Zone {
         return delta;
     }
 
-    public LinkedHashMap<Enemy, Integer> getRandomTargets(int hits) {
-        LinkedHashMap<Enemy, Integer> targets = new LinkedHashMap<>();
-        for (int i = 0; i < hits; i++) {
-            Enemy e = getRandomEnemy();
+    public LinkedHashMap<Actor, Integer> getRandomTargets(int hits, Actor initial_target) {
+        LinkedHashMap<Actor, Integer> targets = new LinkedHashMap<>();
+//        Actor e = initial_target;
+//        targets.put(e, targets.getOrDefault(e, 0) + 1);
+        for (int i = 1; i < hits; i++) {
+            Actor e = getRandomEnemy();
+//            if (Math.random() < 0.5) e = getRandomEnemy();
             targets.put(e, targets.getOrDefault(e, 0) + 1);
         }
+        return targets;
+    }
+
+    public LinkedHashMap<Actor, Integer> getRandomTargets_chance(int hits, Actor initial_target) {
+        LinkedHashMap<Actor, Integer> targets = new LinkedHashMap<>();
+//        Actor e = initial_target;
+//        targets.put(e, targets.getOrDefault(e, 0) + 1);
+        int alive = aliveEnemies();
+        int counter = 0;
+        while (counter < hits) {
+            for (Enemy e : enemies) {
+                if (e.active && Math.random() < 1.0 / alive) {
+                    targets.put(e, targets.getOrDefault(e, 0) + 1);
+                    counter++;
+                }
+                if (counter >= hits) break;
+            }
+        }
+//        System.out.println(counter);
         return targets;
     }
 
@@ -235,6 +286,7 @@ public enum Zone {
     public double getZoneOfflineMult() {
         return switch (this) {
             case z1, z2, z3, z4, z5, z6, z7, z8, z9, z11, z12 -> 1.03;
+            case z13, z14, z15, z16 -> 1.01;
             default -> 1;
         };
     }

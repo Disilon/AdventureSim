@@ -7,6 +7,7 @@ import static Disilon.Main.df4;
 import static Disilon.Main.dfm;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
+import static Disilon.Main.random;
 
 public class ActiveSkill {
     public String name;
@@ -44,12 +45,14 @@ public class ActiveSkill {
     public double base_buff_duration;
     public double base_buff_bonus;
     public double cast;
+    public double full_cast;
     public double delay;
     public int used_in_rotation;
     public int used_debuffed;
     public double exp;
     public double hit_chance_sum;
     public double dmg_sum;
+    public double extra_dmg_sum;
     public double debuff_chance_sum;
     public double mana_used;
     public int used;
@@ -61,6 +64,7 @@ public class ActiveSkill {
     public boolean enabled = false;
     public int use_setting;
     public boolean available = true;
+    public boolean triggers_counter = true;
     public boolean weapon_required = true;
 
     public ActiveSkill(String name) {
@@ -97,6 +101,27 @@ public class ActiveSkill {
         setSkill(lvl, SkillMod.Enemy);
     }
 
+    public void applyVersion() {
+        switch (name) {
+            case "Binding Shot" -> {
+                if (game_version >= 1621) {
+                    base_cast = 0.2;
+                    base_delay = 2.5;
+                } else {
+                    base_cast = 0.7;
+                    base_delay = 1;
+                }
+            }
+            case "Throw Sand" -> {
+                if (game_version >= 1621) {
+                    triggers_counter = false;
+                } else {
+                    triggers_counter = true;
+                }
+            }
+        }
+    }
+
     public boolean shouldUse(Actor actor) {
         if (name.equals("Prepare")) return false;
         if (heal) {
@@ -115,12 +140,9 @@ public class ActiveSkill {
             if (name.equals("Careful Shot") || name.equals("Dispel")) {
                 return false;
             }
-//            if (name.equals("Careful Shot") && actor.zone.getMaxEnemyHp() > use_setting) {
-//                return false;
-//            }
-//            if (name.equals("Dispel") && actor.zone.getEnemyBuffCount() == 0) {
-//                return false;
-//            }
+            if (name.equals("Stone Barrier") && (actor.hasBuff(name) || actor.checkLastSkill(name))) {
+                return false;
+            }
             if (log.contains("skill_use")) System.out.println(name + " used: " + used_in_rotation + " setting: " + use_setting);
             return used_in_rotation < use_setting;
         }
@@ -167,7 +189,7 @@ public class ActiveSkill {
 //            delay = onlineTime(delay, time + cast);
 //        }
         if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
-                " at " + df2.format(time));
+                " at " + df2.format(time) + ", cast_time = " + df2.format(cast) + ", delay_time = " + df2.format(delay));
     }
 
     public void startCastPlayer(Actor attacker, boolean offline, double time, double total_time) {
@@ -187,7 +209,20 @@ public class ActiveSkill {
 //            delay = onlineTime(delay, time + cast);
 //        }
         if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
-                " at " + df2.format(time));
+                " at " + df2.format(time) + ", cast_time = " + df2.format(cast) + ", delay_time = " + df2.format(delay));
+    }
+
+    public void pushCast(Actor attacker, Actor defender, double effect) {
+        double time = 0;
+        if (defender.casting.cast > 0) {
+            time = 1;
+        }
+        defender.casting.cast += time;
+        if (log.contains("debuff_applied") && defender.casting != null) {
+            String str =
+                    name + " have pushed cast " + defender.casting.name + " of " + defender.name + " by " + time;
+            System.out.println(str);
+        }
     }
 
     public boolean progressCast(Actor actor, double delta) {
@@ -300,6 +335,7 @@ public class ActiveSkill {
         if (name.equals("Prepare")) {
             return;
         }
+        applyVersion();
         this.min = this.base_min;
         this.max = this.base_max;
         this.hit = this.base_hit;
@@ -392,6 +428,7 @@ public class ActiveSkill {
                     this.debuff_dmg = base_debuff_dmg * (1 + 0.02 * this.lvl);
                     break;
                 case "Mark":
+                case "Stun":
                 case "Defense Break":
                 case "Resist Break":
                 case "Weaken":
@@ -436,7 +473,20 @@ public class ActiveSkill {
         attacker.current_skill_hit = true;
         switch (name) {
             case "Hide":
-                attacker.hide_bonus = this.min;
+                if (attacker.passives.get("Extra Attack").enabled && Math.random() < 0.05) {
+                    double mult = attacker.getDmg_mult() * this.dmg_mult * 1.1;
+                    mult *= 1.0 + attacker.ambush_bonus;
+                    mult *= 1 + attacker.finke_bonus;
+                    mult *= attacker.set_water;
+                    mult *= 1 + attacker.elemental_buff;
+                    mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
+                    mult *= (1 - attacker.set_training);
+                    mult *= attacker.set_physdmg;
+                    extra_attack(attacker, attacker, mult);
+                    attacker.tick_buffs();
+                } else {
+                    attacker.hide_bonus = this.min;
+                }
                 break;
             case "First Aid", "Heal":
                 gain = min + max / 100.0 * (attacker.getIntel() / 2 + attacker.getResist() / 2);
@@ -503,8 +553,11 @@ public class ActiveSkill {
                 attacker.buffs.add(new Buff(name, 1, absorb));
                 break;
             default:
-                attacker.buffs.add(new Buff(buff_name, (int) (buff_duration), buff_bonus));
-//                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) (buff_duration + duration_bonus));
+                if (buff_name != null) {
+                    attacker.buffs.add(new Buff(buff_name, (int) (buff_duration), buff_bonus));
+//                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) buff_duration +
+//                        " effect" + buff_bonus);
+                }
                 break;
         }
         gain += attacker.getHp_max() * attacker.hp_regen;
@@ -523,7 +576,7 @@ public class ActiveSkill {
         }
         if (zone != null) {
             for (Enemy enemy : zone.enemies) {
-                if (heal && enemy.counter_heal) {
+                if (heal && enemy.counter_heal && triggers_counter) {
                     counter_attack(attacker, enemy, true); //Counter heal will log as Counter Strike
                 }
             }
@@ -548,33 +601,28 @@ public class ActiveSkill {
         }
         double hit_chance = (attacker.smoked ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
+        hit_chance = Math.min(hit_chance, 1);
+        hit_chance_sum += hit_chance;
         if (name.equals("Back Stab") && !(defender.smoked || defender.bound > 0)) {
             hit_chance *= 0.5;
         }
-        hit_chance_sum += Math.min(hit_chance, 1);
         if (defender.zone != null) {
             defender.zone.stats.incrementHit(attacker.name, name, hit_chance);
             if (!attacker.debuffs.isEmpty()) defender.zone.stats.incrementUsedDebuffed(attacker.name, name, 1);
         }
         if (!attacker.debuffs.isEmpty()) used_debuffed++;
-        if (hit_chance < 1 && attacker.cl > 0) {
-            //System.out.println(name + " has hit chance of " + hit_chance * 100 + "%, smoked=" + attacker.isSmoked());
-        }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
             attacker.current_skill_hit = true;
             hits_total++;
-            if (this.debuff_name != null) {
-                applyDebuff(attacker, defender);
+            if (defender.counter_strike > 0 && triggers_counter && defender.counter_strike > Math.random()) {
+                counter_attack(attacker, defender, false);
             }
             if (max > 0) {
-                if (defender.counter_strike > 0 && !name.equals("Extra Attack") && defender.counter_strike > Math.random()) {
-                    counter_attack(attacker, defender, false);
-                }
                 double enemy_resist;
                 double atk = 0;
                 double def = 0;
                 double dmg_mult = attacker.getDmg_mult();
-                dmg_mult += attacker.hide_bonus;
+                dmg_mult *= 1.0 + attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
                 if (name.equals("Back Stab") && (defender.smoked || defender.bound > 0)) {
@@ -609,6 +657,7 @@ public class ActiveSkill {
                     }
                     case Element.earth -> {
                         atk = attacker.getEarth();
+                        dmg_mult *= attacker.set_earth;
                         dmg_mult *= 1 + attacker.elemental_buff;
                         yield defender.getEarth_res();
                     }
@@ -669,11 +718,6 @@ public class ActiveSkill {
                     def = 0;
                 }
                 double atk_mit = atk;
-                if (game_version < 1566) {
-                    atk_mit *= (1 - enemy_resist);
-                } else {
-                    dmg_mult *= (1 - enemy_resist);
-                }
                 dmg_mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
                 dmg_mult *= (1 - attacker.set_training);
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
@@ -685,18 +729,20 @@ public class ActiveSkill {
                 if (attacker.gear_stun > 0 && game_version >= 1566 && Math.random() < attacker.gear_stun) {
                     defender.stun_time += 2.0;
                 }
+                int extra = (attacker.passives.get("Extra Attack").enabled && !name.equals("Extra Attack")) ? 1 : 0;
                 for (int i = 0; i < calc_hits; i++) {
                     if (attacker.gear_stun > 0 && game_version < 1566 && Math.random() < attacker.gear_stun) {
                         defender.stun_time += 2.0;
                     }
                     double dmg = Math.random() * (this.max - this.min) + this.min;
-                    int extra = (attacker.passives.get("Extra Attack").enabled && !name.equals("Extra Attack")) ? 1 : 0;
+
                     if (attacker.zone == null && weapon_required) {
                         dmg *= 0.7;
                     }
                     dmg =
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
                                     calc_hits + extra) * dmg_mult;
+                    dmg = dmg * (1 - enemy_resist);
                     dmg = Math.max(1, dmg);
                     dmg = Math.max(0, dmg - defender.getBarrier());
                     if (log.contains("skill_attack")) {
@@ -704,18 +750,33 @@ public class ActiveSkill {
                                 " to " + defender.name + " at " + df2.format(time));
                     }
                     total += dmg;
-                    //if (total > defender.getHp()) break; //doesn't work like that according to tests
                     if (total - dmg > defender.hp && i == calc_hits - 1) {
                         total = defender.hp + dmg;
                     }
                 }
+                if (extra == 1 && defender == attacker.target) {
+                    extra_attack(attacker, defender, dmg_mult * Math.pow(1.1,
+                            calc_hits + extra));
+                }
             }
         } else {
-            if (defender.counter_dodge && !name.equals("Extra Attack")) {
+            if (defender.counter_dodge && triggers_counter) {
                 counter_attack(attacker, defender, true);
             }
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
+        if (this.debuff_name != null) {
+            applyDebuff(attacker, defender);
+        }
+        if (buff_name != null) {
+            attacker.buffs.add(new Buff(buff_name, (int) (buff_duration), buff_bonus));
+//            System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) buff_duration +
+//                    " effect " + buff_bonus);
+        }
+        if (name.equals("Push Blast")) {
+            pushCast(attacker, defender, 0.2);
+        }
+
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         dmg_sum += total;
         if (defender.zone != null) {
@@ -729,6 +790,26 @@ public class ActiveSkill {
         }
         attacker.last_skill = this;
         return total;
+    }
+
+    public void extra_attack(Actor attacker, Actor defender, double dmg_mult) {
+        double def = defender.getDef();
+        double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
+        double atk = attacker.getAtk() + attacker.getWater();
+        double crit_chance = defender.bound + attacker.gear_crit;
+        if (crit_chance > 0 && Math.random() < crit_chance) {
+            atk *= 1.5;
+        }
+        dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
+        dmg = dmg * (1 - defender.getWater_res());
+        dmg = Math.max(1, dmg);
+        dmg = Math.max(0, dmg - defender.getBarrier());
+        if (log.contains("skill_attack")) {
+            System.out.println(attacker.name + " dealt " + (int) dmg + " extra damage with " + this.name +
+                    " to " + defender.name);
+        }
+        extra_dmg_sum += dmg;
+        defender.setHp(defender.hp - dmg);
     }
 
     public void counter_attack(Actor attacker, Actor defender, boolean counter_dodge) {
@@ -765,14 +846,16 @@ public class ActiveSkill {
             if (attacker.passives.get("Poison Boost").enabled) hit_chance *= 2;
 //            System.out.println(name + " poison chance: " + hit_chance);
         }
+        if (name.equals("Throw Sand")) {
+            hit_chance = (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
+        }
         if (debuff_name.equals("Burn")) {
             // System.out.println(attacker.name + ": " + name + " burn chance: " + hit_chance);
         }
 
         hit_chance /= defender.ailment_res;
-        if (Objects.equals(this.debuff_name, "Smoke")) {
+        if (name.equals("Smoke Screen")) {
             hit_chance = 1;
-            defender.smoked = true;
         }
         if (debuff_name.equals("Mark")) {
             hit_chance = 1;
@@ -801,11 +884,7 @@ public class ActiveSkill {
             if (defender.zone != null) {
                 defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
             }
-            if (debuff_name.equals("Stun")) {
-                defender.stun_time += debuff_effect;
-            } else {
-                defender.debuffs.add(new Debuff(this.debuff_name, duration, dmg, debuff_effect));
-            }
+            defender.addDebuff(debuff_name, duration, dmg, debuff_effect, hit_chance);
         }
     }
 
@@ -837,6 +916,10 @@ public class ActiveSkill {
         return hits_total > 0 ? dmg_sum / hits_total : 0;
     }
 
+    public double average_extra_dmg() {
+        return hits_total > 0 ? extra_dmg_sum / hits_total : 0;
+    }
+
     public double average_debuff_chance() {
         return hits_total > 0 ? debuff_chance_sum / hits_total : 0;
     }
@@ -848,28 +931,42 @@ public class ActiveSkill {
         attacks_total = 0;
         hit_chance_sum = 0;
         dmg_sum = 0;
+        extra_dmg_sum = 0;
         debuff_chance_sum = 0;
         used_debuffed = 0;
     }
 
     public String getRecordedData(int simulations) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(name).append(" used: ").append(df4.format((double) used / simulations));
         if (hit == 0 && !name.equals("Prayer")) {
             switch (name) {
                 case "Counter Strike", "Counter Dodge" -> {
-                    return name + " used: " + df4.format((double) used / simulations) +
-                            "; dmg: " + (int) average_dmg() + "; mana used: " + (int) mana_used / simulations + "\n";
+                    sb.append("; dmg: ").append((int) average_dmg());
+                    sb.append("; mana used: ").append((int) mana_used / simulations);
+                    sb.append("\n");
                 }
                 default -> {
-                    return name + " used: " + df4.format((double) used / simulations) + "; mana used: " + (int) mana_used / simulations + "\n";
+                    sb.append("; mana used: ").append((int) mana_used / simulations);
+                    sb.append("\n");
                 }
             }
         } else {
-            return name + " used: " + df4.format((double) used / simulations) + "; hit: " + df2.format(average_hit_chance() * 100) + "%" +
-                    "; dmg: " + (int) average_dmg() + "; mana used: " + (int) mana_used / simulations +
-                    (debuff_name == null ? "" : "; debuff chance: " + df2.format(average_debuff_chance() * 100) + "%") +
-                    (used_debuffed == 0 ? "" : "; used debuffed: " + df2.format((double) used_debuffed / attacks_total)) +
-                    "\n";
+            sb.append("; hit: ").append(df2.format(average_hit_chance() * 100)).append("%");
+            sb.append("; dmg: ").append((int) average_dmg());
+            if (extra_dmg_sum > 0) {
+                sb.append("; extra dmg: ").append((int) average_extra_dmg());
+            }
+            sb.append("; mana used: ").append((int) mana_used / simulations);
+            if (debuff_name != null) {
+                sb.append("; debuff chance: ").append(df2.format(average_debuff_chance() * 100)).append("%");
+            }
+            if (used_debuffed != 0) {
+                sb.append("; used debuffed: ").append(df2.format((double) used_debuffed / attacks_total));
+            }
+            sb.append("\n");
         }
+        return sb.toString();
     }
 
     public String getWeakRecordedData(int simulations) {

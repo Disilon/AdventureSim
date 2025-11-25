@@ -11,29 +11,44 @@
 			"INT": 10,
 			"RES": 10,
 			"SET": "CobaltAcc"
+		}, "Golden Necklace": {
+			"DEF": 8,
+			"RES": 8,
+			"SPD": 8,
+			"SET": "Squirrel"
 		}
 	}, "RING": {
-	"Metal Ring": {
-		"ATK": 3,
-		"DEF": 3
-	}, "Bronze Ring": {
-		"ATK": 8,
-		"DEF": 4,
-		"SET": "BronzeAcc"
-	}, "Leather Belt": {
-		"DEF": 6
-	}, "Golden Belt": {
-		"ATK": 3,
-		"DEF": 3,
-		"INT": 3,
-		"RES": 3,
-		"SPD": 3,
-		"HIT": 3,
-		"SET": "BronzeAcc"
-	}, "Cobalt Ring": {
-		"ATK": 10,
-		"DEF": 10,
-		"SET": "CobaltAcc"
+		"Metal Ring": {
+			"ATK": 3,
+			"DEF": 3
+		}, "Bronze Ring": {
+			"ATK": 8,
+			"DEF": 4,
+			"SET": "BronzeAcc"
+		}, "Leather Belt": {
+			"DEF": 6
+		}, "Golden Belt": {
+			"ATK": 3,
+			"DEF": 3,
+			"INT": 3,
+			"RES": 3,
+			"SPD": 3,
+			"HIT": 3,
+			"SET": "BronzeAcc"
+		}, "Cobalt Ring": {
+			"ATK": 10,
+			"DEF": 10,
+			"SET": "CobaltAcc"
+		}, "Golden Ring": {
+			"ATK": 8,
+			"SPD": 8,
+			"HIT": 8,
+			"SET": "Squirrel"
+		}, "Golden Cape": {
+			"INT": 8,
+			"SPD": 8,
+			"HIT": 8,
+			"SET": "Squirrel"
+		}
 	}
-}
 }

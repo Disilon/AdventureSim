@@ -3,6 +3,7 @@ package Disilon;
 import java.util.HashMap;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.game_version;
 
 public class MonsterStatData {
     public HashMap<String, Double> dmg_sum = new HashMap<>();
@@ -15,11 +16,13 @@ public class MonsterStatData {
     public HashMap<String, HashMap<Integer, Double>> cores; //Grade, Count in nested map
     public double base_rp;
     public double gained_rp;
+    public double nuts;
     public double gained_rp_rng;
     public double[] rp_instance;
     public HashMap<String, Integer> deaths = new HashMap<>();
     public double overkill_sum;
     public int kills;
+    public int squirrel_spawns;
 
     public MonsterStatData(String[] possibleEnemies) {
         cores = new HashMap<>();
@@ -76,8 +79,10 @@ public class MonsterStatData {
     public void clear_recorded_data() {
         base_rp = 0;
         gained_rp = 0;
+        nuts = 0;
         overkill_sum = 0;
         kills = 0;
+        squirrel_spawns = 0;
         rp_instance = new double[7];
         dmg_sum.clear();
         hit_chance_sum.clear();
@@ -108,10 +113,30 @@ public class MonsterStatData {
         deaths.put(e.name, deaths.getOrDefault(e.name, 0) + 1);
     }
 
+    public String getKillCount() {
+        int total = 0;
+        int squirrels = 0;
+        for (String enemy : deaths.keySet()) {
+            if (enemy.equals("Squirrel Mage")) {
+                squirrels += deaths.get(enemy);
+            } else {
+                total += deaths.get(enemy);
+            }
+        }
+        if (game_version >= 1620) {
+            return total + ", squirrels: " + squirrels + "/" + squirrel_spawns;
+        } else {
+            return String.valueOf(total);
+        }
+    }
+
     public void addCore(String name, int grade, Player p) {
         int research = p.research_lvls.get("Core quality").intValue();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
                 + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
+        if (name.equals("Squirrel Mage")) {
+            drop_rate *= p.getSquirrelMult(p.zone.getLvl());
+        }
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -164,13 +189,14 @@ public class MonsterStatData {
     public String getSkillData(int simulations) {
         StringBuilder sb = new StringBuilder();
         for (String name : casts_total.keySet()) {
+            int divide = name.contains("Squirrel Mage") ? squirrel_spawns : simulations;
             if (hit_chance_sum.containsKey(name)) {
                 double average_hit_chance = hit_chance_sum.getOrDefault(name, 0.0) / casts_total.getOrDefault(name, 0);
                 double average_dmg = dmg_sum.getOrDefault(name, 0.0) / hits_total.getOrDefault(name, 0);
                 double average_debuff_chance =
                         debuff_chance_sum.getOrDefault(name, 0.0) / hits_total.getOrDefault(name, 0);
                 double average_dot = dot_sum.getOrDefault(name, 0.0) / hits_total.getOrDefault(name, 0);
-                double average_used = (double) casts_total.getOrDefault(name, 0) / simulations;
+                double average_used = (double) casts_total.getOrDefault(name, 0) / divide;
                 double average_debuffed = used_debuffed.containsKey(name) ?
                         (double) used_debuffed.getOrDefault(name, 0) / casts_total.getOrDefault(name, 0) : 0;
                 sb.append(name).append(" used: ").append(df2.format(average_used)).append(";");
@@ -183,7 +209,7 @@ public class MonsterStatData {
                 sb.append(average_debuffed == 0 ? "" : "; used debuffed: " + (int) (average_debuffed * 100) + "%");
                 sb.append("\n");
             } else {
-                double average_used = (double) casts_total.getOrDefault(name, 0) / simulations;
+                double average_used = (double) casts_total.getOrDefault(name, 0) / divide;
                 sb.append(name).append(" used: ").append(df2.format(average_used)).append("\n");
             }
         }
@@ -248,6 +274,9 @@ public class MonsterStatData {
             sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
         }
         sb.append("\n");
+        if (nuts > 0) {
+            sb.append("Chestnuts: ").append(df2.format(nuts)).append("\n");
+        }
         return sb.toString();
     }
 
@@ -282,6 +311,7 @@ public class MonsterStatData {
             case "Fairy" -> Main.game_version < 1568 ? 175 : 350;
             case "Raum" -> Main.game_version < 1568 ? 150 : (Main.game_version < 1574 ? 180 : 230);
             case "Asura" -> 165;
+            case "Squirrel Mage" -> Main.game_version < 1621 ? 2000 : (Main.game_version < 1622 ? 3000 : 2500);
             default -> 0;
         };
     }

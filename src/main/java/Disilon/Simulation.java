@@ -95,13 +95,15 @@ public class Simulation {
         player.check_debuffs();
         player.zone.rerollSeed();
         player.sortResearchWeights();
+        double item_drop = 1 + 0.01 * player.research_lvls.getOrDefault("Drop rate", 0.0).intValue();
+        item_drop *= player.drop_mult;
         boolean end = false;
         if (offline && player.zone.getZoneTimeCap() > 0) {
             time_limit /= (120*60 + player.zone.getZoneTimeCap()) / (120*60);
         }
         delta = offline ? 0.180 : 0.030;
         while (!end) {
-            Enemy target = null;
+            player.target = null;
             double time = 0;
             double cap_time = 0;
             int casts = 0;
@@ -110,7 +112,7 @@ public class Simulation {
             int skill_cycle = 1;
             ActiveSkill previous_cast = null;
             status = StatusType.respawn;
-            player.zone.respawn();
+            player.zone.respawn(player.set_squirrel_rate);
             player.checkAmbush();
             player.remove_charge = false;
             if (skill1 != null) skill1.used_in_rotation = 0;
@@ -271,17 +273,13 @@ public class Simulation {
                             if (player.casting.hit > 0) {
                                 casts++;
                                 total_casts++;
-                                if (player.passives.get("Extra Attack").enabled) {
-                                    player.applyExtraAtkStats(player.casting);
+                                if (player.target == null) {
+                                    player.target = player.zone.getRandomEnemy(player.casting.name);
                                 }
                                 if (player.casting.aoe || player.isMulti_hit_override(player.casting.name)) {
                                     for (Enemy enemy : player.zone.enemies) {
                                         if (enemy.active) {
                                             double dmg = player.casting.attack(player, enemy, 0, time);
-                                            if (player.passives.get("Extra Attack").enabled) {
-                                                dmg += player.active_skills.get("Extra Attack").attack(player, enemy, 0,
-                                                        time);
-                                            }
                                             if (dmg > 0) {
                                                 enemy.setHp(enemy.hp - dmg);
                                                 if (player.casting.name.equals("Careful Shot") && enemy.hp <= 0) {
@@ -292,37 +290,29 @@ public class Simulation {
                                         }
                                     }
                                 } else {
-                                    if (target == null) {
-                                        target = player.zone.getRandomEnemy(player.casting.name);
-                                    }
-                                    if (target != null) {
+                                    if (player.target != null) {
                                         if (player.casting.random_targets) {
-                                            LinkedHashMap<Enemy, Integer> targets =
-                                                    player.zone.getRandomTargets(player.casting.hits);
+                                            LinkedHashMap<Actor, Integer> targets =
+                                                    player.zone.getRandomTargets_chance(player.casting.hits,
+                                                            player.target);
                                             targets.forEach((key, value) -> {
                                                 double dmg = player.casting.attack(player, key, value, 0);
-                                                if (player.passives.get("Extra Attack").enabled) {
-                                                    dmg += player.active_skills.get("Extra Attack").attack(player, key, 0, 0);
-                                                }
                                                 if (dmg > 0) {
                                                     key.setHp(key.hp - dmg);
                                                     if (player.charge > 0) player.remove_charge = true;
                                                 }
                                             });
                                         } else {
-                                            double dmg = player.casting.attack(player, target, 0, time);
-                                            if (player.passives.get("Extra Attack").enabled) {
-                                                dmg += player.active_skills.get("Extra Attack").attack(player, target, 0, time);
-                                            }
+                                            double dmg = player.casting.attack(player, player.target, 0, time);
                                             if (dmg > 0) {
-                                                target.setHp(target.hp - dmg);
-                                                if (player.casting.name.equals("Careful Shot") && target.hp <= 0) {
+                                                player.target.setHp(player.target.hp - dmg);
+                                                if (player.casting.name.equals("Careful Shot") && player.target.hp <= 0) {
                                                     kills_drop += 0.5;
                                                 }
                                                 if (player.charge > 0) player.remove_charge = true;
                                             }
                                         }
-                                        target = null;
+                                        player.target = null;
                                     }
                                 }
                             } else {
@@ -362,9 +352,20 @@ public class Simulation {
 //                        }
                             double exp_gain =
                                     enemy.exp * player.total_exp_mult * player.milestone_exp_mult * player.hard_reward;
+                            if (enemy.name.equals("Squirrel Mage")) {
+                                exp_gain *= player.getSquirrelMult(player.zone.getLvl());
+                                double nuts = player.zone.getLvl() * 0.005;
+                                nuts *= player.getSquirrelMult(player.zone.getLvl());
+                                nuts *= item_drop;
+                                if (player.last_skill.name.equals("Careful Shot")) nuts *= 1.5;
+                                player.zone.stats.nuts += nuts;
+                            }
                             if (player.lvling) player.increment_exp(exp_gain);
                             exp += exp_gain;
                             kills++;
+                            if (!enemy.name.equals("Squirrel Mage") && game_version < 1621) {
+                                player.zone.squirrel_counter++;
+                            }
                             player.zone.stats.recordOverkill(enemy, player);
                             if (player.lvling) {
                                 player.levelActives();
@@ -373,7 +374,7 @@ public class Simulation {
                             if (log.contains("enemy_death_stat") && enemy.casting != null) System.out.println(enemy.name +
                                     " died while " +
                                     "casting " + enemy.casting.name + " cast time left: " + df4.format(enemy.casting.cast) + " delay left: " + df4.format(enemy.casting.delay) + " at " + df2.format(time));
-                            if (target == enemy) target = null;
+                            if (player.target == enemy) player.target = null;
                             enemy.active = false;
                         }
                         if (enemy.active && enemy.casting != null) {
@@ -404,6 +405,9 @@ public class Simulation {
                                     enemy.tick_debuffs();
                                     enemy.tick_buffs();
                                     enemy.casting.pay_manacost(enemy);
+                                    if (enemy.casting.name.equals("Flee") && enemy.bound == 0) {
+                                        enemy.active = false;
+                                    }
                                 }
                             } else if (enemy.casting.delay > 0) {
                                 if (enemy.casting.progressDelay(enemy, delta)) {
@@ -435,6 +439,9 @@ public class Simulation {
                 if (player.zone.cleared()) {
                     status = StatusType.delay;
                     cleared++;
+                    if (!player.zone.enemies[0].name.equals("Squirrel Mage") && game_version >= 1621) {
+                        player.zone.squirrel_counter++;
+                    }
                     if (player.casting != null) {
                         delay_left = player.casting.delay;
                         player.casting = null;
@@ -464,7 +471,9 @@ public class Simulation {
             if (cap_time > 0 && player.active_skills.get("Onion Wave").enabled) {
                 cap_time = Math.min(cap_time, 10 - player.zone.getTime_to_respawn());
             }
-            delay_left += cap_time;
+            if (!player.zone.enemies[0].name.equals("Squirrel Mage")) {
+                delay_left += cap_time;
+            }
             while (delay_left > 0) {
                 delta = minIfNotZero(delay_left, player.getNextPotionTime());
                 delta = minTickTime(delta, offline);
@@ -581,52 +590,14 @@ public class Simulation {
         }
         result.append("Kills/h without deaths: ").append(df2.format(kills / (total_time - ignore_deaths) * 3600)).append(
                 "\n");
-        double item_drop = 1 + 0.01 * player.research_lvls.getOrDefault("Drop rate", 0.0).intValue();
-        item_drop *= player.drop_mult;
         if (kills_drop > 0 || item_drop > 1) {
             result.append("Item drop mult: ").append(df2.format((kills + kills_drop) / kills * item_drop)).append(
                     "\n");
         }
         result.append("Time to clear: ").append(df2.format(min_time)).append("s - ").append(df2.format(max_time));
         result.append("s; avg: ").append(df2.format(total_time / cleared)).append("s \n");
-        skills_log.append("Damage skill casts: ").append(min_casts).append(" - ").append(max_casts);
-        skills_log.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
-        skills_log.append("Average Overkill: ").append((int) (player.overkill / kills)).append("(");
-        skills_log.append(df2.format(player.zone.stats.overkill_sum / player.zone.stats.kills)).append("%)");
-        if (dot_overkill > 0) skills_log.append("; DoT: ").append((int) (dot_overkill / kills));
-        skills_log.append("\n");
-        skills_log.append(player.getWeakAttackData(cleared + failed));
-        if (skill1 != null && !skill1.name.equals("Prepare"))
-            skills_log.append(skill1.getRecordedData(cleared + failed));
-        if (skill2 != null && !skill2.name.equals("Prepare"))
-            skills_log.append(skill2.getRecordedData(cleared + failed));
-        if (skill3 != null && !skill3.name.equals("Prepare"))
-            skills_log.append(skill3.getRecordedData(cleared + failed));
-        if (skill4 != null && !skill4.name.equals("Prepare"))
-            skills_log.append(skill4.getRecordedData(cleared + failed));
-        if (player.active_skills.get("Extra Attack").used > 0)
-            skills_log.append(player.active_skills.get("Extra Attack").getRecordedData(cleared + failed));
-        if (player.counter_strike_log.used > 0)
-            skills_log.append(player.counter_strike_log.getRecordedData(cleared + failed));
-        if (player.counter_dodge_log.used > 0)
-            skills_log.append(player.counter_dodge_log.getRecordedData(cleared + failed));
-        skills_log.append("\n");
-        if (player.damage_taken > 0 && cleared > 0) {
-            skills_log.append("Average enemy dmg per fight: ").append((int) player.damage_taken / cleared);
-            if (player.dot_tracking > 0) skills_log.append("; DoT: ").append((int) (player.dot_tracking / cleared));
-            skills_log.append("\n");
-        }
-        if (healed > 0 && cleared > 0) {
-            skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
-        }
-        skills_log.append("\n");
-        if (player.zone.max_enemies > 1) {
-            skills_log.append("Initial number of enemies seed: ").append(player.zone.initial_seed).append("\n");
-//            System.out.println("seed = " + player.zone.initial_seed + " exph = " + shorthand(exph));
-        }
-        skills_log.append(player.zone.stats.getSkillData(cleared + failed));
         result.append("\nSimulations: ").append(cleared).append("\n");
-        result.append("Kills: ").append(kills).append("\n");
+        result.append("Kills: ").append(player.zone.stats.getKillCount()).append("\n");
         result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
         result.append("Time in combat: ").append(Main.secToTime(total_time));
         result.append(" (").append(df2.format(total_time / 3600)).append(" h)\n");
@@ -653,6 +624,44 @@ public class Simulation {
         result.append("\n");
         result.append("Cores: \n");
         result.append(player.zone.stats.getCoreData(player, total_time, offline));
+
+        skills_log.append("Damage skill casts: ").append(min_casts).append(" - ").append(max_casts);
+        skills_log.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
+        skills_log.append("Average Overkill: ").append((int) (player.overkill / kills)).append("(");
+        skills_log.append(df2.format(player.zone.stats.overkill_sum / player.zone.stats.kills)).append("%)");
+        if (dot_overkill > 0) skills_log.append("; DoT: ").append((int) (dot_overkill / kills));
+        skills_log.append("\n");
+        skills_log.append(player.getWeakAttackData(cleared + failed));
+        if (skill1 != null && !skill1.name.equals("Prepare"))
+            skills_log.append(skill1.getRecordedData(cleared + failed));
+        if (skill2 != null && !skill2.name.equals("Prepare"))
+            skills_log.append(skill2.getRecordedData(cleared + failed));
+        if (skill3 != null && !skill3.name.equals("Prepare"))
+            skills_log.append(skill3.getRecordedData(cleared + failed));
+        if (skill4 != null && !skill4.name.equals("Prepare"))
+            skills_log.append(skill4.getRecordedData(cleared + failed));
+//        if (player.active_skills.get("Extra Attack").used > 0)
+//            skills_log.append(player.active_skills.get("Extra Attack").getRecordedData(cleared + failed));
+        if (player.counter_strike_log.used > 0)
+            skills_log.append(player.counter_strike_log.getRecordedData(cleared + failed));
+        if (player.counter_dodge_log.used > 0)
+            skills_log.append(player.counter_dodge_log.getRecordedData(cleared + failed));
+        skills_log.append("\n");
+        if (player.damage_taken > 0 && cleared > 0) {
+            skills_log.append("Average enemy dmg per fight: ").append((int) player.damage_taken / cleared);
+            if (player.dot_tracking > 0) skills_log.append("; DoT: ").append((int) (player.dot_tracking / cleared));
+            skills_log.append("\n");
+        }
+        if (healed > 0 && cleared > 0) {
+            skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
+        }
+        skills_log.append("\n");
+        if (player.zone.max_enemies > 1) {
+            skills_log.append("Initial number of enemies seed: ").append(player.zone.initial_seed).append("\n");
+//            System.out.println("seed = " + player.zone.initial_seed + " exph = " + shorthand(exph));
+        }
+        skills_log.append(player.zone.stats.getSkillData(cleared + failed));
+
         if (player.lvling) {
             if (player.milestone_exp_mult != player.old_milestone_exp_mult) {
                 lvling_log.append("Milestone exp: ").append(df2.format(player.old_milestone_exp_mult * 100));

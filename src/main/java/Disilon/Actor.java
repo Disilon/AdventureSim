@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static Disilon.Main.df2;
 import static Disilon.Main.dfm;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
@@ -93,8 +94,30 @@ public class Actor extends ActorStats {
         check_buffs();
     }
 
+    public void addDebuff(String debuff_name, int duration, double dmg, double effect, double chance) {
+        switch (debuff_name) {
+            case "Stun" -> {
+                stun_time += effect;
+            }
+            default -> debuffs.add(new Debuff(debuff_name, duration, dmg, effect));
+        }
+        if (log.contains("debuff_applied")) {
+            String str = debuff_name + " was applied to " + name + " duration = " + duration;
+            if (dmg > 0) str += " dmg = " + (int) dmg;
+            if (effect > 0) str += " effect = " + df2.format(effect);
+            System.out.println(str + " chance = " + df2.format(chance * 100));
+        }
+    }
+
     public void remove_buff(String name) {
         buffs.removeIf(b -> b.name.equals(name));
+    }
+
+    public boolean hasBuff(String name) {
+        for (Buff b : buffs) {
+            if (b.name.equals(name)) return true;
+        }
+        return false;
     }
 
     public double getBarrier() {
@@ -112,7 +135,7 @@ public class Actor extends ActorStats {
             }
         }
         if (elem_buff) {
-            buffs.add(new Buff("Elemental Buff", 1, 0.3));
+            buffs.add(new Buff("Elemental Buff", 1, 0.3 * (1 + gear_barrier)));
         }
 //        if (barrier > 0 ) System.out.println(name + " was defended by barrier " + (int) barrier);
         return barrier;
@@ -144,6 +167,7 @@ public class Actor extends ActorStats {
     public void initializeSets() {
         sets.put("Cloth", new EquipmentSet("magicdmg", 5));
         sets.put("Blazing", new EquipmentSet("fire", 5));
+        sets.put("Earthen", new EquipmentSet("earth", 5));
         sets.put("Leather", new EquipmentSet("hit", 5));
         sets.put("Dark", new EquipmentSet("physdmg", 5));
         sets.put("Metal", new EquipmentSet("mit1", 5));
@@ -154,6 +178,7 @@ public class Actor extends ActorStats {
         sets.put("Aquatic", new EquipmentSet("water", 5));
         sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
         sets.put("CobaltAcc", new EquipmentSet("mana", 3));
+        sets.put("Squirrel", new EquipmentSet("squirrel", 3));
     }
 
     public void enableSet(String bonus, Equipment.Quality quality, int upgrade) {
@@ -188,12 +213,17 @@ public class Actor extends ActorStats {
             case "core" -> set_core = Math.clamp((10 + 0.4 * upgrade) * tier, 10, 100) / 100.0;
             case "water" -> set_water = 1 + stat_scaling;
             case "fire" -> set_fire = 1 + stat_scaling;
+            case "earth" -> set_earth = 1 + stat_scaling;
             case "training" -> {
                 set_exp = Math.clamp((15 + 0.5 * upgrade) * tier, 15, 150) / 100.0;
                 set_training = Math.clamp((5 + 0.1 * upgrade) * tier, 5, 25) / 100.0;
             }
             case "mana" -> {
                 set_mana = Math.clamp((10 + 0.25 * upgrade) * tier, 10, 75) / 100.0;
+            }
+            case "squirrel" -> {
+                set_squirrel_drop = 1 + Math.clamp((5 + 0.45 * upgrade) * tier, 5, 100) / 100.0;
+                set_squirrel_rate = Math.clamp(95 - (0.25 * upgrade) * tier, 50, 95);
             }
         }
     }
@@ -208,9 +238,12 @@ public class Actor extends ActorStats {
         set_core = 0;
         set_water = 1;
         set_fire = 1;
+        set_earth = 1;
         set_exp = 0;
         set_training = 0;
         set_mana = 0;
+        set_squirrel_drop = 1;
+        set_squirrel_rate = 100;
         for (EquipmentSet set : sets.values()) {
             set.current_items = 0;
             set.min_quality = null;
@@ -271,6 +304,7 @@ public class Actor extends ActorStats {
         dmg_mult *= 1.0 + passives.get("Wand Mastery").getBonus();
         dmg_mult *= 1.0 + passives.get("Book Mastery").getBonus();
         dmg_mult *= 1.0 + passives.get("Weapon Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Dual Wield").getBonus();
         dmg_mult *= 1.0 + passives.get("Concentration").getBonus();
         dmg_mult *= 1.0 + passives.get("Stealth").getBonus();
         poison_mult *= 1.0 + passives.get("Stealth").getBonus();
@@ -344,6 +378,7 @@ public class Actor extends ActorStats {
                 gear_crit += item.crit;
                 gear_burn += item.burn;
                 gear_stun += item.stun;
+                gear_barrier += item.barrier;
                 add_resist("Fire", item.fire_res * 0.01);
                 add_resist("Water", item.water_res * 0.01);
                 add_resist("Wind", item.wind_res * 0.01);
@@ -448,6 +483,7 @@ public class Actor extends ActorStats {
         gear_crit = 0;
         gear_burn = 0;
         gear_stun = 0;
+        gear_barrier = 0;
         phys_res = base_phys_res;
         magic_res = base_magic_res;
         water_res = base_water_res;
@@ -480,18 +516,6 @@ public class Actor extends ActorStats {
         } else {
             return weak_i;
         }
-    }
-
-    public void applyExtraAtkStats(ActiveSkill trigger) {
-        int lvl = passives.get("Extra Attack").lvl;
-//        active_skills.get("Extra Attack").dmg_mult = trigger.dmg_mult;
-        active_skills.get("Extra Attack").hit = trigger.hit;
-        active_skills.get("Extra Attack").scaling = trigger.scaling;
-        double mult = 1 + hide_bonus;
-        mult *= 1.0 + ambush_bonus;
-        active_skills.get("Extra Attack").dmg_mult = Math.pow(1.1, trigger.hits) * mult;
-        active_skills.get("Extra Attack").min = 75 * (1 + 0.02 * lvl);
-        active_skills.get("Extra Attack").max = 75 * (1 + 0.02 * lvl);
     }
 
     public double getPrepare_hps() {
@@ -704,5 +728,10 @@ public class Actor extends ActorStats {
 
     public double getAvgAtkInt_no_buffs() {
         return (getAtk_no_buffs() + getIntel_no_buffs()) / 2;
+    }
+
+    public boolean checkLastSkill(String name) {
+        if (last_skill == null) return false;
+        return last_skill.name.equals(name);
     }
 }

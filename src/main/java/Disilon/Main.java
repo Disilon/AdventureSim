@@ -19,7 +19,8 @@ import java.util.Random;
 import java.util.Vector;
 
 public class Main {
-    public static Vector<Integer> availableVersions = new Vector<>(List.of(1575, 1580, 1587, 1591, 1605));
+    public static Vector<Integer> availableVersions = new Vector<>(List.of(1575, 1580, 1587, 1591, 1605, 1620,
+            1621, 1622));
     public static int game_version = availableVersions.getLast();
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
@@ -43,14 +44,15 @@ public class Main {
 //        log.add("skill_rotation");
 //        log.add("fight_end");
 //        log.add("death");
+//        log.add("skill_attack");
+//        log.add("skill_cast_start");
+//        log.add("skill_use");
 //        log.add("enemy_death_stat");
 //        log.add("player_death_stat");
+//        log.add("debuff_applied");
 //        log.add("buff_duration");
 //        log.add("buff_remove");
 //        log.add("dot_dmg");
-//        log.add("skill_cast_start");
-//        log.add("skill_use");
-//        log.add("skill_attack");
 //        log.add("skill_enough_mp");
 //        log.add("research");
         try {

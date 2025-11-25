@@ -41,6 +41,7 @@ public class Equipment {
     double burn = 0;
     double crit = 0;
     double stun = 0;
+    double barrier = 0;
 
     Map equipStats;
 
@@ -89,6 +90,7 @@ public class Equipment {
         clone.burn = this.burn;
         clone.crit = this.crit;
         clone.stun = this.stun;
+        clone.barrier = this.barrier;
         return clone;
     }
     
@@ -144,6 +146,7 @@ public class Equipment {
         this.burn = equipStats.containsKey("BURN") ? (double) equipStats.get("BURN") * mult : 0;
         this.crit = equipStats.containsKey("CRIT") ? (double) equipStats.get("CRIT") * mult : 0;
         this.stun = equipStats.containsKey("STUN") ? (double) equipStats.get("STUN") * mult : 0;
+        this.barrier = equipStats.containsKey("BARRIER") ? (double) equipStats.get("BARRIER") * mult : 0;
 
         // Set name
         if (equipStats.containsKey("SET")) this.displayName = (String) equipStats.get("SET");

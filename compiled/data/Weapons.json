@@ -19,6 +19,11 @@
 			"INT": 40,
 			"FIRE": 36,
 			"BURN": 0.05
+		},"Earthen Wand": {
+			"INT": 28,
+			"DEF": 12,
+			"EARTH": 36,
+			"BARRIER": 0.1
 		},"Metal Knuckles": {
 			"ATK": 8,
 			"SPD": 8

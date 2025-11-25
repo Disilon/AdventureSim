@@ -10,6 +10,13 @@
             "WATER_RES": -2,
             "FIRE_RES": 4,
             "SET": "Blazing"
+        }, "Earthen Mask": {
+            "DEF": 6,
+            "INT": 2,
+            "RES": 6,
+            "WIND_RES": -2,
+            "EARTH_RES": 4,
+            "SET": "Earthen"
 		}, "Holy Hood": {
             "DEF": 4,
             "RES": 10,
@@ -90,6 +97,13 @@
             "FIRE": 10,
             "FIRE_RES": 2,
             "SET": "Blazing"
+        }, "Earthen Boots": {
+            "INT": 2,
+            "SPD": 14,
+            "EARTH": 4,
+            "PHYS_RES": 1,
+            "EARTH_RES": 4,
+            "SET": "Earthen"
         }, "Holy Boots": {
             "RES": 6,
             "SPD": 10,
@@ -160,6 +174,13 @@
             "FIRE": 60,
             "WATER_RES": -4,
             "SET": "Blazing"
+        }, "Earthen Bracers": {
+            "DEF": 6,
+            "INT": 6,
+            "HIT": 6,
+            "EARTH": 40,
+            "WIND_RES": -4,
+            "SET": "Earthen"
 		}, "Holy Bracers": {
             "RES": 6,
             "HIT": 6,
@@ -237,6 +258,14 @@
 			"FIRE": 20,
             "FIRE_RES": 2,
             "SET": "Blazing"
+        }, "Earthen Skirt": {
+            "DEF": 6,
+            "INT": 2,
+            "RES": 10,
+            "EARTH": 10,
+            "PHYS_RES": 1,
+            "EARTH_RES": 6,
+            "SET": "Earthen"
 		}, "Holy Pants": {
             "DEF": 6,
             "RES": 12,
@@ -315,6 +344,15 @@
             "WATER_RES": -6,
             "FIRE_RES": 6,
             "SET": "Blazing"
+        }, "Earthen Mantle": {
+            "DEF": 14,
+            "INT": 4,
+            "SPD": 10,
+            "EARTH": 20,
+            "PHYS_RES": 2,
+            "WIND_RES": -6,
+            "EARTH_RES": 10,
+            "SET": "Earthen"
 		}, "Holy Chest Piece": {
             "DEF": 8,
             "RES": 18,

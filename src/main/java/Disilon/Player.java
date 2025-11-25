@@ -844,25 +844,34 @@ public class Player extends Actor {
         }
         if (gear_crit > 0) sb.append("Crit = ").append(df2.format(gear_crit * 100)).append("%\n");
         if (gear_stun > 0) sb.append("Stun = ").append(df2.format(gear_stun * 100)).append("%\n");
+        if (gear_barrier > 0) sb.append("Barrier buff = ").append(df2.format(gear_barrier * 100)).append("%\n");
         if ((burn_mult + gear_burn) > 1)
             sb.append("Burn = ").append(df2.format((burn_mult + gear_burn) * 100 - 100)).append("%\n");
         if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
         if (set_res > 1) sb.append("Set Res = ").append(df2.format(set_res * 100 - 100)).append("%\n");
         if (set_water > 1) sb.append("Set WaterDmg = ").append(df2.format(set_water * 100 - 100)).append("%\n");
         if (set_fire > 1) sb.append("Set FireDmg = ").append(df2.format(set_fire * 100 - 100)).append("%\n");
+        if (set_earth > 1) sb.append("Set EarthDmg = ").append(df2.format(set_earth * 100 - 100)).append("%\n");
         if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
         if (set_core > 0) {
-            sb.append("Set Overkill/Manacost = ").append(df2.format(set_core * 100)).append("%, ");
-            sb.append("Cores = ").append(df2.format(set_core * 150)).append("%\n");
+            sb.append("Set Overkill/Manacost = ").append(df2.format(set_core * 100)).append("%");
+            sb.append("\n");
+            sb.append("Core drop = ").append(df2.format(set_core * 150)).append("%\n");
         }
         if (set_training > 0) {
-            sb.append("Set Exp = ").append(df2.format(set_exp * 100)).append("%, ");
+            sb.append("Set Exp = ").append(df2.format(set_exp * 100)).append("%");
+            sb.append("\n");
             sb.append("Dmg = -").append(df2.format(set_training * 100)).append("%\n");
         }
         if (set_mit1 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit1 * 100)).append("%\n");
         if (set_mit2 > 0) sb.append("Set DmgMit = ").append(df2.format(set_mit2 * 100)).append("%\n");
         if (set_mana > 0) sb.append("Set Manacost = ").append(df2.format(set_mana * -100)).append("%\n");
+        if (set_squirrel_drop > 1) {
+            sb.append("Set Squirrel reward = ").append(df2.format(set_squirrel_drop * 100 - 100)).append("%");
+            sb.append("\n");
+            sb.append("Squirrel spawn ").append(df2.format(set_squirrel_rate)).append("\n");
+        }
         if (finke_bonus > 0) sb.append("Tsury Finke bonus = ").append(df2.format(finke_bonus * 100)).append("%\n");
         return sb.toString();
     }
@@ -1144,5 +1153,12 @@ public class Player extends Actor {
             }
         }
         return time;
+    }
+
+    public double getSquirrelMult(int lvl) {
+        if (game_version < 1621) return 1;
+        if (lvl < 25) return 0.5 + lvl * 0.01;
+        if (game_version == 1621) return 1 + Math.pow(lvl, 1.6) * set_squirrel_drop / 1000;
+        return 1 + Math.pow(lvl, 1.45) * set_squirrel_drop / 1000;
     }
 }

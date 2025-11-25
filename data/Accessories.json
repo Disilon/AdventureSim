@@ -11,6 +11,11 @@
 			"INT": 10,
 			"RES": 10,
 			"SET": "CobaltAcc"
+		}, "Golden Necklace": {
+			"DEF": 8,
+			"RES": 8,
+			"SPD": 8,
+			"SET": "Squirrel"
 		}
 	}, "RING": {
 		"Metal Ring": {
@@ -34,6 +39,16 @@
 			"ATK": 10,
 			"DEF": 10,
 			"SET": "CobaltAcc"
+		}, "Golden Ring": {
+			"ATK": 8,
+			"SPD": 8,
+			"HIT": 8,
+			"SET": "Squirrel"
+		}, "Golden Cape": {
+			"INT": 8,
+			"SPD": 8,
+			"HIT": 8,
+			"SET": "Squirrel"
 		}
 	}
 }
