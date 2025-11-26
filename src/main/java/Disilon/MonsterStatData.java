@@ -134,8 +134,9 @@ public class MonsterStatData {
         int research = p.research_lvls.get("Core quality").intValue();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
                 + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
+        double mult = 1;
         if (name.equals("Squirrel Mage")) {
-            drop_rate *= p.getSquirrelMult(p.zone.getLvl());
+            mult = p.getSquirrelMult(p.zone.getLvl());
         }
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
@@ -144,19 +145,19 @@ public class MonsterStatData {
             }
             cores.put(name, nested);
         }
-        base_rp += getCoreRP(grade, name) * 0.01 * p.hard_reward;
+        base_rp += getCoreRP(grade, name) * 0.01 * p.hard_reward * mult;
         double fractional = research / 100.0 - (double) (research / 100);
         int new_grade = Math.min(8, grade + research / 100);
         double gain = 0;
         if (fractional > 0 && new_grade < 8) {
             double count = 1 - fractional;
             cores.get(name).merge(new_grade, count, Double::sum);
-            gain += getCoreRP(new_grade, name) * drop_rate * count;
+            gain += getCoreRP(new_grade, name) * drop_rate * count * mult;
             cores.get(name).merge(new_grade + 1, fractional, Double::sum);
-            gain += getCoreRP(new_grade + 1, name) * drop_rate * fractional;
+            gain += getCoreRP(new_grade + 1, name) * drop_rate * fractional * mult;
         } else {
             cores.get(name).merge(new_grade, 1.0, Double::sum);
-            gain += getCoreRP(new_grade, name) * drop_rate * 1;
+            gain += getCoreRP(new_grade, name) * drop_rate * mult;
         }
         if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain; //todo:fix it
         gained_rp += gain;
@@ -220,11 +221,16 @@ public class MonsterStatData {
         StringBuilder sb = new StringBuilder();
         double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
                         + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
+
         for (String name : cores.keySet()) {
+            double mult = 1;
+            if (name.equals("Squirrel Mage")) {
+                mult = p.getSquirrelMult(p.zone.getLvl());
+            }
             sb.append(name).append(": ");
             boolean first = true;
             for (Integer grade : cores.get(name).keySet()) {
-                double count = cores.get(name).get(grade) * drop_rate;
+                double count = cores.get(name).get(grade) * drop_rate * mult;
                 if (count > 0) {
                     if (first) {
                         first = false;
@@ -257,6 +263,9 @@ public class MonsterStatData {
             int new_grade = Math.min(8, grade + research / 100);
             for (String name : deaths.keySet()) {
                 double count = deaths.getOrDefault(name, 0);
+                if (name.equals("Squirrel Mage")) {
+                    count *= p.getSquirrelMult(p.zone.getLvl());
+                }
                 offline_base_rp += getCoreRP(grade, name) * 0.01 * count;
                 if (fractional > 0 && new_grade < 8) {
                     offline_rp += getCoreRP(new_grade, name) * drop_rate * count * (1 - fractional);
@@ -312,6 +321,7 @@ public class MonsterStatData {
             case "Raum" -> Main.game_version < 1568 ? 150 : (Main.game_version < 1574 ? 180 : 230);
             case "Asura" -> 165;
             case "Squirrel Mage" -> Main.game_version < 1621 ? 2000 : (Main.game_version < 1622 ? 3000 : 2500);
+            case "Caco" -> 1500;
             default -> 0;
         };
     }

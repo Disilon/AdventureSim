@@ -242,7 +242,9 @@ public class SkillData {
                 Element.magic,false, false);
         active_skills.get("Sense").addDebuff("Mark", 1, 0.2);
         active_skills.get("Sense").weapon_required = false;
-
+        addActive("Hurricane", 1, 250/0.7, 300/0.7, 1, 150, 3, 3, Scaling.atk,
+                Element.wind,true, false);
+        active_skills.get("Hurricane").addDebuff("Poison", 1, 0.15);
         addActive("Basic Attack", 1, 81, 99, 1, 0, 1, 1, Scaling.atk,
                 Element.phys, false, false);
         addActive("First Aid", 1, 15, 15, 0, 5, 0.9, 1.1, Scaling.atk, Element.none, false,

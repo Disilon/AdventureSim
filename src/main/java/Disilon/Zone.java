@@ -25,6 +25,7 @@ public enum Zone {
     z14("Fairy"),
     z15("Raum"),
     z16("Asura", 2, 4),
+    test("Caco"),
     Dummy("Dummy"),
     HelplessDummy("Dummy");
 
@@ -279,6 +280,7 @@ public enum Zone {
             case z14 -> 30;
             case z15 -> 20;
             case z16 -> 60;
+            case test -> 60;
             default -> -1;
         };
     }

@@ -230,6 +230,25 @@ public class Enemy extends Actor {
                 skills.enableActive("Holy Power Slash");
                 skills.enableActive("Sense");
             }
+            case "Caco" -> {
+                base_lvl = 250;
+                base_hp_max = 350000 / base_lvl;
+                base_exp = 320000 / base_lvl;
+                base_atk = 3000 / base_lvl;
+                base_def = 4000 / base_lvl;
+                base_int = 500 / base_lvl;
+                base_res = 4000 / base_lvl;
+                base_hit = 20000 / base_lvl;
+                base_speed = 1500 / base_lvl;
+                fire_res = 0.35;
+                dark_res = 0.15;
+                light_res = 0.05;
+                earth_res = -0.05;
+                phys_res = -0.25;
+                wind_res = -0.4;
+                ailment_res = 1.5;
+                skills.enableActive("Hurricane");
+            }
             case "Devil" -> {
                 base_lvl = 90;
                 base_hp_max = 10350 / base_lvl;

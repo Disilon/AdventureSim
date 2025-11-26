@@ -94,6 +94,7 @@ public class Simulation {
         player.check_buffs();
         player.check_debuffs();
         player.zone.rerollSeed();
+        player.zone.squirrel_counter = 0;
         player.sortResearchWeights();
         double item_drop = 1 + 0.01 * player.research_lvls.getOrDefault("Drop rate", 0.0).intValue();
         item_drop *= player.drop_mult;
