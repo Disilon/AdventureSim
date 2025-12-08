@@ -53,7 +53,12 @@ public class Actor extends ActorStats {
             this.hp -= d.dmg;
             dot_tracking += d.dmg;
             if (d.dmg > 0 && log.contains("dot_dmg")) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
-            if (d.duration < 0) debuff_iterator.remove();
+            if (d.duration <= 0) {
+                if (log.contains("debuff_removed")) {
+                    System.out.println("Debuff " + d.name + " was removed from " + name);
+                }
+                debuff_iterator.remove();
+            }
         }
         check_debuffs();
         if (hp < 0) hp *= 0.5; //dots give 50% overkill
@@ -85,7 +90,7 @@ public class Actor extends ActorStats {
                 remove_charge = false;
             }
             if (b.duration < 0 || (b.duration == 0 && b.name.equals("Charge Up"))) {
-                if (log.contains("buff_remove")) {
+                if (log.contains("buff_removed")) {
                     System.out.println(b.name + " was removed from " + name);
                 }
                 buff_iterator.remove();
@@ -101,6 +106,7 @@ public class Actor extends ActorStats {
             }
             default -> debuffs.add(new Debuff(debuff_name, duration, dmg, effect));
         }
+        check_debuffs();
         if (log.contains("debuff_applied")) {
             String str = debuff_name + " was applied to " + name + " duration = " + duration;
             if (dmg > 0) str += " dmg = " + (int) dmg;
@@ -116,6 +122,13 @@ public class Actor extends ActorStats {
     public boolean hasBuff(String name) {
         for (Buff b : buffs) {
             if (b.name.equals(name)) return true;
+        }
+        return false;
+    }
+
+    public boolean hasDebuff(String name) {
+        for (Debuff d : debuffs) {
+            if (d.name.equals(name)) return true;
         }
         return false;
     }

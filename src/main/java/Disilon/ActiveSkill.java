@@ -143,6 +143,9 @@ public class ActiveSkill {
             if (name.equals("Stone Barrier") && (actor.hasBuff(name) || actor.checkLastSkill(name))) {
                 return false;
             }
+            if (name.equals("Throw Sand") && use_setting == 2) {
+                return false;
+            }
             if (log.contains("skill_use")) System.out.println(name + " used: " + used_in_rotation + " setting: " + use_setting);
             return used_in_rotation < use_setting;
         }
@@ -188,6 +191,10 @@ public class ActiveSkill {
 //        } else {
 //            delay = onlineTime(delay, time + cast);
 //        }
+        if (name.equals("Flee") && cast > 0.5) {
+            cast -= 0.5;
+            delay += 0.5;
+        }
         if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
                 " at " + df2.format(time) + ", cast_time = " + df2.format(cast) + ", delay_time = " + df2.format(delay));
     }
@@ -755,6 +762,9 @@ public class ActiveSkill {
                     }
                 }
                 if (extra == 1 && defender == attacker.target) {
+                    if (total > defender.hp) {
+                        total = defender.hp;
+                    }
                     extra_attack(attacker, defender, dmg_mult * Math.pow(1.1,
                             calc_hits + extra));
                 }
@@ -765,6 +775,10 @@ public class ActiveSkill {
             }
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
+        if (total == 0 && log.contains("skill_attack")) {
+            System.out.println(attacker.name + " used " + this.name +
+                    " at " + defender.name + " at " + df2.format(time));
+        }
         if (this.debuff_name != null) {
             applyDebuff(attacker, defender);
         }
@@ -955,11 +969,11 @@ public class ActiveSkill {
             sb.append("; hit: ").append(df2.format(average_hit_chance() * 100)).append("%");
             sb.append("; dmg: ").append((int) average_dmg());
             if (extra_dmg_sum > 0) {
-                sb.append("; extra dmg: ").append((int) average_extra_dmg());
+                sb.append("; extra: ").append((int) average_extra_dmg());
             }
             sb.append("; mana used: ").append((int) mana_used / simulations);
             if (debuff_name != null) {
-                sb.append("; debuff chance: ").append(df2.format(average_debuff_chance() * 100)).append("%");
+                sb.append("; debuff chance: ").append((int) (average_debuff_chance() * 100)).append("%");
             }
             if (used_debuffed != 0) {
                 sb.append("; used debuffed: ").append(df2.format((double) used_debuffed / attacks_total));

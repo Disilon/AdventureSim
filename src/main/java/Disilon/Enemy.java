@@ -19,6 +19,7 @@ public class Enemy extends Actor {
         skills.disableAll();
         counter_dodge = false;
         counter_heal = false;
+        counter_strike = 0;
         base_lvl = 0;
         fire_res = 0;
         water_res = 0;
@@ -148,7 +149,11 @@ public class Enemy extends Actor {
                 } else {
                     base_int = 375 / base_lvl;
                 }
-                base_res = 5000 / base_lvl;
+                if (Main.game_version < 1620) {
+                    base_res = 5000 / base_lvl;
+                } else {
+                    base_res = 2500 / base_lvl;
+                }
                 base_hit = 1500 / base_lvl;
                 base_speed = 625 / base_lvl;
                 magic_res = 0.5;
@@ -547,6 +552,9 @@ public class Enemy extends Actor {
             }
             case "Dummy" -> {
                 return active_skills.get("Cupid Hard Love Shot");
+            }
+            case "Squirrel Mage" -> {
+                return roll < 50 ? active_skills.get("Flee") : active_skills.get("Elemental Blast");
             }
             default -> {
                 return getRandomSkill();

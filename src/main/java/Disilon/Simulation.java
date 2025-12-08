@@ -1,7 +1,10 @@
 package Disilon;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static Disilon.Main.df2;
@@ -55,6 +58,7 @@ public class Simulation {
         ActiveSkill skill4 = player.skill4;
         double exp = 0;
         double total_time = 0;
+        double squirrel_time = 0;
         double death_time = 0;
         double prepare_time = 0;
         double crafting_time = 0;
@@ -215,8 +219,7 @@ public class Simulation {
                         skill_cycle = 1;
                     }
                     if (skill1 != null && skill1.canCast(player)) {
-                        if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
-                                (skill1.name.equals("Dispel") && player.zone.getEnemyBuffCount() > 0)) {
+                        if (skill1.name.equals("Dispel") && player.zone.getEnemyBuffCount() > 0) {
                             player.casting = skill1;
                             switch (skill_cycle) {
                                 case 1 -> {
@@ -232,13 +235,15 @@ public class Simulation {
                                     if (skill4 != null) skill4.used_in_rotation++;
                                 }
                             }
-//                            skill_cycle++;
-//                            if (skill_cycle > 4) skill_cycle = 1;
-//                            skill_cycle = 1; //dispel resets rotation, should be fine for CS
-//                            if (skill1 != null) skill1.used_in_rotation = 0;
-//                            if (skill2 != null) skill2.used_in_rotation = 0;
-//                            if (skill3 != null) skill3.used_in_rotation = 0;
-//                            if (skill4 != null) skill4.used_in_rotation = 0;
+                        }
+                        if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
+                                (skill1.name.equals("Throw Sand") && skill1.use_setting == 2 && Arrays.stream(player.zone.enemies).noneMatch(e -> e.active && (e.smoked || e.bound > 0)))) {
+                            player.casting = skill1;
+                            skill_cycle = 1; //resets rotation, should be fine for CS
+                            if (skill1 != null) skill1.used_in_rotation = 0;
+                            if (skill2 != null) skill2.used_in_rotation = 0;
+                            if (skill3 != null) skill3.used_in_rotation = 0;
+                            if (skill4 != null) skill4.used_in_rotation = 0;
                         }
                     }
                     if (player.casting != null) {
@@ -408,6 +413,8 @@ public class Simulation {
                                     enemy.casting.pay_manacost(enemy);
                                     if (enemy.casting.name.equals("Flee") && enemy.bound == 0) {
                                         enemy.active = false;
+                                        if (log.contains("fight_end"))
+                                            System.out.println("Squirrel fled");
                                     }
                                 }
                             } else if (enemy.casting.delay > 0) {
@@ -474,6 +481,8 @@ public class Simulation {
             }
             if (!player.zone.enemies[0].name.equals("Squirrel Mage")) {
                 delay_left += cap_time;
+            } else {
+                delay_left += player.zone.getTime_to_respawn();
             }
             while (delay_left > 0) {
                 delta = minIfNotZero(delay_left, player.getNextPotionTime());
@@ -488,10 +497,14 @@ public class Simulation {
             }
             if (delay_left <= 0 && status == StatusType.delay) status = StatusType.respawn;
             if (status == StatusType.respawn) {
-                min_time = Math.min(min_time, time);
-                max_time = Math.max(max_time, time);
-                min_casts = Math.min(min_casts, casts);
-                max_casts = Math.max(max_casts, casts);
+                if (player.zone.enemies[0].name.equals("Squirrel Mage")) {
+                    squirrel_time += time;
+                } else {
+                    min_time = Math.min(min_time, time);
+                    max_time = Math.max(max_time, time);
+                    min_casts = Math.min(min_casts, casts);
+                    max_casts = Math.max(max_casts, casts);
+                }
             }
             //if (status == StatusType.death) status = StatusType.respawn;
             if (player.lvling) {
@@ -596,7 +609,7 @@ public class Simulation {
                     "\n");
         }
         result.append("Time to clear: ").append(df2.format(min_time)).append("s - ").append(df2.format(max_time));
-        result.append("s; avg: ").append(df2.format(total_time / cleared)).append("s \n");
+        result.append("s; avg: ").append(df2.format((total_time - squirrel_time) / (cleared - player.zone.stats.squirrel_spawns))).append("s \n");
         result.append("\nSimulations: ").append(cleared).append("\n");
         result.append("Kills: ").append(player.zone.stats.getKillCount()).append("\n");
         result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");

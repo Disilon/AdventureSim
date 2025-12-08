@@ -50,8 +50,9 @@ public class Main {
 //        log.add("enemy_death_stat");
 //        log.add("player_death_stat");
 //        log.add("debuff_applied");
+//        log.add("debuff_removed");
 //        log.add("buff_duration");
-//        log.add("buff_remove");
+//        log.add("buff_removed");
 //        log.add("dot_dmg");
 //        log.add("skill_enough_mp");
 //        log.add("research");

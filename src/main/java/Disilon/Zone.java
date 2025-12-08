@@ -1,7 +1,9 @@
 package Disilon;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static Disilon.Main.df2;
@@ -186,9 +188,11 @@ public enum Zone {
     public Enemy getRandomEnemy(String skill) {
         if (skill.equals("Dispel")) {
             return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.buff_count() > 0).findFirst().get();
-        } else {
-            return getRandomEnemy();
         }
+        if (skill.equals("Back Stab")) {
+            return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.smoked || e.bound > 0).findFirst().orElse(getRandomEnemy());
+        }
+        return getRandomEnemy();
     }
 
     public Enemy getRandomEnemy() {
