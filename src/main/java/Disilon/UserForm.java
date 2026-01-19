@@ -141,9 +141,14 @@ public class UserForm extends JFrame {
     private JSpinner Hard_hp;
     private JSpinner Hard_stats;
     private JSpinner Hard_reward;
+    private JCheckBox EnemyMinLvlIncrease;
+    private JCheckBox Balance1;
+    private JCheckBox Balance2;
+    private JCheckBox Balance3;
     private JMenuBar Bar;
     private JButton New_tab;
     private JScrollPane LeftPane;
+    private JScrollPane RightPane;
     private JPanel BottomPanel;
     private JTable ActiveSkills;
     private JTable PassiveSkills;
@@ -248,7 +253,7 @@ public class UserForm extends JFrame {
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
         RightPanel.add(MLLabel, gbc);
-        ML = createCustomSpinner(120, 1, 1000, 1);
+        ML = createCustomSpinner(120, 1, 10000, 1);
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
         gbc.gridy = 0;
@@ -268,7 +273,7 @@ public class UserForm extends JFrame {
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
         RightPanel.add(CLLabel, gbc);
-        CL = createCustomSpinner(62, 0, 1000, 1);
+        CL = createCustomSpinner(62, 0, 10000, 1);
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
         gbc.gridy = 1;
@@ -942,6 +947,13 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         RightPanel.add(Load, gbc);
 
+        EnemyMinLvlIncrease = new JCheckBox("Enemy Min Lvl Increase");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 7;
+        gbc.gridy = 12;
+        gbc.gridwidth = 2;
+        RightPanel.add(EnemyMinLvlIncrease, gbc);
+
         Offline = new JCheckBox();
         Offline.setSelected(false);
         Offline.setText("Offline calc");
@@ -1273,6 +1285,36 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Hard_reward, gbc);
 
+        row = 12;
+        Balance1 = new JCheckBox("Extra attack overkill overwrite");
+        gbc = new GridBagConstraints();
+        gbc.gridx = column;
+        gbc.gridy = row;
+        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.NORTH;
+//        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(Balance1, gbc);
+        row += 1;
+        Balance2 = new JCheckBox("Extra attack backstab dmg mult");
+        gbc = new GridBagConstraints();
+        gbc.gridx = column;
+        gbc.gridy = row;
+        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.NORTH;
+//        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(Balance2, gbc);
+        row += 1;
+        Balance3 = new JCheckBox("Reduced overkill for crits");
+        Balance3.setSelected(false);
+        Balance3.setVisible(false);
+        gbc = new GridBagConstraints();
+        gbc.gridx = column;
+        gbc.gridy = row;
+        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.NORTH;
+//        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(Balance3, gbc);
+
         row = 2;
         final JLabel label28 = new JLabel("Research");
         gbc = new GridBagConstraints();
@@ -1302,18 +1344,22 @@ public class UserForm extends JFrame {
         }
 
         LeftPane = new JScrollPane(LeftPanel);
-        LeftPane.setPreferredSize(new Dimension(600, 540));
+        LeftPane.setPreferredSize(new Dimension(600, 575));
         LeftPane.getVerticalScrollBar().setUnitIncrement(16);
         LeftPane.getHorizontalScrollBar().setUnitIncrement(16);
         LeftPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         LeftPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        RightPanel.setPreferredSize(new Dimension(640, 540));
-        //RightPanel.setPreferredSize(RightPanel.getPreferredSize());
+        RightPane = new JScrollPane(RightPanel);
+        RightPane.setPreferredSize(new Dimension(750, 575));
+        RightPane.getVerticalScrollBar().setUnitIncrement(16);
+        RightPane.getHorizontalScrollBar().setUnitIncrement(16);
+        RightPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        RightPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         TopPanel = new JPanel();
         TopPanel.setLayout(new BoxLayout(TopPanel, BoxLayout.X_AXIS));
         TopPanel.add(LeftPane);
-        TopPanel.add(RightPanel);
-        TopPanel.setPreferredSize(new Dimension(1250, 550));
+        TopPanel.add(RightPane);
+//        TopPanel.setPreferredSize(new Dimension(1450, 575));
 
         BottomPanel = new JPanel();
         BottomPanel.setLayout(new GridBagLayout());
@@ -1536,7 +1582,7 @@ public class UserForm extends JFrame {
                     info.append(df2.format(player.getMLpercent())).append("%");
                     info.append("</td>");
                     for (ActiveSkill a : player.active_skills.values()) {
-                        if (a.enabled && a.old_lvl < 20) {
+                        if (a.enabled && a.old_lvl < player.max_skill_lvl) {
                             info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
                             info.append(a.name);
                             info.append("</td></tr>");
@@ -1562,7 +1608,7 @@ public class UserForm extends JFrame {
                         }
                     }
                     for (PassiveSkill a : player.passives.values()) {
-                        if ((a.enabled && a.old_lvl < 20) || (a.available && a.name.equals("Tsury Finke"))) {
+                        if ((a.enabled && a.old_lvl < player.max_skill_lvl) || (a.available && a.name.equals("Tsury Finke"))) {
                             info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
                             info.append(a.name);
                             info.append("</td></tr>");
@@ -1610,10 +1656,10 @@ public class UserForm extends JFrame {
                         setup.ml = player.ml + player.getMLpercent() / 100;
                         setup.cl = Math.min(player.getMaxCl(), player.cl + player.getCLpercent() / 100);
                         for (String s : player.active_skills.keySet()) {
-                            setup.actives_lvls.put(s, Math.min(20, player.active_skills.get(s).getLvl()));
+                            setup.actives_lvls.put(s, Math.min(player.max_skill_lvl, player.active_skills.get(s).getLvl()));
                         }
                         for (String s : player.passives.keySet()) {
-                            int max_lvl = s.equals("Tsury Finke") ? 100 : 20;
+                            int max_lvl = s.equals("Tsury Finke") ? 100 : player.max_skill_lvl;
                             setup.passives_lvls.put(s, Math.min(max_lvl, player.passives.get(s).getLvl()));
                         }
                         setup.rp_balance = (int) player.rp_balance;
@@ -2092,6 +2138,9 @@ public class UserForm extends JFrame {
         data.result_skills = simulation.skills_info;
         data.result_lvling = simulation.lvling_info;
         data.setsetup = SetSetup.isSelected();
+        data.extra_atk_overkill = Balance1.isSelected();
+        data.extra_atk_backstab_mult = Balance2.isSelected();
+        data.crit_overkill_reduced = Balance3.isSelected();
 
         data.skill1 = Skill1.getSelectedItem().toString();
         data.skill1_mod = (SkillMod) Skill1_mod.getSelectedItem();
@@ -2114,6 +2163,7 @@ public class UserForm extends JFrame {
         data.sim_cl = (int) Double.parseDouble(SimCL.getValue().toString());
         data.leveling = Leveling.isSelected();
         data.offline = Offline.isSelected();
+        data.enemy_min_lvl_increase = EnemyMinLvlIncrease.isSelected();
         saveSkillLvls();
         data.actives_lvls = actives_lvls;
         data.passives_lvls = passives_lvls;
@@ -2225,6 +2275,9 @@ public class UserForm extends JFrame {
         simulation.skills_info = data.result_skills;
         simulation.lvling_info = data.result_lvling;
         SetSetup.setSelected(data.setsetup);
+        Balance1.setSelected(data.extra_atk_overkill);
+        Balance2.setSelected(data.extra_atk_backstab_mult);
+        Balance3.setSelected(data.crit_overkill_reduced);
         Stats.setText(data.stats);
         switch (data.sim_type) {
             case 2:
@@ -2242,6 +2295,7 @@ public class UserForm extends JFrame {
         SimCL.setValue(data.sim_cl);
         Leveling.setSelected(data.leveling);
         Offline.setSelected(data.offline);
+        EnemyMinLvlIncrease.setSelected(data.enemy_min_lvl_increase);
         Hard_hp.setValue(data.hard_hp);
         Hard_stats.setValue(data.hard_stats);
         Hard_reward.setValue(data.hard_reward);
@@ -2385,6 +2439,13 @@ public class UserForm extends JFrame {
         return new ArrayList<>(Arrays.asList(
                 "Research slot",
                 "Research spd",
+                "Max skill lvl",
+                "Min pow",
+                "Enemy Min lvl",
+                "Reduce CL req",
+                "Crit chance",
+                "Crit damage",
+                "No overkill crit",
                 "Max CL",
                 "Exp gain",
                 "Core drop",
@@ -2421,8 +2482,13 @@ public class UserForm extends JFrame {
     public static double maxResearchLvl(String name) {
         return switch(name) {
             case "Research slot" -> 15;
+            case "Max skill lvl" -> 20;
+            case "Reduce CL req" -> 20;
+            case "Min pow" -> 100;
             case "Core quality" -> 800;
             case "Max CL" -> 80;
+            case "Crit chance" -> 35;
+            case "No overkill crit" -> 100;
             case "Sidecraft spd" -> 50;
             case "E. Quality min" -> 100;
             default -> 9999;
@@ -2434,7 +2500,7 @@ public class UserForm extends JFrame {
     }
 
     private JSpinner createLvlSpinner() {
-        return createCustomSpinner(0, 0, 20, 1);
+        return createCustomSpinner(0, 0, 40, 1);
     }
 
     private JMenu createTab() {

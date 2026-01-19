@@ -40,10 +40,12 @@ public enum Zone {
     public double strength;
     public double hard_hp = 1;
     public double hard_stats = 1;
+    public int min_lvl = 0;
     public final MonsterStatData stats;
     public int enemy_num;
     public int initial_seed;
     public double squirrel_counter = 0;
+    public boolean disable_squirrel_passive = false;
 
     Zone(String enemies) {
         this(enemies, 1, 1);
@@ -78,12 +80,15 @@ public enum Zone {
         enemy_num = enemy_num < max_enemies ? enemy_num + 1 : min_enemies;
     }
 
-    public void respawn(double squirrel_threshold) {
+    public void respawn(double squirrel_threshold, int min_lvl) {
         clear();
         if (squirrel_counter >= squirrel_threshold && game_version >= 1620) {
             enemies[0].makeSquirrel(getLvl());
+            if (disable_squirrel_passive) {
+                enemies[0].passives.get("Dodge").enabled = false;
+            }
             enemies[0].strength = 1;
-            enemies[0].reroll(hard_hp, hard_stats);
+            enemies[0].reroll(0, hard_hp, hard_stats);
             squirrel_counter -= squirrel_threshold;
             stats.squirrel_spawns++;
         } else {
@@ -96,7 +101,7 @@ public enum Zone {
                 if (e.active) {
                     e.strength = strength + individual_str_add;
 //                sb.append(df2.format(e.strength * 100)).append("; ");
-                    e.reroll(hard_hp, hard_stats);
+                    e.reroll(min_lvl, hard_hp, hard_stats);
                     if (strength > 1) {
                         individual_str_add -= 0.02;
                     } else {
@@ -284,7 +289,7 @@ public enum Zone {
             case z14 -> 30;
             case z15 -> 20;
             case z16 -> 60;
-            case test -> 60;
+            case test -> 20;
             default -> -1;
         };
     }
@@ -294,6 +299,13 @@ public enum Zone {
             case z1, z2, z3, z4, z5, z6, z7, z8, z9, z11, z12 -> 1.03;
             case z13, z14, z15, z16 -> 1.01;
             default -> 1;
+        };
+    }
+
+    public boolean allowsSquirrel() {
+        return switch (this) {
+            case test, Dummy, HelplessDummy -> false;
+            default -> true;
         };
     }
 

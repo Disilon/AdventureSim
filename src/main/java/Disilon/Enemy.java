@@ -2,6 +2,7 @@ package Disilon;
 
 import java.util.ArrayList;
 
+import static Disilon.Main.game_version;
 import static Disilon.Main.random;
 
 public class Enemy extends Actor {
@@ -19,7 +20,7 @@ public class Enemy extends Actor {
         skills.disableAll();
         counter_dodge = false;
         counter_heal = false;
-        counter_strike = 0;
+//        counter_strike = 0;
         base_lvl = 0;
         fire_res = 0;
         water_res = 0;
@@ -43,6 +44,12 @@ public class Enemy extends Actor {
         base_earth = 0;
         base_light = 0;
         base_dark = 0;
+        base_fire_res = 0;
+        base_water_res = 0;
+        base_wind_res = 0;
+        base_earth_res = 0;
+        base_light_res = 0;
+        base_dark_res = 0;
         dodge_mult = 1;
     }
 
@@ -61,7 +68,7 @@ public class Enemy extends Actor {
         skills.enableActive("Elemental Blast");
         active_skills.get("Elemental Blast").setSkill(10, SkillMod.Basic);
         skills.enableActive("Flee");
-//        passives.get("Stealth").enabled = true;
+        passives.get("Dodge").enabled = true;
 //        passives.get("Stealth").setLvl(20);
         active = true;
     }
@@ -89,8 +96,8 @@ public class Enemy extends Actor {
                 }
                 base_speed = 600 / base_lvl;
                 base_water = 400 / base_lvl;
-                fire_res = 0.5;
-                wind_res = 0.5;
+                base_fire_res = 0.5;
+                base_wind_res = 0.5;
                 skills.enableActive("Water Punch");
                 skills.enableActive("Killing Strike");
                 skills.enableActive("Tsunami");
@@ -106,8 +113,8 @@ public class Enemy extends Actor {
                 base_hit = 1200 / base_lvl;
                 base_speed = 500 / base_lvl;
                 base_fire = 400 / base_lvl;
-                earth_res = 0.5;
-                wind_res = 0.5;
+                base_earth_res = 0.5;
+                base_wind_res = 0.5;
                 skills.enableActive("Fire Ball");
                 skills.enableActive("Fire Pillar");
                 skills.enableActive("Explosion");
@@ -131,8 +138,8 @@ public class Enemy extends Actor {
                 base_hit = 1200 / base_lvl;
                 base_speed = 3500 / base_lvl;
                 base_wind = 100 / base_lvl;
-                earth_res = 0.5;
-                wind_res = -0.5;
+                base_earth_res = 0.5;
+                base_wind_res = -0.5;
                 skills.enableActive("Gust");
                 skills.enableActive("Air Compression");
                 counter_dodge = true;
@@ -156,7 +163,7 @@ public class Enemy extends Actor {
                 }
                 base_hit = 1500 / base_lvl;
                 base_speed = 625 / base_lvl;
-                magic_res = 0.5;
+                base_magic_res = 0.5;
                 skills.enableActive("Soul Slash");
             }
             case "Fairy" -> {
@@ -198,11 +205,12 @@ public class Enemy extends Actor {
                 active_skills.get("Rapid Stabs").setSkill(13, SkillMod.Damage);
                 skills.enableActive("Rapid Stabs");
                 counter_dodge = true;
-                if (Main.game_version < 1580) {
-                    counter_strike = 0.25;
-                } else {
-                    counter_strike = 0.3;
-                }
+                passives.get("Counter Strike").enabled = true;
+//                if (Main.game_version < 1580) {
+//                    counter_strike = 0.25;
+//                } else {
+//                    counter_strike = 0.3;
+//                }
             }
             case "Asura" -> {
                 base_lvl = 200;
@@ -219,17 +227,17 @@ public class Enemy extends Actor {
                 if (Main.game_version >= 1566) {
                     base_atk = 1560 / base_lvl;
                     base_speed = 1700 / base_lvl;
-                    phys_res = -0.2;
+                    base_phys_res = -0.2;
                     if (Main.game_version >= 1591) {
-                        fire_res = 0.25;
+                        base_fire_res = 0.25;
                     } else {
-                        fire_res = 0.1;
+                        base_fire_res = 0.1;
                     }
                 } else {
                     base_atk = 1700 / base_lvl;
                     base_speed = 1600 / base_lvl;
-                    fire_res = 0.25;
-                    phys_res = -0.3;
+                    base_fire_res = 0.25;
+                    base_phys_res = -0.3;
                 }
                 skills.enableActive("Holy Slash");
                 skills.enableActive("Holy Power Slash");
@@ -244,13 +252,13 @@ public class Enemy extends Actor {
                 base_int = 500 / base_lvl;
                 base_res = 4000 / base_lvl;
                 base_hit = 20000 / base_lvl;
-                base_speed = 1500 / base_lvl;
-                fire_res = 0.35;
-                dark_res = 0.15;
-                light_res = 0.05;
-                earth_res = -0.05;
-                phys_res = -0.25;
-                wind_res = -0.4;
+                base_speed = 4500 / base_lvl;
+                base_fire_res = 0.35;
+                base_dark_res = 0.15;
+                base_light_res = 0.05;
+                base_earth_res = -0.05;
+                base_phys_res = -0.25;
+                base_wind_res = -0.4;
                 ailment_res = 1.5;
                 skills.enableActive("Hurricane");
             }
@@ -265,8 +273,8 @@ public class Enemy extends Actor {
                 base_hit = 1080 / base_lvl;
                 base_speed = 225 / base_lvl;
                 base_dark = 180 / base_lvl;
-                dark_res = 0.5;
-                light_res = -0.5;
+                base_dark_res = 0.5;
+                base_light_res = -0.5;
                 skills.enableActive("Poison Attack");
                 skills.enableActive("Dark Slash");
             }
@@ -281,7 +289,7 @@ public class Enemy extends Actor {
                 base_hit = 250 / base_lvl;
                 base_speed = 325 / base_lvl;
                 base_wind = 100 / base_lvl;
-                wind_res = 1;
+                base_wind_res = 1;
                 dodge_mult = 1.25;
                 skills.enableActive("Bash");
                 skills.enableActive("Double Attack");
@@ -297,7 +305,7 @@ public class Enemy extends Actor {
                 base_hit = 250 / base_lvl;
                 base_speed = 100 / base_lvl;
                 base_water = 100 / base_lvl;
-                water_res = 1;
+                base_water_res = 1;
                 skills.enableActive("Magic Missile");
                 skills.enableActive("Elemental Blast");
             }
@@ -312,7 +320,7 @@ public class Enemy extends Actor {
                 base_hit = 350 / base_lvl;
                 base_speed = 200 / base_lvl;
                 base_fire = 100 / base_lvl;
-                fire_res = 0.5;
+                base_fire_res = 0.5;
                 skills.enableActive("Dragon Punch");
                 skills.enableActive("Aura Shot");
             }
@@ -339,7 +347,7 @@ public class Enemy extends Actor {
                 base_hit = 120 / base_lvl;
                 base_speed = 100 / base_lvl;
                 base_fire = 60 / base_lvl;
-                fire_res = 0.6;
+                base_fire_res = 0.6;
                 skills.enableActive("Tsunami");
                 skills.enableActive("Blind Enemy");
                 skills.enableActive("Poison Attack");
@@ -355,7 +363,7 @@ public class Enemy extends Actor {
                 base_hit = 120 / base_lvl;
                 base_speed = 60 / base_lvl;
                 base_dark = 60 / base_lvl;
-                dark_res = 0.6;
+                base_dark_res = 0.6;
                 skills.enableActive("Killing Strike");
                 skills.enableActive("Back Stab");
             }
@@ -370,8 +378,8 @@ public class Enemy extends Actor {
                 base_hit = 90 / base_lvl;
                 base_speed = 75 / base_lvl;
                 base_wind = 45 / base_lvl;
-                wind_res = 0.6;
-                light_res = -0.5;
+                base_wind_res = 0.6;
+                base_light_res = -0.5;
                 skills.enableActive("Attack");
                 skills.enableActive("Mark Target");
             }
@@ -385,7 +393,7 @@ public class Enemy extends Actor {
                 base_res = 30 / base_lvl;
                 base_hit = 60 / base_lvl;
                 base_speed = 45 / base_lvl;
-                light_res = -0.5;
+                base_light_res = -0.5;
                 skills.enableActive("Charge Attack");
             }
             case "Slime" -> {
@@ -398,7 +406,7 @@ public class Enemy extends Actor {
                 base_res = 7 / base_lvl;
                 base_hit = 5 / base_lvl;
                 base_speed = 2 / base_lvl;
-                water = 2;
+                base_water = 2;
                 skills.enableActive("Water Punch");
             }
             case "Slime2" -> {
@@ -411,7 +419,7 @@ public class Enemy extends Actor {
                 base_res = 35 / base_lvl;
                 base_hit = 25 / base_lvl;
                 base_speed = 10 / base_lvl;
-                water = 10;
+                base_water = 10;
                 skills.enableActive("Water Punch");
             }
             case "Imp" -> {
@@ -476,18 +484,20 @@ public class Enemy extends Actor {
                 base_res = 20 / base_lvl;
                 base_hit = 40 / base_lvl;
                 base_speed = 30 / base_lvl;
-                light_res = -0.5;
+                base_light_res = -0.5;
                 skills.enableActive("Charge Attack");
             }
         }
         active = true;
     }
 
-    public void reroll(double hp_mult, double stats_mult) {
-        int lvl = (int) Math.round(base_lvl * strength);
-        this.hp_max = base_hp_max * lvl * hp_mult;
-        this.hp = this.hp_max;
-//        System.out.println("HP=" + hp);
+    public void reroll(int min_lvl_incr, double hp_mult, double stats_mult) {
+        double lvl = Main.banking_round(base_lvl * strength);
+        double min_lvl = base_lvl == 1 ? 1 : base_lvl * 0.9;
+        double max_lvl = base_lvl == 1 ? 1 : base_lvl * 1.1;
+        min_lvl = Math.min(max_lvl, min_lvl + min_lvl_incr);
+        lvl = Math.min(max_lvl, Math.max(min_lvl, lvl));
+        refreshStats();
         this.exp = base_exp * lvl;
         this.atk = base_atk * lvl * stats_mult;
         this.def = base_def * lvl * stats_mult;
@@ -510,6 +520,9 @@ public class Enemy extends Actor {
         stun_time = 0;
         check_buffs();
         check_debuffs();
+        this.hp_max = getHp_max();
+        this.hp = this.hp_max;
+        this.mp = this.getMp_max();
     }
 
     public void rollStrength() {
@@ -554,7 +567,11 @@ public class Enemy extends Actor {
                 return active_skills.get("Cupid Hard Love Shot");
             }
             case "Squirrel Mage" -> {
-                return roll < 50 ? active_skills.get("Flee") : active_skills.get("Elemental Blast");
+                if (game_version >= 1627) {
+                    return roll < 30 ? active_skills.get("Flee") : active_skills.get("Elemental Blast");
+                } else {
+                    return roll < 50 ? active_skills.get("Flee") : active_skills.get("Elemental Blast");
+                }
             }
             default -> {
                 return getRandomSkill();
@@ -574,8 +591,17 @@ public class Enemy extends Actor {
     public ActiveSkill getCasting(Player player) {
         if (casting == null) {
             casting = rollAttack(player);
+            if (!casting.canCast(this)) {
+                casting = getWeakSkill();
+            }
             previous_spell = casting.name;
         }
         return casting;
+    }
+
+    @Override
+    public double getHp_max() {
+        int lvl = (int) Math.round(base_lvl * strength);
+        return base_hp_max * lvl * hp_mult;
     }
 }

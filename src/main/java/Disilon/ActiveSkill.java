@@ -11,6 +11,7 @@ import static Disilon.Main.random;
 
 public class ActiveSkill {
     public String name;
+    public ActorStats owner;
     public int lvl;
     public double min;
     public double max;
@@ -67,12 +68,14 @@ public class ActiveSkill {
     public boolean triggers_counter = true;
     public boolean weapon_required = true;
 
-    public ActiveSkill(String name) {
+    public ActiveSkill(ActorStats owner, String name) {
+        this.owner = owner;
         this.name = name;
         this.lvl = 0;
     }
 
-    public ActiveSkill(String name, double mp, double cast_mult, double delay_mult) {
+    public ActiveSkill(ActorStats owner, String name, double mp, double cast_mult, double delay_mult) {
+        this.owner = owner;
         this.name = name;
         this.base_mp = mp;
         this.base_cast = cast_mult;
@@ -82,8 +85,10 @@ public class ActiveSkill {
         setSkill(lvl, SkillMod.Enemy);
     }
 
-    public ActiveSkill(String name, int hits, double min, double max, double hit, double mp, double cast_mult, double delay_mult,
+    public ActiveSkill(ActorStats owner, String name, int hits, double min, double max, double hit, double mp,
+                       double cast_mult, double delay_mult,
                        Scaling scaling, Element element, boolean aoe, boolean heal) {
+        this.owner = owner;
         this.name = name;
         this.base_min = min;
         this.base_max = max;
@@ -152,8 +157,9 @@ public class ActiveSkill {
     }
 
     public boolean canCast(Actor actor) {
-        boolean enough_mp = actor.getMp() >= calculate_manacost(actor);
-        if (!enough_mp && log.contains("skill_enough_mp")) System.out.println(name + " skipped, not enough mp");
+        double cost = calculate_manacost(actor);
+        boolean enough_mp = actor.getMp() >= cost;
+        if (!enough_mp && log.contains("skill_enough_mp")) System.out.println(name + " skipped, not enough mp, cost: " + (int) cost);
         return enough_mp;
     }
 
@@ -439,6 +445,7 @@ public class ActiveSkill {
                 case "Defense Break":
                 case "Resist Break":
                 case "Weaken":
+                case "Bound":
                     this.debuff_duration = switch (this.skillMod) {
                         case SkillMod.Basic -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
                         case SkillMod.Pow -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
@@ -607,6 +614,7 @@ public class ActiveSkill {
             this.used += 1;
         }
         double hit_chance = (attacker.smoked ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
+        if (game_version >= 1627 && attacker.set_squirrel_rate == 1) hit_chance /= 1.25;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
         hit_chance = Math.min(hit_chance, 1);
         hit_chance_sum += hit_chance;
@@ -629,11 +637,12 @@ public class ActiveSkill {
                 double atk = 0;
                 double def = 0;
                 double dmg_mult = attacker.getDmg_mult();
+                double dmg_mult1 = 1;
                 dmg_mult *= 1.0 + attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
                 if (name.equals("Back Stab") && (defender.smoked || defender.bound > 0)) {
-                    dmg_mult *= 2;
+                    dmg_mult1 *= 2;
                 }
                 enemy_resist = switch (this.element) {
                     case Element.dark -> {
@@ -717,9 +726,13 @@ public class ActiveSkill {
                         yield defender.getResist();
                     }
                 };
-                double crit_chance = defender.bound + attacker.gear_crit;
+                double crit_chance = defender.bound + attacker.gear_crit +  attacker.base_crit_chance;
+                double crit_dmg = attacker.base_crit_damage;
                 if (crit_chance > 0 && Math.random() < crit_chance) {
-                    atk *= 1.5;
+                    atk *= crit_dmg;
+                    attacker.last_crit = true;
+                } else {
+                    attacker.last_crit = false;
                 }
                 if (name.equals("Pierce")) {
                     def = 0;
@@ -741,20 +754,19 @@ public class ActiveSkill {
                     if (attacker.gear_stun > 0 && game_version < 1566 && Math.random() < attacker.gear_stun) {
                         defender.stun_time += 2.0;
                     }
-                    double dmg = Math.random() * (this.max - this.min) + this.min;
-
+                    double dmg = this.max - Math.random() * (this.max - this.min) * (1 - attacker.dmg_range);
                     if (attacker.zone == null && weapon_required) {
                         dmg *= 0.7;
                     }
                     dmg =
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
-                                    calc_hits + extra) * dmg_mult;
+                                    calc_hits + extra) * dmg_mult * dmg_mult1;
                     dmg = dmg * (1 - enemy_resist);
                     dmg = Math.max(1, dmg);
                     dmg = Math.max(0, dmg - defender.getBarrier());
                     if (log.contains("skill_attack")) {
                         System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name +
-                                " to " + defender.name + " at " + df2.format(time));
+                                " to " + defender.name + " at " + df2.format(time) + " chance " + df2.format(hit_chance*100) + "%");
                     }
                     total += dmg;
                     if (total - dmg > defender.hp && i == calc_hits - 1) {
@@ -762,16 +774,25 @@ public class ActiveSkill {
                     }
                 }
                 if (extra == 1 && defender == attacker.target) {
-                    if (total > defender.hp) {
+                    if (Main.balance1 && total > defender.hp) {
                         total = defender.hp;
                     }
-                    extra_attack(attacker, defender, dmg_mult * Math.pow(1.1,
-                            calc_hits + extra));
+                    if (Main.balance2) {
+                        extra_attack(attacker, defender, dmg_mult * dmg_mult1 * Math.pow(1.1,
+                                calc_hits));
+                    } else {
+                        extra_attack(attacker, defender, dmg_mult * Math.pow(1.1,
+                                calc_hits));
+                    }
                 }
             }
         } else {
             if (defender.counter_dodge && triggers_counter) {
                 counter_attack(attacker, defender, true);
+            }
+            if (log.contains("skill_attack")) {
+                System.out.println(attacker.name + " missed with " + this.name +
+                        " at " + defender.name + " at " + df2.format(time));
             }
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
@@ -810,9 +831,13 @@ public class ActiveSkill {
         double def = defender.getDef();
         double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
         double atk = attacker.getAtk() + attacker.getWater();
-        double crit_chance = defender.bound + attacker.gear_crit;
+        double crit_chance = defender.bound + attacker.gear_crit +  attacker.base_crit_chance;
+        double crit_dmg = attacker.base_crit_damage;
         if (crit_chance > 0 && Math.random() < crit_chance) {
-            atk *= 1.5;
+            atk *= crit_dmg;
+            attacker.last_crit = true;
+        } else {
+            attacker.last_crit = false;
         }
         dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
         dmg = dmg * (1 - defender.getWater_res());
@@ -906,7 +931,7 @@ public class ActiveSkill {
         if (enabled) {
             exp += value;
             double need = need_for_lvl(lvl);
-            if (exp >= need && lvl < 20) {
+            if (exp >= need && lvl < owner.max_skill_lvl) {
                 lvl++;
                 exp -= need;
                 setSkill(lvl, skillMod);

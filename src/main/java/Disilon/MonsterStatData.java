@@ -1,6 +1,7 @@
 package Disilon;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
@@ -131,13 +132,16 @@ public class MonsterStatData {
     }
 
     public void addCore(String name, int grade, Player p) {
-        int research = p.research_lvls.get("Core quality").intValue();
-        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
-                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
         double mult = 1;
+        double research_bonus = 1 + p.core_drop_research;
         if (name.equals("Squirrel Mage")) {
             mult = p.getSquirrelMult(p.zone.getLvl());
         }
+        if (p.enemy_min_lvl_enabled && (game_version == 1638 || !name.equals("Squirrel Mage"))) {
+            research_bonus *= 1 + 0.005 * p.enemy_min_lvl;
+        }
+        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+                + research_bonus) * mult * p.hard_reward;
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -146,20 +150,20 @@ public class MonsterStatData {
             cores.put(name, nested);
         }
         base_rp += getCoreRP(grade, name) * 0.01 * p.hard_reward * mult;
-        double fractional = research / 100.0 - (double) (research / 100);
-        int new_grade = Math.min(8, grade + research / 100);
+        double fractional = p.core_quality_research - (int) p.core_quality_research;
+        int new_grade = Math.min(8, grade + (int) p.core_quality_research);
         double gain = 0;
         if (fractional > 0 && new_grade < 8) {
             double count = 1 - fractional;
             cores.get(name).merge(new_grade, count, Double::sum);
-            gain += getCoreRP(new_grade, name) * drop_rate * count * mult;
+            gain += getCoreRP(new_grade, name) * drop_rate * count;
             cores.get(name).merge(new_grade + 1, fractional, Double::sum);
-            gain += getCoreRP(new_grade + 1, name) * drop_rate * fractional * mult;
+            gain += getCoreRP(new_grade + 1, name) * drop_rate * fractional;
         } else {
             cores.get(name).merge(new_grade, 1.0, Double::sum);
-            gain += getCoreRP(new_grade, name) * drop_rate * mult;
+            gain += getCoreRP(new_grade, name) * drop_rate;
         }
-        if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain; //todo:fix it
+        if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain;
         gained_rp += gain;
 //        addCoreRandom(name, grade, p);
     }
@@ -219,73 +223,99 @@ public class MonsterStatData {
 
     public String getCoreData(Player p, double time, boolean offline) {
         StringBuilder sb = new StringBuilder();
-        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
-                        + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
+        double research_bonus = 1 + p.core_drop_research;
 
-        for (String name : cores.keySet()) {
-            double mult = 1;
-            if (name.equals("Squirrel Mage")) {
-                mult = p.getSquirrelMult(p.zone.getLvl());
+        if (offline) {
+            double offline_rp = 0;
+            double offline_base_rp = 0;
+            double fractional = p.core_quality_research - (int) p.core_quality_research;
+            double percent = overkill_sum / kills;
+            int grade = -1;
+            if (percent <= 1) {
+                grade = 4;
+            } else if (percent <= 10) {
+                grade = 3;
+            } else if (percent <= 25) {
+                grade = 2;
+            } else if (percent <= 50) {
+                grade = 1;
+            } else if (percent <= 200) {
+                grade = 0;
             }
-            sb.append(name).append(": ");
-            boolean first = true;
-            for (Integer grade : cores.get(name).keySet()) {
-                double count = cores.get(name).get(grade) * drop_rate * mult;
-                if (count > 0) {
+            if (grade >= 0) {
+                int new_grade = Math.min(8, grade + (int) p.core_quality_research);
+                for (String name : deaths.keySet()) {
+                    double count = deaths.getOrDefault(name, 0);
+                    double mult = 1;
+                    double r_mult = 1;
+                    if (name.equals("Squirrel Mage")) {
+                        mult = p.getSquirrelMult(p.zone.getLvl());
+                    }
+                    if (p.enemy_min_lvl_enabled && (game_version == 1638 || !name.equals("Squirrel Mage"))) {
+                        r_mult = 1 + 0.005 * p.enemy_min_lvl;
+                    }
+                    double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+                            + research_bonus * r_mult) * mult * p.hard_reward;
+                    sb.append(name).append(": ");
+                    sb.append(df2.format(drop_rate * count)).append(" (");
+                    offline_base_rp += getCoreRP(grade, name) * 0.01 * count * mult * p.hard_reward;
+                    if (fractional > 0 && new_grade < 8) {
+                        offline_rp += getCoreRP(new_grade, name) * drop_rate * count * (1 - fractional);
+                        sb.append(getCoreGrade(new_grade)).append(":").append((int) (1 - fractional)*100).append("%; ");
+                        offline_rp += getCoreRP(new_grade + 1, name) * drop_rate * count * fractional;
+                        sb.append(getCoreGrade(new_grade+1)).append(":").append((int) (1 - fractional)*100).append("%; ");
+                    } else {
+                        offline_rp += getCoreRP(new_grade, name) * drop_rate * count;
+                        sb.append(getCoreGrade(new_grade)).append(":").append(100).append("%; ");
+                    }
+                    sb.append(")\n");
+                }
+            }
+            sb.append("Offline RP/h: ").append(df2.format(offline_rp / time * 3600));
+            sb.append(" (base: ").append(df2.format(offline_base_rp / time * 3600)).append(")");
+        } else {
+            for (String name : cores.keySet()) {
+                LinkedHashMap<String,Double> grades = new LinkedHashMap<>();
+                double mult = 1;
+                double r_mult = 1;
+                if (name.equals("Squirrel Mage")) {
+                    mult = p.getSquirrelMult(p.zone.getLvl());
+                }
+                if (p.enemy_min_lvl_enabled && (game_version == 1638 || !name.equals("Squirrel Mage"))) {
+                    r_mult = 1 + 0.005 * p.enemy_min_lvl;
+                }
+                double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+                        + research_bonus * r_mult) * mult * p.hard_reward;
+                double total_count = 0;
+                sb.append(name).append(": ");
+
+                for (Integer grade : cores.get(name).keySet()) {
+                    double count = cores.get(name).get(grade) * drop_rate;
+                    if (count > 0) {
+                        total_count += count;
+                        grades.put(getCoreGrade(grade), count);
+                    }
+                }
+                sb.append(df2.format(total_count)).append(" (");
+                boolean first = true;
+                for (String grade : grades.keySet()) {
                     if (first) {
                         first = false;
                     } else {
                         sb.append("; ");
                     }
-                    sb.append(getCoreGrade(grade)).append(": ").append(df2.format(count));
+                    sb.append(grade).append(":").append((int) (grades.get(grade)/total_count*100)).append("%");
                 }
+
+                sb.append(")\n");
             }
-            sb.append("\n");
-        }
-        double offline_rp = 0;
-        double offline_base_rp = 0;
-        int research = p.research_lvls.get("Core quality").intValue();
-        double fractional = research / 100.0 - (double) (research / 100);
-        double percent = overkill_sum / kills;
-        int grade = -1;
-        if (percent <= 1) {
-            grade = 4;
-        } else if (percent <= 10) {
-            grade = 3;
-        } else if (percent <= 25) {
-            grade = 2;
-        } else if (percent <= 50) {
-            grade = 1;
-        } else if (percent <= 200) {
-            grade = 0;
-        }
-        if (grade >= 0) {
-            int new_grade = Math.min(8, grade + research / 100);
-            for (String name : deaths.keySet()) {
-                double count = deaths.getOrDefault(name, 0);
-                if (name.equals("Squirrel Mage")) {
-                    count *= p.getSquirrelMult(p.zone.getLvl());
-                }
-                offline_base_rp += getCoreRP(grade, name) * 0.01 * count;
-                if (fractional > 0 && new_grade < 8) {
-                    offline_rp += getCoreRP(new_grade, name) * drop_rate * count * (1 - fractional);
-                    offline_rp += getCoreRP(new_grade + 1, name) * drop_rate * count * fractional;
-                } else {
-                    offline_rp += getCoreRP(new_grade, name) * drop_rate * count;
-                }
-            }
-        }
-        if (offline) {
-            sb.append("Offline RP/h: ").append(df2.format(offline_rp / time * 3600));
-            sb.append(" (base: ").append(df2.format(offline_base_rp / time * 3600)).append(")");
-        } else {
             sb.append("RP/h: ").append(df2.format(gained_rp / time * 3600));
             sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
         }
         sb.append("\n");
-        if (nuts > 0) {
-            sb.append("Chestnuts: ").append(df2.format(nuts)).append("\n");
-        }
+//        if (nuts > 0) {
+//            sb.append("Chestnuts: ").append(df2.format(nuts)).append("\n");
+//        }
         return sb.toString();
     }
 

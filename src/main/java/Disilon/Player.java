@@ -17,7 +17,7 @@ public class Player extends Actor {
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
             "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer",
-            "Onion Knight"};
+            "Onion Knight", "RogueT4"};
 
     double rp_balance;
     double old_rp;
@@ -36,6 +36,7 @@ public class Player extends Actor {
 
     public Player(Setup setup) {
         this();
+        this.enemy_min_lvl_enabled = setup.enemy_min_lvl_increase;
         this.research_lvls = setup.research_lvls;
         this.research_old_lvls = new HashMap<>();
         this.research_old_lvls.putAll(setup.research_lvls);
@@ -100,7 +101,7 @@ public class Player extends Actor {
             this.skill4.setSkill(setup.skill4_mod);
         }
         this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3, setup.pskill4});
-        calc_exp_mult();
+        apply_research_effects();
     }
 
     public void setupPotions(String type1, int threshold1, String type2, int threshold2,
@@ -168,8 +169,10 @@ public class Player extends Actor {
                 skills.enablePassive("Counter Strike");
                 skills.enableActive("Killing Strike");
                 skills.enableActive("Hide");
+                skills.enableActive("Steal");
                 skills.enableActive("Dragon Punch");
                 skills.enableActive("Whirling Foot");
+                skills.enableActive("Double Attack");
                 skills.enableActive("Poison Attack");
                 skills.enableActive("Smoke Screen");
                 skills.enableActive("Prepare");
@@ -361,6 +364,7 @@ public class Player extends Actor {
                 skills.enablePassive("Dodge");
                 skills.enableActive("Double Attack");
                 skills.enableActive("Bash");
+                skills.enableActive("Steal");
                 skills.enableActive("Hide");
                 skills.enableActive("Prepare");
             }
@@ -410,6 +414,29 @@ public class Player extends Actor {
                 skills.enableActive("Double Attack");
                 skills.enableActive("Hide");
                 skills.enableActive("Double Shot");
+                skills.enableActive("Steal");
+                skills.enableActive("Prepare");
+                skills.enableActive("Bash");
+            }
+            case "RogueT4" -> {
+                tier = 6;
+                base_water_res = -0.5;
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Bow Mastery");
+                skills.enablePassive("Dagger Mastery");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Ambush");
+                skills.enablePassive("Dodge");
+                skills.enablePassive("Extra Attack");
+                skills.enablePassive("Dual Wield");
+                skills.enableActive("Throw Sand");
+                skills.enableActive("Binding Shot");
+                skills.enableActive("Back Stab");
+                skills.enableActive("Arrow Rain");
+                skills.enableActive("Double Attack");
+                skills.enableActive("Hide");
+                skills.enableActive("Double Shot");
+                skills.enableActive("Steal");
                 skills.enableActive("Prepare");
                 skills.enableActive("Bash");
             }
@@ -632,6 +659,15 @@ public class Player extends Actor {
                 base_hit = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "RogueT4" -> {
+                base_hp_max = (double) (100 * (cl + 100)) / 10000 * 30 * ml * 1.1;
+                base_atk = (double) (125 * (cl + 100)) / 10000 * 4 * ml * 1.1;
+                base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml * 1.1;
+                base_int = (double) (60 * (cl + 100)) / 10000 * 4 * ml * 1.1;
+                base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml * 1.1;
+                base_hit = (double) (110 * (cl + 100)) / 10000 * 4 * ml * 1.1;
+                base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml * 1.1;
+            }
             case "Onion Knight" -> {
                 if (cl >= 99) {
                     base_hp_max = (double) (120 * (cl + 100)) / 10000 * 30 * ml;
@@ -695,7 +731,7 @@ public class Player extends Actor {
             case "Pyromancer" -> {
                 result -= getAvgAtkInt();
             }
-            case "Rogue" -> {
+            case "Rogue", "RogueT4" -> {
                 result += getAvgAtkInt();
             }
             default -> {
@@ -870,7 +906,8 @@ public class Player extends Actor {
         if (set_squirrel_drop > 1) {
             sb.append("Set Squirrel reward = ").append(df2.format(set_squirrel_drop * 100 - 100)).append("%");
             sb.append("\n");
-            sb.append("Squirrel spawn ").append(df2.format(set_squirrel_rate)).append("\n");
+            sb.append("Squirrel spawn ").append(df2.format(set_squirrel_rate)).append("(")
+                    .append(Math.round(set_squirrel_rate)).append(")").append("\n");
         }
         if (finke_bonus > 0) sb.append("Tsury Finke bonus = ").append(df2.format(finke_bonus * 100)).append("%\n");
         return sb.toString();
@@ -881,18 +918,20 @@ public class Player extends Actor {
         ml_exp += exp;
         double need_cl = exp_to_cl(cl);
         double need_ml = exp_to_ml(ml);
-        if (cl_exp >= need_cl && cl < getMaxCl()) {
+        while (cl_exp >= need_cl && cl < getMaxCl()) {
             cl += 1;
             cl_exp -= need_cl;
             setCLML(cl, ml);
             if (cl == cl_for_milestone()) {
                 milestone_exp_mult += bonus_for_milestone();
             }
+            need_cl = exp_to_cl(cl);
         }
-        if (ml_exp >= need_ml) {
+        while (ml_exp >= need_ml) {
             ml += 1;
             ml_exp -= need_ml;
             setCLML(cl, ml);
+            need_ml = exp_to_ml(ml);
         }
     }
 
@@ -1007,7 +1046,7 @@ public class Player extends Actor {
         }
         if (new_lvl > old_lvl) {
             decide_research = true;
-            if (name.equals("Exp gain")) calc_exp_mult();
+            apply_research_effects();
 //            System.out.println(name + " new_lvl=" + new_lvl);
         }
         research_lvls.put(name, research_lvls.getOrDefault(name, 0.0) + time / research_time(name));
@@ -1018,6 +1057,13 @@ public class Player extends Actor {
         double base_time = switch(name) {
             case "Research slot" -> 259200;
             case "Research spd" -> 10800;
+            case "Max skill lvl" -> 32400;
+            case "Min pow" -> 10800;
+            case "Enemy Min lvl" -> 18000;
+            case "Reduce CL req" -> 36000;
+            case "Crit chance" -> 28800;
+            case "Crit damage" -> 14400;
+            case "No overkill crit" -> 28800;
             case "Max CL" -> 14400;
             case "Exp gain" -> 14400;
             case "Core drop" -> 14400;
@@ -1069,8 +1115,20 @@ public class Player extends Actor {
         return (Math.pow(1.4, slots - 1) + slots - 1) * 180;
     }
 
-    public void calc_exp_mult() {
+    public void apply_research_effects() {
         total_exp_mult = exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp gain", 0.0).intValue());
+        base_crit_chance = research_lvls.getOrDefault("Crit chance", 0.0).intValue()/100.0;
+        base_crit_damage = 1.5 + research_lvls.getOrDefault("Crit damage", 0.0).intValue()/100.0;
+        no_overkill_crit = research_lvls.getOrDefault("No overkill crit", 0.0).intValue()/100.0;
+        max_skill_lvl = 20 + research_lvls.getOrDefault("Max skill lvl", 0.0).intValue();
+        dmg_range = research_lvls.getOrDefault("Min pow", 0.0).intValue()/100.0;
+        enemy_min_lvl = research_lvls.getOrDefault("Enemy Min lvl", 0.0).intValue();
+        core_drop_research = research_lvls.getOrDefault("Core drop", 0.0).intValue()/100.0;
+        core_quality_research = research_lvls.getOrDefault("Core quality", 0.0).intValue()/100.0;
+    }
+
+    public int getEnemyMinLvl() {
+        return enemy_min_lvl_enabled ? enemy_min_lvl : 0;
     }
 
     public double exp_to_cl(int lvl) {

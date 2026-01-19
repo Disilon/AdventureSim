@@ -20,7 +20,11 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1575, 1580, 1587, 1591, 1605, 1620,
-            1621, 1622));
+            1621, 1622, 1627, 1638, 1639));
+    public static boolean balance1 = true;
+    public static boolean balance2 = true;
+    public static boolean balance3 = false;
+    public static long time_limit = 30000;
     public static int game_version = availableVersions.getLast();
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
@@ -41,6 +45,9 @@ public class Main {
         df2p.setMinimumIntegerDigits(2);
         df2p.setMaximumFractionDigits(2);
         df2p.setMinimumFractionDigits(2);
+//        CoreScaling test = new CoreScaling();
+//        System.out.println(test.getBaseStatBonus(1281, 3));
+
 //        log.add("skill_rotation");
 //        log.add("fight_end");
 //        log.add("death");
@@ -163,5 +170,24 @@ public class Main {
         int n = (int) Math.ceil(time / tick);
         if (n == 0) n = 1;
         return n * tick;
+    }
+
+    public static double banking_round(double num) {
+        double floor = Math.floor(num);
+        double diff = num - floor;
+        double result;
+        if (diff > 0.5) {
+            result = floor + 1.0;
+        } else if (diff < 0.5) {
+            result = floor;
+        } else {
+            // exactly halfway: round to even
+            if (((long) floor) % 2 == 0) {
+                result = floor;
+            } else {
+                result = floor + 1.0;
+            }
+        }
+        return result;
     }
 }

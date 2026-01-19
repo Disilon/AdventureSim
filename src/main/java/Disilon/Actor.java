@@ -14,12 +14,12 @@ import static Disilon.Main.game_version;
 import static Disilon.Main.log;
 
 public class Actor extends ActorStats {
-    ActiveSkill weak_a = new ActiveSkill("Weak Attack", 1, 54, 66, 1, 0, 1, 1, Scaling.atk, Element.phys,
+    ActiveSkill weak_a = new ActiveSkill(this, "Weak Attack", 1, 54, 66, 1, 0, 1, 1, Scaling.atk, Element.phys,
             false, false);
-    ActiveSkill weak_i = new ActiveSkill("Weak Magic Arrow", 1, 55.8, 68.2, 1, 1, 1, 1, Scaling.intel, Element.magic,
+    ActiveSkill weak_i = new ActiveSkill(this, "Weak Magic Arrow", 1, 55.8, 68.2, 1, 1, 1, 1, Scaling.intel, Element.magic,
             false, false);
-    ActiveSkill counter_strike_log = new ActiveSkill("Counter Strike");
-    ActiveSkill counter_dodge_log = new ActiveSkill("Counter Dodge");
+    ActiveSkill counter_strike_log = new ActiveSkill(this, "Counter Strike");
+    ActiveSkill counter_dodge_log = new ActiveSkill(this, "Counter Dodge");
 
     public Actor() {
         skills.passiveSkillData();
@@ -284,70 +284,7 @@ public class Actor extends ActorStats {
         refreshStats();
     }
 
-    public void refreshStats() {
-        hp_mult = 1;
-        mp_mult = 1;
-        atk_mult = 1;
-        int_mult = 1;
-        def_mult = 1;
-        res_mult = 1;
-        hit_mult = 1;
-        speed_mult = 1;
-        dodge_mult = 1;
-        dmg_mult = 1;
-        poison_mult = 1;
-        ailment_res = 1;
-        exp_mult = 1;
-        cast_speed_mult = 1;
-        delay_speed_mult = 1;
-        core_mult = 1;
-        counter_strike = 0;
-        multi_arrows = 0;
-        bless_boost = 1;
-        bless_duration = 0;
-        finke_bonus = 0;
-
-        atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
-        poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
-        dmg_mult *= 1.0 + passives.get("Dagger Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Fist Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Sword Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Spear Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Bow Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Wand Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Book Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Weapon Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Dual Wield").getBonus();
-        dmg_mult *= 1.0 + passives.get("Concentration").getBonus();
-        dmg_mult *= 1.0 + passives.get("Stealth").getBonus();
-        poison_mult *= 1.0 + passives.get("Stealth").getBonus();
-        speed_mult *= 1.0 + passives.get("Speed Boost").getBonus();
-        exp_mult *= 1.0 + passives.get("Exp Boost").getBonus();
-        def_mult *= 1.0 + passives.get("Defense Boost").getBonus();
-        dodge_mult *= 1.0 + passives.get("Dodge").getBonus();
-        counter_strike = passives.get("Counter Strike").getBonus();
-        hit_mult *= 1.0 + passives.get("Hit Boost").getBonus();
-        hit_mult *= 1.0 + passives.get("Concentration").getBonus();
-        int_mult *= 1.0 + passives.get("Int Boost").getBonus();
-        res_mult *= 1.0 + passives.get("Res Boost").getBonus();
-        ailment_res *= 1.0 + passives.get("Ailment Res").getBonus();
-        cast_speed_mult *= 1.0 - passives.get("Casting Boost").getBonus();
-        cast_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
-        delay_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
-        bless_boost *= 1.0 + passives.get("Bless Mastery").getBonus();
-        bless_duration = passives.get("Bless Mastery").getBonus2();
-        hp_mult *= 1.0 + passives.get("HP Boost").getBonus();
-        hp_regen = passives.get("HP Regen").getBonus();
-        drop_mult = 1 + passives.get("Drop Boost").getBonus();
-        core_mult = 1 + passives.get("Drop Boost").getBonus();
-        if (passives.get("Multi Arrows").enabled) {
-            multi_arrows = passives.get("Multi Arrows").getBonus();
-        }
-        if (passives.get("Core Boost").enabled) {
-            core_mult = 1 + passives.get("Core Boost").getBonus();
-        }
-        mp_cost_add = 0;
-        mp_cost_mult = 1;
+    public void applyGear() {
         clear_gear_stats();
         if (name.equals("Onion Knight") && equipment.get("MH") == null) {
             if (passives.get("Tsury Finke").available) {
@@ -420,6 +357,75 @@ public class Actor extends ActorStats {
                 enableSet(set.bonus, set.min_quality, set.min_upgrade);
             }
         }
+        if (set_mit1 > 0) add_resist("All", set_mit1);
+        if (set_mit2 > 0) add_resist("All", set_mit2);
+    }
+
+    public void refreshStats() {
+        hp_mult = 1;
+        mp_mult = 1;
+        atk_mult = 1;
+        int_mult = 1;
+        def_mult = 1;
+        res_mult = 1;
+        hit_mult = 1;
+        speed_mult = 1;
+        dodge_mult = 1;
+        dmg_mult = 1;
+        poison_mult = 1;
+        ailment_res = 1;
+        exp_mult = 1;
+        cast_speed_mult = 1;
+        delay_speed_mult = 1;
+        core_mult = 0;
+        counter_strike = 0;
+        multi_arrows = 0;
+        bless_boost = 1;
+        bless_duration = 0;
+        finke_bonus = 0;
+
+        atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
+        poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
+        dmg_mult *= 1.0 + passives.get("Dagger Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Fist Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Sword Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Spear Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Bow Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Wand Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Book Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Weapon Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Dual Wield").getBonus();
+        dmg_mult *= 1.0 + passives.get("Concentration").getBonus();
+        dmg_mult *= 1.0 + passives.get("Stealth").getBonus();
+        poison_mult *= 1.0 + passives.get("Stealth").getBonus();
+        speed_mult *= 1.0 + passives.get("Speed Boost").getBonus();
+        exp_mult *= 1.0 + passives.get("Exp Boost").getBonus();
+        def_mult *= 1.0 + passives.get("Defense Boost").getBonus();
+        dodge_mult *= 1.0 + passives.get("Dodge").getBonus();
+        counter_strike = passives.get("Counter Strike").getBonus();
+        hit_mult *= 1.0 + passives.get("Hit Boost").getBonus();
+        hit_mult *= 1.0 + passives.get("Concentration").getBonus();
+        int_mult *= 1.0 + passives.get("Int Boost").getBonus();
+        res_mult *= 1.0 + passives.get("Res Boost").getBonus();
+        ailment_res *= 1.0 + passives.get("Ailment Res").getBonus();
+        cast_speed_mult *= 1.0 - passives.get("Casting Boost").getBonus();
+        cast_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
+        delay_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
+        bless_boost *= 1.0 + passives.get("Bless Mastery").getBonus();
+        bless_duration = passives.get("Bless Mastery").getBonus2();
+        hp_mult *= 1.0 + passives.get("HP Boost").getBonus();
+        hp_regen = passives.get("HP Regen").getBonus();
+        drop_mult = 1 + passives.get("Drop Boost").getBonus();
+        core_mult = passives.get("Drop Boost").getBonus();
+        if (passives.get("Multi Arrows").enabled) {
+            multi_arrows = passives.get("Multi Arrows").getBonus();
+        }
+        if (passives.get("Core Boost").enabled) {
+            core_mult = passives.get("Core Boost").getBonus();
+        }
+        mp_cost_add = 0;
+        mp_cost_mult = 1;
+        applyGear();
         for (Map.Entry<String, PassiveSkill> passive : passives.entrySet()) {
             if (passive.getValue().enabled) {
                 mp_cost_add += passive.getValue().mp_add;
@@ -444,10 +450,15 @@ public class Actor extends ActorStats {
         speed = (base_speed + gear_speed);
         hp_max = (base_hp_max + gear_hp);
         mp_max = (resist * 3 + intel) * mp_mult;
-        if (set_mit1 > 0) add_resist("All", set_mit1);
-        if (set_mit2 > 0) add_resist("All", set_mit2);
-        exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0,
-                120 + research_lvls.getOrDefault("Max CL", 0.0).intValue() - cl));
+
+        if (research_lvls != null) {
+            if (tier >= 3) {
+                exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0,
+                        120 + research_lvls.getOrDefault("Max CL", 0.0).intValue() - cl));
+            } else {
+                exp_mult *= 1.0 + set_exp;
+            }
+        }
         if (passives.get("Fire Resistance").enabled) {
             add_resist("Fire", passives.get("Fire Resistance").getBonus());
         }
@@ -710,6 +721,7 @@ public class Actor extends ActorStats {
     }
 
     public double getDodge_mult() {
+
         return dodge_mult * (1.0 - mark) * (1.0 - bound);
     }
 

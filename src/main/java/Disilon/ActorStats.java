@@ -132,7 +132,7 @@ public class ActorStats {
     public double elemental_buff = 0;
     public double bless_boost = 1;
     public double bless_duration = 0;
-    public double core_mult = 1;
+    public double core_mult = 0;
     public double drop_mult = 1;
     public double counter_strike = 0;
     public double multi_arrows = 0;
@@ -161,6 +161,16 @@ public class ActorStats {
     public boolean current_skill_hit = false;
     public double ambush_bonus = 0;
     public Actor target;
+    public boolean last_crit = false;
+    public int max_skill_lvl = 20;
+    public double dmg_range = 0;
+    public int enemy_min_lvl = 0;
+    public boolean enemy_min_lvl_enabled = true;
+    public double base_crit_chance = 0;
+    public double base_crit_damage = 1.5;
+    public double no_overkill_crit = 0;
+    public double core_drop_research = 0;
+    public double core_quality_research = 0;
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;
@@ -174,7 +184,7 @@ public class ActorStats {
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
     public LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
     public LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
-    public SkillData skills = new SkillData(active_skills, passives);
+    public SkillData skills = new SkillData(this, active_skills, passives);
     public LinkedHashMap<String, Equipment> equipment = new LinkedHashMap<String, Equipment>();
     public LinkedHashMap<String, EquipmentSet> sets = new LinkedHashMap<String, EquipmentSet>();
     public HashMap<String, Double> research_lvls;

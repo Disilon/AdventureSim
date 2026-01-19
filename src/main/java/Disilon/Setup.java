@@ -82,10 +82,14 @@ public class Setup implements Serializable {
     double hard_hp;
     double hard_stats;
     double hard_reward;
+    boolean enemy_min_lvl_increase;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
     HashMap<String, Double> research_lvls;
     HashMap<String, Double> research_weight;
+    boolean extra_atk_overkill = true;
+    boolean extra_atk_backstab_mult = true;
+    boolean crit_overkill_reduced = false;
 
     public Setup() {
         this.passives_lvls = new HashMap<>();
@@ -173,6 +177,7 @@ public class Setup implements Serializable {
         this.hard_hp = 100;
         this.hard_stats = 100;
         this.hard_reward = 100;
+        this.enemy_min_lvl_increase = true;
     }
 
     public Zone getZone() {
@@ -821,5 +826,37 @@ public class Setup implements Serializable {
 
     public void setHard_reward(double hard_reward) {
         this.hard_reward = hard_reward;
+    }
+
+    public boolean isExtra_atk_overkill() {
+        return extra_atk_overkill;
+    }
+
+    public void setExtra_atk_overkill(boolean extra_atk_overkill) {
+        this.extra_atk_overkill = extra_atk_overkill;
+    }
+
+    public boolean isExtra_atk_backstab_mult() {
+        return extra_atk_backstab_mult;
+    }
+
+    public void setExtra_atk_backstab_mult(boolean extra_atk_backstab_mult) {
+        this.extra_atk_backstab_mult = extra_atk_backstab_mult;
+    }
+
+    public boolean isCrit_overkill_reduced() {
+        return crit_overkill_reduced;
+    }
+
+    public void setCrit_overkill_reduced(boolean crit_overkill_reduced) {
+        this.crit_overkill_reduced = crit_overkill_reduced;
+    }
+
+    public boolean isEnemy_min_lvl_increase() {
+        return enemy_min_lvl_increase;
+    }
+
+    public void setEnemy_min_lvl_increase(boolean enemy_min_lvl_increase) {
+        this.enemy_min_lvl_increase = enemy_min_lvl_increase;
     }
 }

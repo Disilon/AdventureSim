@@ -1,6 +1,7 @@
 package Disilon;
 
 public class PassiveSkill {
+    public ActorStats owner;
     public int lvl;
     public String name;
     public double base_bonus;
@@ -16,7 +17,8 @@ public class PassiveSkill {
     public double exp;
     public double old_lvl;
 
-    public PassiveSkill(String name, double base_bonus, double base_mp_add, double base_mp_mult) {
+    public PassiveSkill(ActorStats owner, String name, double base_bonus, double base_mp_add, double base_mp_mult) {
+        this.owner = owner;
         this.name = name;
         this.base_bonus = base_bonus;
         this.base_mp_add = base_mp_add;
@@ -61,12 +63,17 @@ public class PassiveSkill {
                 this.bonus2 = Main.game_version >= 1605 ? 1 + (int) (lvl / 10) : 1;
             }
             case "Core Boost" -> {
-                if (Main.game_version >= 1573) {
-                    this.base_bonus = 0.6;
+                if (Main.game_version >= 1638) {
+                    this.base_bonus = 0.75;
                     this.bonus = this.base_bonus * (1 + 0.02 * lvl);
                 } else {
-                    this.bonus = this.base_bonus * (1 + 0.05 * lvl);
-                    this.bonus2 = this.base_bonus2 * (1 + 0.05 * lvl);
+                    if (Main.game_version >= 1573) {
+                        this.base_bonus = 0.6;
+                        this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                    } else {
+                        this.bonus = this.base_bonus * (1 + 0.05 * lvl);
+                        this.bonus2 = this.base_bonus2 * (1 + 0.05 * lvl);
+                    }
                 }
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
@@ -118,7 +125,7 @@ public class PassiveSkill {
         if (enabled && !name.equals("Tsury Finke")) {
             exp += time;
             int need = need_for_lvl(lvl);
-            if (exp >= need && lvl < 20) {
+            if (exp >= need && lvl < owner.max_skill_lvl) {
                 lvl++;
                 exp -= need;
                 setLvl(lvl);

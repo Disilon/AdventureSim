@@ -33,6 +33,9 @@
 		},"Bronze Knuckles": {
 			"ATK": 32,
 			"SPD": 32
+		},"Cobalt Knuckles": {
+			"ATK": 48,
+			"SPD": 48
 		},"Metal Spear": {
 			"ATK": 16,
 			"HIT": 4
@@ -44,6 +47,10 @@
 			"ATK": 40,
 			"DEF": 16,
 			"HIT": 16
+		},"Cobalt Spear": {
+			"ATK": 60,
+			"DEF": 24,
+			"HIT": 24
 		}
 	},
 	"MH":{
@@ -73,6 +80,10 @@
 			"HIT": 8,
 			"SPD": 12,
 			"CRIT": 0.02
+		},"Cobalt Dagger": {
+			"ATK": 18,
+			"HIT": 12,
+			"SPD": 18
 		},"Metal Sword": {
 			"ATK": 10
 		},"Iron Sword": {
@@ -81,6 +92,9 @@
 		},"Bronze Sword": {
 			"ATK": 28,
 			"HIT": 8
+		},"Cobalt Sword": {
+			"ATK": 42,
+			"HIT": 12
 		}
 
 	},
@@ -97,6 +111,10 @@
 			"DEF": 20,
 			"RES": 20,
 			"SPD": -8
+		},"Cobalt Shield": {
+			"DEF": 30,
+			"RES": 30,
+			"SPD": -12
 		}
 	}
 }

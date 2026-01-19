@@ -5,27 +5,29 @@ import java.util.LinkedHashMap;
 public class SkillData {
     private LinkedHashMap<String, PassiveSkill> passives;
     private LinkedHashMap<String, ActiveSkill> active_skills;
+    private ActorStats owner;
 
-    public SkillData(LinkedHashMap<String, ActiveSkill> active_skills, LinkedHashMap<String, PassiveSkill> passives) {
+    public SkillData(ActorStats owner, LinkedHashMap<String, ActiveSkill> active_skills, LinkedHashMap<String, PassiveSkill> passives) {
+        this.owner = owner;
         this.active_skills = active_skills;
         this.passives = passives;
     }
 
     public void addActive(String name, double mp, double cast_mult, double delay_mult) {
-        active_skills.put(name, new ActiveSkill(name, mp, cast_mult, delay_mult));
+        active_skills.put(name, new ActiveSkill(owner, name, mp, cast_mult, delay_mult));
     }
 
     public void addActive(String name, int hits, double min, double max, double hit, double mp, double cast_mult, double delay_mult,
                           Scaling scaling, Element element, boolean aoe, boolean heal) {
-        active_skills.put(name, new ActiveSkill(name, hits, min, max, hit, mp, cast_mult, delay_mult, scaling, element, aoe, heal));
+        active_skills.put(name, new ActiveSkill(owner, name, hits, min, max, hit, mp, cast_mult, delay_mult, scaling, element, aoe, heal));
     }
 
     public void addActiveHidden(String name, double mp, double cast_mult, double delay_mult, String link_name) {
-        active_skills.put(link_name, new ActiveSkill(name, mp, cast_mult, delay_mult));
+        active_skills.put(link_name, new ActiveSkill(owner, name, mp, cast_mult, delay_mult));
     }
 
     public void addPassive(String name, double base_bonus, double base_mp_add, double base_mp_mult) {
-        passives.put(name, new PassiveSkill(name, base_bonus, base_mp_add, base_mp_mult));
+        passives.put(name, new PassiveSkill(owner, name, base_bonus, base_mp_add, base_mp_mult));
     }
 
     public void disableAll() {
@@ -92,7 +94,7 @@ public class SkillData {
 
     public void activeSkillData() {
         addActive("Hide", 1, 0.3, 0, 0, 5, 0.5, 0.5, Scaling.atk, Element.none, false, false);
-        addActive("Flee", 1, 0, 0, 0, 0, 0.5, 1, Scaling.atk, Element.none, false, false);
+        addActive("Flee", 1, 0, 0, 0, 25, 0.5, 1, Scaling.atk, Element.none, false, false);
         addActive("Killing Strike", 1, 297, 363, 0.7, 80, 2, 2, Scaling.atk, Element.dark,
                 false, false);
         addActive("Dragon Punch", 3, 76.5, 93.5, 0.8, 20, 1, 3, Scaling.atk, Element.phys,
@@ -109,6 +111,9 @@ public class SkillData {
                 false, false);
         addActive("Double Shot", 2, 76.5, 93.5, 1, 12, 1.1, 1.1, Scaling.atkhit, Element.phys,
                 false, false);
+        addActive("Double Attack", 2, 64.8, 79.2, 1, 7, 1, 1, Scaling.atk,
+                Element.phys, false, false);
+        active_skills.get("Double Attack").weapon_required = false;
         addActive("Arrow Rain", 5, 49.5, 60.5, 0.7, 25, 1.5,
                 1.5, Scaling.atkhit, Element.phys, false, false);
         active_skills.get("Arrow Rain").random_targets = true;
@@ -119,6 +124,9 @@ public class SkillData {
         addActive("Trap", 1, 90, 110, 1.0, 0, 1,1.0, Scaling.intel, Element.magic, false, false);
         active_skills.get("Trap").addDebuff("Stun", 0, 2.5);
         active_skills.get("Trap").weapon_required = false;
+        addActive("Steal", 1, 81, 99, 1, 12, 1, 1, Scaling.atk,
+                Element.phys, false, false);
+        active_skills.get("Steal").weapon_required = false;
         addActive("Attack", 1, 90, 110, 1, 0, 1, 1, Scaling.atk, Element.phys, false,
                 false);
         active_skills.get("Attack").weapon_required = false;
@@ -170,9 +178,6 @@ public class SkillData {
         active_skills.get("Bless").addBuff("Bless", 2, 0.3);
         addActive("Push Blast", 1, 99, 121, 0.9, 30, 1.3, 1.3, Scaling.intel,
                 Element.magic, true, false);
-        addActive("Double Attack", 2, 64.8, 79.2, 1, 7, 1, 1, Scaling.atk,
-                Element.phys, false, false);
-        active_skills.get("Double Attack").weapon_required = false;
         addActive("Empower HP", 1, 0, 0, 0, 60, 2, 2, Scaling.atk, Element.none, false,
                 false);
         active_skills.get("Empower HP").addBuff("Empower HP", 7, 0.05);
