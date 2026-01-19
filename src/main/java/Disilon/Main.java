@@ -45,8 +45,6 @@ public class Main {
         df2p.setMinimumIntegerDigits(2);
         df2p.setMaximumFractionDigits(2);
         df2p.setMinimumFractionDigits(2);
-//        CoreScaling test = new CoreScaling();
-//        System.out.println(test.getBaseStatBonus(1281, 3));
 
 //        log.add("skill_rotation");
 //        log.add("fight_end");

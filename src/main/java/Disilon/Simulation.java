@@ -22,7 +22,6 @@ public class Simulation {
     double time_limit;
     int cl_limit;
     boolean offline;
-    boolean enemy_min_lvl_increase;
     double time_mult = 1;
     Player player;
     StatusType status = StatusType.respawn;

@@ -1,12 +1,8 @@
 package Disilon;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
 import static Disilon.Main.random;
 
@@ -33,14 +29,12 @@ public enum Zone {
 
     final String display_name;
     final String[] possible_enemies;
-//    public final ArrayList<Enemy> enemies = new ArrayList<>(1);
     public final Enemy[] enemies = new Enemy[9];
     public final int min_enemies;
     public final int max_enemies;
     public double strength;
     public double hard_hp = 1;
     public double hard_stats = 1;
-    public int min_lvl = 0;
     public final MonsterStatData stats;
     public int enemy_num;
     public int initial_seed;

@@ -1822,7 +1822,7 @@ public class UserForm extends JFrame {
         });
         loadEquipment();
         selected_tab = createTab("default");
-        Setup default_setup = loadFile(Main.getJarPath() + "/default.json");
+        Setup default_setup = loadFile(Main.getJarPath() + "/Default.json");
         if (default_setup == null) default_setup = new Setup();
         tabs.put(selected_tab, default_setup);
         loadTab(selected_tab);
