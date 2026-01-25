@@ -261,9 +261,11 @@ public class MonsterStatData {
                     offline_base_rp += getCoreRP(grade, name) * 0.01 * count * mult * p.hard_reward;
                     if (fractional > 0 && new_grade < 8) {
                         offline_rp += getCoreRP(new_grade, name) * drop_rate * count * (1 - fractional);
-                        sb.append(getCoreGrade(new_grade)).append(":").append((int) (1 - fractional)*100).append("%; ");
+                        sb.append(getCoreGrade(new_grade)).append(":").append((int) (100 - fractional*100));
+                        sb.append("%; ");
                         offline_rp += getCoreRP(new_grade + 1, name) * drop_rate * count * fractional;
-                        sb.append(getCoreGrade(new_grade+1)).append(":").append((int) (1 - fractional)*100).append("%; ");
+                        sb.append(getCoreGrade(new_grade+1)).append(":").append((int) (fractional*100));
+                        sb.append("%");
                     } else {
                         offline_rp += getCoreRP(new_grade, name) * drop_rate * count;
                         sb.append(getCoreGrade(new_grade)).append(":").append(100).append("%; ");

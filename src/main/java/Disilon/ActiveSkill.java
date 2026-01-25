@@ -726,9 +726,10 @@ public class ActiveSkill {
                         yield defender.getResist();
                     }
                 };
-                double crit_chance = defender.bound + attacker.gear_crit +  attacker.base_crit_chance;
+                double crit_chance = defender.bound + attacker.gear_crit + attacker.base_crit_chance;
+                double not_crit = (1 - defender.bound) * (1 - attacker.gear_crit - attacker.base_crit_chance);
                 double crit_dmg = attacker.base_crit_damage;
-                if (crit_chance > 0 && Math.random() < crit_chance) {
+                if (not_crit < 1 && Math.random() > not_crit) {
                     atk *= crit_dmg;
                     attacker.last_crit = true;
                 } else {
@@ -760,7 +761,7 @@ public class ActiveSkill {
                     }
                     dmg =
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
-                                    calc_hits + extra) * dmg_mult * dmg_mult1;
+                                    calc_hits) * dmg_mult * dmg_mult1;
                     dmg = dmg * (1 - enemy_resist);
                     dmg = Math.max(1, dmg);
                     dmg = Math.max(0, dmg - defender.getBarrier());
@@ -831,9 +832,10 @@ public class ActiveSkill {
         double def = defender.getDef();
         double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
         double atk = attacker.getAtk() + attacker.getWater();
-        double crit_chance = defender.bound + attacker.gear_crit +  attacker.base_crit_chance;
+        double crit_chance = defender.bound + attacker.gear_crit + attacker.base_crit_chance;
+        double not_crit = (1 - defender.bound) * (1 - attacker.gear_crit - attacker.base_crit_chance);
         double crit_dmg = attacker.base_crit_damage;
-        if (crit_chance > 0 && Math.random() < crit_chance) {
+        if (not_crit < 1 && Math.random() > not_crit) {
             atk *= crit_dmg;
             attacker.last_crit = true;
         } else {
