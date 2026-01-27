@@ -331,18 +331,22 @@ public class Simulation {
                                         player.target = null;
                                     }
                                 }
+                                player.tick_buffs(true);
                             } else {
                                 double previous_hp = player.hp;
                                 player.casting.use(player, time);
                                 if (player.casting.heal) {
                                     healed += player.hp - previous_hp;
                                 }
+                                player.tick_buffs(false);
                             }
                             if (player.lvling) player.casting.gainExp(1);
                             if (player.current_skill_hit) player.ambush_bonus = 0;
                             if (player.ambushing) player.ambushing = false;
+                            if (player.casting.buff_name != null) {
+                                player.casting.applyBuff(player);
+                            }
                             player.tick_debuffs();
-                            player.tick_buffs();
                             player.casting.pay_manacost(player);
                         }
                     } else if (player.casting.delay > 0) {
@@ -353,6 +357,7 @@ public class Simulation {
                 } else {
                     oom_time += delta;
                 }
+                player.applyPendingEffects();
                 for (int i = 0; i < 9; i++) {
                     Enemy enemy = player.zone.enemies[i];
                     if (enemy.active) {
@@ -418,14 +423,15 @@ public class Simulation {
                                             player.damage_taken += dmg;
                                             if (enemy.charge > 0) enemy.remove_charge = true;
                                         }
+                                        enemy.tick_buffs(true);
 //                                System.out.println("Player: " + (int) player.hp + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.hp + "/" + (int) enemy.getHp_max());
                                     } else {
                                         enemy.casting.use(enemy, time);
+                                        enemy.tick_buffs(false);
                                         player.zone.stats.incrementStats(enemy.name, enemy.casting.name, 0,
                                                 0, 0, 1, 0,0);
                                     }
                                     enemy.tick_debuffs();
-                                    enemy.tick_buffs();
                                     enemy.casting.pay_manacost(enemy);
                                     if (enemy.casting.name.equals("Flee") && enemy.bound == 0) {
                                         enemy.active = false;
@@ -439,6 +445,7 @@ public class Simulation {
                                 }
                             }
                         }
+                        enemy.applyPendingEffects();
                     }
                 }
                 if (player.hp <= 0 || time >= 3600) {
@@ -592,7 +599,7 @@ public class Simulation {
         min_time /= time_mult;
         max_time /= time_mult;
         double exph = (exp / (total_time + death_time) * 3600);
-        double exp_total_bonus = player.total_exp_mult * player.milestone_exp_mult * (1 + 0.005 * player.enemy_min_lvl);
+        double exp_total_bonus = player.total_exp_mult * player.milestone_exp_mult * (1 + 0.005 * player.getEnemyMinLvl());
         result.append("Exp/h: ").append(shorthand(exph)).append(" (");
         result.append(df2.format(exp_total_bonus * 100)).append("%; ");
         result.append(shorthand(exph / exp_total_bonus)).append(" at 100%)\n");
@@ -624,10 +631,6 @@ public class Simulation {
         }
         result.append("Kills/h without deaths: ").append(df2.format(kills / (total_time - ignore_deaths) * 3600)).append(
                 "\n");
-        if (kills_drop > 0 || item_drop > 1) {
-            result.append("Item drop mult: ").append(df2.format((kills + kills_drop) / kills * item_drop)).append(
-                    "\n");
-        }
         result.append("Time to clear: ").append(df2.format(min_time)).append("s - ").append(df2.format(max_time));
         result.append("s; avg: ").append(df2.format((total_time - squirrel_time) / (cleared - player.zone.stats.squirrel_spawns))).append("s \n");
         if (player.zone.stats.squirrel_spawns > 0) {
@@ -645,7 +648,7 @@ public class Simulation {
         if (crafting_time > 0) {
             result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
         }
-        int smithing_lvl = 38;
+        int smithing_lvl = 40;
         if (sidecraft_time > 0) {
             result.append("Sidecrafting time: ").append(Main.secToTime(sidecraft_time));
             result.append(" (").append(df2.format(sidecraft_time/(total_time + crafting_time + death_time) * 100));
@@ -699,6 +702,10 @@ public class Simulation {
             }
         }
         result.append("\n");
+        if (kills_drop > 0 || item_drop > 1) {
+            result.append("Item drop mult: ").append(df2.format((kills + kills_drop) / kills * item_drop)).append(
+                    "\n");
+        }
         if (steal_count > 0) {
             result.append("Effective steal count: ").append((int) steal_count).append("\n");
         }

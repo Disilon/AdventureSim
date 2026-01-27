@@ -182,6 +182,8 @@ public class ActorStats {
 
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
     public ArrayList<Buff> buffs = new ArrayList<Buff>();
+    public ArrayList<Debuff> pending_debuffs = new ArrayList<Debuff>();
+    public ArrayList<Buff> pending_buffs = new ArrayList<Buff>();
     public LinkedHashMap<String, PassiveSkill> passives = new LinkedHashMap<String, PassiveSkill>();
     public LinkedHashMap<String, ActiveSkill> active_skills = new LinkedHashMap<String, ActiveSkill>();
     public SkillData skills = new SkillData(this, active_skills, passives);

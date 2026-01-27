@@ -1,9 +1,6 @@
 package Disilon;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -77,19 +74,24 @@ public class Actor extends ActorStats {
         }
     }
 
-    public void tick_buffs() {
+    public void tick_buffs(boolean attack) {
         Iterator<Buff> buff_iterator = buffs.iterator();
         while (buff_iterator.hasNext()) {
             Buff b = buff_iterator.next();
             if (log.contains("buff_duration")) System.out.println(b.name + " duration = " + b.duration);
-            if (!b.name.equals("Charge Up") && !b.name.contains("Barrier")) {
-                b.duration--;
+            switch (b.name) {
+                case "Charge Up", "Elemental Buff" -> b.duration = b.duration - (attack ? 1 : 0);
+                case "Stone Barrier" -> {}
+                default -> b.duration--;
             }
-            if (b.name.equals("Charge Up") && remove_charge) {
-                b.duration--;
-                remove_charge = false;
-            }
-            if (b.duration < 0 || (b.duration == 0 && b.name.equals("Charge Up"))) {
+//            if (!b.name.equals("Charge Up") && !b.name.contains("Barrier")) {
+//                b.duration--;
+//            }
+//            if (b.name.equals("Charge Up") && remove_charge) {
+//                b.duration--;
+//                remove_charge = false;
+//            }
+            if (b.duration <= 0) {
                 if (log.contains("buff_removed")) {
                     System.out.println(b.name + " was removed from " + name);
                 }
@@ -99,20 +101,34 @@ public class Actor extends ActorStats {
         check_buffs();
     }
 
-    public void addDebuff(String debuff_name, int duration, double dmg, double effect, double chance) {
+    public void applyPendingEffects() {
+        buffs.addAll(pending_buffs);
+        debuffs.addAll(pending_debuffs);
+        pending_buffs.clear();
+        pending_debuffs.clear();
+        check_buffs();
+        check_debuffs();
+    }
+
+    public void applyBuff(String buff_name, int duration, double effect) {
+        if (buff_name != null) {
+            pending_buffs.add(new Buff(buff_name, duration, effect));
+            if (log.contains("buff_applied")) {
+                String str = buff_name + " was applied to " + name + " duration = " + duration;
+                if (effect > 0) str += " effect = " + df2.format(effect);
+                System.out.println(str);
+            }
+        }
+    }
+
+    public void applyDebuff(String debuff_name, int duration, double dmg, double effect) {
         switch (debuff_name) {
             case "Stun" -> {
                 stun_time += effect;
             }
-            default -> debuffs.add(new Debuff(debuff_name, duration, dmg, effect));
+            default -> pending_debuffs.add(new Debuff(debuff_name, duration, dmg, effect));
         }
         check_debuffs();
-        if (log.contains("debuff_applied")) {
-            String str = debuff_name + " was applied to " + name + " duration = " + duration;
-            if (dmg > 0) str += " dmg = " + (int) dmg;
-            if (effect > 0) str += " effect = " + df2.format(effect);
-            System.out.println(str + " chance = " + df2.format(chance * 100));
-        }
     }
 
     public void remove_buff(String name) {
@@ -148,7 +164,7 @@ public class Actor extends ActorStats {
             }
         }
         if (elem_buff) {
-            buffs.add(new Buff("Elemental Buff", 1, 0.3 * (1 + gear_barrier)));
+            applyBuff("Elemental Buff", 1, 0.3 * (1 + gear_barrier));
         }
 //        if (barrier > 0 ) System.out.println(name + " was defended by barrier " + (int) barrier);
         return barrier;

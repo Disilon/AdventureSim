@@ -1,13 +1,9 @@
 package Disilon;
 
-import java.util.Objects;
-
 import static Disilon.Main.df2;
 import static Disilon.Main.df4;
-import static Disilon.Main.dfm;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
-import static Disilon.Main.random;
 
 public class ActiveSkill {
     public String name;
@@ -67,11 +63,13 @@ public class ActiveSkill {
     public boolean available = true;
     public boolean triggers_counter = true;
     public boolean weapon_required = true;
+    public boolean attack;
 
     public ActiveSkill(ActorStats owner, String name) {
         this.owner = owner;
         this.name = name;
         this.lvl = 0;
+        this.attack = false;
     }
 
     public ActiveSkill(ActorStats owner, String name, double mp, double cast_mult, double delay_mult) {
@@ -82,6 +80,7 @@ public class ActiveSkill {
         this.base_delay = delay_mult;
         this.lvl = 0;
         this.mp_mult = 1;
+        this.attack = false;
         setSkill(lvl, SkillMod.Enemy);
     }
 
@@ -103,6 +102,7 @@ public class ActiveSkill {
         this.element = element;
         this.aoe = aoe;
         this.heal = heal;
+        this.attack = max > 0;
         setSkill(lvl, SkillMod.Enemy);
     }
 
@@ -497,7 +497,6 @@ public class ActiveSkill {
                     mult *= (1 - attacker.set_training);
                     mult *= attacker.set_physdmg;
                     extra_attack(attacker, attacker, mult);
-                    attacker.tick_buffs();
                 } else {
                     attacker.hide_bonus = this.min;
                 }
@@ -547,7 +546,7 @@ public class ActiveSkill {
                     }
                     case buff -> {
                         if (attacker.charge == 0) {
-                            attacker.buffs.add(new Buff("Charge Up", 1, power));
+                            attacker.applyBuff("Charge Up", 1, power);
                         }
                     }
                     case mana -> {
@@ -556,11 +555,6 @@ public class ActiveSkill {
                     default -> {}
                 }
                 break;
-            case "Bless":
-                attacker.buffs.add(new Buff(buff_name, (int) (buff_duration + attacker.bless_duration),
-                        buff_bonus * attacker.bless_boost));
-//                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) (buff_duration + attacker.bless_duration));
-                break;
             case "Stone Barrier":
                 double absorb = min * (attacker.getDef() + attacker.getResist()) * (1 + attacker.getEarth_res());
                 attacker.remove_buff(name);
@@ -568,9 +562,7 @@ public class ActiveSkill {
                 break;
             default:
                 if (buff_name != null) {
-                    attacker.buffs.add(new Buff(buff_name, (int) (buff_duration), buff_bonus));
-//                System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) buff_duration +
-//                        " effect" + buff_bonus);
+                    applyBuff(attacker);
                 }
                 break;
         }
@@ -582,11 +574,6 @@ public class ActiveSkill {
         Zone zone = attacker.zone;
         if (log.contains("skill_attack")) {
             System.out.println(attacker.name + " used " + name + " at " + df2.format(time));
-            if (zone != null) {
-
-            } else {
-
-            }
         }
         if (zone != null) {
             for (Enemy enemy : zone.enemies) {
@@ -610,9 +597,6 @@ public class ActiveSkill {
             return 0;
         }
         double total = 0;
-        if (name.equals("Extra Attack")) {
-            this.used += 1;
-        }
         double hit_chance = (attacker.smoked ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         if (game_version >= 1627 && attacker.set_squirrel_rate == 1) hit_chance /= 1.25;
         hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
@@ -629,6 +613,9 @@ public class ActiveSkill {
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
             attacker.current_skill_hit = true;
             hits_total++;
+            if (this.debuff_name != null) {
+                applyDebuff(attacker, defender);
+            }
             if (defender.counter_strike > 0 && triggers_counter && defender.counter_strike > Math.random()) {
                 counter_attack(attacker, defender, false);
             }
@@ -801,14 +788,6 @@ public class ActiveSkill {
             System.out.println(attacker.name + " used " + this.name +
                     " at " + defender.name + " at " + df2.format(time));
         }
-        if (this.debuff_name != null) {
-            applyDebuff(attacker, defender);
-        }
-        if (buff_name != null) {
-            attacker.buffs.add(new Buff(buff_name, (int) (buff_duration), buff_bonus));
-//            System.out.println(buff_name + " added to " + attacker.name + " duration " + (int) buff_duration +
-//                    " effect " + buff_bonus);
-        }
         if (name.equals("Push Blast")) {
             pushCast(attacker, defender, 0.2);
         }
@@ -880,6 +859,20 @@ public class ActiveSkill {
         attacker.setHp(attacker.hp - dmg);
     }
 
+    public void applyBuff(Actor attacker) {
+        double bonus = buff_bonus;
+        int duration = (int) this.buff_duration;
+        double fractional = this.buff_duration - duration;
+        if (Math.random() < fractional) {
+            duration += 1;
+        }
+        if (buff_name.equals("Bless")) {
+            duration += (int) attacker.bless_duration;
+            bonus *= attacker.bless_duration;
+        }
+        attacker.applyBuff(buff_name, duration, bonus);
+    }
+
     public void applyDebuff(Actor attacker, Actor defender) {
         double hit_chance = (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
         if (debuff_name.equals("Poison")) {
@@ -902,13 +895,13 @@ public class ActiveSkill {
             hit_chance = 1;
         }
         if (hit_chance < 0.2) {
-            return;
+            hit_chance = 0;
         } else {
 //            System.out.println(attacker.name + ": " + name + " debuff chance: " + hit_chance);
-            debuff_chance_sum += hit_chance;
-            if (defender.zone != null) {
-                defender.zone.stats.incrementDebuff(attacker.name, name, hit_chance);
-            }
+        }
+        debuff_chance_sum += hit_chance;
+        if (defender.zone != null) {
+            defender.zone.stats.incrementDebuff(attacker.name, name, hit_chance);
         }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
             int duration = (int) this.debuff_duration;
@@ -925,7 +918,19 @@ public class ActiveSkill {
             if (defender.zone != null) {
                 defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
             }
-            defender.addDebuff(debuff_name, duration, dmg, debuff_effect, hit_chance);
+            defender.applyDebuff(debuff_name, duration, dmg, debuff_effect);
+            if (log.contains("debuff_applied")) {
+                String str = debuff_name + " was applied to " + name + " duration = " + duration;
+                if (dmg > 0) str += " dmg = " + (int) dmg;
+                if (debuff_effect > 0) str += " effect = " + df2.format(debuff_effect);
+                System.out.println(str + " chance = " + df2.format(hit_chance * 100));
+            }
+
+        } else {
+            if (log.contains("debuff_applied")) {
+                String str = debuff_name + " was resisted by " + name;
+                System.out.println(str + " chance = " + df2.format(hit_chance * 100));
+            }
         }
     }
 
@@ -939,10 +944,6 @@ public class ActiveSkill {
                 setSkill(lvl, skillMod);
             }
         }
-    }
-
-    public void gainExp() {
-        gainExp(1);
     }
 
     public double need_for_lvl(int lvl) {
