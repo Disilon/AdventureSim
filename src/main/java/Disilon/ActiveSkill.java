@@ -1,9 +1,11 @@
 package Disilon;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.df2p;
 import static Disilon.Main.df4;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
+import static java.lang.Math.max;
 
 public class ActiveSkill {
     public String name;
@@ -124,6 +126,24 @@ public class ActiveSkill {
                     triggers_counter = true;
                 }
             }
+            case "Analyze" -> {
+                if (game_version >= 1649) {
+                    base_cast = 2.8;
+                    base_delay = 0.6;
+                } else {
+                    base_cast = 3;
+                    base_delay = 0;
+                }
+            }
+            case "Aimed Shot" -> {
+                if (game_version >= 1649) {
+                    base_min = 315;
+                    base_max = 385;
+                } else {
+                    base_min = 270;
+                    base_max = 330;
+                }
+            }
         }
     }
 
@@ -158,7 +178,7 @@ public class ActiveSkill {
 
     public boolean canCast(Actor actor) {
         double cost = calculate_manacost(actor);
-        boolean enough_mp = actor.getMp() >= cost;
+        boolean enough_mp = actor.mp >= cost;
         if (!enough_mp && log.contains("skill_enough_mp")) System.out.println(name + " skipped, not enough mp, cost: " + (int) cost);
         return enough_mp;
     }
@@ -184,19 +204,9 @@ public class ActiveSkill {
     public void startCast(Actor attacker, Actor target, boolean offline, double time, double total_time) {
         double speed_mult = Math.clamp((target.getSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
         cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + target.stealthDelay();
-        if (attacker.ambushing) cast = Math.max(0.0, cast - 5);
-//        if (offline) {
-//            cast = offlineTime(cast, time);
-//        } else {
-//            cast = onlineTime(cast, time);
-//        }
-        cast = Math.max(0.01, cast);
+        if (attacker.ambushing) cast = max(0.0, cast - 5);
+        cast = max(0.01, cast);
         delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
-//        if (offline) {
-//            delay = offlineTime(delay, time + cast);
-//        } else {
-//            delay = onlineTime(delay, time + cast);
-//        }
         if (name.equals("Flee") && cast > 0.5) {
             cast -= 0.5;
             delay += 0.5;
@@ -207,20 +217,23 @@ public class ActiveSkill {
 
     public void startCastPlayer(Actor attacker, boolean offline, double time, double total_time) {
         double speed_mult = Math.clamp((attacker.zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
-        cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + attacker.zone.stealthDelay();
-        if (attacker.ambushing) cast = Math.max(0.0, cast - 5);
-//        if (offline) {
-//            cast = offlineTime(cast, time);
-//        } else {
-//            cast = onlineTime(cast, time);
-//        }
-        cast = Math.max(0.01, cast);
-        delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
-//        if (offline) {
-//            delay = offlineTime(delay, time + cast);
-//        } else {
-//            delay = onlineTime(delay, time + cast);
-//        }
+        attacker.speed_mult_sum += speed_mult;
+        attacker.speed_mult_count += 1;
+        if (name.equals("Analyze")) {
+            cast =
+                    3 * speed_mult * attacker.cast_speed_mult * cast_mult * attacker.analyze_speed + attacker.zone.stealthDelay();
+            double factor =
+                    attacker.zone.enemies[0].hp / (this.min / 100 * attacker.getIntel()) / (1 + attacker.gear_analyze);
+            cast *= max(factor, 1);
+//            System.out.println("Factor: " + df4.format(factor) + " ; cast: " + df2p.format(cast));
+            delay = 0;
+        } else {
+            cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + attacker.zone.stealthDelay();
+            if (attacker.ambushing) cast = max(0.0, cast - 5);
+            delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
+        }
+        cast = max(0.01, cast);
+        delay = max(0.5*0.75, delay);
         if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
                 " at " + df2.format(time) + ", cast_time = " + df2.format(cast) + ", delay_time = " + df2.format(delay));
     }
@@ -281,7 +294,7 @@ public class ActiveSkill {
         if (cast > 0) {
             return cast;
         }
-        if (delay > 0) {
+        if (delay >= 0) {
             return delay;
         }
         return 999;
@@ -298,7 +311,7 @@ public class ActiveSkill {
     public void pay_manacost(Actor actor) {
         double cost = actor.casting.calculate_manacost(actor);
         mana_used += cost;
-        actor.setMp(actor.getMp() - cost);
+        actor.setMp(actor.mp - cost);
     }
 
     public void addDebuff(String name, double duration, double dmg) {
@@ -488,15 +501,15 @@ public class ActiveSkill {
         switch (name) {
             case "Hide":
                 if (attacker.passives.get("Extra Attack").enabled && Math.random() < 0.05) {
-                    double mult = attacker.getDmg_mult() * this.dmg_mult * 1.1;
-                    mult *= 1.0 + attacker.ambush_bonus;
-                    mult *= 1 + attacker.finke_bonus;
-                    mult *= attacker.set_water;
-                    mult *= 1 + attacker.elemental_buff;
-                    mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
-                    mult *= (1 - attacker.set_training);
-                    mult *= attacker.set_physdmg;
-                    extra_attack(attacker, attacker, mult);
+//                    double mult = attacker.getDmg_mult() * this.dmg_mult * 1.1;
+//                    mult *= 1.0 + attacker.ambush_bonus;
+//                    mult *= 1 + attacker.finke_bonus;
+//                    mult *= attacker.set_water;
+//                    mult *= 1 + attacker.elemental_buff;
+//                    mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
+//                    mult *= (1 - attacker.set_training);
+//                    mult *= attacker.set_physdmg;
+//                    extra_attack(attacker, attacker, mult); it was "fixed", maybe v1631?
                 } else {
                     attacker.hide_bonus = this.min;
                 }
@@ -534,7 +547,7 @@ public class ActiveSkill {
                     case execute -> {
                         hits_total += 1;
                         for (Enemy e : attacker.zone.enemies) {
-                            if (e.hp < power * e.getHp_max()) {
+                            if (e.active && e.hp < power * e.getHp_max()) {
                                 hit_chance_sum += 1;
                                 dmg_sum += e.hp;
                                 e.setHp(0);
@@ -550,7 +563,7 @@ public class ActiveSkill {
                         }
                     }
                     case mana -> {
-                        attacker.setMp(attacker.getMp() + attacker.getMp_max() * power);
+                        attacker.setMp(attacker.mp + attacker.getMp_max() * power);
                     }
                     default -> {}
                 }
@@ -599,7 +612,7 @@ public class ActiveSkill {
         double total = 0;
         double hit_chance = (attacker.smoked ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         if (game_version >= 1627 && attacker.set_squirrel_rate == 1) hit_chance /= 1.25;
-        hit_chance = Math.max(0.05, hit_chance / defender.getDodge_mult());
+        hit_chance = max(0.05, hit_chance / defender.getDodge_mult());
         hit_chance = Math.min(hit_chance, 1);
         hit_chance_sum += hit_chance;
         if (name.equals("Back Stab") && !(defender.smoked || defender.bound > 0)) {
@@ -716,7 +729,8 @@ public class ActiveSkill {
                 double crit_chance = defender.bound + attacker.gear_crit + attacker.base_crit_chance;
                 double not_crit = (1 - defender.bound) * (1 - attacker.gear_crit - attacker.base_crit_chance);
                 double crit_dmg = attacker.base_crit_damage;
-                if (not_crit < 1 && Math.random() > not_crit) {
+                if (crit_chance > 0 && Math.random() < crit_chance) {
+//                if (not_crit < 1 && Math.random() > not_crit) {
                     atk *= crit_dmg;
                     attacker.last_crit = true;
                 } else {
@@ -750,8 +764,8 @@ public class ActiveSkill {
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
                                     calc_hits) * dmg_mult * dmg_mult1;
                     dmg = dmg * (1 - enemy_resist);
-                    dmg = Math.max(1, dmg);
-                    dmg = Math.max(0, dmg - defender.getBarrier());
+                    dmg = max(1, dmg);
+                    dmg = max(0, dmg - defender.getBarrier());
                     if (log.contains("skill_attack")) {
                         System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name +
                                 " to " + defender.name + " at " + df2.format(time) + " chance " + df2.format(hit_chance*100) + "%");
@@ -814,7 +828,8 @@ public class ActiveSkill {
         double crit_chance = defender.bound + attacker.gear_crit + attacker.base_crit_chance;
         double not_crit = (1 - defender.bound) * (1 - attacker.gear_crit - attacker.base_crit_chance);
         double crit_dmg = attacker.base_crit_damage;
-        if (not_crit < 1 && Math.random() > not_crit) {
+        if (crit_chance > 0 && Math.random() < crit_chance) {
+//        if (not_crit < 1 && Math.random() > not_crit) {
             atk *= crit_dmg;
             attacker.last_crit = true;
         } else {
@@ -822,8 +837,8 @@ public class ActiveSkill {
         }
         dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
         dmg = dmg * (1 - defender.getWater_res());
-        dmg = Math.max(1, dmg);
-        dmg = Math.max(0, dmg - defender.getBarrier());
+        dmg = max(1, dmg);
+        dmg = max(0, dmg - defender.getBarrier());
         if (log.contains("skill_attack")) {
             System.out.println(attacker.name + " dealt " + (int) dmg + " extra damage with " + this.name +
                     " to " + defender.name);
@@ -844,7 +859,7 @@ public class ActiveSkill {
         if (attacker.zone != null) {
             dmg *= enemy_mult;
         }
-        dmg = Math.max(1, dmg);
+        dmg = max(1, dmg);
         ActiveSkill skill = counter_dodge ? defender.counter_dodge_log : defender.counter_strike_log;
         if (attacker.zone != null) {
             attacker.zone.stats.incrementStats(defender.name, skill.name, dmg, 1, 0, 1, 1, 0);
@@ -854,8 +869,11 @@ public class ActiveSkill {
             skill.hits_total += 1;
             skill.dmg_sum += dmg;
         }
-//        System.out.println(skill.name + ": " + dmg + " defender hp: " + attacker.getHp_max_string() + " attacker hp: " + defender.getHp_max_string());
-        dmg = Math.max(0, dmg - attacker.getBarrier());
+        if (log.contains("skill_attack")) {
+            System.out.println(defender.name + " dealt " + (int) dmg + " damage with counterattack" +
+                    " to " + attacker.name + " triggered by " + this.name);
+        }
+        dmg = max(0, dmg - attacker.getBarrier());
         attacker.setHp(attacker.hp - dmg);
     }
 
@@ -868,7 +886,7 @@ public class ActiveSkill {
         }
         if (buff_name.equals("Bless")) {
             duration += (int) attacker.bless_duration;
-            bonus *= attacker.bless_duration;
+            bonus *= attacker.bless_boost;
         }
         attacker.applyBuff(buff_name, duration, bonus);
     }
@@ -947,7 +965,7 @@ public class ActiveSkill {
     }
 
     public double need_for_lvl(int lvl) {
-        return ((Math.pow(Math.max(lvl, 1), 2)) * 1000);
+        return ((Math.pow(max(lvl, 1), 2)) * 1000);
     }
 
     public double average_hit_chance() {

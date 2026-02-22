@@ -65,6 +65,7 @@ public class ActorStats {
     public double gear_crit;
     public double gear_burn;
     public double gear_stun;
+    public double gear_analyze;
     public double gear_barrier;
 
     public double set_hit = 1;
@@ -136,6 +137,9 @@ public class ActorStats {
     public double drop_mult = 1;
     public double counter_strike = 0;
     public double multi_arrows = 0;
+    public double analyze_buff = 0;
+    public double analyze_speed = 1;
+    public double analyze_mult = 0;
     public double finke_bonus = 0;
     public double cl_exp;
     public double ml_exp;
@@ -171,6 +175,8 @@ public class ActorStats {
     public double no_overkill_crit = 0;
     public double core_drop_research = 0;
     public double core_quality_research = 0;
+    double speed_mult_sum = 0;
+    int speed_mult_count = 0;
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;
@@ -192,4 +198,5 @@ public class ActorStats {
     public HashMap<String, Double> research_lvls;
     public HashMap<String, Double> research_old_lvls;
     public HashMap<String, Double> research_weight;
+    public HashMap<String, Double> bestiary;
 }

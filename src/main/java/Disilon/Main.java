@@ -20,11 +20,11 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1575, 1580, 1587, 1591, 1605, 1620,
-            1621, 1622, 1627, 1638, 1639));
+            1621, 1622, 1627, 1638, 1639, 1648, 1649, 1652));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;
-    public static long time_limit = 30000;
+    public static long time_limit = 60000;
     public static int game_version = availableVersions.getLast();
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;

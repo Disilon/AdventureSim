@@ -3,35 +3,37 @@ package Disilon;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
+import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
 import static Disilon.Main.random;
 
 public enum Zone {
-    z1("Slime"),
-    z2("Slime2/Imp/Goblin", 1, 1),
-    z3("Goblin2/Imp2/Ghoul", 1, 2),
-    z4("Wraith/Ghoul2", 1, 2),
-    z5("Astaroth/Shinigami", 1, 2),
-    z6("Tengu"),
-    z7("Amon"),
-    z8("Tengu/Amon/Akuma", 2, 3),
-    z9("Devil"),
-    z10("Shax"),
-    z11("Dagon"),
-    z12("Lamia"),
-    z13("Tyrant"),
-    z14("Fairy"),
-    z15("Raum"),
-    z16("Asura", 2, 4),
-    test("Caco"),
-    Dummy("Dummy"),
-    HelplessDummy("Dummy");
+    z1("Slime", 1),
+    z2("Slime/Imp/Goblin", 10, 1, 1),
+    z3("Goblin/Imp/Ghoul", 20, 1, 2),
+    z4("Wraith/Ghoul", 30, 1, 2),
+    z5("Astaroth/Shinigami", 40, 1, 2),
+    z6("Tengu", 50),
+    z7("Amon", 50),
+    z8("Tengu/Amon/Akuma", 50, 2, 3),
+    z9("Devil", 90),
+    z10("Shax", 100),
+    z11("Dagon", 100),
+    z12("Lamia", 100),
+    z13("Tyrant", 125),
+    z14("Fairy", 150),
+    z15("Raum", 175),
+    z16("Asura", 200, 2, 4),
+    test("Caco", 250),
+    Dummy("Dummy", 100),
+    HelplessDummy("Dummy", 100);
 
     final String display_name;
     final String[] possible_enemies;
     public final Enemy[] enemies = new Enemy[9];
     public final int min_enemies;
     public final int max_enemies;
+    public final int level;
     public double strength;
     public double hard_hp = 1;
     public double hard_stats = 1;
@@ -41,14 +43,15 @@ public enum Zone {
     public double squirrel_counter = 0;
     public boolean disable_squirrel_passive = false;
 
-    Zone(String enemies) {
-        this(enemies, 1, 1);
+    Zone(String enemies, int lvl) {
+        this(enemies, lvl, 1, 1);
     }
 
-    Zone(String enemies, int min, int max) {
+    Zone(String enemies, int lvl, int min, int max) {
         for (int i = 0; i < 9; i++) {
             this.enemies[i] = new Enemy();
         }
+        level = lvl;
         min_enemies = min;
         max_enemies = max;
         this.display_name = this.name() + "(" + enemies + ")";
@@ -82,20 +85,18 @@ public enum Zone {
                 enemies[0].passives.get("Dodge").enabled = false;
             }
             enemies[0].strength = 1;
-            enemies[0].reroll(0, hard_hp, hard_stats);
+            enemies[0].reroll(level, 0, hard_hp, hard_stats);
             squirrel_counter -= squirrel_threshold;
             stats.squirrel_spawns++;
         } else {
             for (int i = 0; i < enemy_num; i++) {
                 enemies[i].setEnemy(possible_enemies[random.nextInt(0, possible_enemies.length)]);
             }
-//        StringBuilder sb = new StringBuilder();
             double individual_str_add = 0;
             for (Enemy e : enemies) {
                 if (e.active) {
                     e.strength = strength + individual_str_add;
-//                sb.append(df2.format(e.strength * 100)).append("; ");
-                    e.reroll(min_lvl, hard_hp, hard_stats);
+                    e.reroll(level, min_lvl, hard_hp, hard_stats);
                     if (strength > 1) {
                         individual_str_add -= 0.02;
                     } else {
@@ -109,7 +110,6 @@ public enum Zone {
             }
             incrementStrength();
             incrementEnemyNum();
-//        System.out.println(sb);
 //        System.out.println(Arrays.stream(enemies).filter(e -> e.active).map(Enemy::getName).collect(Collectors.joining(", ")));
 //        System.out.println(Arrays.stream(enemies).map(Enemy::getHp_max_string).collect(Collectors.joining(", ")));
         }
@@ -153,21 +153,22 @@ public enum Zone {
     }
 
     public int getLvl() {
-        return switch (this) {
-            case z1 -> 1;
-            case z2 -> 10;
-            case z3 -> 20;
-            case z4 -> 30;
-            case z5 -> 40;
-            case z6, z7, z8 -> 50;
-            case z9 -> 90;
-            case z10, z11, z12 -> 100;
-            case z13 -> 125;
-            case z14 -> 150;
-            case z15 -> 175;
-            case z16 -> 200;
-            default -> 200;
-        };
+        return level;
+//        return switch (this) {
+//            case z1 -> 1;
+//            case z2 -> 10;
+//            case z3 -> 20;
+//            case z4 -> 30;
+//            case z5 -> 40;
+//            case z6, z7, z8 -> 50;
+//            case z9 -> 90;
+//            case z10, z11, z12 -> 100;
+//            case z13 -> 125;
+//            case z14 -> 150;
+//            case z15 -> 175;
+//            case z16 -> 200;
+//            default -> 200;
+//        };
     }
 
     public double getTime_to_respawn() {
@@ -279,6 +280,7 @@ public enum Zone {
     }
 
     public double getZoneTimeCap() {
+        if (game_version == 1649) return -1;
         return switch (this) {
             case z14 -> 30;
             case z15 -> 20;
@@ -327,5 +329,14 @@ public enum Zone {
             if (e.active) counter++;
         }
         return counter;
+    }
+
+    public double getRoughItemDropBonus(Player p) {
+        double bonus = 0;
+        for (String name : possible_enemies) {
+            bonus += p.getBestiaryBonus(name);
+        }
+        bonus /= possible_enemies.length;
+        return bonus;
     }
 }

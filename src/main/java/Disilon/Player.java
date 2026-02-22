@@ -17,7 +17,7 @@ public class Player extends Actor {
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
             "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer",
-            "Onion Knight", "RogueT4"};
+            "Onion Knight", "Scholar", "RogueT4"};
 
     double rp_balance;
     double old_rp;
@@ -41,6 +41,7 @@ public class Player extends Actor {
         this.research_old_lvls = new HashMap<>();
         this.research_old_lvls.putAll(setup.research_lvls);
         this.research_weight = setup.research_weight;
+        this.bestiary = setup.bestiary;
         this.rp_balance = setup.rp_balance;
         this.old_rp = setup.rp_balance;
         this.setClass(setup.playerclass);
@@ -243,6 +244,30 @@ public class Player extends Actor {
                 skills.enableActive("Magic Arrow");
                 skills.enableActive("Heal");
                 skills.enableActive("Bless");
+            }
+            case "Scholar" -> {
+                tier = 3;
+                base_fire_res = 0.2;
+                base_water_res = 0.2;
+                base_wind_res = 0.2;
+                base_earth_res = 0.2;
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enablePassive("Casting Boost");
+                skills.enablePassive("Wand Mastery");
+                skills.enableActive("Elemental Blast");
+                skills.enableActive("Push Blast");
+                skills.enableActive("Magic Arrow");
+                skills.enableActive("Magic Missile");
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Speed Boost");
+                skills.enableActive("Bash");
+                skills.enableActive("Prepare");
+                skills.enableActive("Analyze");
+                skills.enableActive("Taking Notes");
+                skills.enablePassive("Safe Distance");
+                skills.enablePassive("Speedy Analyze");
+                skills.enablePassive("Smart Analyze");
             }
             case "Mage" -> {
                 tier = 2;
@@ -559,6 +584,15 @@ public class Player extends Actor {
                 base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Scholar" -> {
+                base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (160 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Priest" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
@@ -880,6 +914,7 @@ public class Player extends Actor {
         }
         if (gear_crit > 0) sb.append("Crit = ").append(df2.format(gear_crit * 100)).append("%\n");
         if (gear_stun > 0) sb.append("Stun = ").append(df2.format(gear_stun * 100)).append("%\n");
+        if (gear_analyze > 0) sb.append("Analyze = ").append(df2.format(gear_analyze * 100)).append("%\n");
         if (gear_barrier > 0) sb.append("Barrier buff = ").append(df2.format(gear_barrier * 100)).append("%\n");
         if ((burn_mult + gear_burn) > 1)
             sb.append("Burn = ").append(df2.format((burn_mult + gear_burn) * 100 - 100)).append("%\n");
@@ -1060,7 +1095,7 @@ public class Player extends Actor {
             case "Research slot" -> 259200;
             case "Research spd" -> 10800;
             case "Max skill lvl" -> 32400;
-            case "Min pow" -> 10800;
+            case "Min pow" -> 7200;
             case "Enemy Min lvl" -> 18000;
             case "Reduce CL req" -> 36000;
             case "Crit chance" -> 28800;
@@ -1206,7 +1241,7 @@ public class Player extends Actor {
             if (defecit > 0) {
                 time = minIfNotZero(time, defecit / getPrepare_hps());
             }
-            defecit = getMp_max() * prepare_threshold / 100 - getMp();
+            defecit = getMp_max() * prepare_threshold / 100 - mp;
             if (defecit > 0) {
                 time = minIfNotZero(time, defecit / getPrepare_mps());
 
@@ -1219,6 +1254,25 @@ public class Player extends Actor {
         if (game_version < 1621) return 1;
         if (lvl < 25) return 0.5 + lvl * 0.01;
         if (game_version == 1621) return 1 + Math.pow(lvl, 1.6) * set_squirrel_drop / 1000;
-        return 1 + Math.pow(lvl, 1.45) * set_squirrel_drop / 1000;
+        double mult = 1 + Math.pow(lvl, 1.45) * set_squirrel_drop / 1000;
+        if (enemy_min_lvl_enabled && game_version > 1638) {
+            mult /= 1 + 0.005 * enemy_min_lvl;
+        }
+        return mult;
+    }
+
+    public int getBestiaryMedals(double threshold) {
+        int count = 0;
+        for (double value : bestiary.values()) {
+            if (value > threshold) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public double getBestiaryBonus(String name) {
+        double bonus = bestiary.getOrDefault(name, 0.0) / 500000.0;
+        return Math.min(bonus, 0.1);
     }
 }

@@ -87,6 +87,7 @@ public class Setup implements Serializable {
     HashMap<String, Double> actives_lvls;
     HashMap<String, Double> research_lvls;
     HashMap<String, Double> research_weight;
+    HashMap<String, Double> bestiary;
     boolean extra_atk_overkill = true;
     boolean extra_atk_backstab_mult = true;
     boolean crit_overkill_reduced = false;
@@ -103,6 +104,7 @@ public class Setup implements Serializable {
         }
         this.research_lvls = new HashMap<>();
         this.research_weight = new HashMap<>();
+        this.bestiary = new HashMap<>();
         this.rp_balance = 0;
         this.playerclass = "Sniper";
         this.ml = 106;
@@ -858,5 +860,13 @@ public class Setup implements Serializable {
 
     public void setEnemy_min_lvl_increase(boolean enemy_min_lvl_increase) {
         this.enemy_min_lvl_increase = enemy_min_lvl_increase;
+    }
+
+    public HashMap<String, Double> getBestiary() {
+        return bestiary;
+    }
+
+    public void setBestiary(HashMap<String, Double> bestiary) {
+        this.bestiary = bestiary;
     }
 }

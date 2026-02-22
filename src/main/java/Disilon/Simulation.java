@@ -1,10 +1,7 @@
 package Disilon;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static Disilon.Main.df2;
@@ -29,7 +26,7 @@ public class Simulation {
     int crafting_lvl = 20;
     int alchemy_lvl = 20;
     int sim_type = 1;
-    double time_to_respawn = -1;
+    double time_to_respawn = 1;
     String skills_info = "";
     String result_info = "";
     String lvling_info = "";
@@ -109,6 +106,8 @@ public class Simulation {
         player.sortResearchWeights();
         double item_drop = 1 + 0.01 * player.research_lvls.getOrDefault("Drop rate", 0.0).intValue();
         item_drop *= player.drop_mult;
+        item_drop *= 1 + 0.01 * player.getBestiaryMedals(10000);
+        item_drop *= 1 + player.zone.getRoughItemDropBonus(player);
         boolean end = false;
         if (offline && player.zone.getZoneTimeCap() > 0) {
             time_limit /= (120*60 + player.zone.getZoneTimeCap()) / (120*60);
@@ -139,7 +138,7 @@ public class Simulation {
                 total_time += delta;
                 delta_sum += delta;
                 delta_count++;
-                player.setMp(player.getMp() + player.getMp_regen() * delta);
+                player.setMp(player.mp + player.getMp_regen() * delta);
                 player.checkPotion(delta);
             }
             if (time >= time_to_respawn) {
@@ -150,7 +149,7 @@ public class Simulation {
             }
             while (status == StatusType.combat) {
                 int cycled = 0;
-                if (time > 3600 || total_time > 1e10) {
+                if (time > 36000 || total_time > 1e10) {
                     end = true; //stop simulations so that we don't freeze
                 }
                 while (player.casting == null) {
@@ -274,7 +273,7 @@ public class Simulation {
                 total_time += delta;
                 delta_sum += delta;
                 delta_count++;
-                player.setMp(player.getMp() + player.getMp_regen() * delta);
+                player.setMp(player.mp + player.getMp_regen() * delta);
                 player.checkPotion(delta);
                 if (player.casting != null) {
                     if (player.casting.cast > 0) {
@@ -338,7 +337,16 @@ public class Simulation {
                                 if (player.casting.heal) {
                                     healed += player.hp - previous_hp;
                                 }
-                                player.tick_buffs(false);
+                                if (player.casting.name.equals("Analyze")) {
+                                    player.zone.stats.recordAnalyze(player.zone.enemies[0], player);
+                                    player.tick_buffs(true);
+                                    player.zone.enemies[0].setHp(0);
+                                    for (int i = 1; i < player.zone.enemies.length; i++) {
+                                        player.zone.enemies[i].active = false;
+                                    }
+                                } else {
+                                    player.tick_buffs(false);
+                                }
                             }
                             if (player.lvling) player.casting.gainExp(1);
                             if (player.current_skill_hit) player.ambush_bonus = 0;
@@ -349,7 +357,7 @@ public class Simulation {
                             player.tick_debuffs();
                             player.casting.pay_manacost(player);
                         }
-                    } else if (player.casting.delay > 0) {
+                    } else if (player.casting.delay >= 0) {
                         if (player.casting.progressDelay(player, delta)) {
                             player.casting = null;
                         }
@@ -361,9 +369,10 @@ public class Simulation {
                 for (int i = 0; i < 9; i++) {
                     Enemy enemy = player.zone.enemies[i];
                     if (enemy.active) {
-                        enemy.setMp(enemy.getMp() + enemy.getMp_regen() * delta);
+                        enemy.setMp(enemy.mp + enemy.getMp_regen() * delta);
                         if (enemy.hp <= 0) {
                             if (first_kill == 0) first_kill = time;
+                            double base_overkill = enemy.hp;
                             if (player.last_skill.isSingleTarget() && !player.isMulti_hit_override(player.last_skill.name) && player.set_core > 0 && player.set_core > Math.random()) {
                                 enemy.setHp(0.0);
                             }
@@ -376,6 +385,8 @@ public class Simulation {
 //                        }
                             double exp_gain =
                                     enemy.exp * player.total_exp_mult * player.milestone_exp_mult * player.hard_reward;
+                            exp_gain *= 1 + 0.01 * player.getBestiaryMedals(50000);
+                            exp_gain *= 1 + player.getBestiaryBonus(enemy.name);
                             if (enemy.name.equals("Squirrel Mage")) {
                                 exp_gain *= player.getSquirrelMult(player.zone.getLvl());
                                 double nuts = player.zone.getLvl() * 0.005;
@@ -393,10 +404,15 @@ public class Simulation {
                             if (!enemy.name.equals("Squirrel Mage") && game_version < 1621 && player.zone.allowsSquirrel()) {
                                 player.zone.squirrel_counter++;
                             }
-                            player.zone.stats.recordOverkill(enemy, player);
-                            if (player.lvling) {
-                                player.levelActives();
-                                player.levelTF(enemy);
+                            player.zone.stats.recordKill(enemy);
+                            if (!player.last_skill.name.equals("Analyze") || game_version >= 1648) {
+                                if (player.lvling) {
+                                    player.levelActives();
+                                    player.levelTF(enemy);
+                                }
+                            }
+                            if (!player.last_skill.name.equals("Analyze")) {
+                                player.zone.stats.recordOverkill(enemy, player, base_overkill);
                             }
                             if (log.contains("enemy_death_stat") && enemy.casting != null) System.out.println(enemy.name +
                                     " died while " +
@@ -431,13 +447,13 @@ public class Simulation {
                                         player.zone.stats.incrementStats(enemy.name, enemy.casting.name, 0,
                                                 0, 0, 1, 0,0);
                                     }
-                                    enemy.tick_debuffs();
-                                    enemy.casting.pay_manacost(enemy);
                                     if (enemy.casting.name.equals("Flee") && enemy.bound == 0) {
                                         enemy.active = false;
                                         if (log.contains("fight_end"))
                                             System.out.println("Squirrel fled");
                                     }
+                                    enemy.tick_debuffs();
+                                    enemy.casting.pay_manacost(enemy);
                                 }
                             } else if (enemy.casting.delay > 0) {
                                 if (enemy.casting.progressDelay(enemy, delta)) {
@@ -448,7 +464,7 @@ public class Simulation {
                         enemy.applyPendingEffects();
                     }
                 }
-                if (player.hp <= 0 || time >= 3600) {
+                if (player.hp <= 0 || time >= 36000) {
                     status = StatusType.death;
                     death_time += 15 * 60;
                     player.setHp(player.getHp_max());
@@ -491,7 +507,7 @@ public class Simulation {
                     delay_left = Math.max(delay_left - delta, 0);
                     if (player.lvling) player.prepare.gainExp(delta);
                     player.setHp(player.hp + player.getPrepare_hps() * delta);
-                    player.setMp(player.getMp() + player.getPrepare_mps() * delta);
+                    player.setMp(player.mp + player.getPrepare_mps() * delta);
                     player.tickPotion(delta);
                 }
             }
@@ -502,10 +518,12 @@ public class Simulation {
             if (cap_time > 0 && player.active_skills.get("Onion Wave").enabled) {
                 cap_time = Math.min(cap_time, 10 - time_to_respawn);
             }
-            if (!player.zone.enemies[0].name.equals("Squirrel Mage")) {
-                delay_left += cap_time;
-            } else {
-                delay_left += time_to_respawn;
+            if (cap_time > 0 && player.last_skill != null && !player.last_skill.name.equals("Analyze")) {
+                if (!player.zone.enemies[0].name.equals("Squirrel Mage")) {
+                    delay_left += cap_time;
+                } else {
+                    delay_left += time_to_respawn;
+                }
             }
             while (delay_left > 0) {
                 delta = minIfNotZero(delay_left, player.getNextPotionTime());
@@ -515,7 +533,7 @@ public class Simulation {
                 delay_left -= delta;
                 delta_sum += delta;
                 delta_count++;
-                player.setMp(player.getMp() + player.getMp_regen() * delta);
+                player.setMp(player.mp + player.getMp_regen() * delta);
                 player.checkPotion(delta);
             }
             if (delay_left <= 0 && status == StatusType.delay) status = StatusType.respawn;
@@ -709,16 +727,18 @@ public class Simulation {
         if (steal_count > 0) {
             result.append("Effective steal count: ").append((int) steal_count).append("\n");
         }
-        result.append("Cores: \n");
-        result.append(player.zone.stats.getCoreData(player, total_time, offline));
+        result.append(player.zone.stats.getCoreData(player, total_time));
+        result.append(player.zone.stats.getBaseOverkill(player, total_time, offline));
 
         long executionTime = (System.nanoTime() - startTime) / 1000000;
         result.append("\nSim run time: ").append(executionTime).append("\n");
 
         skills_log.append("Damage skill casts: ").append(min_casts).append(" - ").append(max_casts);
         skills_log.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
+        skills_log.append("Average player action time: ").append(df2.format(player.speed_mult_sum / player.speed_mult_count * 100)).append("%\n");
         skills_log.append("Average Overkill: ").append((int) (player.overkill / kills)).append("(");
-        skills_log.append(df2.format(player.zone.stats.overkill_sum / player.zone.stats.kills)).append("%)");
+        skills_log.append(df2.format(player.zone.stats.overkill_sum / player.zone.stats.kills)).append("%; base: ");
+        skills_log.append(df2.format(player.zone.stats.base_overkill_sum / player.zone.stats.kills)).append("%)");
         if (dot_overkill > 0) skills_log.append("; DoT: ").append((int) (dot_overkill / kills));
         skills_log.append("\n");
         skills_log.append(player.getWeakAttackData(cleared + failed));

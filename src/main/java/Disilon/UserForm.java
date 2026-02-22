@@ -165,6 +165,7 @@ public class UserForm extends JFrame {
     public LinkedHashMap<JMenu, Setup> tabs = new LinkedHashMap<>();
     public HashMap<String, JSpinner> research_l = new HashMap<>(32);
     public HashMap<String, JSpinner> research_w = new HashMap<>(32);
+    public HashMap<String, JSpinner> bestiary = new HashMap<>(16);
     public JMenu selected_tab;
     ActionListener itemListener;
     MenuListener menuListener;
@@ -1315,6 +1316,21 @@ public class UserForm extends JFrame {
 //        gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(Balance3, gbc);
 
+        row++;
+        final JLabel label29 = new JLabel("Bestiary");
+        gbc = new GridBagConstraints();
+        gbc.gridx = column;
+        gbc.gridy = row;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        LeftPanel.add(label29, gbc);
+        row++;
+        for (String name : getAllBestiary()) {
+            row = addBestiary(name, column, row);
+        }
+
+
         row = 2;
         final JLabel label28 = new JLabel("Research");
         gbc = new GridBagConstraints();
@@ -2174,6 +2190,10 @@ public class UserForm extends JFrame {
             JSpinner w = research_w.get(name);
             if (w != null) data.research_weight.put(name, Double.parseDouble(w.getValue().toString()));
         }
+        for (String name : getAllBestiary()) {
+            JSpinner l = bestiary.get(name);
+            if (l != null) data.bestiary.put(name, Double.parseDouble(l.getValue().toString()));
+        }
         data.hard_hp = Double.parseDouble(Hard_hp.getValue().toString());
         data.hard_stats = Double.parseDouble(Hard_stats.getValue().toString());
         data.hard_reward = Double.parseDouble(Hard_reward.getValue().toString());
@@ -2342,6 +2362,10 @@ public class UserForm extends JFrame {
             JSpinner w = research_w.get(name);
             if (w != null) w.setValue(data.research_weight.getOrDefault(name, 0.0));
         }
+        for (String name : getAllBestiary()) {
+            JSpinner l = bestiary.get(name);
+            if (l != null) l.setValue(data.bestiary.getOrDefault(name, 0.0));
+        }
     }
 
     public HashMap<String, Double> cloneIfPresent(HashMap<String, Double> original, HashMap<String, Double> new_data) {
@@ -2385,6 +2409,26 @@ public class UserForm extends JFrame {
         format.setDecimalFormatSymbols(dfs);
         spinner.setEditor(editor);
         return spinner;
+    }
+
+    private int addBestiary(String name, int x, int y) {
+        JLabel label = new JLabel(name);
+        gbc = new GridBagConstraints();
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(0, 5, 0, 5);
+        LeftPanel.add(label, gbc);
+        JSpinner spinner_lvl = createCustomSpinner(0, 0, 1000000, 1.0);
+        spinner_lvl.setName(name);
+        bestiary.put(name, spinner_lvl);
+        gbc = new GridBagConstraints();
+        gbc.gridx = x + 1;
+        gbc.gridy = y;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        LeftPanel.add(spinner_lvl, gbc);
+        return y + 1;
     }
 
     private int addResearch(String name, int x, int y) {
@@ -2433,6 +2477,14 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         LeftPanel.add(spinner_w, gbc);
         return y + 1;
+    }
+
+    public ArrayList<String> getAllBestiary() {
+        return new ArrayList<>(Arrays.asList(
+                "Slime", "Goblin", "Imp", "Ghoul", "Wraith",
+                "Shinigami", "Astaroth", "Tengu", "Amon", "Akuma", "Devil", "Shax", "Dagon", "Lamia",
+                "Tyrant", "Fairy", "Raum", "Asura", "Squirrel Mage"
+        ));
     }
 
     public ArrayList<String> getAllResearches() {

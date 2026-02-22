@@ -7,9 +7,10 @@ import static Disilon.Main.random;
 
 public class Enemy extends Actor {
     double strength = 1;
+    double lvl = 1;
     double base_lvl;
     boolean active = false;
-    String previous_spell = "";
+    String previous_spell = null;
 
     public Enemy() {
         super();
@@ -174,6 +175,11 @@ public class Enemy extends Actor {
                 } else {
                     base_hp_max = 120000 / base_lvl;
                     base_exp = 70500 / base_lvl;
+                }
+                if (Main.game_version < 1649) {
+                    base_light_res = 0;
+                } else {
+                    base_light_res = -0.3;
                 }
                 base_atk = 2250 / base_lvl;
                 base_def = 4500 / base_lvl;
@@ -383,33 +389,20 @@ public class Enemy extends Actor {
                 skills.enableActive("Attack");
                 skills.enableActive("Mark Target");
             }
-            case "Ghoul2" -> {
-                base_lvl = 30;
-                base_hp_max = 1950 / base_lvl;
-                base_exp = 120 / base_lvl;
-                base_atk = 105 / base_lvl;
-                base_def = 75 / base_lvl;
-                base_int = 30 / base_lvl;
-                base_res = 30 / base_lvl;
-                base_hit = 60 / base_lvl;
-                base_speed = 45 / base_lvl;
+            case "Ghoul" -> {
+                base_lvl = 20;
+                base_hp_max = 1300 / base_lvl;
+                base_exp = 80 / base_lvl;
+                base_atk = 70 / base_lvl;
+                base_def = 50 / base_lvl;
+                base_int = 20 / base_lvl;
+                base_res = 20 / base_lvl;
+                base_hit = 40 / base_lvl;
+                base_speed = 30 / base_lvl;
                 base_light_res = -0.5;
                 skills.enableActive("Charge Attack");
             }
             case "Slime" -> {
-                base_lvl = 1;
-                base_hp_max = 18 / base_lvl;
-                base_exp = 3 / base_lvl;
-                base_atk = 3 / base_lvl;
-                base_def = 2 / base_lvl;
-                base_int = 3 / base_lvl;
-                base_res = 7 / base_lvl;
-                base_hit = 5 / base_lvl;
-                base_speed = 2 / base_lvl;
-                base_water = 2;
-                skills.enableActive("Water Punch");
-            }
-            case "Slime2" -> {
                 base_lvl = 10;
                 base_hp_max = 250 / base_lvl;
                 base_exp = 30 / base_lvl;
@@ -448,70 +441,32 @@ public class Enemy extends Actor {
                 skills.enableActive("Poison Attack");
                 skills.enableActive("Quick Hit");
             }
-            case "Imp2" -> {
-                base_lvl = 20;
-                base_hp_max = 600 / base_lvl;
-                base_exp = 50 / base_lvl;
-                base_atk = 20 / base_lvl;
-                base_def = 70 / base_lvl;
-                base_int = 50 / base_lvl;
-                base_res = 30 / base_lvl;
-                base_hit = 40 / base_lvl;
-                base_speed = 30 / base_lvl;
-                base_fire = 20 / base_lvl;
-                skills.enableActive("Fire Ball");
-            }
-            case "Goblin2" -> {
-                base_lvl = 20;
-                base_hp_max = 700 / base_lvl;
-                base_exp = 60 / base_lvl;
-                base_atk = 50 / base_lvl;
-                base_def = 40 / base_lvl;
-                base_int = 20 / base_lvl;
-                base_res = 30 / base_lvl;
-                base_hit = 40 / base_lvl;
-                base_speed = 50 / base_lvl;
-                skills.enableActive("Poison Attack");
-                skills.enableActive("Quick Hit");
-            }
-            case "Ghoul" -> {
-                base_lvl = 20;
-                base_hp_max = 1300 / base_lvl;
-                base_exp = 80 / base_lvl;
-                base_atk = 70 / base_lvl;
-                base_def = 50 / base_lvl;
-                base_int = 20 / base_lvl;
-                base_res = 20 / base_lvl;
-                base_hit = 40 / base_lvl;
-                base_speed = 30 / base_lvl;
-                base_light_res = -0.5;
-                skills.enableActive("Charge Attack");
-            }
         }
         active = true;
     }
 
-    public void reroll(int min_lvl_incr, double hp_mult, double stats_mult) {
-        double lvl = Main.banking_round(base_lvl * strength);
-        double min_lvl = base_lvl == 1 ? 1 : base_lvl * 0.9;
-        double max_lvl = base_lvl == 1 ? 1 : base_lvl * 1.1;
+    public void reroll(int level, int min_lvl_incr, double hp_mult, double stats_mult) {
+        lvl = Main.banking_round(level * strength);
+        double min_lvl = level == 1 ? 1 : level * 0.9;
+        double max_lvl = level == 1 ? 1 : level * 1.1;
         min_lvl = Math.min(max_lvl, min_lvl + min_lvl_incr);
         lvl = Math.min(max_lvl, Math.max(min_lvl, lvl));
         refreshStats();
         this.exp = base_exp * lvl;
-        this.atk = base_atk * lvl * stats_mult;
-        this.def = base_def * lvl * stats_mult;
-        this.intel = base_int * lvl * stats_mult;
-        this.resist = base_res * lvl * stats_mult;
-        this.hit = base_hit * lvl * stats_mult;
-        this.speed = base_speed * lvl * stats_mult;
+        double stat_lvl = Math.max(2, lvl);
+        this.atk = base_atk * stat_lvl * stats_mult;
+        this.def = base_def * stat_lvl * stats_mult;
+        this.intel = base_int * stat_lvl * stats_mult;
+        this.resist = base_res * stat_lvl * stats_mult;
+        this.hit = base_hit * stat_lvl * stats_mult;
+        this.speed = base_speed * stat_lvl * stats_mult;
 
-        this.fire = base_fire * lvl * stats_mult;
-        this.water = base_water * lvl * stats_mult;
-        this.wind = base_wind * lvl * stats_mult;
-        this.earth = base_earth * lvl * stats_mult;
-        this.light = base_light * lvl * stats_mult;
-        this.dark = base_dark * lvl * stats_mult;
+        this.fire = base_fire * stat_lvl * stats_mult;
+        this.water = base_water * stat_lvl * stats_mult;
+        this.wind = base_wind * stat_lvl * stats_mult;
+        this.earth = base_earth * stat_lvl * stats_mult;
+        this.light = base_light * stat_lvl * stats_mult;
+        this.dark = base_dark * stat_lvl * stats_mult;
 
         this.buffs.clear();
         this.debuffs.clear();
@@ -520,13 +475,10 @@ public class Enemy extends Actor {
         stun_time = 0;
         check_buffs();
         check_debuffs();
+        previous_spell = null;
         this.hp_max = getHp_max();
         this.hp = this.hp_max;
         this.mp = this.getMp_max();
-    }
-
-    public void rollStrength() {
-        strength = (random.nextInt(21) + 90) / 100.0;
     }
 
     public ActiveSkill rollAttack(Player player) {
@@ -568,7 +520,10 @@ public class Enemy extends Actor {
             }
             case "Squirrel Mage" -> {
                 if (game_version >= 1627) {
-                    return roll < 30 ? active_skills.get("Flee") : active_skills.get("Elemental Blast");
+                    return roll < 30 ? active_skills.get("Flee") : active_skills.get(
+                            "Elemental Blast");
+//                    return (roll < 30 && previous_spell != null) ? active_skills.get("Flee") : active_skills.get(
+//                            "Elemental Blast");
                 } else {
                     return roll < 50 ? active_skills.get("Flee") : active_skills.get("Elemental Blast");
                 }
@@ -601,7 +556,7 @@ public class Enemy extends Actor {
 
     @Override
     public double getHp_max() {
-        int lvl = (int) Math.round(base_lvl * strength);
+        if (lvl == 1 && name.equals("Slime")) return 18 * hp_mult;
         return base_hp_max * lvl * hp_mult;
     }
 }

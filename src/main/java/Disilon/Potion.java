@@ -6,6 +6,7 @@ import static Disilon.Main.df2;
 
 public class Potion {
     String type;
+    byte type_id;
     int tier;
     double cooldown;
     int threshold;
@@ -14,6 +15,10 @@ public class Potion {
 
     public Potion(String type, int threshold) {
         this.type = type.toLowerCase().substring(0, 2);
+        switch (this.type) {
+            case "hp" -> type_id = 1;
+            case "mp" -> type_id = 2;
+        }
         this.tier = Integer.parseInt(type.substring(4, 5));
         if (type.length() > 5) {
             this.tier += 10;
@@ -26,23 +31,23 @@ public class Potion {
             cooldown -= time;
         }
         if (cooldown <= 0) {
-            switch (type) {
-                case "hp":
+            switch (type_id) {
+                case 1 -> {
                     if (player.hp < player.getHp_max() * threshold / 100) {
                         player.setHp(player.hp + hp_gain());
                         cooldown = hp_cd();
                         used++;
                         count--;
                     }
-                    break;
-                case "mp":
-                    if (player.getMp() < player.getMp_max_no_buffs() * threshold / 100) {
-                        player.setMp(player.getMp() + mp_gain());
+                }
+                case 2 -> {
+                    if (player.mp < player.getMp_max_no_buffs() * threshold / 100) {
+                        player.setMp(player.mp + mp_gain());
                         cooldown = mp_cd();
                         used++;
                         count--;
                     }
-                    break;
+                }
             }
         }
     }

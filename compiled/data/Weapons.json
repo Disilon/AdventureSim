@@ -95,6 +95,9 @@
 		},"Cobalt Sword": {
 			"ATK": 42,
 			"HIT": 12
+		},"Wise Book": {
+			"INT": 40,
+			"ANALYZE": 0.05
 		}
 
 	},
@@ -115,6 +118,9 @@
 			"DEF": 30,
 			"RES": 30,
 			"SPD": -12
+		},"Spy Glass": {
+			"SPD": 40,
+			"ANALYZE": 0.05
 		}
 	}
 }

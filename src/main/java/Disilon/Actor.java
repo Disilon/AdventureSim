@@ -66,11 +66,13 @@ public class Actor extends ActorStats {
         blessed = 0;
         empower_hp = 0;
         elemental_buff = 0;
+        analyze_buff = 0;
         for (Buff b : buffs) {
             if (b.name.equals("Charge Up")) charge = b.effect;
             if (b.name.equals("Bless")) blessed = b.effect;
             if (b.name.equals("Empower HP")) empower_hp = b.effect;
             if (b.name.equals("Elemental Buff")) elemental_buff = b.effect;
+            if (b.name.equals("Taking Notes")) analyze_buff = b.effect;
         }
     }
 
@@ -80,7 +82,7 @@ public class Actor extends ActorStats {
             Buff b = buff_iterator.next();
             if (log.contains("buff_duration")) System.out.println(b.name + " duration = " + b.duration);
             switch (b.name) {
-                case "Charge Up", "Elemental Buff" -> b.duration = b.duration - (attack ? 1 : 0);
+                case "Charge Up", "Elemental Buff", "Taking Notes" -> b.duration = b.duration - (attack ? 1 : 0);
                 case "Stone Barrier" -> {}
                 default -> b.duration--;
             }
@@ -102,12 +104,16 @@ public class Actor extends ActorStats {
     }
 
     public void applyPendingEffects() {
-        buffs.addAll(pending_buffs);
-        debuffs.addAll(pending_debuffs);
-        pending_buffs.clear();
-        pending_debuffs.clear();
-        check_buffs();
-        check_debuffs();
+        if (!pending_buffs.isEmpty()) {
+            buffs.addAll(pending_buffs);
+            pending_buffs.clear();
+            check_buffs();
+        }
+        if (!pending_debuffs.isEmpty()) {
+            debuffs.addAll(pending_debuffs);
+            pending_debuffs.clear();
+            check_debuffs();
+        }
     }
 
     public void applyBuff(String buff_name, int duration, double effect) {
@@ -344,6 +350,7 @@ public class Actor extends ActorStats {
                 gear_crit += item.crit;
                 gear_burn += item.burn;
                 gear_stun += item.stun;
+                gear_analyze += item.analyze;
                 gear_barrier += item.barrier;
                 add_resist("Fire", item.fire_res * 0.01);
                 add_resist("Water", item.water_res * 0.01);
@@ -399,6 +406,8 @@ public class Actor extends ActorStats {
         bless_boost = 1;
         bless_duration = 0;
         finke_bonus = 0;
+        analyze_mult = 0;
+        analyze_speed = 1;
 
         atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
         poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
@@ -424,6 +433,8 @@ public class Actor extends ActorStats {
         int_mult *= 1.0 + passives.get("Int Boost").getBonus();
         res_mult *= 1.0 + passives.get("Res Boost").getBonus();
         ailment_res *= 1.0 + passives.get("Ailment Res").getBonus();
+        analyze_mult += passives.get("Smart Analyze").getBonus();
+        analyze_speed *= 1.0 - passives.get("Speedy Analyze").getBonus();
         cast_speed_mult *= 1.0 - passives.get("Casting Boost").getBonus();
         cast_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
         delay_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
@@ -523,6 +534,7 @@ public class Actor extends ActorStats {
         gear_crit = 0;
         gear_burn = 0;
         gear_stun = 0;
+        gear_analyze = 0;
         gear_barrier = 0;
         phys_res = base_phys_res;
         magic_res = base_magic_res;
@@ -567,7 +579,7 @@ public class Actor extends ActorStats {
     }
 
     public double getMp_regen() {
-        return getMp_max() / 360;
+        return getMp_max() / 360.0;
     }
 
     public double getHp_max() {
@@ -585,10 +597,6 @@ public class Actor extends ActorStats {
         return pretty;
     }
 
-    public double getHp() {
-        return hp;
-    }
-
     public void setHp(double hp) {
         this.hp = Math.min(getHp_max(), hp);
     }
@@ -603,10 +611,6 @@ public class Actor extends ActorStats {
 
     public double getMp_max_no_buffs() {
         return getResist_no_buffs() * 3 + getIntel_no_buffs();
-    }
-
-    public double getMp() {
-        return mp;
     }
 
     public void setMp(double mp) {
@@ -733,7 +737,9 @@ public class Actor extends ActorStats {
     }
 
     public double stealthDelay() {
-        return passives.get("Stealth").enabled ? 1.2 * (1 + 0.02 * passives.get("Stealth").lvl) : 0;
+        double delay = passives.get("Stealth").enabled ? 1.2 * (1 + 0.02 * passives.get("Stealth").lvl) : 0;
+        delay += passives.get("Safe Distance").enabled ? passives.get("Safe Distance").getBonus() : 0;
+        return delay;
     }
 
     public double getDodge_mult() {

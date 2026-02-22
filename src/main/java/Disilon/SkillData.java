@@ -74,6 +74,9 @@ public class SkillData {
         addPassive("Res Boost", 0.2, 5, 0.3);
         addPassive("Wand Mastery", 0.2, 0, 0.0);
         addPassive("Casting Boost", 0.15, 10, 0.2);
+        addPassive("Speedy Analyze", 0.3, 10, 0.15);
+        addPassive("Smart Analyze", 0.45, 10, 0.15);
+        addPassive("Safe Distance", 3, 10, 0.15);
         addPassive("Fire Boost", 0.3, 10, 0.3);
         addPassive("Fire Resistance", 0.5, 10, 0.3);
         addPassive("Earth Boost", 0.3, 10, 0.3);
@@ -169,6 +172,11 @@ public class SkillData {
         active_skills.get("Magic Missile").addDebuff("Resist Break", 3, 0.25);
         addActive("Magic Arrow", 1, 90, 110, 1, 15, 1, 1, Scaling.intel,
                 Element.magic, false, false);
+        addActive("Analyze", 1, 250, 250, 0, 50, 3, 0, Scaling.intel,
+                Element.magic, false, false);
+        addActive("Taking Notes", 1, 0, 0, 0, 99, 2, 2, Scaling.atk,
+                Element.none, false, false);
+        active_skills.get("Taking Notes").addBuff("Taking Notes", 1, 1.4);
         addActive("Holy Light", 1, 112.5, 137.5, 1.0, 25, 1, 1.1, Scaling.resint,
                 Element.light, false, false);
         addActive("Heal", 1, 250, 45, 0, 30, 0.8, 1.5, Scaling.atk, Element.none, false,
