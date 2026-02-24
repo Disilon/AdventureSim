@@ -528,7 +528,8 @@ public class Enemy extends Actor {
                 return roll < 50 ? active_skills.get("Dragon Punch") : active_skills.get("Aura Shot");
             }
             case "Tree Golem" -> {
-                return (hasBuff("Stone Barrier") && roll < 30) ? active_skills.get("Stone Barrier") : active_skills.get("Earth Blast");
+                return (!hasBuff("Stone Barrier") && roll < 30) ? active_skills.get("Stone Barrier") :
+                        active_skills.get("Earth Blast");
             }
             case "Fairy" -> {
                 return (charge == 0 && roll < 60) ? active_skills.get("Charge Up") : active_skills.get("Arrow Of Light");
