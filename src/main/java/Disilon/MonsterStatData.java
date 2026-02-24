@@ -399,6 +399,7 @@ public class MonsterStatData {
             case "Fairy" -> Main.game_version < 1568 ? 175 : 350;
             case "Raum" -> Main.game_version < 1568 ? 150 : (Main.game_version < 1574 ? 180 : 230);
             case "Asura" -> 165;
+            case "Tree Golem" -> 500;
             case "Squirrel Mage" -> Main.game_version < 1621 ? 2000 : (Main.game_version < 1622 ? 3000 : 2500);
             case "Caco" -> 1500;
             default -> 0;

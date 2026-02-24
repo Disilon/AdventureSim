@@ -57,6 +57,7 @@ public class Simulation {
         ActiveSkill skill3 = player.skill3;
         ActiveSkill skill4 = player.skill4;
         double exp = 0;
+        double base_exp = 0;
         double total_time = 0;
         double squirrel_time = 0;
         double death_time = 0;
@@ -385,6 +386,7 @@ public class Simulation {
 //                        }
                             double exp_gain =
                                     enemy.exp * player.total_exp_mult * player.milestone_exp_mult * player.hard_reward;
+                            base_exp += enemy.exp * player.hard_reward;
                             exp_gain *= 1 + 0.01 * player.getBestiaryMedals(50000);
                             exp_gain *= 1 + player.getBestiaryBonus(enemy.name);
                             if (enemy.name.equals("Squirrel Mage")) {
@@ -395,7 +397,7 @@ public class Simulation {
                                 if (player.last_skill.name.equals("Careful Shot")) nuts *= 1.5;
                                 player.zone.stats.nuts += nuts;
                             }
-                            if (player.enemy_min_lvl_enabled && (game_version == 1638 || !enemy.name.equals("Squirrel Mage"))) {
+                            if (player.enemy_min_lvl_enabled && (game_version == 1638 || game_version >= 1658 || !enemy.name.equals("Squirrel Mage"))) {
                                 exp_gain *= 1 + 0.005 * player.enemy_min_lvl;
                             }
                             if (player.lvling) player.increment_exp(exp_gain);
@@ -620,7 +622,7 @@ public class Simulation {
         double exp_total_bonus = player.total_exp_mult * player.milestone_exp_mult * (1 + 0.005 * player.getEnemyMinLvl());
         result.append("Exp/h: ").append(shorthand(exph)).append(" (");
         result.append(df2.format(exp_total_bonus * 100)).append("%; ");
-        result.append(shorthand(exph / exp_total_bonus)).append(" at 100%)\n");
+        result.append(shorthand(base_exp / (total_time + death_time) * 3600)).append(" at 100%)\n");
         if (player.potion1 != null) {
             result.append(player.potion1.getRecordedData(total_time + death_time));
         }

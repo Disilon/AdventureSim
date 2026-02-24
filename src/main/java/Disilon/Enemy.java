@@ -249,6 +249,28 @@ public class Enemy extends Actor {
                 skills.enableActive("Holy Power Slash");
                 skills.enableActive("Sense");
             }
+            case "Tree Golem" -> {
+                base_lvl = 250;
+                base_hp_max = 300000 / base_lvl;
+                base_exp = 125000 / base_lvl;
+                base_atk = 3250 / base_lvl;
+                base_def = 2500 / base_lvl;
+                base_int = 1250 / base_lvl;
+                base_res = 2500 / base_lvl;
+                base_hit = 3000 / base_lvl;
+                base_speed = 1750 / base_lvl;
+//                base_earth = 1000 / base_lvl;
+                if (Main.game_version >= 1660) {
+                    base_water_res = 0.2;
+                } else {
+                    base_phys_res = 0.2;
+                }
+                base_earth_res = 0.5;
+                active_skills.get("Stone Barrier").setSkill(10, SkillMod.Basic);
+                skills.enableActive("Stone Barrier");
+                active_skills.get("Earth Blast").setSkill(10, SkillMod.Damage);
+                skills.enableActive("Earth Blast");
+            }
             case "Caco" -> {
                 base_lvl = 250;
                 base_hp_max = 350000 / base_lvl;
@@ -504,6 +526,9 @@ public class Enemy extends Actor {
             }
             case "Akuma" -> {
                 return roll < 50 ? active_skills.get("Dragon Punch") : active_skills.get("Aura Shot");
+            }
+            case "Tree Golem" -> {
+                return (hasBuff("Stone Barrier") && roll < 30) ? active_skills.get("Stone Barrier") : active_skills.get("Earth Blast");
             }
             case "Fairy" -> {
                 return (charge == 0 && roll < 60) ? active_skills.get("Charge Up") : active_skills.get("Arrow Of Light");

@@ -982,8 +982,10 @@ public class Player extends Actor {
 
     public void levelTF(Enemy e) {
         if (passives.get("Tsury Finke").available && passives.get("Weapon Mastery").enabled) {
-            if (!e.name.equals("Squirrel Mage")) {
-                passives.get("Tsury Finke").gainExpTF(e.base_lvl / 10);
+            if (equipment.get("MH") != null && equipment.get("MH").name.equals("Tsury Finke")) {
+                if (!e.name.equals("Squirrel Mage")) {
+                    passives.get("Tsury Finke").gainExpTF(e.base_lvl / 10);
+                }
             }
         }
     }

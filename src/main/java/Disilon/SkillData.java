@@ -139,6 +139,7 @@ public class SkillData {
         addActive("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
                 false);
         active_skills.get("Defense Break").addDebuff("Defense Break", 3, 0.25);
+        active_skills.get("Defense Break").weapon_required = false;
         addActive("Quick Hit", 1, 76.5, 93.5, 1, 10, 0.7, 0.7, Scaling.atk, Element.phys, false,
                 false);
         active_skills.get("Quick Hit").weapon_required = false;
@@ -165,6 +166,9 @@ public class SkillData {
         addActive("Earth Quake", 1, 315, 385, 1.2, 350, 3,6, Scaling.intel, Element.earth, true, false);
         active_skills.get("Earth Quake").addDebuff("Stun", 0, 2.5);
         addActive("Stone Barrier", 1, 0.8, 0, 0, 0, 1, 1, Scaling.atk, Element.none, false, false);
+        addActive("Earth Blast", 1, 315, 385, 1.0, 150, 2,1.0, Scaling.atk, Element.earth, false, false);
+        active_skills.get("Earth Blast").addDebuff("Stun", 0, 3);
+        active_skills.get("Earth Blast").weapon_required = false;
         addActive("Elemental Blast", 1, 117, 143, 1.0, 20, 1.2, 1.2, Scaling.intel,
                 Element.eleblast, false, false);
         addActive("Magic Missile", 1, 148.5, 181.5, 1.5, 25, 1.5, 1.5, Scaling.intel,
@@ -172,6 +176,7 @@ public class SkillData {
         active_skills.get("Magic Missile").addDebuff("Resist Break", 3, 0.25);
         addActive("Magic Arrow", 1, 90, 110, 1, 15, 1, 1, Scaling.intel,
                 Element.magic, false, false);
+        active_skills.get("Magic Arrow").weapon_required = false;
         addActive("Analyze", 1, 250, 250, 0, 50, 3, 0, Scaling.intel,
                 Element.magic, false, false);
         addActive("Taking Notes", 1, 0, 0, 0, 99, 2, 2, Scaling.atk,

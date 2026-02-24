@@ -1,5 +1,7 @@
 package Disilon;
 
+import Disilon.Equipment.Quality;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -192,7 +194,7 @@ public class Actor extends ActorStats {
         }
     }
 
-    public void setEquip(String slot, String name, Equipment.Quality quality, int lvl) {
+    public void setEquip(String slot, String name, Quality quality, int lvl) {
         if (name.equals("None")) return;
         Equipment e = Main.equipmentData.items.get(name).clone();
         e.setQualityLvl(quality, lvl);
@@ -216,7 +218,7 @@ public class Actor extends ActorStats {
         sets.put("Squirrel", new EquipmentSet("squirrel", 3));
     }
 
-    public void enableSet(String bonus, Equipment.Quality quality, int upgrade) {
+    public void enableSet(String bonus, Quality quality, int upgrade) {
         double tier = 0.5 + quality.getMult() / 2;
         double stat_scaling;
         double dmg_scaling;
@@ -308,28 +310,23 @@ public class Actor extends ActorStats {
 
     public void applyGear() {
         clear_gear_stats();
-        if (name.equals("Onion Knight") && equipment.get("MH") == null) {
+        if (equipment.get("MH") != null && equipment.get("MH").name.equals("Tsury Finke")) {
             if (passives.get("Tsury Finke").available) {
-                int tf_lvl = passives.get("Tsury Finke").lvl;
-                double quality = switch (tf_lvl / 10) {
-                    case 0 -> 0.5;
-                    case 1 -> 0.75;
-                    case 2 -> 1;
-                    case 3 -> 1.25;
-                    case 4 -> 1.5;
-                    case 5 -> 2;
-                    case 6 -> 2.5;
-                    case 7 -> 3;
-                    case 8 -> 4;
-                    case 9, 10 -> 5;
-                    default -> 0;
-                };
-                gear_atk += 24 * quality * (1 + 0.1 * tf_lvl);
-                gear_hit += 8 * quality * (1 + 0.1 * tf_lvl);
-                gear_speed += 8 * quality * (1 + 0.1 * tf_lvl);
-                gear_water += 20 * quality * (1 + 0.1 * tf_lvl);
-                finke_bonus = (5 + (2.5 * (0.5 + quality / 2) * tf_lvl * 0.1)) * 0.01;
+                equipment.get("MH").upgrade = passives.get("Tsury Finke").lvl;
             }
+            equipment.get("MH").quality = switch (equipment.get("MH").upgrade / 10) {
+                default -> Quality.Poor;
+                case 1 -> Quality.Flawed;
+                case 2 -> Quality.Normal;
+                case 3 -> Quality.Good;
+                case 4 -> Quality.Superior;
+                case 5 -> Quality.Exceptional;
+                case 6 -> Quality.Divine;
+                case 7 -> Quality.Legendary;
+                case 8 -> Quality.Mythic;
+                case 9, 10 -> Quality.Godly;
+            };
+            equipment.get("MH").calcStats();
         }
         for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
             Equipment item = slot.getValue();
@@ -350,6 +347,7 @@ public class Actor extends ActorStats {
                 gear_crit += item.crit;
                 gear_burn += item.burn;
                 gear_stun += item.stun;
+                finke_bonus += item.TF;
                 gear_analyze += item.analyze;
                 gear_barrier += item.barrier;
                 add_resist("Fire", item.fire_res * 0.01);
@@ -405,7 +403,6 @@ public class Actor extends ActorStats {
         multi_arrows = 0;
         bless_boost = 1;
         bless_duration = 0;
-        finke_bonus = 0;
         analyze_mult = 0;
         analyze_speed = 1;
 
@@ -534,6 +531,7 @@ public class Actor extends ActorStats {
         gear_crit = 0;
         gear_burn = 0;
         gear_stun = 0;
+        finke_bonus = 0;
         gear_analyze = 0;
         gear_barrier = 0;
         phys_res = base_phys_res;

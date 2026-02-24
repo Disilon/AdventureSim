@@ -80,6 +80,12 @@
 			"HIT": 8,
 			"SPD": 12,
 			"CRIT": 0.02
+		},"Tsury Finke": {
+			"ATK": 24,
+			"HIT": 8,
+			"SPD": 8,
+			"WATER": 20,
+			"TF": 0.05
 		},"Cobalt Dagger": {
 			"ATK": 18,
 			"HIT": 12,

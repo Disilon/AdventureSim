@@ -41,6 +41,7 @@ public class Equipment {
     double burn = 0;
     double crit = 0;
     double stun = 0;
+    double TF = 0;
     double analyze = 0;
     double barrier = 0;
 
@@ -91,6 +92,7 @@ public class Equipment {
         clone.burn = this.burn;
         clone.crit = this.crit;
         clone.stun = this.stun;
+        clone.TF = this.TF;
         clone.analyze = this.analyze;
         clone.barrier = this.barrier;
         return clone;
@@ -148,6 +150,7 @@ public class Equipment {
         this.burn = equipStats.containsKey("BURN") ? (double) equipStats.get("BURN") * mult : 0;
         this.crit = equipStats.containsKey("CRIT") ? (double) equipStats.get("CRIT") * mult : 0;
         this.stun = equipStats.containsKey("STUN") ? (double) equipStats.get("STUN") * mult : 0;
+        this.TF = equipStats.containsKey("TF") ? (double) equipStats.get("TF") * mult : 0;
         this.analyze = equipStats.containsKey("ANALYZE") ? (double) equipStats.get("ANALYZE") * mult : 0;
         this.barrier = equipStats.containsKey("BARRIER") ? (double) equipStats.get("BARRIER") * mult : 0;
 
@@ -167,7 +170,11 @@ public class Equipment {
                 return (0.5 + quality.getMult() * 0.5) * (1 + upgrade * 0.025);
             }
             case 3 -> {
-                return 1 + upgrade * 0.05 * (0.5 + quality.getMult() * 0.5);
+                if (Main.game_version < 1658) {
+                    return 1 + upgrade * 0.05 * (0.5 + quality.getMult() * 0.5);
+                } else {
+                    return 0.6 * (1 + upgrade * 0.1) * (0.5 + quality.getMult() * 0.5);
+                }
             }
             default -> {
                 return 1;
