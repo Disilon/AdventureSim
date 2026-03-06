@@ -14,6 +14,7 @@ public class PassiveSkill {
     public double mp_mult;
     public boolean enabled;
     public boolean available;
+    public boolean visible;
     public double exp;
     public double old_lvl;
 

@@ -56,6 +56,7 @@ public class UserForm extends JFrame {
     private JSpinner Potion2_t;
     private JComboBox Potion3;
     private JSpinner Potion3_t;
+    private JComboBox Pill;
     private JComboBox Skill1;
     private JComboBox Skill2;
     private JComboBox Skill3;
@@ -118,6 +119,7 @@ public class UserForm extends JFrame {
     private JSpinner Milestone;
     private JSpinner Crafting_lvl;
     private JSpinner Alchemy_lvl;
+    private JSpinner Alchemist_CL;
     private JSpinner R_spd_bonus;
     private JSpinner Rp_balance;
     private JButton Run;
@@ -313,7 +315,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 3;
         RightPanel.add(ClassLabel, gbc);
         PlayerClass = new JComboBox(Player.availableClasses);
-        PlayerClass.setMaximumRowCount(20);
+        PlayerClass.setMaximumRowCount(30);
         PlayerClass.setSelectedIndex(0);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -328,8 +330,19 @@ public class UserForm extends JFrame {
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
-        gbc.gridwidth = 6;
         RightPanel.add(label1, gbc);
+        final JLabel label1_1 = new JLabel("Pill: ");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.EAST;
+        RightPanel.add(label1_1, gbc);
+        Pill = new JComboBox<>(Disilon.Pill.getAvailablePills().toArray());
+        Pill.setMaximumRowCount(21);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = element_row;
+        RightPanel.add(Pill, gbc);
         element_row++;
         Potion1 = new JComboBox<>(Potion.getAvailablePotions());
         Potion1.setMaximumRowCount(21);
@@ -1214,6 +1227,19 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Alchemy_lvl, gbc);
 
+        final JLabel label27_1 = new JLabel("Alchemist CL");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(label27_1, gbc);
+        Alchemist_CL = new JSpinner(new SpinnerNumberModel(0, 0, 200, 1));
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.anchor = GridBagConstraints.NORTH;
+        LeftPanel.add(Alchemist_CL, gbc);
 
         final JLabel r_spd = new JLabel("Research spd bonus %");
         gbc = new GridBagConstraints();
@@ -1470,7 +1496,8 @@ public class UserForm extends JFrame {
 //        Scroll.getHorizontalScrollBar().setUnitIncrement(16);
 //        this.add(Scroll);
 
-        this.setPreferredSize(new Dimension(1350, 1060));
+        this.setPreferredSize(loadSettings(Main.getJarPath() + "/Settings.ini").getWindowSize());
+        Main.time_limit = loadSettings(Main.getJarPath() + "/Settings.ini").getSimulation_time_limit();
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
@@ -1602,7 +1629,7 @@ public class UserForm extends JFrame {
                     info.append(df2.format(player.getMLpercent())).append("%");
                     info.append("</td>");
                     for (ActiveSkill a : player.active_skills.values()) {
-                        if (a.enabled && a.old_lvl < player.max_skill_lvl) {
+                        if (a.checkEnabled() && a.old_lvl < player.max_skill_lvl) {
                             info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
                             info.append(a.name);
                             info.append("</td></tr>");
@@ -1708,7 +1735,7 @@ public class UserForm extends JFrame {
                     } else {
                         if (checkSameItemsCombo()) {
                             JOptionPane.showMessageDialog(RightPanel,
-                                    "You're using some of your skills twice, this can cause bugs", "Warning",
+                                    "You're using some of your passive skills twice!", "Warning",
                                     JOptionPane.WARNING_MESSAGE);
                         }
                         try {
@@ -1841,11 +1868,14 @@ public class UserForm extends JFrame {
             }
         });
         loadEquipment();
-        selected_tab = createTab("default");
-        Setup default_setup = loadFile(Main.getJarPath() + "/Default.json");
-        if (default_setup == null) default_setup = new Setup();
-        tabs.put(selected_tab, default_setup);
-        loadTab(selected_tab);
+        ArrayList<String> load_list = loadSettings(Main.getJarPath() + "/Settings.ini").getDefault_setups();
+        for (String s : load_list) {
+            selected_tab = createTab(s.replace(".json", ""));
+            Setup default_setup = loadFile(Main.getJarPath() + "/" + s);
+            if (default_setup == null) default_setup = new Setup();
+            tabs.put(selected_tab, default_setup);
+            loadTab(selected_tab);
+        }
     }
 
     public class StringEditor extends DefaultCellEditor {
@@ -1945,13 +1975,13 @@ public class UserForm extends JFrame {
     }
 
     private boolean checkSameItemsCombo() {
-        Map<Integer, Integer> elementCountMap = Arrays.stream(new Integer[]{Skill1.getSelectedIndex(), Skill2.getSelectedIndex(),
-                        Skill3.getSelectedIndex(), Skill4.getSelectedIndex()}).filter(a -> a > 0)
-                .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
-        for (int count : elementCountMap.values()) {
-            if (count > 1) return true;
-        }
-        elementCountMap = Arrays.stream(new Integer[]{Pskill1.getSelectedIndex(), Pskill2.getSelectedIndex(),
+//        Map<Integer, Integer> elementCountMap = Arrays.stream(new Integer[]{Skill1.getSelectedIndex(), Skill2.getSelectedIndex(),
+//                        Skill3.getSelectedIndex(), Skill4.getSelectedIndex()}).filter(a -> a > 0)
+//                .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
+//        for (int count : elementCountMap.values()) {
+//            if (count > 1) return true;
+//        }
+        Map<Integer, Integer> elementCountMap = Arrays.stream(new Integer[]{Pskill1.getSelectedIndex(), Pskill2.getSelectedIndex(),
                         Pskill3.getSelectedIndex(), Pskill4.getSelectedIndex()}).filter(a -> a > 0)
                 .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
         for (int count : elementCountMap.values()) {
@@ -2000,14 +2030,14 @@ public class UserForm extends JFrame {
         saveSkillLvls();
         activeSkillsModel.setRowCount(0);
         for (String skill : player.active_skills.keySet()) {
-            if (player.active_skills.get(skill).available) {
+            if (player.active_skills.get(skill).visible) {
                 activeSkillsModel.addRow(new Object[]{skill, player.active_skills.get(skill).lvl,
                         (player.active_skills.get(skill).getLvl() - player.active_skills.get(skill).lvl) * 100});
             }
         }
         passiveSkillsModel.setRowCount(0);
         for (String skill : player.passives.keySet()) {
-            if (player.passives.get(skill).available) {
+            if (player.passives.get(skill).visible) {
                 passiveSkillsModel.addRow(new Object[]{skill, player.passives.get(skill).lvl,
                         (player.passives.get(skill).getLvl() - player.passives.get(skill).lvl) * 100});
             }
@@ -2112,6 +2142,7 @@ public class UserForm extends JFrame {
         data.accessory2_name = Accessory2_name.getSelectedItem().toString();
         data.accessory2_tier = (Equipment.Quality) Accessory2_tier.getSelectedItem();
         data.alchemy_lvl = (int) Double.parseDouble(Alchemy_lvl.getValue().toString());
+        data.alchemist_lvl = (int) Double.parseDouble(Alchemist_CL.getValue().toString());
         data.boots_lvl = (int) Double.parseDouble(Boots_lvl.getValue().toString());
         data.boots_name = Boots_name.getSelectedItem().toString();
         data.boots_tier = (Equipment.Quality) Boots_tier.getSelectedItem();
@@ -2144,6 +2175,7 @@ public class UserForm extends JFrame {
         data.pants_name = Pants_name.getSelectedItem().toString();
         data.pants_tier = (Equipment.Quality) Pants_tier.getSelectedItem();
         data.playerclass = PlayerClass.getSelectedItem().toString();
+        data.pill = Pill.getSelectedItem().toString();
         data.potion1 = Potion1.getSelectedItem().toString();
         data.potion1_t = (int) Double.parseDouble(Potion1_t.getValue().toString());
         data.potion2 = Potion2.getSelectedItem().toString();
@@ -2253,6 +2285,27 @@ public class UserForm extends JFrame {
         return file;
     }
 
+    private Settings loadSettings(String path) {
+        Settings file = null;
+        try {
+            File def = new File(path);
+            JsonReader reader = new JsonReader(new FileReader(def));
+            file = gson.fromJson(reader, Settings.class);
+        } catch (Exception ignored) {
+            try {
+                file = new Settings();
+                JsonWriter writer = new JsonWriter(new FileWriter(path));
+                gson.toJson(file, Settings.class, writer);
+                writer.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(RightPanel, ex.getMessage(), "Exception",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        }
+        return file;
+    }
+
     private void loadSetup(Setup data) {
         SetSetup.setSelected(data.setsetup);
         Helmet_lvl.setValue(data.helmet_lvl);
@@ -2289,6 +2342,7 @@ public class UserForm extends JFrame {
         Pants_lvl.setValue(data.pants_lvl);
         Pants_name.setSelectedItem(data.pants_name);
         Pants_tier.setSelectedItem(data.pants_tier);
+        Pill.setSelectedItem(data.pill);
         Potion1.setSelectedItem(data.potion1);
         Potion1_t.setValue(data.potion1_t);
         Potion2.setSelectedItem(data.potion2);
@@ -2351,6 +2405,7 @@ public class UserForm extends JFrame {
     private void loadResearch(Setup data) {
         Alchemy_lvl.setValue(data.alchemy_lvl);
         Crafting_lvl.setValue(data.crafting_lvl);
+        Alchemist_CL.setValue(data.alchemist_lvl);
         Milestone.setValue(data.milestone);
         R_spd_bonus.setValue(data.r_spd_bonus);
         ML.setValue((int) data.ml);
@@ -2487,7 +2542,7 @@ public class UserForm extends JFrame {
         return new ArrayList<>(Arrays.asList(
                 "Slime", "Goblin", "Imp", "Ghoul", "Wraith",
                 "Shinigami", "Astaroth", "Tengu", "Amon", "Akuma", "Devil", "Shax", "Dagon", "Lamia",
-                "Tyrant", "Fairy", "Raum", "Asura", "Squirrel Mage"
+                "Tyrant", "Fairy", "Raum", "Asura", "Squirrel Mage", "Tree Golem"
         ));
     }
 

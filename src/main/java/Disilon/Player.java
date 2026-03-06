@@ -1,10 +1,10 @@
 package Disilon;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Vector;
 import java.util.stream.Collectors;
 
 import static Disilon.Main.df2;
@@ -17,7 +17,7 @@ public class Player extends Actor {
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
             "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer",
-            "Onion Knight", "Scholar", "RogueT4"};
+            "Onion Knight", "Scholar", "Alchemist", "RogueT4"};
 
     double rp_balance;
     double old_rp;
@@ -44,6 +44,7 @@ public class Player extends Actor {
         this.bestiary = setup.bestiary;
         this.rp_balance = setup.rp_balance;
         this.old_rp = setup.rp_balance;
+        this.pill = new Pill(setup.pill);
         this.setClass(setup.playerclass);
         this.setCLML(setup.cl, setup.ml);
         this.old_cl = setup.cl;
@@ -79,7 +80,7 @@ public class Player extends Actor {
             }
         }
         for (String skill : setup.actives_lvls.keySet()) {
-            if (active_skills.containsKey(skill)) {
+            if (active_skills.containsKey(skill) && (SkillData.potion_skills == null || !SkillData.potion_skills.contains(skill))) {
                 double lvl = setup.actives_lvls.get(skill);
                 active_skills.get(skill).setLvl(lvl);
                 active_skills.get(skill).old_lvl = lvl;
@@ -443,6 +444,31 @@ public class Player extends Actor {
                 skills.enableActive("Prepare");
                 skills.enableActive("Bash");
             }
+            case "Alchemist" -> {
+                tier = 3;
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Speed Boost");
+                skills.enablePassive("Potion Inventor");
+                skills.enablePassive("Potion Slots");
+                skills.enablePassive("Pill Inventor");
+                skills.enableActive("Bash");
+                skills.enableActive("Prepare");
+                skills.enableActive("Throw Potion");
+                skills.makeUnavailable("Throw Potion");
+                skills.enableActive("Throw Burning");
+                skills.enableActive("Throw Freezing");
+                skills.enableActive("Throw Geo");
+                skills.enableActive("Throw Acid");
+                skills.enableActive("Throw Black");
+                skills.enableActive("Throw Luminary");
+                skills.makeInvisible("Throw Burning");
+                skills.makeInvisible("Throw Freezing");
+                skills.makeInvisible("Throw Geo");
+                skills.makeInvisible("Throw Acid");
+                skills.makeInvisible("Throw Black");
+                skills.makeInvisible("Throw Luminary");
+                skills.enableActive("Alchemic Reaction");
+            }
             case "RogueT4" -> {
                 tier = 6;
                 base_water_res = -0.5;
@@ -481,27 +507,29 @@ public class Player extends Actor {
         skills.enableActive("Basic Attack");
         skills.enableActive("First Aid");
         skills.enablePassive("Exp Boost");
+        skills.makeVisible("Potion Inventor");
+        skills.makeVisible("Pill Inventor");
     }
 
-    public Vector<String> getAvailableActiveSkills() {
-        Vector<String> v = new Vector<>();
+    public ArrayList<String> getAvailableActiveSkills() {
+        ArrayList<String> v = new ArrayList<>();
+        v.add("None");
         for (String skill : active_skills.keySet()) {
             if (active_skills.get(skill).available) {
                 v.add(skill);
             }
         }
-        v.insertElementAt("None", 0);
         return v;
     }
 
-    public Vector<String> getAvailablePassiveSkills() {
-        Vector<String> v = new Vector<>();
+    public ArrayList<String> getAvailablePassiveSkills() {
+        ArrayList<String> v = new ArrayList<>();
+        v.add("None");
         for (String skill : passives.keySet()) {
             if (!skill.equals("Tsury Finke") && passives.get(skill).available) {
                 v.add(skill);
             }
         }
-        v.insertElementAt("None", 0);
         return v;
     }
 
@@ -630,6 +658,15 @@ public class Player extends Actor {
                 base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
             }
+            case "Alchemist" -> {
+                base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+            }
             case "Student" -> {
                 base_hp_max = (double) (70 * (cl + 100)) / 10000 * 30 * ml;
                 base_atk = (double) (70 * (cl + 100)) / 10000 * 4 * ml;
@@ -750,6 +787,7 @@ public class Player extends Actor {
             case "Pyromancer" -> {
                 result += getAvgAtkInt();
             }
+            case "Alchemist" -> result += getAvgAtkInt() * 0.4;
             default -> {
             }
         }
@@ -768,6 +806,7 @@ public class Player extends Actor {
             case "Rogue", "RogueT4" -> {
                 result += getAvgAtkInt();
             }
+            case "Alchemist" -> result += getAvgAtkInt() * 0.4;
             default -> {
             }
         }
@@ -786,6 +825,7 @@ public class Player extends Actor {
             case "Geomancer" -> {
                 result -= getAvgAtkInt();
             }
+            case "Alchemist" -> result += getAvgAtkInt() * 0.4;
             default -> {
             }
         }
@@ -800,6 +840,7 @@ public class Player extends Actor {
             case "Geomancer" -> {
                 result += getAvgAtkInt();
             }
+            case "Alchemist" -> result += getAvgAtkInt() * 0.4;
             default -> {
             }
         }
@@ -818,6 +859,7 @@ public class Player extends Actor {
             case "Priest" -> {
                 result -= getAvgAtkInt();
             }
+            case "Alchemist" -> result += getAvgAtkInt() * 0.4;
             default -> {
             }
         }
@@ -834,6 +876,7 @@ public class Player extends Actor {
             case "Priest" -> {
                 result += getAvgAtkInt();
             }
+            case "Alchemist" -> result += getAvgAtkInt() * 0.4;
             default -> {
             }
         }
@@ -912,10 +955,11 @@ public class Player extends Actor {
         if (getDark_res() != 0) {
             sb.append("Dark mitigation = ").append(df2.format(getDark_res() * 100)).append("%\n");
         }
-        if (gear_crit > 0) sb.append("Crit = ").append(df2.format(gear_crit * 100)).append("%\n");
+        if (getCrit_chance() > 0) sb.append("Crit = ").append(df2.format(getCrit_chance() * 100)).append("%\n");
         if (gear_stun > 0) sb.append("Stun = ").append(df2.format(gear_stun * 100)).append("%\n");
         if (gear_analyze > 0) sb.append("Analyze = ").append(df2.format(gear_analyze * 100)).append("%\n");
         if (gear_barrier > 0) sb.append("Barrier buff = ").append(df2.format(gear_barrier * 100)).append("%\n");
+        if (gear_potion > 0) sb.append("Potion buff = ").append(df2.format(gear_potion * 100)).append("%\n");
         if ((burn_mult + gear_burn) > 1)
             sb.append("Burn = ").append(df2.format((burn_mult + gear_burn) * 100 - 100)).append("%\n");
         if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
@@ -975,9 +1019,19 @@ public class Player extends Actor {
     }
 
     public void levelActives() {
-        active_skills.forEach((key, value) -> {
-            if (value.enabled) value.gainExp(1);
-        });
+        boolean uses_potion = false;
+        for (ActiveSkill a : active_skills.values()) {
+            if (a.enabled) {
+                if (SkillData.potion_skills.contains(a.name)) {
+                    uses_potion = true;
+                } else {
+                    a.gainExp(1);
+                }
+            }
+        }
+        if (uses_potion) {
+            active_skills.get("Throw Potion").gainExp(1);
+        }
     }
 
     public void levelTF(Enemy e) {
@@ -1227,10 +1281,10 @@ public class Player extends Actor {
         if (potion1 != null && potion1.cooldown > 0) {
             time = minIfNotZero(time, potion1.cooldown);
         }
-        if (potion2 != null) {
+        if (potion2 != null && potion2.cooldown > 0) {
             time = minIfNotZero(time, potion2.cooldown);
         }
-        if (potion3 != null) {
+        if (potion3 != null && potion3.cooldown > 0) {
             time = minIfNotZero(time, potion3.cooldown);
         }
         return time;
@@ -1276,5 +1330,21 @@ public class Player extends Actor {
     public double getBestiaryBonus(String name) {
         double bonus = bestiary.getOrDefault(name, 0.0) / 500000.0;
         return Math.min(bonus, 0.1);
+    }
+
+    public double combat_potion_time(int crafting, int alchemy, int alchemist_lvl) {
+        double time = 0;
+        if (potions_thrown > 0) {
+            double craft_spd =
+                    (1 + 0.01 * crafting) * (1 + 0.01 * research_lvls.getOrDefault("Crafting spd", 0.0).intValue());
+            double alch_spd =
+                    (1 + 0.01 * alchemy) * (1 + 0.01 * research_lvls.getOrDefault("Alchemy spd", 0.0).intValue());
+            if (alchemist_lvl >= 90) {
+                alch_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
+            }
+            time += potions_thrown * 7.5 / alch_spd;
+            time += flask_used * 6.0 / craft_spd;
+        }
+        return time;
     }
 }

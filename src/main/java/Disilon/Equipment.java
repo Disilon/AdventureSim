@@ -44,6 +44,7 @@ public class Equipment {
     double TF = 0;
     double analyze = 0;
     double barrier = 0;
+    double potion = 0;
 
     Map equipStats;
 
@@ -95,6 +96,7 @@ public class Equipment {
         clone.TF = this.TF;
         clone.analyze = this.analyze;
         clone.barrier = this.barrier;
+        clone.potion = this.potion;
         return clone;
     }
     
@@ -153,6 +155,7 @@ public class Equipment {
         this.TF = equipStats.containsKey("TF") ? (double) equipStats.get("TF") * mult : 0;
         this.analyze = equipStats.containsKey("ANALYZE") ? (double) equipStats.get("ANALYZE") * mult : 0;
         this.barrier = equipStats.containsKey("BARRIER") ? (double) equipStats.get("BARRIER") * mult : 0;
+        this.potion = equipStats.containsKey("POTION") ? (double) equipStats.get("POTION") * mult : 0;
 
         // Set name
         if (equipStats.containsKey("SET")) this.displayName = (String) equipStats.get("SET");

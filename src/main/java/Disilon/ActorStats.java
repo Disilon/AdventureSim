@@ -67,6 +67,7 @@ public class ActorStats {
     public double gear_stun;
     public double gear_analyze;
     public double gear_barrier;
+    public double gear_potion;
 
     public double set_hit = 1;
     public double set_res = 1;
@@ -111,7 +112,8 @@ public class ActorStats {
     public double prepare_threshold;
     public double exp;
     public double exp_mult = 1;
-    public double mp_cost_add;
+    public double p_mp_cost_add;
+    public double p_mp_cost_mult = 1;
     public double mp_cost_mult = 1;
     public double cast_speed_mult = 1;
     public double delay_speed_mult = 1;
@@ -127,6 +129,7 @@ public class ActorStats {
     public double weaken = 0;
     public double slow = 1;
     public double mark = 0;
+    public double freeze = 0;
     public double empower_hp = 0;
     public double hp_regen = 0;
     public double blessed = 0;
@@ -141,6 +144,9 @@ public class ActorStats {
     public double analyze_speed = 1;
     public double analyze_mult = 0;
     public double finke_bonus = 0;
+    public double potion_effect = 1;
+    public double pill_effect = 1;
+    public double berserk_dmg = 0;
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;
@@ -155,6 +161,7 @@ public class ActorStats {
     public double dot_tracking = 0;
     public double overkill = 0;
     public double damage_taken = 0;
+    public double berserk_damage_taken = 0;
     public boolean holylight_enabled;
     public boolean prayer_enabled;
     public boolean aurablade_enabled;
@@ -175,8 +182,11 @@ public class ActorStats {
     public double no_overkill_crit = 0;
     public double core_drop_research = 0;
     public double core_quality_research = 0;
-    double speed_mult_sum = 0;
-    int speed_mult_count = 0;
+    public double speed_mult_sum = 0;
+    public int speed_mult_count = 0;
+
+    int flask_used = 0;
+    int potions_thrown = 0;
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;
@@ -185,6 +195,7 @@ public class ActorStats {
     public Potion potion1;
     public Potion potion2;
     public Potion potion3;
+    public Pill pill;
 
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();
     public ArrayList<Buff> buffs = new ArrayList<Buff>();

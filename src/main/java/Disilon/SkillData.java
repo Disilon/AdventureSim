@@ -1,11 +1,15 @@
 package Disilon;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class SkillData {
     private LinkedHashMap<String, PassiveSkill> passives;
     private LinkedHashMap<String, ActiveSkill> active_skills;
     private ActorStats owner;
+    public static HashSet<String> potion_skills;
 
     public SkillData(ActorStats owner, LinkedHashMap<String, ActiveSkill> active_skills, LinkedHashMap<String, PassiveSkill> passives) {
         this.owner = owner;
@@ -33,11 +37,13 @@ public class SkillData {
     public void disableAll() {
         for (PassiveSkill p : passives.values()) {
             p.available = false;
+            p.visible = false;
             p.enabled = false;
             p.setLvl(0);
         }
         for (ActiveSkill a : active_skills.values()) {
             a.available = false;
+            a.visible = false;
             a.setSkill(0, SkillMod.Basic);
             a.clear_recorded_data();
         }
@@ -45,11 +51,25 @@ public class SkillData {
 
     public void enableActive(String name) {
         active_skills.get(name).available = true;
+        active_skills.get(name).visible = true;
     }
 
     public void enablePassive(String name) {
         passives.get(name).available = true;
+        passives.get(name).visible = true;
     }
+
+    public void makeUnavailable(String name) {
+        active_skills.get(name).available = false;
+    }
+    public void makeInvisible(String name) {
+        active_skills.get(name).visible = false;
+    }
+
+    public void makeVisible(String name) {
+        passives.get(name).visible = true;
+    }
+
 
     public void passiveSkillData() {
         addPassive("Attack Boost", 0.2, 10, 0.1);
@@ -93,6 +113,9 @@ public class SkillData {
         addPassive("Extra Attack", 0.8, 15, 0.1);
         addPassive("Dual Wield", 0.25, 0, 0);
         addPassive("Exp Boost", 0.15, 10, 0.1);
+        addPassive("Potion Inventor", 0.0, 15, 0.15);
+        addPassive("Potion Slots", 0.2, 10, 0.15);
+        addPassive("Pill Inventor", 0.0, 10, 0.15);
     }
 
     public void activeSkillData() {
@@ -106,7 +129,7 @@ public class SkillData {
                 true, false);
         addActive("Poison Attack", 1, 36, 44, 1, 4, 0.4, 0.9, Scaling.atk, Element.phys, false
                 , false);
-        active_skills.get("Poison Attack").addDebuff("Poison", 3, 0.15);
+        active_skills.get("Poison Attack").addDebuff("Poison", 3, 0.13);
         active_skills.get("Poison Attack").weapon_required = false;
         addActive("Smoke Screen", 1, 0, 0, 0.85, 25, 0.8, 1, Scaling.atk, Element.none, true, false);
         active_skills.get("Smoke Screen").addDebuff("Smoke", 3, 0);
@@ -270,7 +293,20 @@ public class SkillData {
         addActive("Prepare", 0, 1, 1);
         addActive("Extra Attack", 1, 75, 75, 100, 0, 0, 0, Scaling.atk,
                 Element.water,false, false);
+        potion_skills = new HashSet<>(List.of("Throw Burning","Throw Freezing","Throw Geo","Throw Acid","Throw Black","Throw Luminary"));
+        addActive("Throw Burning", 1, 666, 666, 1, 50, 3, 1, Scaling.atk, Element.fire,false, false);
+        active_skills.get("Throw Burning").addDebuff("Burn", 3, 2.5);
+        addActive("Throw Freezing", 1, 580, 580, 1, 50, 3, 1, Scaling.atk, Element.water,false, false);
+        active_skills.get("Throw Freezing").addDebuff("Freeze", 3, 0.20);
+        addActive("Throw Geo", 1, 650, 650, 1, 50, 3, 1, Scaling.atk, Element.earth,false, false);
+        active_skills.get("Throw Geo").addDebuff("Stun", 0, 3);
+        addActive("Throw Acid", 1, 550, 550, 1, 50, 3, 1, Scaling.atk, Element.wind,false, false);
+        active_skills.get("Throw Acid").addDebuff("Poison", 3, 0.13);
+        addActive("Throw Black", 1, 700, 700, 1, 50, 3, 1, Scaling.atk, Element.dark,false, false);
+        active_skills.get("Throw Black").addDebuff("Defense Break", 3, 0.25);
+        addActive("Throw Luminary", 1, 700, 700, 1, 50, 3, 1, Scaling.atk, Element.light,false, false);
+        active_skills.get("Throw Luminary").addDebuff("Resist Break", 3, 0.25);
+        addActive("Throw Potion", 1, 90, 110, 1, 50, 3, 1, Scaling.atk, Element.phys,false, false);
+        addActive("Alchemic Reaction", 1, 108, 132, 1, 150, 2, 2.0/3, Scaling.intel, Element.magic,false, false);
     }
-
-
 }

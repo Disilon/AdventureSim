@@ -5,6 +5,7 @@ import static Disilon.Main.df2p;
 import static Disilon.Main.df4;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
+import static Disilon.SkillData.potion_skills;
 import static java.lang.Math.max;
 
 public class ActiveSkill {
@@ -63,6 +64,7 @@ public class ActiveSkill {
     public boolean enabled = false;
     public int use_setting;
     public boolean available = true;
+    public boolean visible;
     public boolean triggers_counter = true;
     public boolean weapon_required = true;
     public boolean attack;
@@ -183,27 +185,9 @@ public class ActiveSkill {
         return enough_mp;
     }
 
-    public static double offlineTime(double add, double total_time) {
-        double exact = total_time + add;
-        double tick = 0.18;
-        double next_tick = Math.ceil(exact / tick) * tick;
-//        System.out.println("exact=" + add + "; next_tick_diff=" + (next_tick - exact));
-//        System.out.println(next_tick);
-        return next_tick - total_time;
-    }
-
-    public static double onlineTime(double add, double total_time) {
-        double exact = total_time + add;
-        double tick = 0.03;
-        double next_tick = Math.ceil(exact / tick) * tick;
-//        System.out.println("exact=" + add + "; next_tick_diff=" + (next_tick - exact));
-//        System.out.println(next_tick);
-        return next_tick - total_time;
-    }
-
     public void startCast(Actor attacker, Actor target, boolean offline, double time, double total_time) {
         double speed_mult = Math.clamp((target.getSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
-        cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + target.stealthDelay();
+        cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + target.stealthDelay() + attacker.freezeDelay();
         if (attacker.ambushing) cast = max(0.0, cast - 5);
         cast = max(0.01, cast);
         delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
@@ -221,7 +205,7 @@ public class ActiveSkill {
         attacker.speed_mult_count += 1;
         if (name.equals("Analyze")) {
             cast =
-                    3 * speed_mult * attacker.cast_speed_mult * cast_mult * attacker.analyze_speed + attacker.zone.stealthDelay();
+                    3 * speed_mult * attacker.cast_speed_mult * cast_mult * attacker.analyze_speed + attacker.zone.stealthDelay() + attacker.freezeDelay();
             double factor =
                     attacker.zone.enemies[0].hp / (this.min / 100 * attacker.getIntel()) / (1 + attacker.gear_analyze);
             cast *= max(factor, 1);
@@ -301,9 +285,8 @@ public class ActiveSkill {
     }
 
     public double calculate_manacost(Actor actor) {
-        double cost = (mp * mp_mult + mp_additive) * actor.mp_cost_mult + actor.mp_cost_add;
-        cost *= 1 + actor.set_core;
-        cost *= 1 - actor.set_mana;
+        double cost = (mp * mp_mult + mp_additive) * actor.p_mp_cost_mult + actor.p_mp_cost_add;
+        cost *= actor.mp_cost_mult;
         if (element == Element.water) cost *= 1 - actor.finke_bonus;
         return cost;
     }
@@ -312,6 +295,34 @@ public class ActiveSkill {
         double cost = actor.casting.calculate_manacost(actor);
         mana_used += cost;
         actor.setMp(actor.mp - cost);
+    }
+
+    public void finish_cast(Actor actor) {
+        if (actor.lvling) {
+            ActiveSkill s = this;
+            if (potion_skills.contains(name)) {
+                s = owner.active_skills.get("Throw Potion");
+            }
+            s.gainExp(1);
+        }
+        if (actor.current_skill_hit) actor.ambush_bonus = 0;
+        if (actor.ambushing) actor.ambushing = false;
+        if (actor.berserk_dmg > 0 && hit > 0) {
+            actor.setHp(actor.hp - actor.berserk_dmg);
+            actor.berserk_damage_taken += actor.berserk_dmg;
+        }
+        Enemy enemy = null;
+        if (actor.getClass().equals(Enemy.class)) enemy = (Enemy) actor;
+        if (enemy != null && enemy.casting.name.equals("Flee") && enemy.bound == 0) {
+            enemy.active = false;
+            if (log.contains("fight_end"))
+                System.out.println("Squirrel fled");
+        }
+        if (buff_name != null) {
+            applyBuff(actor);
+        }
+        actor.tick_debuffs();
+        pay_manacost(actor);
     }
 
     public void addDebuff(String name, double duration, double dmg) {
@@ -345,6 +356,11 @@ public class ActiveSkill {
 
     public void setLvl(int lvl) {
         this.lvl = lvl;
+        if (owner != null && name.equals("Throw Potion")) {
+            for (String link : potion_skills){
+                owner.active_skills.get(link).setLvl(lvl);
+            }
+        }
     }
 
     public void setSkill(double lvl, SkillMod type) {
@@ -412,13 +428,6 @@ public class ActiveSkill {
                 this.cast_mult = this.base_cast * (1 - 0.01 * lvl);
                 this.delay_mult = this.base_delay * (1 - 0.01 * lvl);
                 break;
-            case PowPow:
-                this.min = this.base_min * (1 + 0.05 * lvl);
-                this.max = this.base_max * (1 + 0.05 * lvl);
-                this.hit = this.base_hit * (1 + 0.02 * lvl);
-                this.mp_mult = (1 + 0.1 * lvl);
-                this.mp = this.base_mp + lvl;
-                break;
             case Damage:
                 this.dmg_mult = (1 + 0.05 * lvl);
                 this.mp_mult = (1 + 0.05 * lvl);
@@ -438,55 +447,10 @@ public class ActiveSkill {
             default:
                 break;
         }
-        if (debuff_name != null) {
-            switch (debuff_name) {
-                case "Burn":
-                case "Poison":
-                    this.debuff_duration = switch (this.skillMod) {
-                        case SkillMod.Basic -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
-                        case SkillMod.Pow -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
-                        case SkillMod.PowPow -> base_debuff_duration * (1 + 0.05 * lvl);
-                        case SkillMod.Cheap -> base_debuff_duration * (1 - 0.01 * lvl);
-                        case SkillMod.Enemy -> base_debuff_duration;
-                        case SkillMod.Damage -> base_debuff_duration;
-                        default -> base_debuff_duration;
-                    };
-                    this.debuff_dmg = base_debuff_dmg * (1 + 0.02 * this.lvl);
-                    break;
-                case "Mark":
-                case "Stun":
-                case "Defense Break":
-                case "Resist Break":
-                case "Weaken":
-                case "Bound":
-                    this.debuff_duration = switch (this.skillMod) {
-                        case SkillMod.Basic -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
-                        case SkillMod.Pow -> base_debuff_duration * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
-                        case SkillMod.PowPow -> base_debuff_duration * (1 + 0.05 * lvl);
-                        case SkillMod.Cheap -> base_debuff_duration * (1 - 0.01 * lvl);
-                        default -> base_debuff_duration;
-                    };
-                    this.debuff_effect = switch (this.skillMod) {
-                        case SkillMod.Basic -> base_debuff_dmg * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
-                        case SkillMod.Pow -> base_debuff_dmg * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
-                        case SkillMod.PowPow -> base_debuff_dmg * (1 + 0.05 * lvl);
-                        case SkillMod.Cheap -> base_debuff_dmg * (1 - 0.01 * lvl);
-                        default -> base_debuff_dmg;
-                    };
-                    this.debuff_dmg = 0;
-                    break;
-                default:
-                    this.debuff_duration = base_debuff_duration;
-                    this.debuff_dmg = base_debuff_dmg * (1 + 0.02 * this.lvl);
-                    this.debuff_effect = base_debuff_dmg * (1 + 0.02 * this.lvl);
-                    break;
-            }
-        }
         if (buff_name != null) {
             this.buff_bonus = switch (this.skillMod) {
                 case SkillMod.Basic -> base_buff_bonus * (1 + (game_version >= 1563 ? 0.025 : 0.02) * lvl);
                 case SkillMod.Pow -> base_buff_bonus * (1 + (game_version >= 1563 ? 0.015 : 0.01) * lvl);
-                case SkillMod.PowPow -> base_buff_bonus * (1 + 0.05 * lvl);
                 case SkillMod.Cheap -> base_buff_bonus * (1 - 0.01 * lvl);
                 default -> base_buff_bonus;
             };
@@ -599,6 +563,32 @@ public class ActiveSkill {
     }
 
     public double attack(Actor attacker, Actor defender, int overwrite_hits, double time) {
+        String debuff_to_apply = debuff_name;
+        double debuff_to_apply_duration = base_debuff_duration;
+        double debuff_to_apply_effect = base_debuff_dmg;
+        Element element_to_apply = element;
+        double min_power = min;
+        double max_power = max;
+        double dmg_mult = attacker.getDmg_mult();
+        if (potion_skills.contains(name)) {
+            ActiveSkill tp = owner.active_skills.get("Throw Potion");
+            min_power = (tp.min * base_min / 100) * attacker.getPotion_effect();
+            max_power = (tp.max * base_max / 100) * attacker.getPotion_effect();
+            attacker.flask_used += 1;
+            attacker.potions_thrown += 1;
+        }
+        if (name.equals("Alchemic Reaction")) {
+            ActiveSkill ls = owner.last_skill;
+            if (ls != null && potion_skills.contains(ls.name)) {
+                debuff_to_apply = ls.debuff_name;
+                debuff_to_apply_duration = ls.base_debuff_duration;
+                debuff_to_apply_effect = ls.base_debuff_dmg;
+                element_to_apply = ls.element;
+                min_power = (min * ls.base_min / 100) * attacker.getPotion_effect();
+                max_power = (max * ls.base_max / 100) * attacker.getPotion_effect();
+                attacker.flask_used -= 1;
+            }
+        }
         double gain = attacker.getHp_max() * attacker.hp_regen;
         attacks_total++;
         if (gain > 0) {
@@ -626,17 +616,21 @@ public class ActiveSkill {
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
             attacker.current_skill_hit = true;
             hits_total++;
-            if (this.debuff_name != null) {
-                applyDebuff(attacker, defender);
+            boolean stun = false;
+            if (debuff_to_apply != null) {
+                stun = applyDebuff(debuff_to_apply, debuff_to_apply_duration, debuff_to_apply_effect, attacker,
+                        defender);
+            }
+            if (defender.freeze > 0) {
+                dmg_mult *= 1 + (stun ? 2 : 1) * defender.freeze;
             }
             if (defender.counter_strike > 0 && triggers_counter && defender.counter_strike > Math.random()) {
                 counter_attack(attacker, defender, false);
             }
-            if (max > 0) {
+            if (max_power > 0) {
                 double enemy_resist;
                 double atk = 0;
                 double def = 0;
-                double dmg_mult = attacker.getDmg_mult();
                 double dmg_mult1 = 1;
                 dmg_mult *= 1.0 + attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
@@ -644,7 +638,7 @@ public class ActiveSkill {
                 if (name.equals("Back Stab") && (defender.smoked || defender.bound > 0)) {
                     dmg_mult1 *= 2;
                 }
-                enemy_resist = switch (this.element) {
+                enemy_resist = switch (element_to_apply) {
                     case Element.dark -> {
                         atk = attacker.getDark();
                         yield defender.getDark_res();
@@ -726,16 +720,7 @@ public class ActiveSkill {
                         yield defender.getResist();
                     }
                 };
-                double crit_chance = defender.bound + attacker.gear_crit + attacker.base_crit_chance;
-                double not_crit = (1 - defender.bound) * (1 - attacker.gear_crit - attacker.base_crit_chance);
-                double crit_dmg = attacker.base_crit_damage;
-                if (crit_chance > 0 && Math.random() < crit_chance) {
-//                if (not_crit < 1 && Math.random() > not_crit) {
-                    atk *= crit_dmg;
-                    attacker.last_crit = true;
-                } else {
-                    attacker.last_crit = false;
-                }
+                atk = applyCrit(attacker, defender, atk);
                 if (name.equals("Pierce")) {
                     def = 0;
                 }
@@ -756,7 +741,7 @@ public class ActiveSkill {
                     if (attacker.gear_stun > 0 && game_version < 1566 && Math.random() < attacker.gear_stun) {
                         defender.stun_time += 2.0;
                     }
-                    double dmg = this.max - Math.random() * (this.max - this.min) * (1 - attacker.dmg_range);
+                    double dmg = max_power - Math.random() * (max_power - min_power) * (1 - attacker.dmg_range);
                     if (attacker.zone == null && weapon_required) {
                         dmg *= 0.7;
                     }
@@ -825,16 +810,7 @@ public class ActiveSkill {
         double def = defender.getDef();
         double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
         double atk = attacker.getAtk() + attacker.getWater();
-        double crit_chance = defender.bound + attacker.gear_crit + attacker.base_crit_chance;
-        double not_crit = (1 - defender.bound) * (1 - attacker.gear_crit - attacker.base_crit_chance);
-        double crit_dmg = attacker.base_crit_damage;
-        if (crit_chance > 0 && Math.random() < crit_chance) {
-//        if (not_crit < 1 && Math.random() > not_crit) {
-            atk *= crit_dmg;
-            attacker.last_crit = true;
-        } else {
-            attacker.last_crit = false;
-        }
+        atk = applyCrit(attacker, defender, atk);
         dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
         dmg = dmg * (1 - defender.getWater_res());
         dmg = max(1, dmg);
@@ -891,9 +867,57 @@ public class ActiveSkill {
         attacker.applyBuff(buff_name, duration, bonus);
     }
 
-    public void applyDebuff(Actor attacker, Actor defender) {
+    public double calcDebuffDuration(String debuff, double base_value) {
+        double value = 0;
+        value = switch (this.skillMod) {
+            case SkillMod.Basic -> base_value * (1 + 0.025 * lvl);
+            case SkillMod.Pow -> base_value * (1 + 0.015 * lvl);
+            case SkillMod.Cheap -> base_value * (1 - 0.01 * lvl);
+            default -> base_value;
+        };
+        return value;
+    }
+
+    public double calcDebuffDmg(String debuff, double base_value) {
+        double value = 0;
+        switch (debuff) {
+            case "Burn":
+            case "Poison":
+                value = base_value * (1 + 0.02 * lvl);
+        }
+        return value;
+    }
+
+    public double calcDebuffEffect(String debuff, double base_value) {
+        double value = 0;
+        switch (debuff) {
+            case "Mark":
+            case "Stun":
+            case "Defense Break":
+            case "Resist Break":
+            case "Weaken":
+            case "Bound":
+            case "Freeze":
+                value = switch (this.skillMod) {
+                    case SkillMod.Basic -> base_value * (1 + 0.025 * lvl);
+                    case SkillMod.Pow -> base_value * (1 + 0.015 * lvl);
+                    case SkillMod.Cheap -> base_value * (1 - 0.01 * lvl);
+                    default -> base_value;
+                };
+                break;
+            default:
+                value = base_value * (1 + 0.02 * lvl);
+                break;
+        }
+        return value;
+    }
+
+    public boolean applyDebuff(String debuff, double base_duration, double base_effect, Actor attacker,
+                               Actor defender) {
+        boolean stun = false;
+        double effect = calcDebuffEffect(debuff, base_effect);
         double hit_chance = (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
-        if (debuff_name.equals("Poison")) {
+        if (debuff.equals("Poison")) {
             hit_chance = (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
             if (attacker.passives.get("Poison Boost").enabled) hit_chance *= 2;
 //            System.out.println(name + " poison chance: " + hit_chance);
@@ -901,7 +925,7 @@ public class ActiveSkill {
         if (name.equals("Throw Sand")) {
             hit_chance = (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
         }
-        if (debuff_name.equals("Burn")) {
+        if (debuff.equals("Burn")) {
             // System.out.println(attacker.name + ": " + name + " burn chance: " + hit_chance);
         }
 
@@ -909,7 +933,7 @@ public class ActiveSkill {
         if (name.equals("Smoke Screen")) {
             hit_chance = 1;
         }
-        if (debuff_name.equals("Mark")) {
+        if (debuff.equals("Mark")) {
             hit_chance = 1;
         }
         if (hit_chance < 0.2) {
@@ -922,38 +946,41 @@ public class ActiveSkill {
             defender.zone.stats.incrementDebuff(attacker.name, name, hit_chance);
         }
         if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
-            int duration = (int) this.debuff_duration;
-            double fractional = this.debuff_duration - duration;
+            int duration = (int) calcDebuffDuration(debuff, base_duration);
+            double fractional = calcDebuffDuration(debuff, base_duration) - duration;
             if (Math.random() < fractional) {
                 duration += 1;
             }
-            double dmg = switch (this.debuff_name) {
-                case "Poison" -> this.debuff_dmg * (attacker.getIntel() + attacker.getAtk()) * attacker.poison_mult;
+            double dmg = switch (debuff) {
+                case "Poison" -> calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() + attacker.getAtk()) * attacker.poison_mult;
                 case "Burn" ->
-                        this.debuff_dmg * (attacker.getIntel() / 10 + attacker.getFire() / 5) * (1 - defender.fire_res) * (attacker.burn_mult + attacker.gear_burn);
+                        calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() / 10 + attacker.getFire() / 5) *
+                                (1 - defender.fire_res) * (attacker.burn_mult + attacker.gear_burn);
                 default -> 0;
             };
             if (defender.zone != null) {
                 defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
             }
-            defender.applyDebuff(debuff_name, duration, dmg, debuff_effect);
+            defender.applyDebuff(debuff, duration, dmg, effect);
+            if (debuff.equals("Stun")) stun = true;
             if (log.contains("debuff_applied")) {
-                String str = debuff_name + " was applied to " + name + " duration = " + duration;
+                String str = debuff + " was applied to " + name + " duration = " + duration;
                 if (dmg > 0) str += " dmg = " + (int) dmg;
-                if (debuff_effect > 0) str += " effect = " + df2.format(debuff_effect);
+                if (effect > 0) str += " effect = " + df2.format(effect);
                 System.out.println(str + " chance = " + df2.format(hit_chance * 100));
             }
 
         } else {
             if (log.contains("debuff_applied")) {
-                String str = debuff_name + " was resisted by " + name;
+                String str = debuff + " was resisted by " + name;
                 System.out.println(str + " chance = " + df2.format(hit_chance * 100));
             }
         }
+        return stun;
     }
 
     public void gainExp(double value) {
-        if (enabled) {
+        if (enabled || name.equals("Throw Potion")) {
             exp += value;
             double need = need_for_lvl(lvl);
             if (exp >= need && lvl < owner.max_skill_lvl) {
@@ -1036,5 +1063,38 @@ public class ActiveSkill {
 
     public boolean isSingleTarget() {
         return (!aoe && !random_targets);
+    }
+
+    private double applyCrit(Actor attacker, Actor defender, double atk) {
+        double crit_chance = getCritChance(attacker, defender, true);
+        double crit_dmg = attacker.base_crit_damage;
+        if (crit_chance > 0 && Math.random() < crit_chance) {
+            atk *= crit_dmg;
+            attacker.last_crit = true;
+        } else {
+            attacker.last_crit = false;
+        }
+        return atk;
+    }
+
+    public double getCritChance(Actor attacker, Actor defender, boolean additive) {
+        if (additive) {
+            return defender.bound + attacker.getCrit_chance();
+
+        } else {
+            return 1 - (1 - defender.bound) * (1 - attacker.getCrit_chance());
+        }
+    }
+
+    public boolean checkEnabled() {
+        if (owner != null && owner.name.equals("Alchemist") && name.equals("Throw Potion")) {
+            return true;
+        } else {
+            if (potion_skills.contains(name)) {
+                return false;
+            } else {
+                return enabled;
+            }
+        }
     }
 }

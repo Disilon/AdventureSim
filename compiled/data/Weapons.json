@@ -51,6 +51,10 @@
 			"ATK": 60,
 			"DEF": 24,
 			"HIT": 24
+		},"Cauldron": {
+			"ATK": 40,
+			"INT": 40,
+			"POTION": 0.07
 		}
 	},
 	"MH":{

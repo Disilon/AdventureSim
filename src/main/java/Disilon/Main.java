@@ -24,7 +24,7 @@ public class Main {
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;
-    public static long time_limit = 60000;
+    public static long time_limit = 60000; // will be overwritten by Settings.ini
     public static int game_version = availableVersions.getLast();
     public static DecimalFormatSymbols dfs;
     public static DecimalFormat df2;
@@ -164,7 +164,7 @@ public class Main {
     }
 
     public static double minTickTime(double time, boolean offline) {
-        double tick = offline ? 0.18 : 0.03;
+        double tick = offline ? 0.06 : 0.03;
         int n = (int) Math.ceil(time / tick);
         if (n == 0) n = 1;
         return n * tick;

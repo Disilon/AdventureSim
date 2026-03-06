@@ -9,6 +9,7 @@ public class Setup implements Serializable {
     String playerclass;
     double ml;
     double cl;
+    String pill;
     String potion1;
     int potion1_t;
     String potion2;
@@ -70,6 +71,7 @@ public class Setup implements Serializable {
     double milestone;
     int crafting_lvl;
     int alchemy_lvl;
+    int alchemist_lvl;
     boolean setsetup;
     boolean leveling;
     int sim_type;
@@ -106,23 +108,24 @@ public class Setup implements Serializable {
         this.research_weight = new HashMap<>();
         this.bestiary = new HashMap<>();
         this.rp_balance = 0;
-        this.playerclass = "Sniper";
-        this.ml = 106;
-        this.cl = 45;
+        this.playerclass = "Rogue";
+        this.ml = 218;
+        this.cl = 90;
+        this.pill = "None";
         this.potion1 = "HP T3";
-        this.potion1_t = 50;
+        this.potion1_t = 65;
         this.potion2 = "MP T3";
-        this.potion2_t = 50;
+        this.potion2_t = 65;
         this.potion3 = "None";
-        this.potion3_t = 50;
+        this.potion3_t = 65;
         this.skill1 = "None";
         this.skill2 = "None";
         this.skill3 = "None";
         this.skill4 = "None";
         this.skill1_mod = SkillMod.Damage;
-        this.skill2_mod = SkillMod.Basic;
-        this.skill3_mod = SkillMod.Basic;
-        this.skill4_mod = SkillMod.Basic;
+        this.skill2_mod = SkillMod.Damage;
+        this.skill3_mod = SkillMod.Damage;
+        this.skill4_mod = SkillMod.Damage;
         this.skill1_s = 1;
         this.skill2_s = 1;
         this.skill3_s = 1;
@@ -132,48 +135,49 @@ public class Setup implements Serializable {
         this.pskill3 = "None";
         this.pskill4 = "None";
         this.mh_name = "None";
-        this.mh_tier = Quality.Good;
-        this.mh_lvl = 0;
+        this.mh_tier = Quality.Superior;
+        this.mh_lvl = 5;
         this.oh_name = "None";
-        this.oh_tier = Quality.Good;
-        this.oh_lvl = 0;
+        this.oh_tier = Quality.Superior;
+        this.oh_lvl = 5;
         this.helmet_name = "None";
-        this.helmet_tier = Quality.Good;
-        this.helmet_lvl = 0;
+        this.helmet_tier = Quality.Superior;
+        this.helmet_lvl = 7;
         this.chest_name = "None";
-        this.chest_tier = Quality.Good;
-        this.chest_lvl = 0;
+        this.chest_tier = Quality.Superior;
+        this.chest_lvl = 7;
         this.pants_name = "None";
-        this.pants_tier = Quality.Good;
-        this.pants_lvl = 0;
+        this.pants_tier = Quality.Superior;
+        this.pants_lvl = 7;
         this.bracer_name = "None";
-        this.bracer_tier = Quality.Good;
-        this.bracer_lvl = 0;
+        this.bracer_tier = Quality.Superior;
+        this.bracer_lvl = 7;
         this.boots_name = "None";
-        this.boots_tier = Quality.Good;
-        this.boots_lvl = 0;
+        this.boots_tier = Quality.Superior;
+        this.boots_lvl = 7;
         this.accessory1_name = "Golden Belt";
         this.accessory1_tier = Quality.Exceptional;
         this.accessory1_lvl = 25;
         this.accessory2_name = "None";
-        this.accessory2_tier = Quality.Good;
-        this.accessory2_lvl = 0;
+        this.accessory2_tier = Quality.Superior;
+        this.accessory2_lvl = 10;
         this.necklace_name = "None";
-        this.necklace_tier = Quality.Good;
-        this.necklace_lvl = 0;
+        this.necklace_tier = Quality.Superior;
+        this.necklace_lvl = 10;
         this.result_essential = "Click simulate to get sim data";
         this.stats = "Click simulate to calculate stats";
         this.zone = Zone.z9;
         this.gameversion = String.valueOf(Main.availableVersions.getLast());
-        this.milestone = 162.5;
-        this.crafting_lvl = 20;
-        this.alchemy_lvl = 20;
+        this.milestone = 252.5;
+        this.crafting_lvl = 30;
+        this.alchemy_lvl = 30;
+        this.alchemist_lvl = 0;
         this.setsetup = true;
         this.leveling = false;
         this.sim_type = 1;
         this.simulations = 1000;
-        this.sim_hours = 12;
-        this.sim_cl = 90;
+        this.sim_hours = 24;
+        this.sim_cl = 120;
         this.offline = false;
         this.r_spd_bonus = 0;
         this.hard_hp = 100;
@@ -868,5 +872,21 @@ public class Setup implements Serializable {
 
     public void setBestiary(HashMap<String, Double> bestiary) {
         this.bestiary = bestiary;
+    }
+
+    public String getPill() {
+        return pill;
+    }
+
+    public void setPill(String pill) {
+        this.pill = pill;
+    }
+
+    public int getAlchemist_lvl() {
+        return alchemist_lvl;
+    }
+
+    public void setAlchemist_lvl(int alchemist_lvl) {
+        this.alchemist_lvl = alchemist_lvl;
     }
 }

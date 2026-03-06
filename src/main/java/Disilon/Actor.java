@@ -33,6 +33,7 @@ public class Actor extends ActorStats {
         weaken = 0;
         slow = 1;
         bound = 0;
+        freeze = 0;
         for (Debuff d : debuffs) {
             if (d.name.equals("Smoke")) smoked = true;
             if (d.name.equals("Defense Break")) def_break = d.effect;
@@ -40,6 +41,7 @@ public class Actor extends ActorStats {
             if (d.name.equals("Weaken")) weaken = d.effect;
             if (d.name.equals("Mark")) mark = d.effect;
             if (d.name.equals("Bound")) bound = d.effect;
+            if (d.name.equals("Freeze")) freeze = d.effect;
             if (d.name.equals("Slow")) slow *= 1 - d.effect;
         }
     }
@@ -350,6 +352,7 @@ public class Actor extends ActorStats {
                 finke_bonus += item.TF;
                 gear_analyze += item.analyze;
                 gear_barrier += item.barrier;
+                gear_potion += item.potion;
                 add_resist("Fire", item.fire_res * 0.01);
                 add_resist("Water", item.water_res * 0.01);
                 add_resist("Wind", item.wind_res * 0.01);
@@ -378,6 +381,8 @@ public class Actor extends ActorStats {
                 enableSet(set.bonus, set.min_quality, set.min_upgrade);
             }
         }
+        mp_cost_mult *= 1 + set_core;
+        mp_cost_mult *= 1 - set_mana;
         if (set_mit1 > 0) add_resist("All", set_mit1);
         if (set_mit2 > 0) add_resist("All", set_mit2);
     }
@@ -405,7 +410,14 @@ public class Actor extends ActorStats {
         bless_duration = 0;
         analyze_mult = 0;
         analyze_speed = 1;
+        potion_effect = 1;
+        pill_effect = 1;
+        berserk_dmg = 0;
+        mp_cost_mult = 1;
 
+        potion_effect *= 1 + 0.01 * Math.max(passives.get("Potion Inventor").lvl - 10, 0);
+        if (name.equals("Alchemist")) potion_effect *= 1 + passives.get("Potion Slots").getBonus();
+        pill_effect *= 1 + (name.equals("Alchemist") ? 0.03 : 0.01) * passives.get("Pill Inventor").lvl;
         atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
         poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
         dmg_mult *= 1.0 + passives.get("Dagger Mastery").getBonus();
@@ -447,13 +459,14 @@ public class Actor extends ActorStats {
         if (passives.get("Core Boost").enabled) {
             core_mult = passives.get("Core Boost").getBonus();
         }
-        mp_cost_add = 0;
-        mp_cost_mult = 1;
+        p_mp_cost_add = 0;
+        p_mp_cost_mult = 1;
         applyGear();
+        if (pill != null) pill.applyEffects(this);
         for (Map.Entry<String, PassiveSkill> passive : passives.entrySet()) {
             if (passive.getValue().enabled) {
-                mp_cost_add += passive.getValue().mp_add;
-                mp_cost_mult *= 1 + passive.getValue().mp_mult;
+                p_mp_cost_add += passive.getValue().mp_add;
+                p_mp_cost_mult *= 1 + passive.getValue().mp_mult;
             }
         }
         for (Map.Entry<String, ActiveSkill> active : active_skills.entrySet()) {
@@ -534,6 +547,7 @@ public class Actor extends ActorStats {
         finke_bonus = 0;
         gear_analyze = 0;
         gear_barrier = 0;
+        gear_potion = 0;
         phys_res = base_phys_res;
         magic_res = base_magic_res;
         water_res = base_water_res;
@@ -734,10 +748,26 @@ public class Actor extends ActorStats {
         return dmg_mult * mult;
     }
 
+    public double getPotion_effect() {
+        return potion_effect * (1 + gear_potion);
+    }
+
+    public double getCrit_chance() {
+        return base_crit_chance + gear_crit;
+    }
+
     public double stealthDelay() {
         double delay = passives.get("Stealth").enabled ? 1.2 * (1 + 0.02 * passives.get("Stealth").lvl) : 0;
         delay += passives.get("Safe Distance").enabled ? passives.get("Safe Distance").getBonus() : 0;
         return delay;
+    }
+
+    public double freezeDelay() {
+        if (freeze > 0) {
+            return 1.5;
+        } else {
+            return 0;
+        }
     }
 
     public double getDodge_mult() {

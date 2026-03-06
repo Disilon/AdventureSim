@@ -25,6 +25,7 @@ public class Simulation {
     String title = "Default simulation.";
     int crafting_lvl = 20;
     int alchemy_lvl = 20;
+    int alchemist_lvl = 0;
     int sim_type = 1;
     double time_to_respawn = 1;
     String skills_info = "";
@@ -43,6 +44,7 @@ public class Simulation {
         player = new Player(setup);
         crafting_lvl = setup.crafting_lvl;
         alchemy_lvl = setup.alchemy_lvl;
+        alchemist_lvl = setup.alchemist_lvl;
         offline = setup.offline;
         Main.balance1 = setup.extra_atk_overkill;
         Main.balance2 = setup.extra_atk_backstab_mult;
@@ -63,7 +65,8 @@ public class Simulation {
         double death_time = 0;
         double prepare_time = 0;
         double crafting_time = 0;
-        double sidecraft_time = 0;
+        double potion_sidecraft_time = 0;
+        double pill_sidecraft_time = 0;
         double min_time = 9999;
         double max_time = 0;
         double squirrel_min_time = 9999;
@@ -86,6 +89,8 @@ public class Simulation {
         double oom_time = 0;
         player.damage_taken = 0;
         player.dot_tracking = 0;
+        player.overkill = 0;
+        player.berserk_damage_taken = 0;
         player.research_slots_stat = 0;
         player.rp_drain = 0;
         title = player.zone.toString();
@@ -113,7 +118,7 @@ public class Simulation {
         if (offline && player.zone.getZoneTimeCap() > 0) {
             time_limit /= (120*60 + player.zone.getZoneTimeCap()) / (120*60);
         }
-        delta = offline ? 0.180 : 0.030;
+        delta = offline ? 0.060 : 0.030;
         while (!end) {
             player.target = null;
             double time = 0;
@@ -349,14 +354,7 @@ public class Simulation {
                                     player.tick_buffs(false);
                                 }
                             }
-                            if (player.lvling) player.casting.gainExp(1);
-                            if (player.current_skill_hit) player.ambush_bonus = 0;
-                            if (player.ambushing) player.ambushing = false;
-                            if (player.casting.buff_name != null) {
-                                player.casting.applyBuff(player);
-                            }
-                            player.tick_debuffs();
-                            player.casting.pay_manacost(player);
+                            player.casting.finish_cast(player);
                         }
                     } else if (player.casting.delay >= 0) {
                         if (player.casting.progressDelay(player, delta)) {
@@ -449,13 +447,7 @@ public class Simulation {
                                         player.zone.stats.incrementStats(enemy.name, enemy.casting.name, 0,
                                                 0, 0, 1, 0,0);
                                     }
-                                    if (enemy.casting.name.equals("Flee") && enemy.bound == 0) {
-                                        enemy.active = false;
-                                        if (log.contains("fight_end"))
-                                            System.out.println("Squirrel fled");
-                                    }
-                                    enemy.tick_debuffs();
-                                    enemy.casting.pay_manacost(enemy);
+                                    enemy.casting.finish_cast(enemy);
                                 }
                             } else if (enemy.casting.delay > 0) {
                                 if (enemy.casting.progressDelay(enemy, delta)) {
@@ -560,36 +552,25 @@ public class Simulation {
             }
             int research_craft = player.research_lvls.getOrDefault("Crafting spd", 0.0).intValue();
             int research_alch = player.research_lvls.getOrDefault("Alchemy spd", 0.0).intValue();
-            double side_craft_spd = 0;
-            if (game_version >= 1573) {
-                if (crafting_lvl >= 10 && alchemy_lvl >= 10) {
-                    side_craft_spd = 0.05 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
-                }
-                if (crafting_lvl >= 20 && alchemy_lvl >= 20) side_craft_spd += 0.05;
-                if (crafting_lvl >= 30 && alchemy_lvl >= 30) side_craft_spd += 0.1;
-                if (crafting_lvl >= 40 && alchemy_lvl >= 40) side_craft_spd += 0.05;
-                if (crafting_lvl >= 50 && alchemy_lvl >= 50) side_craft_spd += 0.05;
-                if (crafting_lvl >= 60 && alchemy_lvl >= 60) side_craft_spd += 0.05;
-                if (crafting_lvl >= 70 && alchemy_lvl >= 70) side_craft_spd += 0.05;
-                if (crafting_lvl >= 80 && alchemy_lvl >= 80) side_craft_spd += 0.05;
-                if (crafting_lvl >= 90 && alchemy_lvl >= 90) side_craft_spd += 0.05;
-            } else {
-                if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
-                    side_craft_spd = game_version >= 1568 ? 0.2 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue() : 0.2;
-                }
-            }
             double add_time = 0;
             if (player.potion1 != null) {
-                add_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
+                add_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl, alchemist_lvl, research_craft,
+                        research_alch);
             }
             if (player.potion2 != null) {
-                add_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
+                add_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl, alchemist_lvl, research_craft, research_alch);
             }
             if (player.potion3 != null) {
-                add_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl, research_craft, research_alch);
+                add_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl, alchemist_lvl, research_craft, research_alch);
             }
-            if (add_time > 0 && side_craft_spd > 0) {
-                sidecraft_time += add_time / side_craft_spd;
+            if (add_time > 0 && getSidecraftingSpeed() > 0) {
+                potion_sidecraft_time += add_time / getSidecraftingSpeed();
+            } else {
+                crafting_time += add_time;
+            }
+            add_time = player.pill.calc_time(time, alchemy_lvl, research_alch);
+            if (add_time > 0 && getSidecraftingSpeed() > 0) {
+                pill_sidecraft_time += add_time / getSidecraftingSpeed();
             } else {
                 crafting_time += add_time;
             }
@@ -599,11 +580,7 @@ public class Simulation {
                     if ((cleared + failed) >= sim_limit) end = true;
                 }
                 case 2 -> {
-                    if (side_craft_spd > 0) {
-                        if ((total_time + death_time) >= time_limit * 3600) end = true;
-                    } else {
-                        if ((total_time + death_time + crafting_time) >= time_limit * 3600) end = true;
-                    }
+                    if ((total_time + death_time + crafting_time) >= time_limit * 3600) end = true;
                 }
                 case 3 -> {
                     if (player.cl >= cl_limit) end = true;
@@ -631,6 +608,13 @@ public class Simulation {
         }
         if (player.potion3 != null) {
             result.append(player.potion3.getRecordedData(total_time + death_time));
+        }
+        potion_sidecraft_time += player.combat_potion_time(crafting_lvl, alchemy_lvl, alchemist_lvl) / getSidecraftingSpeed();
+        if (player.potions_thrown > 0) {
+            result.append("Combat pot. used: ").append(player.potions_thrown).append(", per hour: ");
+            result.append((int) (player.potions_thrown / (total_time + death_time) * 3600));
+            result.append(", flask return: ").append((int) (100 - player.flask_used * 100.0 / player.potions_thrown));
+            result.append("%\n");
         }
         if (crafting_time > 0) {
             result.append("Effective exp/h: ").append(shorthand((exp / (total_time + crafting_time + death_time) * 3600))).append("\n");
@@ -669,31 +653,24 @@ public class Simulation {
             result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
         }
         int smithing_lvl = 40;
+        double sidecraft_time = potion_sidecraft_time + pill_sidecraft_time;
         if (sidecraft_time > 0) {
-            result.append("Sidecrafting time: ").append(Main.secToTime(sidecraft_time));
-            result.append(" (").append(df2.format(sidecraft_time/(total_time + crafting_time + death_time) * 100));
-            result.append("%)\n");
+            if (potion_sidecraft_time > 0) {
+                result.append("Potion sidecrafting time: ").append(Main.secToTime(potion_sidecraft_time));
+                result.append(" (").append(df2.format(potion_sidecraft_time / (total_time + crafting_time + death_time) * 100));
+                result.append("%)\n");
+            }
+            if (pill_sidecraft_time > 0) {
+                result.append("Pill sidecrafting time: ").append(Main.secToTime(pill_sidecraft_time));
+                result.append(" (").append(df2.format(pill_sidecraft_time / (total_time + crafting_time + death_time) * 100));
+                result.append("%)\n");
+            }
             double diff = (total_time + crafting_time + death_time) - sidecraft_time;
             if (diff > 0) {
-                double side_craft_spd = 0;
-                if (game_version >= 1573) {
-                    if (crafting_lvl >= 10 && alchemy_lvl >= 10) {
-                        side_craft_spd = 0.05 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
-                    }
-                    if (crafting_lvl >= 20 && alchemy_lvl >= 20) side_craft_spd += 0.05;
-                    if (crafting_lvl >= 30 && alchemy_lvl >= 30) side_craft_spd += 0.1;
-                    if (crafting_lvl >= 40 && alchemy_lvl >= 40) side_craft_spd += 0.05;
-                    if (crafting_lvl >= 50 && alchemy_lvl >= 50) side_craft_spd += 0.05;
-                    if (crafting_lvl >= 60 && alchemy_lvl >= 60) side_craft_spd += 0.05;
-                    if (crafting_lvl >= 70 && alchemy_lvl >= 70) side_craft_spd += 0.05;
-                    if (crafting_lvl >= 80 && alchemy_lvl >= 80) side_craft_spd += 0.05;
-                    if (crafting_lvl >= 90 && alchemy_lvl >= 90) side_craft_spd += 0.05;
-                } else {
-                    if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
-                        side_craft_spd = game_version >= 1568 ? 0.2 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue() : 0.2;
-                    }
-                }
-                result.append("Free sidecrafting time: ").append(df2.format(diff / 3600)).append(" hours\n");
+                double side_craft_spd = getSidecraftingSpeed();
+                result.append("Free sidecrafting time: ").append(df2.format(diff / 3600)).append(" hours");
+                result.append(" (").append(df2.format(100 - (sidecraft_time / (total_time + crafting_time + death_time) * 100)));
+                result.append("%)\n");
 //                double fairy_c = diff / 2 * 10 / (220 + 120) * (1 + 0.01 * crafting_lvl) * side_craft_spd *
 //                        (1 + 0.01 * player.research_lvls.getOrDefault("Crafting spd", 0.0));
 //                double fairyr_c = diff / 2 / (220 + 120) * Math.pow(1 + 0.01 * crafting_lvl, 2) * side_craft_spd *
@@ -764,6 +741,10 @@ public class Simulation {
             if (player.dot_tracking > 0) skills_log.append("; DoT: ").append((int) (player.dot_tracking / cleared));
             skills_log.append("\n");
         }
+        if (player.berserk_damage_taken > 0 && cleared > 0) {
+            skills_log.append("Average berserk pill dmg taken per fight: ").append((int) player.berserk_damage_taken / cleared);
+            skills_log.append("\n");
+        }
         if (healed > 0 && cleared > 0) {
             skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
         }
@@ -786,7 +767,7 @@ public class Simulation {
             lvling_log.append("ML: ").append((int) player.old_ml).append(" -> ").append(player.ml).append(" (");
             lvling_log.append(df2.format(player.getMLpercent())).append("%)\n");
             for (ActiveSkill a : player.active_skills.values()) {
-                if (a.enabled && a.old_lvl < player.max_skill_lvl) {
+                if (a.checkEnabled() && a.old_lvl < player.max_skill_lvl) {
                     lvling_log.append(a.name).append(": ").append((int) a.old_lvl).append(" -> ").append(a.lvl).append(" (");
                     lvling_log.append(df2.format(a.getLpercent())).append("%)\n");
                 }
@@ -824,5 +805,27 @@ public class Simulation {
         result_info = result.toString();
         skills_info = skills_log.toString();
         return player;
+    }
+
+    public double getSidecraftingSpeed() {
+        double side_craft_spd = 0;
+        if (game_version >= 1573) {
+            if (crafting_lvl >= 10 && alchemy_lvl >= 10) {
+                side_craft_spd = 0.05 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
+            }
+            if (crafting_lvl >= 20 && alchemy_lvl >= 20) side_craft_spd += 0.05;
+            if (crafting_lvl >= 30 && alchemy_lvl >= 30) side_craft_spd += 0.1;
+            if (crafting_lvl >= 40 && alchemy_lvl >= 40) side_craft_spd += 0.05;
+            if (crafting_lvl >= 50 && alchemy_lvl >= 50) side_craft_spd += 0.05;
+            if (crafting_lvl >= 60 && alchemy_lvl >= 60) side_craft_spd += 0.05;
+            if (crafting_lvl >= 70 && alchemy_lvl >= 70) side_craft_spd += 0.05;
+            if (crafting_lvl >= 80 && alchemy_lvl >= 80) side_craft_spd += 0.05;
+            if (crafting_lvl >= 90 && alchemy_lvl >= 90) side_craft_spd += 0.05;
+        } else {
+            if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
+                side_craft_spd = game_version >= 1568 ? 0.2 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue() : 0.2;
+            }
+        }
+        return side_craft_spd;
     }
 }

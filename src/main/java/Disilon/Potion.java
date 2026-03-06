@@ -34,7 +34,7 @@ public class Potion {
             switch (type_id) {
                 case 1 -> {
                     if (player.hp < player.getHp_max() * threshold / 100) {
-                        player.setHp(player.hp + hp_gain());
+                        player.setHp(player.hp + hp_gain() * player.getPotion_effect());
                         cooldown = hp_cd();
                         used++;
                         count--;
@@ -42,7 +42,7 @@ public class Potion {
                 }
                 case 2 -> {
                     if (player.mp < player.getMp_max_no_buffs() * threshold / 100) {
-                        player.setMp(player.mp + mp_gain());
+                        player.setMp(player.mp + mp_gain() * player.getPotion_effect());
                         cooldown = mp_cd();
                         used++;
                         count--;
@@ -122,9 +122,12 @@ public class Potion {
         };
     }
 
-    public double craft_time(int crafting, int alchemy, int research_craft, int research_alch) {
+    public double craft_time(int crafting, int alchemy, int alchemist_lvl, int research_craft, int research_alch) {
         double craft_spd = (1 + 0.01 * crafting) * (1 + 0.01 * research_craft);
         double alch_spd = (1 + 0.01 * alchemy) * (1 + 0.01 * research_alch);
+        if (alchemist_lvl >= 90) {
+            alch_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
+        }
         return switch (tier) {
             case 1 -> 2 / craft_spd + 3 / alch_spd;
             case 2 -> 4 / craft_spd + 6 / alch_spd;
@@ -140,12 +143,12 @@ public class Potion {
         };
     }
 
-    public double calc_time(int crafting, int alchemy, int research_craft, int research_alch) {
+    public double calc_time(int crafting, int alchemy, int alchemist_lvl, int research_craft, int research_alch) {
         int need_to_craft = 0;
         double time = 0;
         if (count < 0) {
             need_to_craft = count * -1;
-            time = craft_time(crafting, alchemy, research_craft, research_alch) * need_to_craft;
+            time = craft_time(crafting, alchemy, alchemist_lvl, research_craft, research_alch) * need_to_craft;
             count = 0;
         }
         return time;
