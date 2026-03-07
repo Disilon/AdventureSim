@@ -195,7 +195,7 @@ public class ActiveSkill {
             cast -= 0.5;
             delay += 0.5;
         }
-        if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
+        if (log.contains("enemy_skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
                 " at " + df2.format(time) + ", cast_time = " + df2.format(cast) + ", delay_time = " + df2.format(delay));
     }
 
@@ -210,9 +210,9 @@ public class ActiveSkill {
                     attacker.zone.enemies[0].hp / (this.min / 100 * attacker.getIntel()) / (1 + attacker.gear_analyze);
             cast *= max(factor, 1);
 //            System.out.println("Factor: " + df4.format(factor) + " ; cast: " + df2p.format(cast));
-            delay = 0;
+            delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
         } else {
-            cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + attacker.zone.stealthDelay();
+            cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + attacker.zone.stealthDelay() + attacker.freezeDelay();
             if (attacker.ambushing) cast = max(0.0, cast - 5);
             delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
         }
@@ -1071,6 +1071,9 @@ public class ActiveSkill {
         if (crit_chance > 0 && Math.random() < crit_chance) {
             atk *= crit_dmg;
             attacker.last_crit = true;
+            if (log.contains("skill_attack")) {
+                System.out.println(attacker.name + " dealt crit with " + this.name);
+            }
         } else {
             attacker.last_crit = false;
         }

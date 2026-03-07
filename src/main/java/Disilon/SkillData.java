@@ -200,7 +200,7 @@ public class SkillData {
         addActive("Magic Arrow", 1, 90, 110, 1, 15, 1, 1, Scaling.intel,
                 Element.magic, false, false);
         active_skills.get("Magic Arrow").weapon_required = false;
-        addActive("Analyze", 1, 250, 250, 0, 50, 3, 0, Scaling.intel,
+        addActive("Analyze", 1, 250, 250, 0, 50, 2.8, 0.6, Scaling.intel,
                 Element.magic, false, false);
         addActive("Taking Notes", 1, 0, 0, 0, 99, 2, 2, Scaling.atk,
                 Element.none, false, false);
@@ -294,19 +294,19 @@ public class SkillData {
         addActive("Extra Attack", 1, 75, 75, 100, 0, 0, 0, Scaling.atk,
                 Element.water,false, false);
         potion_skills = new HashSet<>(List.of("Throw Burning","Throw Freezing","Throw Geo","Throw Acid","Throw Black","Throw Luminary"));
-        addActive("Throw Burning", 1, 666, 666, 1, 50, 3, 1, Scaling.atk, Element.fire,false, false);
+        addActive("Throw Burning", 1, 666, 666, 1, 50, 3, 3, Scaling.atk, Element.fire,false, false);
         active_skills.get("Throw Burning").addDebuff("Burn", 3, 2.5);
-        addActive("Throw Freezing", 1, 580, 580, 1, 50, 3, 1, Scaling.atk, Element.water,false, false);
+        addActive("Throw Freezing", 1, 580, 580, 1, 50, 3, 3, Scaling.atk, Element.water,false, false);
         active_skills.get("Throw Freezing").addDebuff("Freeze", 3, 0.20);
-        addActive("Throw Geo", 1, 650, 650, 1, 50, 3, 1, Scaling.atk, Element.earth,false, false);
+        addActive("Throw Geo", 1, 650, 650, 1, 50, 3, 3, Scaling.atk, Element.earth,false, false);
         active_skills.get("Throw Geo").addDebuff("Stun", 0, 3);
-        addActive("Throw Acid", 1, 550, 550, 1, 50, 3, 1, Scaling.atk, Element.wind,false, false);
+        addActive("Throw Acid", 1, 550, 550, 1, 50, 3, 3, Scaling.atk, Element.wind,false, false);
         active_skills.get("Throw Acid").addDebuff("Poison", 3, 0.13);
-        addActive("Throw Black", 1, 700, 700, 1, 50, 3, 1, Scaling.atk, Element.dark,false, false);
+        addActive("Throw Black", 1, 700, 700, 1, 50, 3, 3, Scaling.atk, Element.dark,false, false);
         active_skills.get("Throw Black").addDebuff("Defense Break", 3, 0.25);
-        addActive("Throw Luminary", 1, 700, 700, 1, 50, 3, 1, Scaling.atk, Element.light,false, false);
+        addActive("Throw Luminary", 1, 700, 700, 1, 50, 3, 3, Scaling.atk, Element.light,false, false);
         active_skills.get("Throw Luminary").addDebuff("Resist Break", 3, 0.25);
-        addActive("Throw Potion", 1, 90, 110, 1, 50, 3, 1, Scaling.atk, Element.phys,false, false);
-        addActive("Alchemic Reaction", 1, 108, 132, 1, 150, 2, 2.0/3, Scaling.intel, Element.magic,false, false);
+        addActive("Throw Potion", 1, 90, 110, 1, 50, 3, 3, Scaling.atk, Element.phys,false, false);
+        addActive("Alchemic Reaction", 1, 108, 132, 1, 150, 2, 2, Scaling.intel, Element.magic,false, false);
     }
 }

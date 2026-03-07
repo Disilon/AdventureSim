@@ -51,6 +51,7 @@ public class Main {
 //        log.add("death");
 //        log.add("skill_attack");
 //        log.add("skill_cast_start");
+//        log.add("enemy_skill_cast_start");
 //        log.add("skill_use");
 //        log.add("enemy_death_stat");
 //        log.add("player_death_stat");
