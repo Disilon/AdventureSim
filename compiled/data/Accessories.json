@@ -2,7 +2,8 @@
 	"NECK": {
 		"Metal Necklace": {
 			"INT": 3,
-			"RES": 3
+			"RES": 3,
+			"SET": "MetalAcc"
 		}, "Bronze Necklace": {
 			"INT": 8,
 			"RES": 4,
@@ -20,13 +21,15 @@
 	}, "RING": {
 		"Metal Ring": {
 			"ATK": 3,
-			"DEF": 3
+			"DEF": 3,
+			"SET": "MetalAcc"
 		}, "Bronze Ring": {
 			"ATK": 8,
 			"DEF": 4,
 			"SET": "BronzeAcc"
 		}, "Leather Belt": {
-			"DEF": 6
+			"DEF": 6,
+			"SET": "MetalAcc_2"
 		}, "Golden Belt": {
 			"ATK": 3,
 			"DEF": 3,
@@ -48,7 +51,7 @@
 			"INT": 8,
 			"SPD": 8,
 			"HIT": 8,
-			"SET": "Squirrel"
+			"SET": "Squirrel_2"
 		}
 	}
 }

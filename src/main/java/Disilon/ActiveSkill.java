@@ -632,6 +632,7 @@ public class ActiveSkill {
                 double atk = 0;
                 double def = 0;
                 double dmg_mult1 = 1;
+                double dmg_mult2 = 1;
                 dmg_mult *= 1.0 + attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
@@ -646,7 +647,7 @@ public class ActiveSkill {
                     case Element.fire -> {
                         atk = attacker.getFire();
                         dmg_mult *= attacker.set_fire;
-                        dmg_mult *= 1 + attacker.elemental_buff;
+                        dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getFire_res();
                     }
                     case Element.light -> {
@@ -657,18 +658,18 @@ public class ActiveSkill {
                         atk = attacker.getWater();
                         dmg_mult *= 1 + attacker.finke_bonus;
                         dmg_mult *= attacker.set_water;
-                        dmg_mult *= 1 + attacker.elemental_buff;
+                        dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getWater_res();
                     }
                     case Element.wind -> {
                         atk = attacker.getWind();
-                        dmg_mult *= 1 + attacker.elemental_buff;
+                        dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getWind_res();
                     }
                     case Element.earth -> {
                         atk = attacker.getEarth();
                         dmg_mult *= attacker.set_earth;
-                        dmg_mult *= 1 + attacker.elemental_buff;
+                        dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getEarth_res();
                     }
                     case Element.phys -> {
@@ -747,7 +748,7 @@ public class ActiveSkill {
                     }
                     dmg =
                             ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
-                                    calc_hits) * dmg_mult * dmg_mult1;
+                                    calc_hits) * dmg_mult * dmg_mult1 * dmg_mult2;
                     dmg = dmg * (1 - enemy_resist);
                     dmg = max(1, dmg);
                     dmg = max(0, dmg - defender.getBarrier());
@@ -789,6 +790,9 @@ public class ActiveSkill {
         }
         if (name.equals("Push Blast")) {
             pushCast(attacker, defender, 0.2);
+        }
+        if (name.equals("Throw Sand")) {
+            defender.getBarrier();
         }
 
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;

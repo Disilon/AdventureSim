@@ -659,7 +659,7 @@ public class UserForm extends JFrame {
         element_row++;
         SetSetup = new JCheckBox();
         SetSetup.setSelected(true);
-        SetSetup.setText("Use helmet values for full set");
+        SetSetup.setText("Use helmet and accessory 1 values for full set");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
@@ -1715,6 +1715,7 @@ public class UserForm extends JFrame {
                             setup.result_skills = simulation.skills_info;
                             setup.result_lvling = simulation.lvling_info;
                             setup.stats = simulation.player.getAllStats();
+                            setup.alchemist_lvl = simulation.alchemist_lvl;
                         }
                         loadSetup(setup);
                     }
@@ -1867,6 +1868,37 @@ public class UserForm extends JFrame {
                 }
             }
         });
+        Accessory1_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (SetSetup.isSelected() && Accessory1_name.getSelectedItem() != null && Accessory1_name.getSelectedItem() != "None") {
+                    Equipment eq = equipmentData.items.get(Accessory1_name.getSelectedItem().toString());
+                    if (eq != null) {
+                        String set = eq.displayName;
+                        Accessory2_name.setSelectedItem(findItemFromSet(set, "RING"));
+                        Necklace_name.setSelectedItem(findItemFromSet(set, "NECK"));
+                    }
+                }
+            }
+        });
+        Accessory1_tier.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (SetSetup.isSelected()) {
+                    Accessory2_tier.setSelectedItem(Accessory1_tier.getSelectedItem());
+                    Necklace_tier.setSelectedItem(Accessory1_tier.getSelectedItem());
+                }
+            }
+        });
+        Accessory1_lvl.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (SetSetup.isSelected()) {
+                    Accessory2_lvl.setValue(Accessory1_lvl.getValue());
+                    Necklace_lvl.setValue(Accessory1_lvl.getValue());
+                }
+            }
+        });
         loadEquipment();
         ArrayList<String> load_list = loadSettings(Main.getJarPath() + "/Settings.ini").getDefault_setups();
         for (String s : load_list) {
@@ -1993,6 +2025,11 @@ public class UserForm extends JFrame {
     private String findItemFromSet(String name, String slot) {
         for (Equipment e : equipmentData.items.values()) {
             if (e.displayName.equals(name) && e.slot.equals(slot)) {
+                return e.name;
+            }
+        }
+        for (Equipment e : equipmentData.items.values()) {
+            if (e.displayName.equals(name.replaceFirst("_.?","")) && e.slot.equals(slot)) {
                 return e.name;
             }
         }

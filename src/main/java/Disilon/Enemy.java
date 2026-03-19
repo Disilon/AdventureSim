@@ -51,6 +51,7 @@ public class Enemy extends Actor {
         base_earth_res = 0;
         base_light_res = 0;
         base_dark_res = 0;
+        base_phys_res = 0;
         dodge_mult = 1;
     }
 
@@ -317,7 +318,7 @@ public class Enemy extends Actor {
                 base_hit = 250 / base_lvl;
                 base_speed = 325 / base_lvl;
                 base_wind = 100 / base_lvl;
-                base_wind_res = 1;
+                base_wind_res = 0.75;
                 dodge_mult = 1.25;
                 skills.enableActive("Bash");
                 skills.enableActive("Double Attack");
@@ -333,7 +334,7 @@ public class Enemy extends Actor {
                 base_hit = 250 / base_lvl;
                 base_speed = 100 / base_lvl;
                 base_water = 100 / base_lvl;
-                base_water_res = 1;
+                base_water_res = 0.75;
                 skills.enableActive("Magic Missile");
                 skills.enableActive("Elemental Blast");
             }

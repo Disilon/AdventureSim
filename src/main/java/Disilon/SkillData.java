@@ -301,7 +301,7 @@ public class SkillData {
         addActive("Throw Geo", 1, 650, 650, 1, 50, 3, 3, Scaling.atk, Element.earth,false, false);
         active_skills.get("Throw Geo").addDebuff("Stun", 0, 3);
         addActive("Throw Acid", 1, 550, 550, 1, 50, 3, 3, Scaling.atk, Element.wind,false, false);
-        active_skills.get("Throw Acid").addDebuff("Poison", 3, 0.13);
+        active_skills.get("Throw Acid").addDebuff("Poison", 3, 0.13*2.5);
         addActive("Throw Black", 1, 700, 700, 1, 50, 3, 3, Scaling.atk, Element.dark,false, false);
         active_skills.get("Throw Black").addDebuff("Defense Break", 3, 0.25);
         addActive("Throw Luminary", 1, 700, 700, 1, 50, 3, 3, Scaling.atk, Element.light,false, false);

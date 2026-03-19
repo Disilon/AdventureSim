@@ -371,6 +371,7 @@ public class Actor extends ActorStats {
                 }
                 if (set_type.equals("Windy")) set_type = "Leather";
                 if (set_type.equals("Bronze")) set_type = "Iron";
+                if (set_type.equals("Squirrel_2")) set_type = "Squirrel";
                 if (sets.containsKey(set_type)) {
                     sets.get(set_type).addItem(item.quality, item.upgrade);
                 }

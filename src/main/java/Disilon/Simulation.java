@@ -136,6 +136,7 @@ public class Simulation {
             if (skill2 != null) skill2.used_in_rotation = 0;
             if (skill3 != null) skill3.used_in_rotation = 0;
             if (skill4 != null) skill4.used_in_rotation = 0;
+            checkLvlup();
             while (time < time_to_respawn) {
                 player.checkPotion(0); //just in case
                 delta = minIfNotZero(time_to_respawn - time, player.getNextPotionTime());
@@ -461,6 +462,10 @@ public class Simulation {
                 if (player.hp <= 0 || time >= 36000) {
                     status = StatusType.death;
                     death_time += 15 * 60;
+                    player.debuffs.clear();
+                    player.buffs.clear();
+                    player.pending_debuffs.clear();
+                    player.pending_buffs.clear();
                     player.setHp(player.getHp_max());
                     player.setMp(player.getMp_max());
                     player.tick_research(15 * 60);
@@ -489,22 +494,7 @@ public class Simulation {
                     }
                 }
             }
-            if (player.prepare != null && (status == StatusType.respawn || status == StatusType.rerolling || status == StatusType.delay)) {
-                while (player.getPredictedPrepareTime() > 0) {
-                    delta = minIfNotZero(player.getPredictedPrepareTime(), player.getNextPotionTime());
-                    delta = minTickTime(delta, offline);
-                    total_time += delta;
-                    time += delta;
-                    delta_sum += delta;
-                    delta_count++;
-                    prepare_time += delta;
-                    delay_left = Math.max(delay_left - delta, 0);
-                    if (player.lvling) player.prepare.gainExp(delta);
-                    player.setHp(player.hp + player.getPrepare_hps() * delta);
-                    player.setMp(player.mp + player.getPrepare_mps() * delta);
-                    player.tickPotion(delta);
-                }
-            }
+
             if (game_version >= 1573 && player.zone.getZoneTimeCap() > 0) {
                 if ((time + delay_left + cap_time) < player.zone.getZoneTimeCap())
                     cap_time += player.zone.getZoneTimeCap() - time - delay_left;
@@ -515,8 +505,25 @@ public class Simulation {
             if (cap_time > 0 && player.last_skill != null && !player.last_skill.name.equals("Analyze")) {
                 if (!player.zone.enemies[0].name.equals("Squirrel Mage")) {
                     delay_left += cap_time;
+//                    System.out.println("cap_time: " + cap_time + "; delay_left: " + delay_left + "; time:" + (time+delay_left));
                 } else {
                     delay_left += time_to_respawn;
+                }
+            }
+            if (player.prepare != null && (status == StatusType.respawn || status == StatusType.rerolling || status == StatusType.delay)) {
+                while (player.getPredictedPrepareTime() > 0) {
+                    delta = minIfNotZero(player.getPredictedPrepareTime(), player.getNextPotionTime());
+                    delta = minTickTime(delta, offline);
+                    total_time += delta;
+                    time += delta;
+                    delta_sum += delta;
+                    delta_count++;
+                    prepare_time += delta;
+//                    delay_left = Math.max(delay_left - delta, 0);
+                    if (player.lvling) player.prepare.gainExp(delta);
+                    player.setHp(player.hp + player.getPrepare_hps() * delta);
+                    player.setMp(player.mp + player.getPrepare_mps() * delta);
+                    player.tickPotion(delta);
                 }
             }
             while (delay_left > 0) {
@@ -827,5 +834,11 @@ public class Simulation {
             }
         }
         return side_craft_spd;
+    }
+
+    public void checkLvlup() {
+        if (player.name.equals("Alchemist")) {
+            alchemist_lvl = player.cl;
+        }
     }
 }

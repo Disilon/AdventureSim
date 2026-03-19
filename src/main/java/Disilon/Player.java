@@ -17,7 +17,7 @@ public class Player extends Actor {
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
             "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer",
-            "Onion Knight", "Scholar", "Alchemist", "RogueT4"};
+            "Onion Knight", "Scholar", "Alchemist", "Ninja"};
 
     double rp_balance;
     double old_rp;
@@ -469,9 +469,20 @@ public class Player extends Actor {
                 skills.makeInvisible("Throw Luminary");
                 skills.enableActive("Alchemic Reaction");
             }
-            case "RogueT4" -> {
+            case "Ninja" -> {
                 tier = 6;
-                base_water_res = -0.5;
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Dagger Mastery");
+                skills.enablePassive("Stealth");
+                skills.enablePassive("Poison Boost");
+                skills.enablePassive("Defense Boost");
+                skills.enablePassive("Fist Mastery");
+                skills.enablePassive("Counter Strike");
+                skills.enableActive("Killing Strike");
+                skills.enableActive("Dragon Punch");
+                skills.enableActive("Whirling Foot");
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Smoke Screen");
                 skills.enablePassive("Drop Boost");
                 skills.enablePassive("Bow Mastery");
                 skills.enablePassive("Dagger Mastery");
@@ -730,14 +741,14 @@ public class Player extends Actor {
                 base_hit = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml;
             }
-            case "RogueT4" -> {
-                base_hp_max = (double) (100 * (cl + 100)) / 10000 * 30 * ml * 1.1;
-                base_atk = (double) (125 * (cl + 100)) / 10000 * 4 * ml * 1.1;
-                base_def = (double) (100 * (cl + 100)) / 10000 * 4 * ml * 1.1;
-                base_int = (double) (60 * (cl + 100)) / 10000 * 4 * ml * 1.1;
-                base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml * 1.1;
-                base_hit = (double) (110 * (cl + 100)) / 10000 * 4 * ml * 1.1;
-                base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml * 1.1;
+            case "Ninja" -> {
+                base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Onion Knight" -> {
                 if (cl >= 99) {
@@ -803,7 +814,7 @@ public class Player extends Actor {
             case "Pyromancer" -> {
                 result -= getAvgAtkInt();
             }
-            case "Rogue", "RogueT4" -> {
+            case "Rogue", "Ninja" -> {
                 result += getAvgAtkInt();
             }
             case "Alchemist" -> result += getAvgAtkInt() * 0.4;
@@ -853,7 +864,7 @@ public class Player extends Actor {
     public double getDark() {
         double result = gear_dark;
         switch (name) {
-            case "Assassin" -> {
+            case "Assassin","Ninja" -> {
                 result += getAvgAtkInt();
             }
             case "Priest" -> {
