@@ -376,9 +376,6 @@ public class Simulation {
                             if (player.last_skill.isSingleTarget() && !player.isMulti_hit_override(player.last_skill.name) && player.set_core > 0 && player.set_core > Math.random()) {
                                 enemy.setHp(0.0);
                             }
-                            if (player.last_crit && player.no_overkill_crit > Math.random()) {
-                                enemy.setHp(0.0);
-                            }
                             player.overkill -= enemy.hp;
 //                        for (Debuff d : enemy.debuffs) {
 //                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
@@ -603,7 +600,7 @@ public class Simulation {
         min_time /= time_mult;
         max_time /= time_mult;
         double exph = (exp / (total_time + death_time) * 3600);
-        double exp_total_bonus = player.total_exp_mult * player.milestone_exp_mult * (1 + 0.005 * player.getEnemyMinLvl());
+        double exp_total_bonus = player.total_exp_mult * player.milestone_exp_mult * (1 + 0.005 * player.getEnemyMinLvl()) * (1 + 0.01 * player.getBestiaryMedals(50000));
         result.append("Exp/h: ").append(shorthand(exph)).append(" (");
         result.append(df2.format(exp_total_bonus * 100)).append("%; ");
         result.append(shorthand(base_exp / (total_time + death_time) * 3600)).append(" at 100%)\n");
@@ -659,7 +656,7 @@ public class Simulation {
         if (crafting_time > 0) {
             result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
         }
-        int smithing_lvl = 40;
+        int smithing_lvl = 44;
         double sidecraft_time = potion_sidecraft_time + pill_sidecraft_time;
         if (sidecraft_time > 0) {
             if (potion_sidecraft_time > 0) {

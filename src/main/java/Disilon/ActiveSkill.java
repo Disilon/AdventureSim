@@ -721,11 +721,9 @@ public class ActiveSkill {
                         yield defender.getResist();
                     }
                 };
-                atk = applyCrit(attacker, defender, atk);
                 if (name.equals("Pierce")) {
                     def = 0;
                 }
-                double atk_mit = atk;
                 dmg_mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
                 dmg_mult *= (1 - attacker.set_training);
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
@@ -734,11 +732,12 @@ public class ActiveSkill {
                     defender.buffs.clear();
                     defender.check_buffs();
                 }
-                if (attacker.gear_stun > 0 && game_version >= 1566 && Math.random() < attacker.gear_stun) {
+                if (attacker.gear_stun > 0 && Math.random() < attacker.gear_stun) {
                     defender.stun_time += 2.0;
                 }
                 int extra = (attacker.passives.get("Extra Attack").enabled && !name.equals("Extra Attack")) ? 1 : 0;
                 for (int i = 0; i < calc_hits; i++) {
+                    double atk_c = applyCrit(attacker, defender, atk);
                     if (attacker.gear_stun > 0 && game_version < 1566 && Math.random() < attacker.gear_stun) {
                         defender.stun_time += 2.0;
                     }
@@ -747,29 +746,42 @@ public class ActiveSkill {
                         dmg *= 0.7;
                     }
                     dmg =
-                            ((dmg * (atk_mit)) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
+                            ((dmg * atk_c) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
                                     calc_hits) * dmg_mult * dmg_mult1 * dmg_mult2;
                     dmg = dmg * (1 - enemy_resist);
                     dmg = max(1, dmg);
+                    dmg_sum += dmg;
                     dmg = max(0, dmg - defender.getBarrier());
                     if (log.contains("skill_attack")) {
                         System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name +
                                 " to " + defender.name + " at " + df2.format(time) + " chance " + df2.format(hit_chance*100) + "%");
+                    }
+                    if (name.equals("Careful Shot")) {
+                        dmg = Math.min(dmg, defender.hp);
+                    }
+                    if (attacker.last_crit && attacker.no_overkill_crit > Math.random()) {
+                        dmg = Math.min(dmg, defender.hp);
+                    }
+                    if (name.equals("Aimed Shot")) {
+                        dmg = Math.min(dmg, defender.hp - 1);
                     }
                     total += dmg;
                     if (total - dmg > defender.hp && i == calc_hits - 1) {
                         total = defender.hp + dmg;
                     }
                 }
+                if (defender.zone != null) {
+                    defender.zone.stats.incrementDmg(attacker.name, name, total);
+                }
                 if (extra == 1 && defender == attacker.target) {
                     if (Main.balance1 && total > defender.hp) {
                         total = defender.hp;
                     }
                     if (Main.balance2) {
-                        extra_attack(attacker, defender, dmg_mult * dmg_mult1 * Math.pow(1.1,
+                        total += extra_attack(attacker, defender, dmg_mult * dmg_mult1 * Math.pow(1.1,
                                 calc_hits));
                     } else {
-                        extra_attack(attacker, defender, dmg_mult * Math.pow(1.1,
+                        total += extra_attack(attacker, defender, dmg_mult * Math.pow(1.1,
                                 calc_hits));
                     }
                 }
@@ -794,23 +806,12 @@ public class ActiveSkill {
         if (name.equals("Throw Sand")) {
             defender.getBarrier();
         }
-
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
-        dmg_sum += total;
-        if (defender.zone != null) {
-            defender.zone.stats.incrementDmg(attacker.name, name, total);
-        }
-        if (name.equals("Careful Shot")) {
-            total = Math.min(total, defender.hp);
-        }
-        if (name.equals("Aimed Shot")) {
-            total = Math.min(total, defender.hp - 1);
-        }
         attacker.last_skill = this;
         return total;
     }
 
-    public void extra_attack(Actor attacker, Actor defender, double dmg_mult) {
+    public double extra_attack(Actor attacker, Actor defender, double dmg_mult) {
         double def = defender.getDef();
         double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
         double atk = attacker.getAtk() + attacker.getWater();
@@ -818,13 +819,16 @@ public class ActiveSkill {
         dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
         dmg = dmg * (1 - defender.getWater_res());
         dmg = max(1, dmg);
+        extra_dmg_sum += dmg;
         dmg = max(0, dmg - defender.getBarrier());
         if (log.contains("skill_attack")) {
             System.out.println(attacker.name + " dealt " + (int) dmg + " extra damage with " + this.name +
                     " to " + defender.name);
         }
-        extra_dmg_sum += dmg;
-        defender.setHp(defender.hp - dmg);
+        if (attacker.last_crit && attacker.no_overkill_crit > Math.random()) {
+            dmg = Math.min(dmg, defender.hp);
+        }
+        return dmg;
     }
 
     public void counter_attack(Actor attacker, Actor defender, boolean counter_dodge) {
@@ -1087,7 +1091,6 @@ public class ActiveSkill {
     public double getCritChance(Actor attacker, Actor defender, boolean additive) {
         if (additive) {
             return defender.bound + attacker.getCrit_chance();
-
         } else {
             return 1 - (1 - defender.bound) * (1 - attacker.getCrit_chance());
         }

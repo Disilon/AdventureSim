@@ -1244,7 +1244,7 @@ public class Player extends Actor {
     }
 
     public double bonus_for_milestone() {
-        if (name.equals("Alchemist")) return 0;
+        if (name.equals("Alchemist")) return 0.025;
         return switch (tier) {
             case 0 -> 0.025;
             case 1 -> 0.05;
