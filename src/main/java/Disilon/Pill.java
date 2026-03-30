@@ -10,37 +10,41 @@ public class Pill {
     }
 
     public void applyEffects(Actor a) {
-        switch (name) {
-            case "Toughness" -> {
-                double effect = 0.2 * a.pill_effect;
-                a.add_resist("All", effect);
-            }
-            case "Speedy" -> {
-                double effect = 0.1 * a.pill_effect;
-                a.cast_speed_mult *= 1.0 - effect;
-                a.mp_cost_mult *= 1.0 + effect;
-            }
-            case "Berserk" -> {
-                double effect = 0.2 * a.pill_effect;
-                a.dmg_mult *= 1.0 + effect;
-                a.berserk_dmg = 200 * a.pill_effect;
-            }
-            case "Wise" -> {
-                double effect = 0.2 * a.pill_effect;
-                a.exp_mult *= 1.0 + effect;
-            }
-            case "Critical" -> {
-                double effect = 0.2 * a.pill_effect;
-                a.gear_crit += effect;
-            }
-            case "Ultimate" -> {
-                double effect = 0.18 * a.pill_effect;
-                a.atk_mult *= 1.0 + effect;
-                a.def_mult *= 1.0 + effect;
-                a.int_mult *= 1.0 + effect;
-                a.res_mult *= 1.0 + effect;
-                a.hit_mult *= 1.0 + effect;
-                a.speed_mult *= 1.0 + effect;
+        a.add_resist("All", 0.2 * getEffect(a, "Toughness"));
+
+        a.cast_speed_mult *= 1.0 - 0.1 * getEffect(a, "Speedy");
+        if (name.equals("Speedy")) {
+            a.mp_cost_mult *= 1.0 + 0.1 * a.pill_effect;
+        }
+
+        a.dmg_mult *= 1.0 + 0.2 * getEffect(a, "Berserk");
+        if (name.equals("Berserk")) {
+            a.berserk_dmg = 200 * a.pill_effect;
+        }
+
+        a.exp_mult *= 1.0 + 0.2 * getEffect(a, "Wise");
+
+        a.gear_crit += 0.2 * getEffect(a, "Critical");
+
+        double stats = 0.18 * getEffect(a, "Ultimate");
+        a.atk_mult *= 1.0 + stats;
+        a.def_mult *= 1.0 + stats;
+        a.int_mult *= 1.0 + stats;
+        a.res_mult *= 1.0 + stats;
+        a.hit_mult *= 1.0 + stats;
+        a.speed_mult *= 1.0 + stats;
+    }
+
+    public double getEffect(Actor a, String pill) {
+        double effect = name.equals(pill) ? 1 : 0;
+        if (Main.game_version >= 1667) effect += 0.001 * a.passives.get(pill + " pill").lvl;
+        return effect * a.pill_effect;
+    }
+
+    public void usePill(Actor a, double time) {
+        if (!name.equals("None") && Main.game_version >= 1667) {
+            if (a.passives.get(name + " pill").increasePillUsed(time / 7200)) {
+                a.refreshStats();
             }
         }
     }

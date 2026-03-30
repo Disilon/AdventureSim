@@ -520,6 +520,12 @@ public class Player extends Actor {
         skills.enablePassive("Exp Boost");
         skills.makeVisible("Potion Inventor");
         skills.makeVisible("Pill Inventor");
+        skills.makeVisible("Toughness pill");
+        skills.makeVisible("Speedy pill");
+        skills.makeVisible("Berserk pill");
+        skills.makeVisible("Wise pill");
+        skills.makeVisible("Critical pill");
+        skills.makeVisible("Ultimate pill");
     }
 
     public ArrayList<String> getAvailableActiveSkills() {
@@ -1215,7 +1221,7 @@ public class Player extends Actor {
 
     public double research_slots_base_cost(int slots) {
         if (slots < 1) return 0;
-        if (game_version < 1566) return slots * 250;
+        if (game_version >= 1667) return (Math.pow(1.48, slots - 1) + slots - 2) * 180;
         return (Math.pow(1.4, slots - 1) + slots - 1) * 180;
     }
 

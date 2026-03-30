@@ -553,6 +553,7 @@ public class Simulation {
             if (player.lvling) {
                 player.levelPassives(time);
                 player.tick_research(time);
+                player.pill.usePill(player, time);
             }
             int research_craft = player.research_lvls.getOrDefault("Crafting spd", 0.0).intValue();
             int research_alch = player.research_lvls.getOrDefault("Alchemy spd", 0.0).intValue();
@@ -624,7 +625,7 @@ public class Simulation {
             result.append("Effective exp/h: ").append(shorthand((exp / (total_time + crafting_time + death_time) * 3600))).append("\n");
         }
         if (player.prepare != null) {
-            result.append("Time preparing %: ").append(df2.format(prepare_time / total_time * 100)).append("% " +
+            result.append("Time preparing: ").append(df2.format(prepare_time / total_time * 100)).append("% " +
                     "\n");
         }
         if (death_time > 0) {

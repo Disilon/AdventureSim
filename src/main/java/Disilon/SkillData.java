@@ -116,6 +116,12 @@ public class SkillData {
         addPassive("Potion Inventor", 0.0, 15, 0.15);
         addPassive("Potion Slots", 0.2, 10, 0.15);
         addPassive("Pill Inventor", 0.0, 10, 0.15);
+        addPassive("Toughness pill", 0.0, 0, 0);
+        addPassive("Speedy pill", 0.0, 0, 0);
+        addPassive("Berserk pill", 0.0, 0, 0);
+        addPassive("Wise pill", 0.0, 0, 0);
+        addPassive("Critical pill", 0.0, 0, 0);
+        addPassive("Ultimate pill", 0.0, 0, 0);
     }
 
     public void activeSkillData() {

@@ -1176,7 +1176,7 @@ public class UserForm extends JFrame {
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(label23, gbc);
         GameVersion = new JComboBox<>(Main.availableVersions);
-        GameVersion.setMaximumRowCount(16);
+        GameVersion.setMaximumRowCount(24);
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
         gbc.gridy = 3;
@@ -1707,6 +1707,7 @@ public class UserForm extends JFrame {
                         }
                         for (String s : player.passives.keySet()) {
                             int max_lvl = s.equals("Tsury Finke") ? 100 : player.max_skill_lvl;
+                            if (s.endsWith(" pill")) max_lvl = 1000;
                             setup.passives_lvls.put(s, Math.min(max_lvl, player.passives.get(s).getLvl()));
                         }
                         setup.rp_balance = (int) player.rp_balance;
@@ -1929,7 +1930,7 @@ public class UserForm extends JFrame {
         // Initializes the spinner.
         public SpinnerEditor() {
             super(new JTextField());
-            spinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+            spinner = new JSpinner(new SpinnerNumberModel(0, 0, 1000, 1));
             editor = ((JSpinner.DefaultEditor) spinner.getEditor());
             textField = editor.getTextField();
             textField.setFont(new Font("Dialog", Font.BOLD, 12));

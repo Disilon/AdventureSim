@@ -44,6 +44,15 @@ public class PassiveSkill {
         exp = next_lvl_exp * (lvl - (int) lvl);
     }
 
+    public boolean increasePillUsed(double u) {
+        int old_used = lvl;
+        double current = lvl + exp * 0.01;
+        double new_value = current + u;
+        lvl = (int) new_value;
+        exp = 100 * (new_value - (int) new_value);
+        return lvl > old_used;
+    }
+
     public void setLvl(int lvl) {
         this.lvl = lvl;
         switch (name) {
@@ -149,6 +158,9 @@ public class PassiveSkill {
     public int need_for_lvl(int lvl) {
         if (name.equals("Tsury Finke")) {
             return 10000 * (1 + lvl);
+        }
+        if (name.endsWith(" pill")) {
+            return 100;
         }
         return (int) ((Math.pow(Math.max(lvl, 1), 2)) * 3000);
     }

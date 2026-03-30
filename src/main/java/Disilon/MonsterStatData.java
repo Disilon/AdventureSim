@@ -21,6 +21,7 @@ public class MonsterStatData {
     public HashMap<String, Double> analyzed = new HashMap<>();
     public double base_rp;
     public double gained_rp;
+    public double rp_no_highest;
     public double nuts;
     public double gained_rp_rng;
     public double[] rp_instance;
@@ -91,6 +92,7 @@ public class MonsterStatData {
     public void clear_recorded_data() {
         base_rp = 0;
         gained_rp = 0;
+        rp_no_highest = 0;
         nuts = 0;
         overkill_sum = 0;
         base_overkill_sum = 0;
@@ -217,9 +219,12 @@ public class MonsterStatData {
             gain += getCoreRP(new_grade, name) * drop_rate * count;
             cores.get(name).merge(new_grade + 1, fractional, Double::sum);
             gain += getCoreRP(new_grade + 1, name) * drop_rate * fractional;
+            rp_no_highest += getCoreRP(new_grade, name) * drop_rate * count;
+            if (grade < 4) rp_no_highest += getCoreRP(new_grade + 1, name) * drop_rate * fractional;
         } else {
             cores.get(name).merge(new_grade, 1.0, Double::sum);
             gain += getCoreRP(new_grade, name) * drop_rate;
+            if (grade < 4) rp_no_highest += getCoreRP(new_grade, name) * drop_rate;
         }
         if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain;
         gained_rp += gain;
@@ -357,8 +362,10 @@ public class MonsterStatData {
                 sb.append(")\n");
                 pe.append(name).append(": ").append(df2.format(per_enemy / time * 3600)).append(" rp/h\n");
             }
-            sb.append("RP/h: ").append(df2.format(gained_rp / time * 3600));
-            sb.append(" (base: ").append(df2.format(base_rp / time * 3600)).append(")");
+            sb.append("RP/h: ").append((int)(gained_rp / time * 3600));
+            sb.append(" (base: ").append((int)(base_rp / time * 3600));
+            sb.append(", without highest: ").append((int)(rp_no_highest / time * 3600));
+            sb.append(")");
         }
         sb.append("\n");
         sb.append(pe);
