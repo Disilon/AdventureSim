@@ -7,16 +7,19 @@
 		}, "Bronze Necklace": {
 			"INT": 8,
 			"RES": 4,
-			"SET": "BronzeAcc"
+			"SET": "BronzeAcc",
+			"LVL_REQUIRED": 20
 		}, "Cobalt Necklace": {
 			"INT": 10,
 			"RES": 10,
-			"SET": "CobaltAcc"
+			"SET": "CobaltAcc",
+			"LVL_REQUIRED": 35
 		}, "Golden Necklace": {
 			"DEF": 8,
 			"RES": 8,
 			"SPD": 8,
-			"SET": "Squirrel"
+			"SET": "Squirrel",
+			"LVL_REQUIRED": 35
 		}
 	}, "RING": {
 		"Metal Ring": {
@@ -26,7 +29,8 @@
 		}, "Bronze Ring": {
 			"ATK": 8,
 			"DEF": 4,
-			"SET": "BronzeAcc"
+			"SET": "BronzeAcc",
+			"LVL_REQUIRED": 20
 		}, "Leather Belt": {
 			"DEF": 6,
 			"SET": "MetalAcc_2"
@@ -37,21 +41,25 @@
 			"RES": 3,
 			"SPD": 3,
 			"HIT": 3,
-			"SET": "BronzeAcc"
+			"SET": "BronzeAcc",
+			"LVL_REQUIRED": 35
 		}, "Cobalt Ring": {
 			"ATK": 10,
 			"DEF": 10,
-			"SET": "CobaltAcc"
+			"SET": "CobaltAcc",
+			"LVL_REQUIRED": 35
 		}, "Golden Ring": {
 			"ATK": 8,
 			"SPD": 8,
 			"HIT": 8,
-			"SET": "Squirrel"
+			"SET": "Squirrel",
+			"LVL_REQUIRED": 35
 		}, "Golden Cape": {
 			"INT": 8,
 			"SPD": 8,
 			"HIT": 8,
-			"SET": "Squirrel_2"
+			"SET": "Squirrel_2",
+			"LVL_REQUIRED": 35
 		}
 	}
 }

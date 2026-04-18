@@ -235,6 +235,7 @@ public class Actor extends ActorStats {
             case "res" -> set_res = 1 + stat_scaling;
             case "magicdmg" -> set_magicdmg = 1 + dmg_scaling;
             case "physdmg" -> set_physdmg = 1 + dmg_scaling;
+            case "dark" -> set_dark = 1 + stat_scaling;
             case "mit1" -> {
                 if (Main.game_version < 1566) {
                     set_mit1 = Math.clamp((5 + upgrade / 6.0) * tier, 5, 50) / 100.0;
@@ -278,6 +279,7 @@ public class Actor extends ActorStats {
         set_water = 1;
         set_fire = 1;
         set_earth = 1;
+        set_dark = 1;
         set_exp = 0;
         set_training = 0;
         set_mana = 0;
@@ -333,13 +335,13 @@ public class Actor extends ActorStats {
         for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
             Equipment item = slot.getValue();
             if (item.name != null && !item.name.equals("None")) {
-                gear_atk += item.atk * (1 + 0.01 * research_lvls.getOrDefault("Equip Atk", 0.0).intValue());
-                gear_def += item.def * (1 + 0.01 * research_lvls.getOrDefault("Equip Def", 0.0).intValue());
-                gear_hit += item.hit * (1 + 0.01 * research_lvls.getOrDefault("Equip Hit", 0.0).intValue());
-                gear_speed += item.speed * (1 + 0.01 * research_lvls.getOrDefault("Equip Spd", 0.0).intValue());
-                gear_int += item.intel * (1 + 0.01 * research_lvls.getOrDefault("Equip Int", 0.0).intValue());
-                gear_res += item.resist * (1 + 0.01 * research_lvls.getOrDefault("Equip Res", 0.0).intValue());
-                gear_hp += item.hp * (1 + 0.01 * research_lvls.getOrDefault("Equip Hp", 0.0).intValue());
+                gear_atk += item.atk;
+                gear_def += item.def;
+                gear_hit += item.hit;
+                gear_speed += item.speed;
+                gear_int += item.intel;
+                gear_res += item.resist;
+                gear_hp += item.hp;
                 gear_water += item.water;
                 gear_fire += item.fire;
                 gear_earth += item.earth;
@@ -389,6 +391,7 @@ public class Actor extends ActorStats {
     }
 
     public void refreshStats() {
+        shield_max = 0;
         hp_mult = 1;
         mp_mult = 1;
         atk_mult = 1;
@@ -404,7 +407,9 @@ public class Actor extends ActorStats {
         exp_mult = 1;
         cast_speed_mult = 1;
         delay_speed_mult = 1;
+        mana_regen_mult = 1;
         core_mult = 0;
+        core_mult_mult = 1;
         counter_strike = 0;
         multi_arrows = 0;
         bless_boost = 1;
@@ -463,11 +468,17 @@ public class Actor extends ActorStats {
         p_mp_cost_add = 0;
         p_mp_cost_mult = 1;
         applyGear();
+        if (cores != null) {
+            for (int id : cores.keySet()) {
+                cores.get(id).applyStats(this, id);
+            }
+        }
         if (pill != null) pill.applyEffects(this);
         for (Map.Entry<String, PassiveSkill> passive : passives.entrySet()) {
             if (passive.getValue().enabled) {
                 p_mp_cost_add += passive.getValue().mp_add;
                 p_mp_cost_mult *= 1 + passive.getValue().mp_mult;
+//                mana_regen_mult /= 1 + passive.getValue().mp_mult;
             }
         }
         for (Map.Entry<String, ActiveSkill> active : active_skills.entrySet()) {
@@ -480,13 +491,13 @@ public class Actor extends ActorStats {
                 if (active.getValue().name.equals("Aura Blade")) aurablade_enabled = true;
             }
         }
-        atk = (base_atk + gear_atk);
-        def = (base_def + gear_def);
-        intel = (base_int + gear_int);
-        resist = (base_res + gear_res) * set_res;
-        hit = (base_hit + gear_hit) * set_hit;
-        speed = (base_speed + gear_speed);
-        hp_max = (base_hp_max + gear_hp);
+        atk = base_atk + gear_atk * (1 + 0.01 * getResearchLvl("Equip Atk"));
+        def = base_def + gear_def * (1 + 0.01 * getResearchLvl("Equip Def"));
+        intel = base_int + gear_int * (1 + 0.01 * getResearchLvl("Equip Int"));
+        resist = (base_res + gear_res * (1 + 0.01 * getResearchLvl("Equip Res"))) * set_res;
+        hit = (base_hit + gear_hit * (1 + 0.01 * getResearchLvl("Equip Hit"))) * set_hit;
+        speed = base_speed + gear_speed * (1 + 0.01 * getResearchLvl("Equip Spd"));
+        hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip Hp"));
         mp_max = (resist * 3 + intel) * mp_mult;
 
         if (research_lvls != null) {
@@ -542,7 +553,9 @@ public class Actor extends ActorStats {
         gear_wind = 0;
         gear_light = 0;
         gear_dark = 0;
+        gear_no_elem = 0;
         gear_crit = 0;
+        gear_crit_dmg = 0;
         gear_burn = 0;
         gear_stun = 0;
         finke_bonus = 0;
@@ -592,7 +605,7 @@ public class Actor extends ActorStats {
     }
 
     public double getMp_regen() {
-        return getMp_max() / 360.0;
+        return getMp_max() / 360.0 * mana_regen_mult;
     }
 
     public double getHp_max() {
@@ -616,6 +629,15 @@ public class Actor extends ActorStats {
 
     public void setHp(double hp, double overheal) {
         this.hp = Math.min(getHp_max() * (1 + overheal), hp);
+    }
+
+    public void doDamage(double dmg) {
+        dmg = dmg < 1 ? 1 : dmg;
+        if (shield > dmg) {
+            shield -= dmg;
+        } else {
+            hp -= dmg - shield;
+        }
     }
 
     public double getMp_max() {
@@ -757,6 +779,10 @@ public class Actor extends ActorStats {
         return base_crit_chance + gear_crit;
     }
 
+    public double getCrit_damage() {
+        return base_crit_damage + gear_crit_dmg;
+    }
+
     public double stealthDelay() {
         double delay = passives.get("Stealth").enabled ? 1.2 * (1 + 0.02 * passives.get("Stealth").lvl) : 0;
         delay += passives.get("Safe Distance").enabled ? passives.get("Safe Distance").getBonus() : 0;
@@ -809,5 +835,10 @@ public class Actor extends ActorStats {
     public boolean checkLastSkill(String name) {
         if (last_skill == null) return false;
         return last_skill.name.equals(name);
+    }
+
+    public int getResearchLvl(String name) {
+        if (research_lvls == null) return 0;
+        return research_lvls.getOrDefault(name, 0.0).intValue();
     }
 }

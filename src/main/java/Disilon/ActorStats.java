@@ -13,6 +13,8 @@ public class ActorStats {
     public double hp;
     public double mp_max;
     public double mp;
+    public double shield;
+    public double shield_max;
     public double atk;
     public double def;
     public double intel;
@@ -62,7 +64,9 @@ public class ActorStats {
     public double gear_earth;
     public double gear_light;
     public double gear_dark;
+    public double gear_no_elem;
     public double gear_crit;
+    public double gear_crit_dmg;
     public double gear_burn;
     public double gear_stun;
     public double gear_analyze;
@@ -81,6 +85,7 @@ public class ActorStats {
     public double set_water = 1;
     public double set_fire = 1;
     public double set_earth = 1;
+    public double set_dark = 1;
     public double set_mana = 0;
     public double set_squirrel_drop = 1;
     public double set_squirrel_rate = 100;
@@ -117,6 +122,7 @@ public class ActorStats {
     public double mp_cost_mult = 1;
     public double cast_speed_mult = 1;
     public double delay_speed_mult = 1;
+    public double mana_regen_mult = 1;
 
     public double hide_bonus = 0;
     public boolean smoked = false;
@@ -137,6 +143,7 @@ public class ActorStats {
     public double bless_boost = 1;
     public double bless_duration = 0;
     public double core_mult = 0;
+    public double core_mult_mult = 1;
     public double drop_mult = 1;
     public double counter_strike = 0;
     public double multi_arrows = 0;
@@ -182,11 +189,13 @@ public class ActorStats {
     public double no_overkill_crit = 0;
     public double core_drop_research = 0;
     public double core_quality_research = 0;
+    public double skill_exp_mult = 1;
     public double speed_mult_sum = 0;
     public int speed_mult_count = 0;
 
     int flask_used = 0;
     int potions_thrown = 0;
+    boolean wrong_weapon = false;
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;
@@ -210,4 +219,5 @@ public class ActorStats {
     public HashMap<String, Double> research_old_lvls;
     public HashMap<String, Double> research_weight;
     public HashMap<String, Double> bestiary;
+    public HashMap<Integer, Core> cores;
 }

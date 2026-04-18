@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static Disilon.Core.getBonusType;
+import static Disilon.Main.capitalizeFirst;
 import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
 import static Disilon.Main.log;
@@ -68,6 +70,7 @@ public class Player extends Actor {
         this.setEquip("Accessory1", setup.accessory1_name, setup.accessory1_tier, setup.accessory1_lvl);
         this.setEquip("Accessory2", setup.accessory2_name, setup.accessory2_tier, setup.accessory2_lvl);
         this.setEquip("Necklace", setup.necklace_name, setup.necklace_tier, setup.necklace_lvl);
+        this.cores = setup.cores;
         this.milestone_exp_mult = setup.milestone / 100;
         this.old_milestone_exp_mult = this.milestone_exp_mult;
         this.r_spd_bonus = setup.r_spd_bonus / 100;
@@ -104,6 +107,7 @@ public class Player extends Actor {
         }
         this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3, setup.pskill4});
         apply_research_effects();
+        this.zone.stats.setGradeCutoff(this);
     }
 
     public void setupPotions(String type1, int threshold1, String type2, int threshold2,
@@ -904,7 +908,11 @@ public class Player extends Actor {
         return result;
     }
 
-    public void gearStat(StringBuilder sb, String label, double stat, double gear_stat, boolean show_percent) {
+    public void gearStat(StringBuilder sb, String label, double stat, double gear_stat, boolean show_percent,
+                         boolean research_bonus) {
+        if (research_bonus) {
+            gear_stat *= 1 + 0.01 * getResearchLvl("Equip " + capitalizeFirst(label.toLowerCase()));
+        }
         sb.append(label).append(" = ");
         sb.append(Math.round(stat));
         sb.append(" (").append(Math.round(gear_stat));
@@ -917,14 +925,14 @@ public class Player extends Actor {
 
     public String getAllStats() {
         StringBuilder sb = new StringBuilder();
-        gearStat(sb, "HP", getHp_max(), gear_hp, true);
+        gearStat(sb, "HP", getHp_max(), gear_hp, true, true);
         sb.append("MP = ").append(Math.round(getMp_max())).append("\n");
-        gearStat(sb, "ATK", getAtk(), gear_atk, true);
-        gearStat(sb, "DEF", getDef(), gear_def, true);
-        gearStat(sb, "INT", getIntel(), gear_int, true);
-        gearStat(sb, "RES", getResist(), getGear_res(), true);
-        gearStat(sb, "HIT", getHit(), getHit() - base_hit * hit_mult, true);
-        gearStat(sb, "SPD", getSpeed(), gear_speed, true);
+        gearStat(sb, "ATK", getAtk(), gear_atk, true, true);
+        gearStat(sb, "DEF", getDef(), gear_def, true, true);
+        gearStat(sb, "INT", getIntel(), gear_int, true, true);
+        gearStat(sb, "RES", getResist(), getGear_res(), true, false);
+        gearStat(sb, "HIT", getHit(), getHit() - base_hit * hit_mult, true, false);
+        gearStat(sb, "SPD", getSpeed(), gear_speed, true, true);
         sb.append("\n");
         if (getWater() != 0) {
             sb.append("Water = ").append(Math.round(getWater())).append(" (").append(Math.round(gear_water)).append(
@@ -946,6 +954,10 @@ public class Player extends Actor {
         }
         if (getDark() != 0) {
             sb.append("Dark = ").append(Math.round(getDark())).append(" (").append(Math.round(gear_dark)).append(")\n");
+        }
+        if (gear_no_elem != 0) {
+            sb.append("Non elem = ").append(Math.round(gear_no_elem)).append(" (").append(Math.round(gear_no_elem)).append(
+                    ")\n");
         }
         sb.append("\n");
         if (getPhys_res() != 0) {
@@ -973,6 +985,7 @@ public class Player extends Actor {
             sb.append("Dark mitigation = ").append(df2.format(getDark_res() * 100)).append("%\n");
         }
         if (getCrit_chance() > 0) sb.append("Crit = ").append(df2.format(getCrit_chance() * 100)).append("%\n");
+        if (getCrit_chance() > 0) sb.append("Crit damage = ").append(df2.format(getCrit_damage() * 100)).append("%\n");
         if (gear_stun > 0) sb.append("Stun = ").append(df2.format(gear_stun * 100)).append("%\n");
         if (gear_analyze > 0) sb.append("Analyze = ").append(df2.format(gear_analyze * 100)).append("%\n");
         if (gear_barrier > 0) sb.append("Barrier buff = ").append(df2.format(gear_barrier * 100)).append("%\n");
@@ -984,6 +997,7 @@ public class Player extends Actor {
         if (set_water > 1) sb.append("Set WaterDmg = ").append(df2.format(set_water * 100 - 100)).append("%\n");
         if (set_fire > 1) sb.append("Set FireDmg = ").append(df2.format(set_fire * 100 - 100)).append("%\n");
         if (set_earth > 1) sb.append("Set EarthDmg = ").append(df2.format(set_earth * 100 - 100)).append("%\n");
+        if (set_dark > 1) sb.append("Set DarkDmg = ").append(df2.format(set_dark * 100 - 100)).append("%\n");
         if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
         if (set_core > 0) {
@@ -1006,6 +1020,35 @@ public class Player extends Actor {
                     .append(Math.round(set_squirrel_rate)).append(")").append("\n");
         }
         if (finke_bonus > 0) sb.append("Tsury Finke bonus = ").append(df2.format(finke_bonus * 100)).append("%\n");
+        class CoreInfo {
+            double rp;
+            double bonus;
+            CoreInfo(double rp, double bonus) {
+                this.rp = rp;
+                this.bonus = bonus;
+            }
+        }
+        HashMap<String, CoreInfo> coreStats = new HashMap<>();
+        for (int id : cores.keySet()) {
+            Core core = cores.get(id);
+            if (core.enabled && !core.name.equals("None")) {
+                double rp = core.calcRpWorth();
+                double bonus = core.getFlatBonus() + core.getBaseBonus() * core.getScaling(this, id);
+                if (coreStats.containsKey(core.name)) {
+                    coreStats.get(core.name).rp += rp;
+                    coreStats.get(core.name).bonus += bonus;
+                } else {
+                    coreStats.put(core.name, new CoreInfo(rp, bonus));
+                }
+            }
+        }
+        if (!coreStats.isEmpty()) {
+            sb.append("\nCores:\n");
+            for (String core : coreStats.keySet()) {
+                sb.append(core).append(":").append(getBonusType(core, coreStats.get(core).bonus));
+                sb.append(", RP ").append((int) (coreStats.get(core).rp / 1000)).append("K\n");
+            }
+        }
         return sb.toString();
     }
 
@@ -1042,12 +1085,12 @@ public class Player extends Actor {
                 if (SkillData.potion_skills.contains(a.name)) {
                     uses_potion = true;
                 } else {
-                    a.gainExp(1);
+                    a.gainExp(skill_exp_mult);
                 }
             }
         }
         if (uses_potion) {
-            active_skills.get("Throw Potion").gainExp(1);
+            active_skills.get("Throw Potion").gainExp(skill_exp_mult);
         }
     }
 
@@ -1063,7 +1106,7 @@ public class Player extends Actor {
 
     public void levelPassives(double time) {
         passives.forEach((key, value) -> {
-            if (value.enabled) value.gainExp(time);
+            if (value.enabled) value.gainExp(time * skill_exp_mult);
         });
     }
 
@@ -1178,6 +1221,7 @@ public class Player extends Actor {
             case "Exp gain" -> 14400;
             case "Core drop" -> 14400;
             case "Core quality" -> 1800;
+            case "Skill exp" -> 3600;
             case "Sidecraft spd" -> 36000;
             case "Crafting spd" -> 14400;
             case "Alchemy spd" -> 14400;
@@ -1235,6 +1279,7 @@ public class Player extends Actor {
         enemy_min_lvl = research_lvls.getOrDefault("Enemy Min lvl", 0.0).intValue();
         core_drop_research = research_lvls.getOrDefault("Core drop", 0.0).intValue()/100.0;
         core_quality_research = research_lvls.getOrDefault("Core quality", 0.0).intValue()/100.0;
+        skill_exp_mult = 1 + research_lvls.getOrDefault("Skill exp", 0.0).intValue()/100.0;
     }
 
     public int getEnemyMinLvl() {

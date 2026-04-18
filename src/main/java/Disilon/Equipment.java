@@ -8,6 +8,7 @@ public class Equipment {
     String displayName = "None";
     Quality quality;
     int upgrade = 0;
+    int skill_required = 1;
     boolean mh_only = false;
 
     // Stats
@@ -106,6 +107,17 @@ public class Equipment {
         calcStats();
     }
 
+    public boolean hasSpecial() {
+        if (burn > 0) return true;
+        if (crit > 0) return true;
+        if (stun > 0) return true;
+        if (TF > 0) return true;
+        if (analyze > 0) return true;
+        if (barrier > 0) return true;
+        if (potion > 0) return true;
+        return false;
+    }
+
     public void calcStats() {
         if (equipStats == null) return;
         // Stats
@@ -158,7 +170,18 @@ public class Equipment {
         this.potion = equipStats.containsKey("POTION") ? (double) equipStats.get("POTION") * mult : 0;
 
         // Set name
-        if (equipStats.containsKey("SET")) this.displayName = (String) equipStats.get("SET");
+        if (equipStats.containsKey("SET")) {
+            this.displayName = (String) equipStats.get("SET");
+            skill_required = switch (displayName) {
+                case "Iron","Leather" -> 10;
+                case "Blazing","Earthen","Holy","Windy","Dark","Bronze" -> 20;
+                case "Training","Aquatic","Hunter" -> 35;
+                default -> 1;
+            };
+        }
+
+        if (equipStats.containsKey("LVL_REQUIRED")) this.skill_required = (int) (double) equipStats.get(
+                "LVL_REQUIRED");
 
         // If true, then can't be equipped in offhand slot
         if (equipStats.containsKey("MH_ONLY")) this.mh_only = (boolean) equipStats.get("MH_ONLY");

@@ -69,8 +69,12 @@ public class Pill {
         };
     }
 
-    public double calc_time(double time, int alchemy, int research_alch) {
+    public double calc_time(double time, int alchemy, int alchemist_lvl, int research_alch) {
         double need_to_craft = time / 7200;
-        return getBaseCraftTime() * need_to_craft / (1 + 0.01 * alchemy) / (1 + 0.01 * research_alch);
+        double alch_spd = (1 + 0.01 * alchemy) * (1 + 0.01 * research_alch);
+        if (alchemist_lvl >= 90) {
+            alch_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
+        }
+        return getBaseCraftTime() * need_to_craft / alch_spd;
     }
 }

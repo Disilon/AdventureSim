@@ -10,6 +10,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -17,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -44,6 +46,14 @@ public class UserForm extends JFrame {
     private JPanel RootPanel;
     private JPanel LeftPanel;
     private JPanel RightPanel;
+    private JPanel SetupPanel;
+    private JPanel SkillPanel;
+    private JPanel EquipPanel;
+    private JPanel SimPanel;
+    private JScrollPane LeftPane;
+    private JScrollPane RightPane;
+    private JPanel BottomPanel;
+    private JPanel TopPanel;
     private JComboBox PlayerClass;
     private JSpinner ML;
     private JSpinner CL;
@@ -104,13 +114,11 @@ public class UserForm extends JFrame {
     private JComboBox Necklace_tier;
     private JSpinner Necklace_lvl;
     private JTextArea Result;
-    private JTextArea Result_skills;
+    private JTextArea Result_details;
     private JTextArea Result_lvling;
-    private JTextArea Stats;
     private JScrollPane Result_p;
-    private JScrollPane Result_skills_p;
+    private JScrollPane Result_details_p;
     private JScrollPane Result_lvling_p;
-    private JScrollPane Stats_p;
     private JButton Save;
     private JButton Load;
     private JButton LoadResearch;
@@ -149,12 +157,9 @@ public class UserForm extends JFrame {
     private JCheckBox Balance3;
     private JMenuBar Bar;
     private JButton New_tab;
-    private JScrollPane LeftPane;
-    private JScrollPane RightPane;
-    private JPanel BottomPanel;
     private JTable ActiveSkills;
     private JTable PassiveSkills;
-    private JPanel TopPanel;
+
     SkillTableModel activeSkillsModel;
     SkillTableModel passiveSkillsModel;
     GridBagConstraints gbc = new GridBagConstraints();
@@ -168,10 +173,20 @@ public class UserForm extends JFrame {
     public HashMap<String, JSpinner> research_l = new HashMap<>(32);
     public HashMap<String, JSpinner> research_w = new HashMap<>(32);
     public HashMap<String, JSpinner> bestiary = new HashMap<>(16);
+    public HashMap<Integer, CoreUI> cores = new HashMap<>(15);
     public JMenu selected_tab;
     ActionListener itemListener;
     MenuListener menuListener;
     Gson gson = new Gson();
+    Font default_font = new Font("Courier", Font.BOLD, 12);
+    Font disabled_font = new Font("Courier", Font.BOLD, 12);
+
+    public class CoreUI {
+        public JComboBox name;
+        public JComboBox grade;
+        public JSpinner lvl;
+        public boolean enabled;
+    }
 
     public UserForm() throws URISyntaxException {
         class SampleMenuListener implements MenuListener {
@@ -228,8 +243,14 @@ public class UserForm extends JFrame {
         simulation = new Simulation();
         RootPanel = new JPanel();
         LeftPanel = new JPanel();
-        RightPanel = new JPanel();
-        RightPanel.setLayout(new GridBagLayout());
+        SetupPanel = new JPanel();
+        SetupPanel.setLayout(new GridBagLayout());
+        SkillPanel = new JPanel();
+        SkillPanel.setLayout(new GridBagLayout());
+        EquipPanel = new JPanel();
+        EquipPanel.setLayout(new GridBagLayout());
+        SimPanel = new JPanel();
+        SimPanel.setLayout(new GridBagLayout());
         Bar = new JMenuBar();
         this.setJMenuBar(Bar);
         New_tab = new JButton("   +   ");
@@ -249,18 +270,22 @@ public class UserForm extends JFrame {
         });
         Bar.add(New_tab);
 
+        Map attributes = disabled_font.getAttributes();
+        attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+        disabled_font = new Font(attributes);
+
         MLLabel = new JLabel();
         MLLabel.setText("ML: ");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
-        RightPanel.add(MLLabel, gbc);
+        SkillPanel.add(MLLabel, gbc);
         ML = createCustomSpinner(120, 1, 10000, 1);
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
         gbc.gridy = 0;
-        RightPanel.add(ML, gbc);
+        SkillPanel.add(ML, gbc);
         ML_p = new JFormattedTextField(df2p);
         gbc = new GridBagConstraints();
         gbc.gridx = 5;
@@ -268,19 +293,19 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.ipadx = 5;
 //        gbc.ipady = 3;
-        RightPanel.add(ML_p, gbc);
+        SkillPanel.add(ML_p, gbc);
         CLLabel = new JLabel();
         CLLabel.setText("CL: ");
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
-        RightPanel.add(CLLabel, gbc);
+        SkillPanel.add(CLLabel, gbc);
         CL = createCustomSpinner(62, 0, 10000, 1);
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
         gbc.gridy = 1;
-        RightPanel.add(CL, gbc);
+        SkillPanel.add(CL, gbc);
         CL_p = new JFormattedTextField(df2p);
         gbc = new GridBagConstraints();
         gbc.gridx = 5;
@@ -288,24 +313,7 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.ipadx = 5;
 //        gbc.ipady = 3;
-        RightPanel.add(CL_p, gbc);
-
-        final JLabel label15 = new JLabel();
-        label15.setText("Enemy:");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 6;
-        gbc.gridy = 0;
-        gbc.gridwidth = 3;
-        RightPanel.add(label15, gbc);
-        Enemy = new JComboBox(Zone.values());
-        gbc = new GridBagConstraints();
-        gbc.gridx = 6;
-        gbc.gridy = 1;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        Enemy.setMaximumRowCount(25);
-        RightPanel.add(Enemy, gbc);
+        SkillPanel.add(CL_p, gbc);
 
         ClassLabel = new JLabel();
         ClassLabel.setText("Class:");
@@ -313,7 +321,7 @@ public class UserForm extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 3;
-        RightPanel.add(ClassLabel, gbc);
+        SkillPanel.add(ClassLabel, gbc);
         PlayerClass = new JComboBox(Player.availableClasses);
         PlayerClass.setMaximumRowCount(30);
         PlayerClass.setSelectedIndex(0);
@@ -323,26 +331,63 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(PlayerClass, gbc);
+        SkillPanel.add(PlayerClass, gbc);
+
+        final JLabel label15 = new JLabel();
+        label15.setText("Enemy:");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 6;
+        gbc.gridy = 0;
+        gbc.gridwidth = 3;
+        SkillPanel.add(label15, gbc);
+        Enemy = new JComboBox(Zone.values());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 6;
+        gbc.gridy = 1;
+        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        Enemy.setMaximumRowCount(25);
+        SkillPanel.add(Enemy, gbc);
+
+        Save = new JButton();
+        Save.setText("Save");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 7;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(10, 5, 0, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        SkillPanel.add(Save, gbc);
+        Load = new JButton();
+        Load.setText("Load");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 7;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(10, 5, 0, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        SkillPanel.add(Load, gbc);
+
         int element_row = 2;
         final JLabel label1 = new JLabel();
         label1.setText("Potion setup:");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
-        RightPanel.add(label1, gbc);
+        SkillPanel.add(label1, gbc);
         final JLabel label1_1 = new JLabel("Pill: ");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.EAST;
-        RightPanel.add(label1_1, gbc);
+        SkillPanel.add(label1_1, gbc);
         Pill = new JComboBox<>(Disilon.Pill.getAvailablePills().toArray());
         Pill.setMaximumRowCount(21);
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = element_row;
-        RightPanel.add(Pill, gbc);
+        SkillPanel.add(Pill, gbc);
         element_row++;
         Potion1 = new JComboBox<>(Potion.getAvailablePotions());
         Potion1.setMaximumRowCount(21);
@@ -352,7 +397,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Potion1, gbc);
+        SkillPanel.add(Potion1, gbc);
         Potion1_t = new JSpinner(new SpinnerNumberModel(50, 25, 95, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
@@ -360,7 +405,7 @@ public class UserForm extends JFrame {
         gbc.ipadx = 12;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Potion1_t, gbc);
+        SkillPanel.add(Potion1_t, gbc);
         Potion2 = new JComboBox<>(Potion.getAvailablePotions());
         Potion2.setMaximumRowCount(21);
         Potion2.setSelectedIndex(16);
@@ -369,7 +414,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Potion2, gbc);
+        SkillPanel.add(Potion2, gbc);
         Potion2_t = new JSpinner(new SpinnerNumberModel(50, 25, 95, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 4;
@@ -377,7 +422,7 @@ public class UserForm extends JFrame {
         gbc.ipadx = 12;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Potion2_t, gbc);
+        SkillPanel.add(Potion2_t, gbc);
         Potion3 = new JComboBox<>(Potion.getAvailablePotions());
         Potion3.setMaximumRowCount(21);
         Potion3.setSelectedIndex(0);
@@ -386,7 +431,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Potion3, gbc);
+        SkillPanel.add(Potion3, gbc);
         Potion3_t = new JSpinner(new SpinnerNumberModel(50, 25, 95, 5));
         gbc = new GridBagConstraints();
         gbc.gridx = 6;
@@ -394,7 +439,7 @@ public class UserForm extends JFrame {
         gbc.ipadx = 22;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Potion3_t, gbc);
+        SkillPanel.add(Potion3_t, gbc);
         element_row++;
         final JLabel label2 = new JLabel();
         label2.setText("Active skills:");
@@ -402,7 +447,7 @@ public class UserForm extends JFrame {
         gbc.gridx = 1;
         gbc.gridy = element_row;
         gbc.gridwidth = 6;
-        RightPanel.add(label2, gbc);
+        SkillPanel.add(label2, gbc);
         element_row++;
         Skill1 = new JComboBox();
         Skill1.setMaximumRowCount(20);
@@ -412,7 +457,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill1, gbc);
+        SkillPanel.add(Skill1, gbc);
         Skill2 = new JComboBox();
         Skill2.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
@@ -421,7 +466,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill2, gbc);
+        SkillPanel.add(Skill2, gbc);
         Skill3 = new JComboBox();
         Skill3.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
@@ -430,7 +475,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill3, gbc);
+        SkillPanel.add(Skill3, gbc);
         Skill4 = new JComboBox();
         Skill4.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
@@ -439,7 +484,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill4, gbc);
+        SkillPanel.add(Skill4, gbc);
         element_row++;
         Skill1_mod = new JComboBox<>(SkillMod.getAvailableMods());
         gbc = new GridBagConstraints();
@@ -447,28 +492,28 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill1_mod, gbc);
+        SkillPanel.add(Skill1_mod, gbc);
         Skill2_mod = new JComboBox<>(SkillMod.getAvailableMods());
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill2_mod, gbc);
+        SkillPanel.add(Skill2_mod, gbc);
         Skill3_mod = new JComboBox<>(SkillMod.getAvailableMods());
         gbc = new GridBagConstraints();
         gbc.gridx = 5;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill3_mod, gbc);
+        SkillPanel.add(Skill3_mod, gbc);
         Skill4_mod = new JComboBox<>(SkillMod.getAvailableMods());
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill4_mod, gbc);
+        SkillPanel.add(Skill4_mod, gbc);
         Skill1_s = new JSpinner(new SpinnerNumberModel(1, 0, 1000000, 1));
         Skill1_s.setPreferredSize(new Dimension(90, 20));
         gbc = new GridBagConstraints();
@@ -476,7 +521,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill1_s, gbc);
+        SkillPanel.add(Skill1_s, gbc);
         Skill2_s = new JSpinner(new SpinnerNumberModel(1, 0, 1000000, 1));
         Skill2_s.setPreferredSize(new Dimension(90, 20));
         gbc = new GridBagConstraints();
@@ -484,7 +529,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill2_s, gbc);
+        SkillPanel.add(Skill2_s, gbc);
         Skill3_s = new JSpinner(new SpinnerNumberModel(1, 0, 1000000, 1));
         Skill3_s.setPreferredSize(new Dimension(90, 20));
         gbc = new GridBagConstraints();
@@ -492,7 +537,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill3_s, gbc);
+        SkillPanel.add(Skill3_s, gbc);
         Skill4_s = new JSpinner(new SpinnerNumberModel(1, 0, 1000000, 1));
         Skill4_s.setPreferredSize(new Dimension(90, 20));
         gbc = new GridBagConstraints();
@@ -500,7 +545,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Skill4_s, gbc);
+        SkillPanel.add(Skill4_s, gbc);
         element_row++;
 
         SkillSwitch1_2 = new JButton("<->");
@@ -511,7 +556,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
 //        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(SkillSwitch1_2, gbc);
+        SkillPanel.add(SkillSwitch1_2, gbc);
         SkillSwitch2_3 = new JButton("<->");
         SkillSwitch2_3.setToolTipText("Switch skill order");
         gbc = new GridBagConstraints();
@@ -520,7 +565,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
 //        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(SkillSwitch2_3, gbc);
+        SkillPanel.add(SkillSwitch2_3, gbc);
         SkillSwitch3_4 = new JButton("<->");
         SkillSwitch3_4.setToolTipText("Switch skill order");
         gbc = new GridBagConstraints();
@@ -529,7 +574,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
 //        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(SkillSwitch3_4, gbc);
+        SkillPanel.add(SkillSwitch3_4, gbc);
 
         element_row++;
         final JLabel label3 = new JLabel();
@@ -539,7 +584,7 @@ public class UserForm extends JFrame {
         gbc.gridy = element_row;
         gbc.gridwidth = 6;
         gbc.insets = new Insets(10, 5, 0, 5);
-        RightPanel.add(label3, gbc);
+        SkillPanel.add(label3, gbc);
         element_row++;
         Pskill1 = new JComboBox();
         Pskill1.setMaximumRowCount(16);
@@ -549,7 +594,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Pskill1, gbc);
+        SkillPanel.add(Pskill1, gbc);
         Pskill2 = new JComboBox();
         Pskill2.setMaximumRowCount(16);
         gbc = new GridBagConstraints();
@@ -558,7 +603,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Pskill2, gbc);
+        SkillPanel.add(Pskill2, gbc);
         Pskill3 = new JComboBox();
         Pskill3.setMaximumRowCount(16);
         gbc = new GridBagConstraints();
@@ -567,7 +612,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Pskill3, gbc);
+        SkillPanel.add(Pskill3, gbc);
         Pskill4 = new JComboBox();
         Pskill4.setMaximumRowCount(16);
         gbc = new GridBagConstraints();
@@ -576,436 +621,435 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Pskill4, gbc);
-        element_row++;
+        SkillPanel.add(Pskill4, gbc);
+
+        element_row = 0;
         final JLabel label4 = new JLabel();
         label4.setText("Equipment:");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = element_row;
-        gbc.gridwidth = 6;
+        gbc.gridwidth = 4;
         gbc.insets = new Insets(10, 5, 0, 5);
-        RightPanel.add(label4, gbc);
+        EquipPanel.add(label4, gbc);
         element_row++;
         final JLabel label5 = new JLabel();
         label5.setText("Weapon MH");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label5, gbc);
+        EquipPanel.add(label5, gbc);
         MH_name = new JComboBox<String>();
         MH_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 1;
         gbc.gridy = element_row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(MH_name, gbc);
+        EquipPanel.add(MH_name, gbc);
         MH_tier = new JComboBox<>(Equipment.Quality.values());
         MH_tier.setMaximumRowCount(16);
         MH_tier.setSelectedIndex(3);
         MH_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(MH_tier, gbc);
-        MH_lvl = new JSpinner();
+        EquipPanel.add(MH_tier, gbc);
+        MH_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         MH_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(MH_lvl, gbc);
+        EquipPanel.add(MH_lvl, gbc);
         element_row++;
         final JLabel label6 = new JLabel();
         label6.setText("Offhand");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label6, gbc);
+        EquipPanel.add(label6, gbc);
         OH_name = new JComboBox();
         OH_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 1;
         gbc.gridy = element_row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(OH_name, gbc);
+        EquipPanel.add(OH_name, gbc);
         OH_tier = new JComboBox<>(Equipment.Quality.values());
         OH_tier.setMaximumRowCount(16);
         OH_tier.setSelectedIndex(3);
         OH_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(OH_tier, gbc);
-        OH_lvl = new JSpinner();
+        EquipPanel.add(OH_tier, gbc);
+        OH_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         OH_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(OH_lvl, gbc);
+        EquipPanel.add(OH_lvl, gbc);
         element_row++;
         SetSetup = new JCheckBox();
         SetSetup.setSelected(true);
-        SetSetup.setText("Use helmet and accessory 1 values for full set");
+        SetSetup.setText("Use chest and accessory 1 values for full set");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = element_row;
-        gbc.gridwidth = 6;
-        RightPanel.add(SetSetup, gbc);
+        gbc.gridwidth = 4;
+        EquipPanel.add(SetSetup, gbc);
         element_row++;
-        final JLabel label7 = new JLabel();
-        label7.setText("Helmet");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = element_row;
-        gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label7, gbc);
-        Helmet_name = new JComboBox();
-        Helmet_name.setMaximumRowCount(20);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = element_row;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Helmet_name, gbc);
-        Helmet_tier = new JComboBox<>(Equipment.Quality.values());
-        Helmet_tier.setMaximumRowCount(16);
-        Helmet_tier.setSelectedIndex(3);
-        Helmet_tier.setToolTipText("Quality");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 5;
-        gbc.gridy = element_row;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Helmet_tier, gbc);
-        Helmet_lvl = new JSpinner();
-        Helmet_lvl.setToolTipText("Upgrade lvl");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 6;
-        gbc.gridy = element_row;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Helmet_lvl, gbc);
-        element_row++;
+
         final JLabel label8 = new JLabel();
         label8.setText("Chest");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label8, gbc);
+        EquipPanel.add(label8, gbc);
         Chest_name = new JComboBox();
         Chest_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 1;
         gbc.gridy = element_row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Chest_name, gbc);
+        EquipPanel.add(Chest_name, gbc);
         Chest_tier = new JComboBox<>(Equipment.Quality.values());
         Chest_tier.setMaximumRowCount(16);
         Chest_tier.setSelectedIndex(3);
         Chest_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Chest_tier, gbc);
-        Chest_lvl = new JSpinner();
+        EquipPanel.add(Chest_tier, gbc);
+        Chest_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         Chest_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Chest_lvl, gbc);
+        EquipPanel.add(Chest_lvl, gbc);
         element_row++;
+
         final JLabel label9 = new JLabel();
         label9.setText("Pants");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.WEST;
+        EquipPanel.add(label9, gbc);
+        Pants_name = new JComboBox();
+        Pants_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label9, gbc);
-        Pants_name = new JComboBox();
-        Pants_name.setMaximumRowCount(20);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = element_row;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Pants_name, gbc);
+        EquipPanel.add(Pants_name, gbc);
         Pants_tier = new JComboBox<>(Equipment.Quality.values());
         Pants_tier.setMaximumRowCount(16);
         Pants_tier.setSelectedIndex(3);
         Pants_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Pants_tier, gbc);
-        Pants_lvl = new JSpinner();
+        EquipPanel.add(Pants_tier, gbc);
+        Pants_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         Pants_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Pants_lvl, gbc);
+        EquipPanel.add(Pants_lvl, gbc);
         element_row++;
-        final JLabel label10 = new JLabel();
-        label10.setText("Bracer");
+
+        final JLabel label7 = new JLabel();
+        label7.setText("Helmet");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.WEST;
+        EquipPanel.add(label7, gbc);
+        Helmet_name = new JComboBox();
+        Helmet_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label10, gbc);
-        Bracer_name = new JComboBox();
-        Bracer_name.setMaximumRowCount(20);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        EquipPanel.add(Helmet_name, gbc);
+        Helmet_tier = new JComboBox<>(Equipment.Quality.values());
+        Helmet_tier.setMaximumRowCount(16);
+        Helmet_tier.setSelectedIndex(3);
+        Helmet_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
         gbc.gridx = 2;
         gbc.gridy = element_row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Bracer_name, gbc);
+        EquipPanel.add(Helmet_tier, gbc);
+        Helmet_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
+        Helmet_lvl.setToolTipText("Upgrade lvl");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        EquipPanel.add(Helmet_lvl, gbc);
+        element_row++;
+
+        final JLabel label10 = new JLabel();
+        label10.setText("Bracer");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.WEST;
+        EquipPanel.add(label10, gbc);
+        Bracer_name = new JComboBox();
+        Bracer_name.setMaximumRowCount(20);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        EquipPanel.add(Bracer_name, gbc);
         Bracer_tier = new JComboBox<>(Equipment.Quality.values());
         Bracer_tier.setMaximumRowCount(16);
         Bracer_tier.setSelectedIndex(3);
         Bracer_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Bracer_tier, gbc);
-        Bracer_lvl = new JSpinner();
+        EquipPanel.add(Bracer_tier, gbc);
+        Bracer_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         Bracer_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Bracer_lvl, gbc);
+        EquipPanel.add(Bracer_lvl, gbc);
         element_row++;
         final JLabel label11 = new JLabel();
         label11.setText("Boots");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label11, gbc);
+        EquipPanel.add(label11, gbc);
         Boots_name = new JComboBox();
         Boots_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 1;
         gbc.gridy = element_row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Boots_name, gbc);
+        EquipPanel.add(Boots_name, gbc);
         Boots_tier = new JComboBox<>(Equipment.Quality.values());
         Boots_tier.setMaximumRowCount(16);
         Boots_tier.setSelectedIndex(3);
         Boots_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Boots_tier, gbc);
-        Boots_lvl = new JSpinner();
+        EquipPanel.add(Boots_tier, gbc);
+        Boots_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         Boots_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Boots_lvl, gbc);
+        EquipPanel.add(Boots_lvl, gbc);
         element_row++;
         final JLabel label12 = new JLabel();
-        label12.setText("Accessory 1");
+        label12.setText("Accessory 1 ");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.WEST;
+        EquipPanel.add(label12, gbc);
+        Accessory1_name = new JComboBox();
+        Accessory1_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label12, gbc);
-        Accessory1_name = new JComboBox();
-        Accessory1_name.setMaximumRowCount(20);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = element_row;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Accessory1_name, gbc);
+        EquipPanel.add(Accessory1_name, gbc);
         Accessory1_tier = new JComboBox<>(Equipment.Quality.values());
         Accessory1_tier.setMaximumRowCount(16);
         Accessory1_tier.setSelectedIndex(5);
         Accessory1_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Accessory1_tier, gbc);
-        Accessory1_lvl = new JSpinner();
+        EquipPanel.add(Accessory1_tier, gbc);
+        Accessory1_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         Accessory1_lvl.setToolTipText("Upgrade lvl");
         Accessory1_lvl.setValue(25);
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Accessory1_lvl, gbc);
+        EquipPanel.add(Accessory1_lvl, gbc);
         element_row++;
         final JLabel label13 = new JLabel();
-        label13.setText("Accessory 2");
+        label13.setText("Accessory 2 ");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = element_row;
+        gbc.anchor = GridBagConstraints.WEST;
+        EquipPanel.add(label13, gbc);
+        Accessory2_name = new JComboBox();
+        Accessory2_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label13, gbc);
-        Accessory2_name = new JComboBox();
-        Accessory2_name.setMaximumRowCount(20);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = element_row;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Accessory2_name, gbc);
+        EquipPanel.add(Accessory2_name, gbc);
         Accessory2_tier = new JComboBox<>(Equipment.Quality.values());
         Accessory2_tier.setMaximumRowCount(16);
         Accessory2_tier.setSelectedIndex(3);
         Accessory2_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Accessory2_tier, gbc);
-        Accessory2_lvl = new JSpinner();
+        EquipPanel.add(Accessory2_tier, gbc);
+        Accessory2_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         Accessory2_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Accessory2_lvl, gbc);
+        EquipPanel.add(Accessory2_lvl, gbc);
         element_row++;
         final JLabel label14 = new JLabel();
         label14.setText("Neck");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
-        RightPanel.add(label14, gbc);
+        EquipPanel.add(label14, gbc);
         Necklace_name = new JComboBox();
         Necklace_name.setMaximumRowCount(20);
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 1;
         gbc.gridy = element_row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Necklace_name, gbc);
+        EquipPanel.add(Necklace_name, gbc);
         Necklace_tier = new JComboBox<>(Equipment.Quality.values());
         Necklace_tier.setMaximumRowCount(16);
         Necklace_tier.setSelectedIndex(3);
         Necklace_tier.setToolTipText("Quality");
         gbc = new GridBagConstraints();
-        gbc.gridx = 5;
+        gbc.gridx = 2;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Necklace_tier, gbc);
-        Necklace_lvl = new JSpinner();
+        EquipPanel.add(Necklace_tier, gbc);
+        Necklace_lvl = new JSpinner(new SpinnerNumberModel(0, 0, 900, 1));
         Necklace_lvl.setToolTipText("Upgrade lvl");
         gbc = new GridBagConstraints();
-        gbc.gridx = 6;
+        gbc.gridx = 3;
         gbc.gridy = element_row;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Necklace_lvl, gbc);
-        Save = new JButton();
-        Save.setText("Save");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(10, 5, 0, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Save, gbc);
-        Load = new JButton();
-        Load.setText("Load");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(10, 5, 0, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Load, gbc);
+        EquipPanel.add(Necklace_lvl, gbc);
 
+        element_row = 0;
+        int element_column = 4;
+        final JLabel label4_1 = new JLabel("Cores:");
+        gbc = new GridBagConstraints();
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        gbc.gridwidth = 6;
+        gbc.insets = new Insets(10, 5, 0, 5);
+        EquipPanel.add(label4_1, gbc);
+        element_row++;
+        for (int i = 0; i < 10; i++) {
+            int id = i * 10;
+            int x = element_column;
+//            int y = i < 3 ? element_row + i : element_row + i + 1;
+            int y = i < 2 ? element_row + i : element_row + i + 1;
+            addCore(id, x, y);
+            if (i < 4) addCore(id + 1, x + 3, y); //weapons, chest, pants
+            if (i == 2) addCore(id + 2, x + 6, y); //chest
+        }
+
+        element_column = 0;
+        element_row = 0;
         EnemyMinLvlIncrease = new JCheckBox("Enemy Min Lvl Increase");
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 12;
-        gbc.gridwidth = 2;
-        RightPanel.add(EnemyMinLvlIncrease, gbc);
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        SimPanel.add(EnemyMinLvlIncrease, gbc);
 
         Offline = new JCheckBox();
         Offline.setSelected(false);
         Offline.setText("Offline calc");
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 13;
-        gbc.gridwidth = 2;
-        RightPanel.add(Offline, gbc);
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        SimPanel.add(Offline, gbc);
 
         Sim_type = new ButtonGroup();
         Sim_num = new JRadioButton();
         Sim_num.setText("Number of simulations:");
         Sim_type.add(Sim_num);
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 14;
-        gbc.gridwidth = 2;
-        RightPanel.add(Sim_num, gbc);
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        SimPanel.add(Sim_num, gbc);
         Sim_time = new JRadioButton();
         Sim_time.setText("Number of hours:");
         Sim_type.add(Sim_time);
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 15;
-        gbc.gridwidth = 2;
-        RightPanel.add(Sim_time, gbc);
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        SimPanel.add(Sim_time, gbc);
         Sim_lvl = new JRadioButton();
         Sim_lvl.setText("Until CL reached:");
         Sim_type.add(Sim_lvl);
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 16;
-        gbc.gridwidth = 2;
-        RightPanel.add(Sim_lvl, gbc);
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        SimPanel.add(Sim_lvl, gbc);
 
         Simulations = new JSpinner(new SpinnerNumberModel(1000, 1, 1000000, 1) {
             @Override
@@ -1028,27 +1072,25 @@ public class UserForm extends JFrame {
         });
         Simulations.setToolTipText("Maximum value 1000000");
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 17;
-        gbc.gridwidth = 2;
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Simulations, gbc);
+        SimPanel.add(Simulations, gbc);
         SimHours = createCustomSpinner(1.0, 0, 10000, 1);
         SimHours.setVisible(false);
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 17;
-        gbc.gridwidth = 2;
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(SimHours, gbc);
+        SimPanel.add(SimHours, gbc);
         SimCL = createCustomSpinner(90, 0, 1000, 1);
         SimCL.setVisible(false);
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 17;
-        gbc.gridwidth = 2;
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(SimCL, gbc);
+        SimPanel.add(SimCL, gbc);
         class RadioButtonActionListener implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -1079,29 +1121,30 @@ public class UserForm extends JFrame {
         Leveling.setSelected(false);
         Leveling.setText("Gain exp during sim");
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 18;
-        gbc.gridwidth = 2;
-        RightPanel.add(Leveling, gbc);
-        Update_lvls = new JButton();
-        Update_lvls.setText("Update lvls from sim data");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 21;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Update_lvls, gbc);
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        SimPanel.add(Leveling, gbc);
 
         Run = new JButton();
         Run.setText("Simulate");
         gbc = new GridBagConstraints();
-        gbc.gridx = 7;
-        gbc.gridy = 19;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(5, 5, 0, 5);
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        RightPanel.add(Run, gbc);
+        SimPanel.add(Run, gbc);
+
+        Update_lvls = new JButton();
+        Update_lvls.setText("Update lvls from sim");
+        gbc = new GridBagConstraints();
+        gbc.gridx = element_column;
+        gbc.gridy = element_row;
+        element_row++;
+        gbc.insets = new Insets(0, 5, 0, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        SimPanel.add(Update_lvls, gbc);
 
         activeSkillsModel = new SkillTableModel();
         activeSkillsModel.setColumnIdentifiers(new String[]{"Active Skill", "lvl", "exp %"});
@@ -1390,111 +1433,97 @@ public class UserForm extends JFrame {
         }
 
         LeftPane = new JScrollPane(LeftPanel);
-        LeftPane.setPreferredSize(new Dimension(600, 575));
+        LeftPane.setPreferredSize(new Dimension(590, 575));
         LeftPane.getVerticalScrollBar().setUnitIncrement(16);
         LeftPane.getHorizontalScrollBar().setUnitIncrement(16);
         LeftPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         LeftPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        RightPane = new JScrollPane(RightPanel);
-        RightPane.setPreferredSize(new Dimension(780, 575));
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        SetupPanel.add(SkillPanel, gbc);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        SetupPanel.add(SimPanel, gbc);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        SetupPanel.add(EquipPanel, gbc);
+
+        RightPane = new JScrollPane(SetupPanel);
+        RightPane.setPreferredSize(new Dimension(995, 585));
         RightPane.getVerticalScrollBar().setUnitIncrement(16);
         RightPane.getHorizontalScrollBar().setUnitIncrement(16);
         RightPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         RightPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        TopPanel = new JPanel();
-        TopPanel.setLayout(new BoxLayout(TopPanel, BoxLayout.X_AXIS));
-        TopPanel.add(LeftPane);
-        TopPanel.add(RightPane);
-//        TopPanel.setPreferredSize(new Dimension(1450, 575));
 
         BottomPanel = new JPanel();
         BottomPanel.setLayout(new GridBagLayout());
-
-        Stats = new JTextArea();
-        Stats.setEditable(false);
-        Stats.setLineWrap(true);
-        Stats.setText("Stats will be shown after simulation");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 6;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-//        gbc.insets = new Insets(5, 5, 5, 5);
-        Stats_p = new JScrollPane(Stats, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        Stats_p.getVerticalScrollBar().setUnitIncrement(16);
-        Stats_p.setMinimumSize(new Dimension(200, 50));
-        Stats_p.setPreferredSize(new Dimension(200, 400));
-        BottomPanel.add(Stats_p, gbc);
 
         Result = new JTextArea();
         Result.setEditable(false);
         Result.setLineWrap(true);
         Result.setText("Result will be here");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 6;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-//        gbc.insets = new Insets(5, 5, 5, 5);
         Result_p = new JScrollPane(Result, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         Result_p.getVerticalScrollBar().setUnitIncrement(16);
-        Result_p.setMinimumSize(new Dimension(320, 50));
+        Result_p.setMinimumSize(new Dimension(50, 50));
         Result_p.setPreferredSize(new Dimension(320, 400));
         BottomPanel.add(Result_p, gbc);
 
-        Result_skills = new JTextArea();
-        Result_skills.setEditable(false);
-        Result_skills.setLineWrap(true);
-        Result_skills.setText("Info about used skills will be here");
+        Result_details = new JTextArea();
+        Result_details.setEditable(false);
+        Result_details.setLineWrap(true);
+        Result_details.setText("Info about used skills will be here");
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 7;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-//        gbc.insets = new Insets(5, 5, 5, 5);
-        Result_skills_p = new JScrollPane(Result_skills, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+        Result_details_p = new JScrollPane(Result_details, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        Result_skills_p.getVerticalScrollBar().setUnitIncrement(16);
-        Result_skills_p.setMinimumSize(new Dimension(540, 50));
-        Result_skills_p.setPreferredSize(new Dimension(540, 400));
-        BottomPanel.add(Result_skills_p, gbc);
+        Result_details_p.getVerticalScrollBar().setUnitIncrement(16);
+        Result_details_p.setMinimumSize(new Dimension(50, 50));
+        Result_details_p.setPreferredSize(new Dimension(380, 400));
+        BottomPanel.add(Result_details_p, gbc);
 
         Result_lvling = new JTextArea();
         Result_lvling.setEditable(false);
         Result_lvling.setLineWrap(true);
         Result_lvling.setText("Leveling results will be here");
         gbc = new GridBagConstraints();
-        gbc.gridx = 3;
+        gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.weightx = 5;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-//        gbc.insets = new Insets(5, 5, 5, 5);
         Result_lvling_p = new JScrollPane(Result_lvling, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         Result_lvling_p.getVerticalScrollBar().setUnitIncrement(16);
-        Result_lvling_p.setMinimumSize(new Dimension(210, 50));
-        Result_lvling_p.setPreferredSize(new Dimension(210, 400));
+        Result_lvling_p.setMinimumSize(new Dimension(50, 50));
+        Result_lvling_p.setPreferredSize(new Dimension(280, 400));
         BottomPanel.add(Result_lvling_p, gbc);
 
-//        BottomPanel.setPreferredSize(new Dimension(1150, 450));
+        RightPanel = new JPanel();
+        RightPanel.setLayout(new BoxLayout(RightPanel, BoxLayout.Y_AXIS));
+        RightPanel.add(RightPane);
+        RightPanel.add(BottomPanel);
 
-        RootPanel.setLayout(new BoxLayout(RootPanel, BoxLayout.Y_AXIS));
-        RootPanel.add(TopPanel);
-        RootPanel.add(BottomPanel);
+        RootPanel.setLayout(new BoxLayout(RootPanel, BoxLayout.X_AXIS));
+        RootPanel.add(LeftPane);
+        RootPanel.add(RightPanel);
         this.setContentPane(RootPanel);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-//        JScrollPane Scroll = new JScrollPane(BottomPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane
-//                .HORIZONTAL_SCROLLBAR_AS_NEEDED);
-//        Scroll.getVerticalScrollBar().setUnitIncrement(16);
-//        Scroll.getHorizontalScrollBar().setUnitIncrement(16);
-//        this.add(Scroll);
 
         this.setPreferredSize(loadSettings(Main.getJarPath() + "/Settings.ini").getWindowSize());
         Main.time_limit = loadSettings(Main.getJarPath() + "/Settings.ini").getSimulation_time_limit();
@@ -1560,7 +1589,7 @@ public class UserForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (player == null || player.ml == 0) {
-                    JOptionPane.showMessageDialog(RightPanel, "You need to sim first! No lvling data.", "Warning",
+                    JOptionPane.showMessageDialog(SetupPanel, "You need to sim first! No lvling data.", "Warning",
                             JOptionPane.WARNING_MESSAGE);
                 } else {
                     StringBuilder info = new StringBuilder("<html>");
@@ -1697,7 +1726,7 @@ public class UserForm extends JFrame {
                     info.append("</table>");
                     info.append("</body>");
                     info.append("</html>");
-                    int selectedOption = JOptionPane.showConfirmDialog(RightPanel, info, "Confirm", JOptionPane.YES_NO_OPTION);
+                    int selectedOption = JOptionPane.showConfirmDialog(SetupPanel, info, "Confirm", JOptionPane.YES_NO_OPTION);
                     if (selectedOption == JOptionPane.YES_OPTION) {
                         setup.milestone = player.milestone_exp_mult * 100;
                         setup.ml = player.ml + player.getMLpercent() / 100;
@@ -1727,16 +1756,16 @@ public class UserForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (Skill1.getSelectedIndex() == 0) {
-                    JOptionPane.showMessageDialog(RightPanel, "You need to setup first active skill", "Warning",
+                    JOptionPane.showMessageDialog(SetupPanel, "You need to setup first active skill", "Warning",
                             JOptionPane.WARNING_MESSAGE);
                 } else {
                     if (Sim_lvl.isSelected() && ((int) Double.parseDouble(CL.getValue().toString()) >= (int) Double.parseDouble(SimCL.getValue().toString()))) {
-                        JOptionPane.showMessageDialog(RightPanel,
+                        JOptionPane.showMessageDialog(SetupPanel,
                                 "You need to setup target CL higher than your current", "Warning",
                                 JOptionPane.WARNING_MESSAGE);
                     } else {
                         if (checkSameItemsCombo()) {
-                            JOptionPane.showMessageDialog(RightPanel,
+                            JOptionPane.showMessageDialog(SetupPanel,
                                     "You're using some of your passive skills twice!", "Warning",
                                     JOptionPane.WARNING_MESSAGE);
                         }
@@ -1745,14 +1774,14 @@ public class UserForm extends JFrame {
                             Main.game_version = (int) Double.parseDouble(setup.gameversion);
                             player = simulation.setupAndRun(setup);
                             showResult();
-                            Stats.setText(simulation.player.getAllStats());
-                            Stats.setCaretPosition(0);
+//                            Stats.setText(simulation.player.getAllStats());
+//                            Stats.setCaretPosition(0);
                             Result.setCaretPosition(0);
-                            Result_skills.setCaretPosition(0);
+                            Result_details.setCaretPosition(0);
                             Result_lvling.setCaretPosition(0);
                         } catch (IllegalArgumentException ex) {
                             ex.printStackTrace();
-                            JOptionPane.showMessageDialog(RightPanel, "Some field has illegal value!", "Exception",
+                            JOptionPane.showMessageDialog(SetupPanel, "Some field has illegal value!", "Exception",
                                     JOptionPane.WARNING_MESSAGE);
                         }
                     }
@@ -1814,10 +1843,45 @@ public class UserForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (MH_name.getSelectedItem() != null) {
+                    int slots = 1;
                     String item_name = MH_name.getSelectedItem().toString();
+                    if (MH_tier.getSelectedIndex() > 5) slots++;
                     if (equipmentData.twohanded.contains(item_name)) {
-                        OH_name.setSelectedItem("None");
+                        slots *= 2;
                     }
+                    if (equipmentData.less_slots.contains(item_name)) slots--;
+                    if (item_name.equals("Cauldron")) slots--;
+                    if (item_name.equals("None")) slots = 0;
+                    cores.get(0).enabled = slots >= 1;
+                    cores.get(1).enabled = slots >= 2;
+                    if (equipmentData.twohanded.contains(item_name)) {
+                        cores.get(10).enabled = slots >= 3;
+                        cores.get(11).enabled = slots >= 4;
+                    }
+                    updateUI(); //todo: add checks for TF
+                }
+            }
+        });
+        MH_tier.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (MH_name.getSelectedItem() != null) {
+                    int slots = 1;
+                    String item_name = MH_name.getSelectedItem().toString();
+                    if (MH_tier.getSelectedIndex() > 5) slots++;
+                    if (equipmentData.twohanded.contains(item_name)) {
+                        slots *= 2;
+                    }
+                    if (equipmentData.less_slots.contains(item_name)) slots--;
+                    if (item_name.equals("Cauldron")) slots--;
+                    if (item_name.equals("None")) slots = 0;
+                    cores.get(0).enabled = slots >= 1;
+                    cores.get(1).enabled = slots >= 2;
+                    if (equipmentData.twohanded.contains(item_name)) {
+                        cores.get(10).enabled = slots >= 3;
+                        cores.get(11).enabled = slots >= 4;
+                    }
+                    updateUI();
                 }
             }
         });
@@ -1830,43 +1894,117 @@ public class UserForm extends JFrame {
                         OH_name.setSelectedItem("None");
                     }
                 }
+                int slots = 1;
+                String item_name = OH_name.getSelectedItem().toString();
+                if (OH_tier.getSelectedIndex() > 5) slots++;
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(10).enabled = slots >= 1;
+                cores.get(11).enabled = slots >= 2;
+                updateUI();
             }
         });
-        Helmet_name.addActionListener(new ActionListener() {
+        OH_tier.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (SetSetup.isSelected() && Helmet_name.getSelectedItem() != null && Helmet_name.getSelectedItem() != "None") {
-                    Equipment eq = equipmentData.items.get(Helmet_name.getSelectedItem().toString());
+                int slots = 1;
+                String item_name = OH_name.getSelectedItem().toString();
+                if (OH_tier.getSelectedIndex() > 5) slots++;
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(10).enabled = slots >= 1;
+                cores.get(11).enabled = slots >= 2;
+                updateUI();
+            }
+        });
+        Chest_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (SetSetup.isSelected() && Chest_name.getSelectedItem() != null && Chest_name.getSelectedItem() != "None") {
+                    Equipment eq = equipmentData.items.get(Chest_name.getSelectedItem().toString());
                     if (eq != null) {
                         String set = eq.displayName;
-                        Chest_name.setSelectedItem(findItemFromSet(set, "CHEST"));
+                        Helmet_name.setSelectedItem(findItemFromSet(set, "HEADGEAR"));
                         Pants_name.setSelectedItem(findItemFromSet(set, "PANTS"));
                         Bracer_name.setSelectedItem(findItemFromSet(set, "BRACERS"));
                         Boots_name.setSelectedItem(findItemFromSet(set, "BOOTS"));
                     }
                 }
+                int slots = 3;
+                String item_name = Chest_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(20).enabled = slots >= 1;
+                cores.get(21).enabled = slots >= 2;
+                cores.get(22).enabled = slots >= 3;
+                updateUI();
             }
         });
-        Helmet_tier.addActionListener(new ActionListener() {
+        Chest_tier.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (SetSetup.isSelected()) {
-                    Chest_tier.setSelectedItem(Helmet_tier.getSelectedItem());
-                    Pants_tier.setSelectedItem(Helmet_tier.getSelectedItem());
-                    Bracer_tier.setSelectedItem(Helmet_tier.getSelectedItem());
-                    Boots_tier.setSelectedItem(Helmet_tier.getSelectedItem());
+                    Helmet_tier.setSelectedItem(Chest_tier.getSelectedItem());
+                    Pants_tier.setSelectedItem(Chest_tier.getSelectedItem());
+                    Bracer_tier.setSelectedItem(Chest_tier.getSelectedItem());
+                    Boots_tier.setSelectedItem(Chest_tier.getSelectedItem());
                 }
             }
         });
-        Helmet_lvl.addChangeListener(new ChangeListener() {
+        Chest_lvl.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (SetSetup.isSelected()) {
-                    Chest_lvl.setValue(Helmet_lvl.getValue());
-                    Pants_lvl.setValue(Helmet_lvl.getValue());
-                    Bracer_lvl.setValue(Helmet_lvl.getValue());
-                    Boots_lvl.setValue(Helmet_lvl.getValue());
+                    Helmet_lvl.setValue(Chest_lvl.getValue());
+                    Pants_lvl.setValue(Chest_lvl.getValue());
+                    Bracer_lvl.setValue(Chest_lvl.getValue());
+                    Boots_lvl.setValue(Chest_lvl.getValue());
                 }
+            }
+        });
+        Pants_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int slots = 2;
+                String item_name = Pants_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(30).enabled = slots >= 1;
+                cores.get(31).enabled = slots >= 2;
+                updateUI();
+            }
+        });
+        Helmet_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int slots = 1;
+                String item_name = Helmet_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(40).enabled = slots >= 1;
+                updateUI();
+            }
+        });
+        Bracer_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int slots = 1;
+                String item_name = Bracer_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(50).enabled = slots >= 1;
+                updateUI();
+            }
+        });
+        Boots_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int slots = 1;
+                String item_name = Boots_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(60).enabled = slots >= 1;
+                updateUI();
             }
         });
         Accessory1_name.addActionListener(new ActionListener() {
@@ -1880,6 +2018,12 @@ public class UserForm extends JFrame {
                         Necklace_name.setSelectedItem(findItemFromSet(set, "NECK"));
                     }
                 }
+                int slots = 1;
+                String item_name = Accessory1_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(70).enabled = slots >= 1;
+                updateUI();
             }
         });
         Accessory1_tier.addActionListener(new ActionListener() {
@@ -1898,6 +2042,28 @@ public class UserForm extends JFrame {
                     Accessory2_lvl.setValue(Accessory1_lvl.getValue());
                     Necklace_lvl.setValue(Accessory1_lvl.getValue());
                 }
+            }
+        });
+        Accessory2_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int slots = 1;
+                String item_name = Accessory2_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(80).enabled = slots >= 1;
+                updateUI();
+            }
+        });
+        Necklace_name.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int slots = 1;
+                String item_name = Necklace_name.getSelectedItem().toString();
+                if (equipmentData.less_slots.contains(item_name)) slots--;
+                if (item_name.equals("None")) slots = 0;
+                cores.get(90).enabled = slots >= 1;
+                updateUI();
             }
         });
         loadEquipment();
@@ -2162,11 +2328,11 @@ public class UserForm extends JFrame {
             writer.close();
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(RightPanel, "Some field has illegal value!", "Exception",
+            JOptionPane.showMessageDialog(SetupPanel, "Some field has illegal value!", "Exception",
                     JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(RightPanel, ex.getMessage(), "Exception",
+            JOptionPane.showMessageDialog(SetupPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -2244,7 +2410,7 @@ public class UserForm extends JFrame {
         data.skill4 = Skill4.getSelectedItem().toString();
         data.skill4_mod = (SkillMod) Skill4_mod.getSelectedItem();
         data.skill4_s = (int) Double.parseDouble(Skill4_s.getValue().toString());
-        data.stats = Stats.getText();
+//        data.stats = Stats.getText();
         if (Sim_num.isSelected()) data.sim_type = 1;
         if (Sim_time.isSelected()) data.sim_type = 2;
         if (Sim_lvl.isSelected()) data.sim_type = 3;
@@ -2267,6 +2433,12 @@ public class UserForm extends JFrame {
         for (String name : getAllBestiary()) {
             JSpinner l = bestiary.get(name);
             if (l != null) data.bestiary.put(name, Double.parseDouble(l.getValue().toString()));
+        }
+        for (int key : cores.keySet()) {
+            CoreUI ui = cores.get(key);
+            Core core = new Core(ui.name.getSelectedItem().toString(), ui.grade.getSelectedIndex(),
+                    (int) Double.parseDouble(ui.lvl.getValue().toString()), ui.enabled);
+            data.cores.put(key, core);
         }
         data.hard_hp = Double.parseDouble(Hard_hp.getValue().toString());
         data.hard_stats = Double.parseDouble(Hard_stats.getValue().toString());
@@ -2306,6 +2478,10 @@ public class UserForm extends JFrame {
         if (data.actives_lvls.containsKey("Fireball")) {
             data.actives_lvls.put("Fire Ball", data.actives_lvls.get("Fireball"));
         }
+        if (data.stats != null) {
+            data.result_skills = data.stats + "\n" + data.result_skills;
+            data.stats = null;
+        }
     }
 
     private Setup loadFile(String path) {
@@ -2317,7 +2493,7 @@ public class UserForm extends JFrame {
             migrateSetup(file);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(RightPanel, ex.getMessage(), "Exception",
+            JOptionPane.showMessageDialog(SetupPanel, ex.getMessage(), "Exception",
                     JOptionPane.WARNING_MESSAGE);
         }
         return file;
@@ -2337,7 +2513,7 @@ public class UserForm extends JFrame {
                 writer.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(RightPanel, ex.getMessage(), "Exception",
+                JOptionPane.showMessageDialog(SetupPanel, ex.getMessage(), "Exception",
                         JOptionPane.WARNING_MESSAGE);
             }
         }
@@ -2345,56 +2521,16 @@ public class UserForm extends JFrame {
     }
 
     private void loadSetup(Setup data) {
-        SetSetup.setSelected(data.setsetup);
-        Helmet_lvl.setValue(data.helmet_lvl);
-        Helmet_name.setSelectedItem(data.helmet_name);
-        Helmet_tier.setSelectedItem(data.helmet_tier);
-        Accessory1_lvl.setValue(data.accessory1_lvl);
-        Accessory1_name.setSelectedItem(data.accessory1_name);
-        Accessory1_tier.setSelectedItem(data.accessory1_tier);
-        Accessory2_lvl.setValue(data.accessory2_lvl);
-        Accessory2_name.setSelectedItem(data.accessory2_name);
-        Accessory2_tier.setSelectedItem(data.accessory2_tier);
-        Boots_lvl.setValue(data.boots_lvl);
-        Boots_name.setSelectedItem(data.boots_name);
-        Boots_tier.setSelectedItem(data.boots_tier);
-        Bracer_lvl.setValue(data.bracer_lvl);
-        Bracer_name.setSelectedItem(data.bracer_name);
-        Bracer_tier.setSelectedItem(data.bracer_tier);
-        Chest_lvl.setValue(data.chest_lvl);
-        Chest_name.setSelectedItem(data.chest_name);
-        Chest_tier.setSelectedItem(data.chest_tier);
         CL.setValue((int) data.cl);
         CL_p.setValue((data.cl - (int) data.cl) * 100);
         Enemy.setSelectedItem(data.zone);
         GameVersion.setSelectedItem((int) Double.parseDouble(data.gameversion));
-        MH_lvl.setValue(data.mh_lvl);
-        MH_name.setSelectedItem(data.mh_name);
-        MH_tier.setSelectedItem(data.mh_tier);
-        Necklace_lvl.setValue(data.necklace_lvl);
-        Necklace_name.setSelectedItem(data.necklace_name);
-        Necklace_tier.setSelectedItem(data.necklace_tier);
-        OH_lvl.setValue(data.oh_lvl);
-        OH_name.setSelectedItem(data.oh_name);
-        OH_tier.setSelectedItem(data.oh_tier);
-        Pants_lvl.setValue(data.pants_lvl);
-        Pants_name.setSelectedItem(data.pants_name);
-        Pants_tier.setSelectedItem(data.pants_tier);
-        Pill.setSelectedItem(data.pill);
-        Potion1.setSelectedItem(data.potion1);
-        Potion1_t.setValue(data.potion1_t);
-        Potion2.setSelectedItem(data.potion2);
-        Potion2_t.setValue(data.potion2_t);
-        Potion3.setSelectedItem(data.potion3);
-        Potion3_t.setValue(data.potion3_t);
         simulation.result_info = data.result_essential;
         simulation.skills_info = data.result_skills;
         simulation.lvling_info = data.result_lvling;
-        SetSetup.setSelected(data.setsetup);
         Balance1.setSelected(data.extra_atk_overkill);
         Balance2.setSelected(data.extra_atk_backstab_mult);
         Balance3.setSelected(data.crit_overkill_reduced);
-        Stats.setText(data.stats);
         switch (data.sim_type) {
             case 2:
                 Sim_time.doClick();
@@ -2433,11 +2569,65 @@ public class UserForm extends JFrame {
         Skill4.setSelectedItem(data.skill4);
         Skill4_mod.setSelectedItem(data.skill4_mod != null ? data.skill4_mod : SkillMod.Basic);
         Skill4_s.setValue(data.skill4_s);
+        for (int key : cores.keySet()) {
+            CoreUI ui = cores.get(key);
+            if (data.cores != null && data.cores.get(key) != null) {
+                Core core = data.cores.get(key);
+                ui.name.setSelectedItem(core.name);
+                ui.grade.setSelectedIndex(core.grade);
+                ui.lvl.setValue(core.lvl);
+                ui.enabled = core.enabled;
+            } else {
+                ui.name.setSelectedIndex(0);
+                ui.grade.setSelectedIndex(6);
+                ui.lvl.setValue(5);
+            }
+        }
+        Pill.setSelectedItem(data.pill);
+        Potion1.setSelectedItem(data.potion1);
+        Potion1_t.setValue(data.potion1_t);
+        Potion2.setSelectedItem(data.potion2);
+        Potion2_t.setValue(data.potion2_t);
+        Potion3.setSelectedItem(data.potion3);
+        Potion3_t.setValue(data.potion3_t);
+
+        MH_lvl.setValue(data.mh_lvl);
+        MH_name.setSelectedItem(data.mh_name);
+        MH_tier.setSelectedItem(data.mh_tier);
+        OH_lvl.setValue(data.oh_lvl);
+        OH_name.setSelectedItem(data.oh_name);
+        OH_tier.setSelectedItem(data.oh_tier);
+        Chest_lvl.setValue(data.chest_lvl);
+        Chest_name.setSelectedItem(data.chest_name);
+        Chest_tier.setSelectedItem(data.chest_tier);
+        Pants_lvl.setValue(data.pants_lvl);
+        Pants_name.setSelectedItem(data.pants_name);
+        Pants_tier.setSelectedItem(data.pants_tier);
+        Helmet_lvl.setValue(data.helmet_lvl);
+        Helmet_name.setSelectedItem(data.helmet_name);
+        Helmet_tier.setSelectedItem(data.helmet_tier);
+        Bracer_lvl.setValue(data.bracer_lvl);
+        Bracer_name.setSelectedItem(data.bracer_name);
+        Bracer_tier.setSelectedItem(data.bracer_tier);
+        Boots_lvl.setValue(data.boots_lvl);
+        Boots_name.setSelectedItem(data.boots_name);
+        Boots_tier.setSelectedItem(data.boots_tier);
+        Accessory1_lvl.setValue(data.accessory1_lvl);
+        Accessory1_name.setSelectedItem(data.accessory1_name);
+        Accessory1_tier.setSelectedItem(data.accessory1_tier);
+        Accessory2_lvl.setValue(data.accessory2_lvl);
+        Accessory2_name.setSelectedItem(data.accessory2_name);
+        Accessory2_tier.setSelectedItem(data.accessory2_tier);
+        Necklace_lvl.setValue(data.necklace_lvl);
+        Necklace_name.setSelectedItem(data.necklace_name);
+        Necklace_tier.setSelectedItem(data.necklace_tier);
+        SetSetup.setSelected(data.setsetup);
+//        Stats.setText(data.stats);
         showResult();
-        Stats.setCaretPosition(0);
         Result.setCaretPosition(0);
-        Result_skills.setCaretPosition(0);
+        Result_details.setCaretPosition(0);
         Result_lvling.setCaretPosition(0);
+        updateUI();
     }
 
     private void loadResearch(Setup data) {
@@ -2495,7 +2685,7 @@ public class UserForm extends JFrame {
 
     private void showResult() {
         Result.setText(simulation.result_info);
-        Result_skills.setText(simulation.skills_info);
+        Result_details.setText(simulation.skills_info);
         Result_lvling.setText(simulation.lvling_info);
     }
 
@@ -2576,6 +2766,77 @@ public class UserForm extends JFrame {
         return y + 1;
     }
 
+    private void addCore(int id, int x, int y) {
+        CoreUI c = new CoreUI();
+        String[] weapon_cores = {"None", "Slime", "Goblin", "Devil", "Lamia", "Fire Lizard", "Blood Lizard", "Asura"};
+        String[] armor_cores = {"None", "Imp", "Ghoul", "Wraith", "Shinigami", "Astaroth", "Amon",
+                "Shax", "Dagon", "Tyrant", "Fairy", "Raum", "Tree Golem", "Empress", "Dark Reaper"};
+        String[] acc_cores = {"None", "Tengu", "Akuma", "Squirrel Mage", "Gloom Flower"};
+
+        String[] types = {"None"};
+        String tooltip = "Core type";
+        if (id < 20) {
+            types = weapon_cores;
+            tooltip = "Weapon core type";
+        } else {
+            if (id < 70) {
+                types = armor_cores;
+                tooltip = "Armor core type";
+            } else {
+                types = acc_cores;
+                tooltip = "Accessory core type";
+            }
+        }
+        tooltip = switch ((int) (id / 10)) {
+            case 0 -> "MH weapon core";
+            case 1 -> "OH weapon core";
+            case 2 -> "Chest core";
+            case 3 -> "Pants core";
+            case 4 -> "Helmet core";
+            case 5 -> "Bracer core";
+            case 6 -> "Boots core";
+            case 7 -> "Accessory 1 core";
+            case 8 -> "Accessory 2 core";
+            case 9 -> "Necklace core";
+            default -> "Unknown id";
+        };
+        JComboBox name = new JComboBox<>(types);
+        c.name = name;
+        name.setMaximumRowCount(32);
+        name.setToolTipText(tooltip);
+        gbc = new GridBagConstraints();
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+//        gbc.insets = new Insets(0, 5, 0, 0);
+        EquipPanel.add(name, gbc);
+
+        JComboBox grade = new JComboBox<>(MonsterStatData.CoreGrade.values());
+        grade.setSelectedIndex(6);
+        c.grade = grade;
+        grade.setMaximumRowCount(12);
+        grade.setToolTipText("Core grade");
+        gbc = new GridBagConstraints();
+        gbc.gridx = x + 1;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        EquipPanel.add(grade, gbc);
+
+        JSpinner lvl = new JSpinner(new SpinnerNumberModel(5, 1, 15, 1));
+        c.lvl = lvl;
+        grade.setToolTipText("Core lvl");
+        gbc = new GridBagConstraints();
+        gbc.gridx = x + 2;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        EquipPanel.add(lvl, gbc);
+
+        cores.put(id, c);
+    }
+
     public ArrayList<String> getAllBestiary() {
         return new ArrayList<>(Arrays.asList(
                 "Slime", "Goblin", "Imp", "Ghoul", "Wraith",
@@ -2599,6 +2860,7 @@ public class UserForm extends JFrame {
                 "Exp gain",
                 "Core drop",
                 "Core quality",
+                "Skill exp",
                 "Sidecraft spd",
                 "Crafting spd",
                 "Alchemy spd",
@@ -2691,5 +2953,18 @@ public class UserForm extends JFrame {
             show_setup = new Setup();
         }
         loadSetup(show_setup);
+    }
+
+    public void updateUI() {
+        for (CoreUI core : cores.values()) {
+//            if (core.enabled) {
+//                core.name.setFont(default_font);
+//            } else {
+//                core.name.setFont(disabled_font);
+//            }
+            core.name.setVisible(core.enabled);
+            core.grade.setVisible(core.enabled);
+            core.lvl.setVisible(core.enabled);
+        }
     }
 }

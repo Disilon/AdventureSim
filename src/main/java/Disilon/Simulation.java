@@ -87,6 +87,7 @@ public class Simulation {
         double delta_sum = 0;
         int delta_count = 0;
         double oom_time = 0;
+        double weapon_switch = 0;
         player.damage_taken = 0;
         player.dot_tracking = 0;
         player.overkill = 0;
@@ -132,6 +133,9 @@ public class Simulation {
             player.zone.respawn(Math.round(player.set_squirrel_rate), player.getEnemyMinLvl());
             player.checkAmbush();
             player.remove_charge = false;
+//            player.pill.name = "Berserk";
+//            player.refreshStats();
+            player.shield = player.shield_max;
             if (skill1 != null) skill1.used_in_rotation = 0;
             if (skill2 != null) skill2.used_in_rotation = 0;
             if (skill3 != null) skill3.used_in_rotation = 0;
@@ -272,6 +276,21 @@ public class Simulation {
                         }
                     }
                 }
+                if (player.zone == Zone.Boss) {
+//                    if (time - weapon_switch >= 2) {
+//                        player.wrong_weapon = false;
+//                        player.gear_potion = 1;
+//                    }
+//                    if (player.hp < player.getHp_max() * 0.6 && player.potion2.cooldown <= 1) {
+//                        weapon_switch = time;
+//                        player.wrong_weapon = true;
+//                        player.gear_potion = 1.147;
+//                    }
+//                    if (time > 180 && !player.pill.name.equals("Toughness")) {
+//                        player.pill.name = "Toughness";
+//                        player.refreshStats();
+//                    }
+                }
                 if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta(player));
                 delta = Math.min(delta, player.zone.calculateDelta());
                 delta = minIfNotZero(delta, player.getNextPotionTime());
@@ -303,7 +322,7 @@ public class Simulation {
                                         if (enemy.active) {
                                             double dmg = player.casting.attack(player, enemy, 0, time);
                                             if (dmg > 0) {
-                                                enemy.setHp(enemy.hp - dmg);
+                                                enemy.doDamage(dmg);
                                                 if (player.casting.name.equals("Careful Shot") && enemy.hp <= 0) {
                                                     kills_drop += 0.5;
                                                 }
@@ -320,14 +339,14 @@ public class Simulation {
                                             targets.forEach((key, value) -> {
                                                 double dmg = player.casting.attack(player, key, value, 0);
                                                 if (dmg > 0) {
-                                                    key.setHp(key.hp - dmg);
+                                                    key.doDamage(dmg);
                                                     if (player.charge > 0) player.remove_charge = true;
                                                 }
                                             });
                                         } else {
                                             double dmg = player.casting.attack(player, player.target, 0, time);
                                             if (dmg > 0) {
-                                                player.target.setHp(player.target.hp - dmg);
+                                                player.target.doDamage(dmg);
                                                 if (player.casting.name.equals("Careful Shot") && player.target.hp <= 0) {
                                                     kills_drop += 0.5;
                                                 }
@@ -433,7 +452,7 @@ public class Simulation {
                                             previous_cast.last_casted_at = time;
                                         }
                                         if (dmg > 0) {
-                                            player.setHp(player.hp - dmg);
+                                            player.doDamage(dmg);
                                             player.damage_taken += dmg;
                                             if (enemy.charge > 0) enemy.remove_charge = true;
                                         }
@@ -476,6 +495,12 @@ public class Simulation {
                                     " at " + df2.format(time));
                         } else {
                             System.out.println("Player died at " + df2.format(time));
+                            for (int i = 0; i < 9; i++) {
+                                Enemy enemy = player.zone.enemies[i];
+                                if (enemy.active) {
+                                    System.out.println(enemy.name + " alive with " + (int) enemy.hp + " hp");
+                                }
+                            }
                         }
                     }
                 }
@@ -517,7 +542,7 @@ public class Simulation {
                     delta_count++;
                     prepare_time += delta;
 //                    delay_left = Math.max(delay_left - delta, 0);
-                    if (player.lvling) player.prepare.gainExp(delta);
+                    if (player.lvling) player.prepare.gainExp(delta * player.skill_exp_mult);
                     player.setHp(player.hp + player.getPrepare_hps() * delta);
                     player.setMp(player.mp + player.getPrepare_mps() * delta);
                     player.tickPotion(delta);
@@ -573,7 +598,7 @@ public class Simulation {
             } else {
                 crafting_time += add_time;
             }
-            add_time = player.pill.calc_time(time, alchemy_lvl, research_alch);
+            add_time = player.pill.calc_time(time, alchemy_lvl, alchemist_lvl, research_alch);
             if (add_time > 0 && getSidecraftingSpeed() > 0) {
                 pill_sidecraft_time += add_time / getSidecraftingSpeed();
             } else {
@@ -641,7 +666,7 @@ public class Simulation {
         result.append("Kills/h without deaths: ").append(df2.format(kills / (total_time - ignore_deaths) * 3600)).append(
                 "\n");
         result.append("Time to clear: ").append(df2.format(min_time)).append("s - ").append(df2.format(max_time));
-        result.append("s; avg: ").append(df2.format((total_time - squirrel_time) / (cleared - player.zone.stats.squirrel_spawns))).append("s \n");
+        result.append("s; avg: ").append(df2.format((total_time - ignore_deaths - squirrel_time) / (cleared - player.zone.stats.squirrel_spawns))).append("s \n");
         if (player.zone.stats.squirrel_spawns > 0) {
             result.append("Squirrel fight time: ").append(df2.format(squirrel_min_time)).append("s - ").append(df2.format(squirrel_max_time));
             result.append("s; avg: ").append(df2.format(squirrel_time / player.zone.stats.squirrel_spawns)).append("s \n");
@@ -718,7 +743,7 @@ public class Simulation {
         result.append("\nSim run time: ").append(executionTime).append("\n");
 
         skills_log.append("Damage skill casts: ").append(min_casts).append(" - ").append(max_casts);
-        skills_log.append("; avg: ").append(df2.format((double) total_casts / cleared)).append("\n");
+        skills_log.append("; avg: ").append(df2.format((double) total_casts / (cleared + failed))).append("\n");
         skills_log.append("Average player action time: ").append(df2.format(player.speed_mult_sum / player.speed_mult_count * 100)).append("%\n");
         skills_log.append("Average Overkill: ").append((int) (player.overkill / kills)).append("(");
         skills_log.append(df2.format(player.zone.stats.overkill_sum / player.zone.stats.kills)).append("%; base: ");
@@ -742,16 +767,16 @@ public class Simulation {
             skills_log.append(player.counter_dodge_log.getRecordedData(cleared + failed));
         skills_log.append("\n");
         if (player.damage_taken > 0 && cleared > 0) {
-            skills_log.append("Average enemy dmg per fight: ").append((int) player.damage_taken / cleared);
-            if (player.dot_tracking > 0) skills_log.append("; DoT: ").append((int) (player.dot_tracking / cleared));
+            skills_log.append("Average enemy dmg per fight: ").append((int) player.damage_taken / (cleared + failed));
+            if (player.dot_tracking > 0) skills_log.append("; DoT: ").append((int) (player.dot_tracking / (cleared + failed)));
             skills_log.append("\n");
         }
         if (player.berserk_damage_taken > 0 && cleared > 0) {
-            skills_log.append("Average berserk pill dmg taken per fight: ").append((int) player.berserk_damage_taken / cleared);
+            skills_log.append("Average berserk pill dmg taken per fight: ").append((int) player.berserk_damage_taken / (cleared + failed));
             skills_log.append("\n");
         }
         if (healed > 0 && cleared > 0) {
-            skills_log.append("Average heal per fight: ").append((int) healed / cleared).append(" \n");
+            skills_log.append("Average heal per fight: ").append((int) healed / (cleared + failed)).append(" \n");
         }
         skills_log.append("\n");
         if (player.zone.max_enemies > 1) {
@@ -808,7 +833,7 @@ public class Simulation {
             lvling_info = "Gained during simulation: \n" + lvling_log;
         }
         result_info = result.toString();
-        skills_info = skills_log.toString();
+        skills_info = player.getAllStats() + "\n" + skills_log.toString();
         return player;
     }
 

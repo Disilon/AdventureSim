@@ -90,6 +90,7 @@ public class Setup implements Serializable {
     HashMap<String, Double> research_lvls;
     HashMap<String, Double> research_weight;
     HashMap<String, Double> bestiary;
+    HashMap<Integer, Core> cores;
     boolean extra_atk_overkill = true;
     boolean extra_atk_backstab_mult = true;
     boolean crit_overkill_reduced = false;
@@ -107,6 +108,7 @@ public class Setup implements Serializable {
         this.research_lvls = new HashMap<>();
         this.research_weight = new HashMap<>();
         this.bestiary = new HashMap<>();
+        this.cores = new HashMap<>();
         this.rp_balance = 0;
         this.playerclass = "Rogue";
         this.ml = 218;
@@ -165,7 +167,7 @@ public class Setup implements Serializable {
         this.necklace_tier = Quality.Superior;
         this.necklace_lvl = 10;
         this.result_essential = "Click simulate to get sim data";
-        this.stats = "Click simulate to calculate stats";
+        this.stats = null;
         this.zone = Zone.z9;
         this.gameversion = String.valueOf(Main.availableVersions.getLast());
         this.milestone = 252.5;
@@ -888,5 +890,13 @@ public class Setup implements Serializable {
 
     public void setAlchemist_lvl(int alchemist_lvl) {
         this.alchemist_lvl = alchemist_lvl;
+    }
+
+    public HashMap<Integer, Core> getCores() {
+        return cores;
+    }
+
+    public void setCores(HashMap<Integer, Core> cores) {
+        this.cores = cores;
     }
 }

@@ -68,6 +68,7 @@ public class ActiveSkill {
     public boolean triggers_counter = true;
     public boolean weapon_required = true;
     public boolean attack;
+    public double enrage_mult = 1;
 
     public ActiveSkill(ActorStats owner, String name) {
         this.owner = owner;
@@ -144,6 +145,27 @@ public class ActiveSkill {
                 } else {
                     base_min = 270;
                     base_max = 330;
+                }
+            }
+            case "Back Stab" -> {
+                if (game_version >= 1670) {
+                    base_hit = 1;
+                } else {
+                    base_hit = 2;
+                }
+                if (game_version >= 1700) {
+                    base_min = 225 * 0.8;
+                    base_max = 275 * 0.8;
+                } else {
+                    base_min = 225;
+                    base_max = 275;
+                }
+            }
+            case "Killing Strike" -> {
+                if (game_version >= 1670) {
+                    base_hit = 0.9;
+                } else {
+                    base_hit = 0.7;
                 }
             }
         }
@@ -303,12 +325,13 @@ public class ActiveSkill {
             if (potion_skills.contains(name)) {
                 s = owner.active_skills.get("Throw Potion");
             }
-            s.gainExp(1);
+            s.gainExp(actor.skill_exp_mult);
         }
         if (actor.current_skill_hit) actor.ambush_bonus = 0;
         if (actor.ambushing) actor.ambushing = false;
         if (actor.berserk_dmg > 0 && hit > 0) {
-            actor.setHp(actor.hp - actor.berserk_dmg);
+//            actor.setHp(actor.hp - actor.berserk_dmg);
+            actor.doDamage(actor.berserk_dmg);
             actor.berserk_damage_taken += actor.berserk_dmg;
         }
         Enemy enemy = null;
@@ -387,6 +410,7 @@ public class ActiveSkill {
         this.dmg_mult = 1;
         this.mp_additive = 0;
         this.mp_mult = 1;
+        this.enrage_mult = 1;
         this.skillMod = type;
         switch (type) {
             case Basic:
@@ -570,6 +594,7 @@ public class ActiveSkill {
         double min_power = min;
         double max_power = max;
         double dmg_mult = attacker.getDmg_mult();
+        double dmg_mult3 = 1;
         if (potion_skills.contains(name)) {
             ActiveSkill tp = owner.active_skills.get("Throw Potion");
             min_power = (tp.min * base_min / 100) * attacker.getPotion_effect();
@@ -602,8 +627,15 @@ public class ActiveSkill {
         double total = 0;
         double hit_chance = (attacker.smoked ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         if (game_version >= 1627 && attacker.set_squirrel_rate == 1) hit_chance /= 1.25;
+        if (game_version >= 1670 && defender.name.equals("Squirrel Mage") && name.equals("Back Stab")) {
+            hit_chance *= 2;
+        }
+        if (game_version >= 1674 && defender.name.equals("Squirrel Mage") && name.equals("Back Stab")) {
+            dmg_mult3 *= 1.25;
+        }
         hit_chance = max(0.05, hit_chance / defender.getDodge_mult());
         hit_chance = Math.min(hit_chance, 1);
+        if (this.hit >= 99) hit_chance = 1;
         hit_chance_sum += hit_chance;
         if (name.equals("Back Stab") && !(defender.smoked || defender.bound > 0)) {
             hit_chance *= 0.5;
@@ -617,7 +649,7 @@ public class ActiveSkill {
             attacker.current_skill_hit = true;
             hits_total++;
             boolean stun = false;
-            if (debuff_to_apply != null) {
+            if (debuff_to_apply != null && !attacker.wrong_weapon) {
                 stun = applyDebuff(debuff_to_apply, debuff_to_apply_duration, debuff_to_apply_effect, attacker,
                         defender);
             }
@@ -642,6 +674,7 @@ public class ActiveSkill {
                 enemy_resist = switch (element_to_apply) {
                     case Element.dark -> {
                         atk = attacker.getDark();
+                        dmg_mult *= attacker.set_dark;
                         yield defender.getDark_res();
                     }
                     case Element.fire -> {
@@ -673,9 +706,11 @@ public class ActiveSkill {
                         yield defender.getEarth_res();
                     }
                     case Element.phys -> {
+                        atk = attacker.gear_no_elem;
                         yield defender.getPhys_res();
                     }
                     case Element.magic -> {
+                        atk = attacker.gear_no_elem;
                         yield defender.getMagic_res();
                     }
                     case Element.eleblast -> {
@@ -726,6 +761,8 @@ public class ActiveSkill {
                 }
                 dmg_mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
                 dmg_mult *= (1 - attacker.set_training);
+                atk *= enrage_mult;
+                if (attacker.wrong_weapon) atk *= 0.7;
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
                 if (this.name.equals("Dispel")) {
                     calc_hits = defender.buff_count();
@@ -747,7 +784,7 @@ public class ActiveSkill {
                     }
                     dmg =
                             ((dmg * atk_c) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
-                                    calc_hits) * dmg_mult * dmg_mult1 * dmg_mult2;
+                                    calc_hits) * dmg_mult * dmg_mult1 * dmg_mult2 * dmg_mult3;
                     dmg = dmg * (1 - enemy_resist);
                     dmg = max(1, dmg);
                     dmg_sum += dmg;
@@ -778,11 +815,11 @@ public class ActiveSkill {
                         total = defender.hp;
                     }
                     if (Main.balance2) {
-                        total += extra_attack(attacker, defender, dmg_mult * dmg_mult1 * Math.pow(1.1,
-                                calc_hits));
+                        total += extra_attack(attacker, defender, dmg_mult * dmg_mult1 * dmg_mult2 * dmg_mult3 * Math.pow(1.1,
+                                calc_hits) * (1 - enemy_resist));
                     } else {
-                        total += extra_attack(attacker, defender, dmg_mult * Math.pow(1.1,
-                                calc_hits));
+                        total += extra_attack(attacker, defender, dmg_mult * dmg_mult2 * dmg_mult3 * Math.pow(1.1,
+                                calc_hits) * (1 - enemy_resist));
                     }
                 }
             }
@@ -808,6 +845,9 @@ public class ActiveSkill {
         }
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         attacker.last_skill = this;
+        if (owner.name.equals("Dark Reaper")) {
+            enrage_mult += 0.01;
+        }
         return total;
     }
 
@@ -815,9 +855,24 @@ public class ActiveSkill {
         double def = defender.getDef();
         double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
         double atk = attacker.getAtk() + attacker.getWater();
-        atk = applyCrit(attacker, defender, atk);
+
+        atk = atk * (1 - defender.getWater_res());
         dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
-        dmg = dmg * (1 - defender.getWater_res());
+//        dmg = dmg * (1 - defender.getWater_res());
+
+        double crit_chance = getCritChance(attacker, defender, true);
+        double crit_dmg =
+                1.5 + (attacker.research_lvls.getOrDefault("Crit damage", 0.0).intValue()/100.0) * (1 - defender.getWater_res());
+        if (crit_chance > 0 && Math.random() < crit_chance) {
+            dmg *= crit_dmg;
+            attacker.last_crit = true;
+            if (log.contains("skill_attack")) {
+                System.out.println(attacker.name + " dealt crit with " + this.name);
+            }
+        } else {
+            attacker.last_crit = false;
+        }
+
         dmg = max(1, dmg);
         extra_dmg_sum += dmg;
         dmg = max(0, dmg - defender.getBarrier());
@@ -834,6 +889,7 @@ public class ActiveSkill {
     public void counter_attack(Actor attacker, Actor defender, boolean counter_dodge) {
         double atk = defender.getAtk();
         double def = attacker.getDef();
+        atk = applyCrit(defender, attacker, atk);
         double enemy_mult = 2;
         double dmg = (atk * 100 / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1, 1);
         if (game_version >= 1568) {
@@ -858,7 +914,7 @@ public class ActiveSkill {
                     " to " + attacker.name + " triggered by " + this.name);
         }
         dmg = max(0, dmg - attacker.getBarrier());
-        attacker.setHp(attacker.hp - dmg);
+        attacker.doDamage(dmg);
     }
 
     public void applyBuff(Actor attacker) {
@@ -1075,7 +1131,7 @@ public class ActiveSkill {
 
     private double applyCrit(Actor attacker, Actor defender, double atk) {
         double crit_chance = getCritChance(attacker, defender, true);
-        double crit_dmg = attacker.base_crit_damage;
+        double crit_dmg = attacker.getCrit_damage();
         if (crit_chance > 0 && Math.random() < crit_chance) {
             atk *= crit_dmg;
             attacker.last_crit = true;

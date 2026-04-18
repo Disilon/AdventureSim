@@ -20,7 +20,7 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1575, 1580, 1587, 1591, 1605, 1620,
-            1621, 1622, 1627, 1638, 1639, 1648, 1649, 1652, 1658, 1660, 1667));
+            1621, 1622, 1627, 1638, 1639, 1648, 1649, 1652, 1658, 1660, 1667, 1670, 1700));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;
@@ -72,6 +72,7 @@ public class Main {
     public static class EquipmentData {
         public LinkedHashMap<String, Equipment> items = new LinkedHashMap<>();
         public ArrayList<String> twohanded = new ArrayList<>();
+        public ArrayList<String> less_slots = new ArrayList<>();
         private final Gson gson = new Gson();
 
         public void loadEquipment() {
@@ -88,9 +89,13 @@ public class Main {
                     for (Object item : value.entrySet()) {
                         String name = ((Map.Entry<String, Map>) item).getKey();
                         Map weapon_data = ((Map.Entry<String, Map>) item).getValue();
-                        items.put(name, new Equipment(name, slot, weapon_data));
+                        Equipment e = new Equipment(name, slot, weapon_data);
+                        items.put(name, e);
                         if (slot.equals("2H")) {
                             twohanded.add(name);
+                        }
+                        if (e.hasSpecial()) {
+                            less_slots.add(name);
                         }
                     }
                 });
@@ -100,6 +105,9 @@ public class Main {
                         Equipment e = new Equipment(name, slot,
                                 ((Map.Entry<String, Map>) item).getValue());
                         items.put(name, e);
+                        if (e.displayName.equals("Training") || e.displayName.equals("Hunter")) {
+                            less_slots.add(name);
+                        }
                     }
                 });
                 accessoryDataMap.forEach((slot, value) -> {
@@ -188,5 +196,12 @@ public class Main {
             }
         }
         return result;
+    }
+
+    public static String capitalizeFirst(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }

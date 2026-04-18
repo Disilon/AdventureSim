@@ -60,7 +60,7 @@ public class Enemy extends Actor {
         resetStats();
         base_lvl = lvl;
         base_hp_max = lvl * 500 / base_lvl;
-        base_exp = lvl * 4000 / base_lvl;
+        base_exp = lvl * 4000 / base_lvl * 1.06167;
         base_atk = Math.pow(lvl, 0.9) * 5 / base_lvl;
         base_def = Math.pow(lvl, 0.9) * 10 / base_lvl;
         base_int = Math.pow(lvl, 0.95) * 10 / base_lvl;
@@ -106,7 +106,11 @@ public class Enemy extends Actor {
             }
             case "Lamia" -> {
                 base_lvl = 100;
-                base_hp_max = 48000 / base_lvl;
+                if (Main.game_version < 1670) {
+                    base_hp_max = 48000 / base_lvl;
+                } else {
+                    base_hp_max = 42000 / base_lvl;
+                }
                 base_exp = 14400 / base_lvl;
                 base_atk = 500 / base_lvl;
                 base_def = 1200 / base_lvl;
@@ -115,6 +119,7 @@ public class Enemy extends Actor {
                 base_hit = 1200 / base_lvl;
                 base_speed = 500 / base_lvl;
                 base_fire = 400 / base_lvl;
+                base_water_res = 0.5;
                 base_earth_res = 0.5;
                 base_wind_res = 0.5;
                 skills.enableActive("Fire Ball");
@@ -353,18 +358,6 @@ public class Enemy extends Actor {
                 skills.enableActive("Dragon Punch");
                 skills.enableActive("Aura Shot");
             }
-            case "Dummy" -> {
-                base_lvl = 100;
-                base_hp_max = 400000 / base_lvl;
-                base_exp = 100000 / base_lvl;
-                base_atk = 600 / base_lvl;
-                base_def = 600 / base_lvl;
-                base_int = 600 / base_lvl;
-                base_res = 600 / base_lvl;
-                base_hit = 600 / base_lvl;
-                base_speed = 600 / base_lvl;
-                skills.enableActive("Cupid Hard Love Shot");
-            }
             case "Astaroth" -> {
                 base_lvl = 40;
                 base_hp_max = 1800 / base_lvl;
@@ -464,6 +457,33 @@ public class Enemy extends Actor {
                 skills.enableActive("Poison Attack");
                 skills.enableActive("Quick Hit");
             }
+            case "Dummy" -> {
+                base_lvl = 100;
+                base_hp_max = 400000 / base_lvl;
+                base_exp = 100000 / base_lvl;
+                base_atk = 600 / base_lvl;
+                base_def = 600 / base_lvl;
+                base_int = 600 / base_lvl;
+                base_res = 600 / base_lvl;
+                base_hit = 600 / base_lvl;
+                base_speed = 600 / base_lvl;
+                skills.enableActive("Cupid Hard Love Shot");
+            }
+            case "Dark Reaper" -> {
+                base_lvl = 750;
+                base_hp_max = 4999500 / base_lvl;
+                base_exp = 15000000 / base_lvl;
+                base_atk = 3750 / base_lvl;
+                base_def = 3750 / base_lvl;
+                base_int = 3000 / base_lvl;
+                base_res = 5250 / base_lvl;
+                base_hit = 7500 / base_lvl;
+                base_speed = 7500 / base_lvl;
+                base_fire = 3750 / base_lvl;
+                base_dark = 3750 / base_lvl;
+                skills.enableActive("Fire Slash", 24, SkillMod.Damage);
+                skills.enableActive("Dark Blast", 24, SkillMod.Damage);
+            }
         }
         active = true;
     }
@@ -475,6 +495,7 @@ public class Enemy extends Actor {
         min_lvl = Math.min(max_lvl, min_lvl + min_lvl_incr);
         lvl = Math.min(max_lvl, Math.max(min_lvl, lvl));
         refreshStats();
+        if (name.equals("Dark Reaper")) lvl = level;
         this.exp = base_exp * lvl;
         double stat_lvl = Math.max(2, lvl);
         this.atk = base_atk * stat_lvl * stats_mult;
@@ -502,6 +523,8 @@ public class Enemy extends Actor {
         this.hp_max = getHp_max();
         this.hp = this.hp_max;
         this.mp = this.getMp_max();
+
+        if (name.equals("Dark Reaper")) dmg_mult = 1.6;
     }
 
     public ActiveSkill rollAttack(Player player) {
@@ -554,6 +577,10 @@ public class Enemy extends Actor {
                 } else {
                     return roll < 50 ? active_skills.get("Flee") : active_skills.get("Elemental Blast");
                 }
+            }
+            case "Dark Reaper" -> {
+                if (this.smoked) return active_skills.get("Dark Revenge");
+                return getRandomSkill();
             }
             default -> {
                 return getRandomSkill();

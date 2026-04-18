@@ -54,9 +54,21 @@ public class SkillData {
         active_skills.get(name).visible = true;
     }
 
+    public void enableActive(String name, int lvl, SkillMod mod) {
+        active_skills.get(name).available = true;
+        active_skills.get(name).visible = true;
+        active_skills.get(name).setSkill(lvl, mod);
+    }
+
     public void enablePassive(String name) {
         passives.get(name).available = true;
         passives.get(name).visible = true;
+    }
+
+    public void enablePassive(String name, int lvl) {
+        passives.get(name).available = true;
+        passives.get(name).visible = true;
+        passives.get(name).setLvl(lvl);
     }
 
     public void makeUnavailable(String name) {
@@ -314,5 +326,11 @@ public class SkillData {
         active_skills.get("Throw Luminary").addDebuff("Resist Break", 3, 0.25);
         addActive("Throw Potion", 1, 90, 110, 1, 50, 3, 3, Scaling.atk, Element.phys,false, false);
         addActive("Alchemic Reaction", 1, 108, 132, 1, 150, 2, 2, Scaling.intel, Element.magic,false, false);
+        addActive("Fire Slash", 1, 199.8, 244.2, 1, 100, 0.9, 0.9, Scaling.atk,
+                Element.fire,true, false);
+        addActive("Dark Blast", 1, 315, 385, 1, 150, 1.7, 1.7, Scaling.intel,
+                Element.dark,true, false);
+        addActive("Dark Revenge", 1, 599.4, 732.6, 99, 0, 2.5, 2.5, Scaling.intel,
+                Element.dark,true, false);
     }
 }

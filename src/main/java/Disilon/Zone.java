@@ -3,7 +3,6 @@ package Disilon;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
-import static Disilon.Main.df2;
 import static Disilon.Main.game_version;
 import static Disilon.Main.random;
 
@@ -27,7 +26,8 @@ public enum Zone {
     z17("Tree Golem", 250),
     test("Caco", 250),
     Dummy("Dummy", 100),
-    HelplessDummy("Dummy", 100);
+    HelplessDummy("Dummy", 100),
+    Boss("Dark Reaper", 750);
 
     final String display_name;
     final String[] possible_enemies;
@@ -294,7 +294,7 @@ public enum Zone {
 
     public double getZoneOfflineMult() {
         return switch (this) {
-            case z1, z2, z3, z4, z5, z6, z7, z8, z9, z11, z12 -> 1.03;
+            case z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12 -> 1.03;
             case z13, z14, z15, z16, z17 -> 1.01;
             default -> 1;
         };
@@ -302,8 +302,8 @@ public enum Zone {
 
     public boolean allowsSquirrel() {
         return switch (this) {
-            case test, Dummy, HelplessDummy, z17 -> false;
-            default -> true;
+            case z1,z2,z3,z4,z5,z6,z7,z8,z9,z10,z11,z12,z13,z14,z15,z16 -> true;
+            default -> false;
         };
     }
 
