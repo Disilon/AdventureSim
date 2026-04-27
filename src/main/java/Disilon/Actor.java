@@ -37,7 +37,7 @@ public class Actor extends ActorStats {
         for (Debuff d : debuffs) {
             if (d.name.equals("Smoke")) smoked = true;
             if (d.name.equals("Defense Break")) def_break = d.effect;
-            if (d.name.equals("Res Break")) res_break = d.effect;
+            if (d.name.equals("Resist Break")) res_break = d.effect;
             if (d.name.equals("Weaken")) weaken = d.effect;
             if (d.name.equals("Mark")) mark = d.effect;
             if (d.name.equals("Bound")) bound = d.effect;
@@ -51,7 +51,7 @@ public class Actor extends ActorStats {
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
             if (!d.name.equals("Mark")) d.duration--;
-            this.hp -= d.dmg;
+            doDamage(d.dmg);
             dot_tracking += d.dmg;
             if (d.dmg > 0 && log.contains("dot_dmg")) System.out.println(name + " taken dot dmg: " + (int) d.dmg);
             if (d.duration <= 0) {
@@ -207,6 +207,7 @@ public class Actor extends ActorStats {
         sets.put("Cloth", new EquipmentSet("magicdmg", 5));
         sets.put("Blazing", new EquipmentSet("fire", 5));
         sets.put("Earthen", new EquipmentSet("earth", 5));
+        sets.put("Aero", new EquipmentSet("wind", 5));
         sets.put("Leather", new EquipmentSet("hit", 5));
         sets.put("Dark", new EquipmentSet("physdmg", 5));
         sets.put("Metal", new EquipmentSet("mit1", 5));
@@ -252,6 +253,7 @@ public class Actor extends ActorStats {
             }
             case "core" -> set_core = Math.clamp((10 + 0.4 * upgrade) * tier, 10, 100) / 100.0;
             case "water" -> set_water = 1 + stat_scaling;
+            case "wind" -> set_wind = 1 + stat_scaling;
             case "fire" -> set_fire = 1 + stat_scaling;
             case "earth" -> set_earth = 1 + stat_scaling;
             case "training" -> {
@@ -278,6 +280,7 @@ public class Actor extends ActorStats {
         set_core = 0;
         set_water = 1;
         set_fire = 1;
+        set_wind = 1;
         set_earth = 1;
         set_dark = 1;
         set_exp = 0;
@@ -355,6 +358,7 @@ public class Actor extends ActorStats {
                 gear_analyze += item.analyze;
                 gear_barrier += item.barrier;
                 gear_potion += item.potion;
+                dodge += item.dodge;
                 add_resist("Fire", item.fire_res * 0.01);
                 add_resist("Water", item.water_res * 0.01);
                 add_resist("Wind", item.wind_res * 0.01);
@@ -401,11 +405,13 @@ public class Actor extends ActorStats {
         hit_mult = 1;
         speed_mult = 1;
         dodge_mult = 1;
+        dodge = 0;
         dmg_mult = 1;
         poison_mult = 1;
         ailment_res = 1;
         exp_mult = 1;
         cast_speed_mult = 1;
+        pill_cast_speed_mult = 1;
         delay_speed_mult = 1;
         mana_regen_mult = 1;
         core_mult = 0;
@@ -419,6 +425,8 @@ public class Actor extends ActorStats {
         potion_effect = 1;
         pill_effect = 1;
         berserk_dmg = 0;
+        vampiric = 0;
+        surv_instinct = false;
         mp_cost_mult = 1;
 
         potion_effect *= 1 + 0.01 * Math.max(passives.get("Potion Inventor").lvl - 10, 0);
@@ -465,6 +473,8 @@ public class Actor extends ActorStats {
         if (passives.get("Core Boost").enabled) {
             core_mult = passives.get("Core Boost").getBonus();
         }
+        vampiric += passives.get("Blood Drain").getBonus();
+        surv_instinct = passives.get("Survival Instinct").enabled;
         p_mp_cost_add = 0;
         p_mp_cost_mult = 1;
         applyGear();
@@ -637,6 +647,10 @@ public class Actor extends ActorStats {
             shield -= dmg;
         } else {
             hp -= dmg - shield;
+        }
+        if (hp < 1 && surv_instinct) {
+            hp = 1;
+            surv_instinct = false;
         }
     }
 

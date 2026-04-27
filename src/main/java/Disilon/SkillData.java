@@ -128,6 +128,9 @@ public class SkillData {
         addPassive("Potion Inventor", 0.0, 15, 0.15);
         addPassive("Potion Slots", 0.2, 10, 0.15);
         addPassive("Pill Inventor", 0.0, 10, 0.15);
+        addPassive("Blood Drain", 10, 5, 0.1);
+        addPassive("Survival Instinct", 0, 5, 0.1);
+
         addPassive("Toughness pill", 0.0, 0, 0);
         addPassive("Speedy pill", 0.0, 0, 0);
         addPassive("Berserk pill", 0.0, 0, 0);
@@ -326,8 +329,16 @@ public class SkillData {
         active_skills.get("Throw Luminary").addDebuff("Resist Break", 3, 0.25);
         addActive("Throw Potion", 1, 90, 110, 1, 50, 3, 3, Scaling.atk, Element.phys,false, false);
         addActive("Alchemic Reaction", 1, 108, 132, 1, 150, 2, 2, Scaling.intel, Element.magic,false, false);
-        addActive("Fire Slash", 1, 199.8, 244.2, 1, 100, 0.9, 0.9, Scaling.atk,
+        addActive("Electric Beam", 1, 135, 165, 1.5, 50, 0.5, 0.5, Scaling.intel,
+                Element.light,false, false);
+        active_skills.get("Electric Beam").addDebuff("Resist Break", 3, 0.25);
+        addActive("Magic Blast", 1, 270, 330, 1.8, 100, 1.5, 1.5, Scaling.intel,
+                Element.light,false, false);
+        active_skills.get("Magic Blast").weapon_required = false;
+        addActive("Fire Slash", 1, 199.8, 244.2, 1, 71, 0.9, 0.9, Scaling.atk,
                 Element.fire,true, false);
+        addActive("Bloody Slash", 1, 199.8, 244.2, 1, 71, 0.9, 0.9, Scaling.atk,
+                Element.water,true, false);
         addActive("Dark Blast", 1, 315, 385, 1, 150, 1.7, 1.7, Scaling.intel,
                 Element.dark,true, false);
         addActive("Dark Revenge", 1, 599.4, 732.6, 99, 0, 2.5, 2.5, Scaling.intel,

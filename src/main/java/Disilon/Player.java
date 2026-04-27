@@ -995,6 +995,7 @@ public class Player extends Actor {
         if (set_hit > 1) sb.append("Set Hit = ").append(df2.format(set_hit * 100 - 100)).append("%\n");
         if (set_res > 1) sb.append("Set Res = ").append(df2.format(set_res * 100 - 100)).append("%\n");
         if (set_water > 1) sb.append("Set WaterDmg = ").append(df2.format(set_water * 100 - 100)).append("%\n");
+        if (set_wind > 1) sb.append("Set WindDmg = ").append(df2.format(set_wind * 100 - 100)).append("%\n");
         if (set_fire > 1) sb.append("Set FireDmg = ").append(df2.format(set_fire * 100 - 100)).append("%\n");
         if (set_earth > 1) sb.append("Set EarthDmg = ").append(df2.format(set_earth * 100 - 100)).append("%\n");
         if (set_dark > 1) sb.append("Set DarkDmg = ").append(df2.format(set_dark * 100 - 100)).append("%\n");

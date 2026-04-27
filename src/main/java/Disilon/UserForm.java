@@ -188,7 +188,8 @@ public class UserForm extends JFrame {
         public boolean enabled;
     }
 
-    public UserForm() throws URISyntaxException {
+    public UserForm(String title) throws URISyntaxException {
+        super(title);
         class SampleMenuListener implements MenuListener {
 
             @Override
@@ -1842,79 +1843,25 @@ public class UserForm extends JFrame {
         MH_name.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (MH_name.getSelectedItem() != null) {
-                    int slots = 1;
-                    String item_name = MH_name.getSelectedItem().toString();
-                    if (MH_tier.getSelectedIndex() > 5) slots++;
-                    if (equipmentData.twohanded.contains(item_name)) {
-                        slots *= 2;
-                    }
-                    if (equipmentData.less_slots.contains(item_name)) slots--;
-                    if (item_name.equals("Cauldron")) slots--;
-                    if (item_name.equals("None")) slots = 0;
-                    cores.get(0).enabled = slots >= 1;
-                    cores.get(1).enabled = slots >= 2;
-                    if (equipmentData.twohanded.contains(item_name)) {
-                        cores.get(10).enabled = slots >= 3;
-                        cores.get(11).enabled = slots >= 4;
-                    }
-                    updateUI(); //todo: add checks for TF
-                }
+                updateWeapons();
             }
         });
         MH_tier.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (MH_name.getSelectedItem() != null) {
-                    int slots = 1;
-                    String item_name = MH_name.getSelectedItem().toString();
-                    if (MH_tier.getSelectedIndex() > 5) slots++;
-                    if (equipmentData.twohanded.contains(item_name)) {
-                        slots *= 2;
-                    }
-                    if (equipmentData.less_slots.contains(item_name)) slots--;
-                    if (item_name.equals("Cauldron")) slots--;
-                    if (item_name.equals("None")) slots = 0;
-                    cores.get(0).enabled = slots >= 1;
-                    cores.get(1).enabled = slots >= 2;
-                    if (equipmentData.twohanded.contains(item_name)) {
-                        cores.get(10).enabled = slots >= 3;
-                        cores.get(11).enabled = slots >= 4;
-                    }
-                    updateUI();
-                }
+                updateWeapons();
             }
         });
         OH_name.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (MH_name.getSelectedItem() != null) {
-                    String item_name = MH_name.getSelectedItem().toString();
-                    if (equipmentData.twohanded.contains(item_name)) {
-                        OH_name.setSelectedItem("None");
-                    }
-                }
-                int slots = 1;
-                String item_name = OH_name.getSelectedItem().toString();
-                if (OH_tier.getSelectedIndex() > 5) slots++;
-                if (equipmentData.less_slots.contains(item_name)) slots--;
-                if (item_name.equals("None")) slots = 0;
-                cores.get(10).enabled = slots >= 1;
-                cores.get(11).enabled = slots >= 2;
-                updateUI();
+                updateWeapons();
             }
         });
         OH_tier.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int slots = 1;
-                String item_name = OH_name.getSelectedItem().toString();
-                if (OH_tier.getSelectedIndex() > 5) slots++;
-                if (equipmentData.less_slots.contains(item_name)) slots--;
-                if (item_name.equals("None")) slots = 0;
-                cores.get(10).enabled = slots >= 1;
-                cores.get(11).enabled = slots >= 2;
-                updateUI();
+                updateWeapons();
             }
         });
         Chest_name.addActionListener(new ActionListener() {
@@ -2482,6 +2429,11 @@ public class UserForm extends JFrame {
             data.result_skills = data.stats + "\n" + data.result_skills;
             data.stats = null;
         }
+        if (data.chest_name.equals("Windy Chest Piece")) data.chest_name = "Aim Chest Piece";
+        if (data.pants_name.equals("Windy Pants")) data.pants_name = "Aim Pants";
+        if (data.helmet_name.equals("Windy Hat")) data.helmet_name = "Aim Hat";
+        if (data.bracer_name.equals("Windy Bracers")) data.bracer_name = "Aim Bracers";
+        if (data.boots_name.equals("Windy Boots")) data.boots_name = "Aim Boots";
     }
 
     private Setup loadFile(String path) {
@@ -2955,13 +2907,43 @@ public class UserForm extends JFrame {
         loadSetup(show_setup);
     }
 
+    public void updateWeapons() {
+        int slots = 0;
+        int oh_slots = 1;
+        if (MH_name.getSelectedItem() != null) {
+            slots = 1;
+            String item_name = MH_name.getSelectedItem().toString();
+            if (MH_tier.getSelectedIndex() > 5) slots++;
+            if (equipmentData.twohanded.contains(item_name)) {
+                OH_name.setSelectedItem("None");
+                slots *= 2;
+            }
+            if (equipmentData.less_slots.contains(item_name)) slots--;
+            if (item_name.equals("Cauldron") || item_name.equals("Tsury Finke")) slots--;
+            if (item_name.equals("None")) slots = 0;
+
+            if (equipmentData.twohanded.contains(item_name)) {
+
+            }
+        }
+        if (MH_name.getSelectedItem() != null) {
+            String item_name = MH_name.getSelectedItem().toString();
+            if (equipmentData.twohanded.contains(item_name)) {
+                OH_name.setSelectedItem("None");
+            }
+            if (OH_tier.getSelectedIndex() > 5) oh_slots++;
+            if (equipmentData.less_slots.contains(item_name)) oh_slots--;
+            if (item_name.equals("None")) oh_slots = 0;
+        }
+        cores.get(0).enabled = slots >= 1;
+        cores.get(1).enabled = slots >= 2;
+        cores.get(10).enabled = slots >= 3 || oh_slots >= 1;
+        cores.get(11).enabled = slots >= 4 || oh_slots >= 2;
+        updateUI();
+    }
+
     public void updateUI() {
         for (CoreUI core : cores.values()) {
-//            if (core.enabled) {
-//                core.name.setFont(default_font);
-//            } else {
-//                core.name.setFont(disabled_font);
-//            }
             core.name.setVisible(core.enabled);
             core.grade.setVisible(core.enabled);
             core.lvl.setVisible(core.enabled);

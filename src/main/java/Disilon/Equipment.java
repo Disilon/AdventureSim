@@ -46,6 +46,7 @@ public class Equipment {
     double analyze = 0;
     double barrier = 0;
     double potion = 0;
+    double dodge = 0;
 
     Map equipStats;
 
@@ -98,6 +99,7 @@ public class Equipment {
         clone.analyze = this.analyze;
         clone.barrier = this.barrier;
         clone.potion = this.potion;
+        clone.dodge = this.dodge;
         return clone;
     }
     
@@ -115,6 +117,7 @@ public class Equipment {
         if (analyze > 0) return true;
         if (barrier > 0) return true;
         if (potion > 0) return true;
+        if (dodge > 0) return true;
         return false;
     }
 
@@ -168,6 +171,7 @@ public class Equipment {
         this.analyze = equipStats.containsKey("ANALYZE") ? (double) equipStats.get("ANALYZE") * mult : 0;
         this.barrier = equipStats.containsKey("BARRIER") ? (double) equipStats.get("BARRIER") * mult : 0;
         this.potion = equipStats.containsKey("POTION") ? (double) equipStats.get("POTION") * mult : 0;
+        this.dodge = equipStats.containsKey("DODGE") ? (double) equipStats.get("DODGE") * mult : 0;
 
         // Set name
         if (equipStats.containsKey("SET")) {

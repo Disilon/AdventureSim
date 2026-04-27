@@ -226,15 +226,20 @@ public class ActiveSkill {
         attacker.speed_mult_sum += speed_mult;
         attacker.speed_mult_count += 1;
         if (name.equals("Analyze")) {
-            cast =
-                    3 * speed_mult * attacker.cast_speed_mult * cast_mult * attacker.analyze_speed + attacker.zone.stealthDelay() + attacker.freezeDelay();
+            cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult * attacker.analyze_speed;
+            cast *= attacker.pill_cast_speed_mult;
+            cast += attacker.zone.stealthDelay() + attacker.freezeDelay();
             double factor =
                     attacker.zone.enemies[0].hp / (this.min / 100 * attacker.getIntel()) / (1 + attacker.gear_analyze);
             cast *= max(factor, 1);
 //            System.out.println("Factor: " + df4.format(factor) + " ; cast: " + df2p.format(cast));
             delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
         } else {
-            cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + attacker.zone.stealthDelay() + attacker.freezeDelay();
+            cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult;
+            if (!name.equals("Alchemic Reaction") || game_version >= 1676) {
+                cast *= attacker.pill_cast_speed_mult;
+            }
+            cast += attacker.zone.stealthDelay() + attacker.freezeDelay();
             if (attacker.ambushing) cast = max(0.0, cast - 5);
             delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
         }
@@ -635,6 +640,9 @@ public class ActiveSkill {
         }
         hit_chance = max(0.05, hit_chance / defender.getDodge_mult());
         hit_chance = Math.min(hit_chance, 1);
+        if (defender.dodge > 0 && (Math.random() < defender.dodge)) {
+            return 0;
+        }
         if (this.hit >= 99) hit_chance = 1;
         hit_chance_sum += hit_chance;
         if (name.equals("Back Stab") && !(defender.smoked || defender.bound > 0)) {
@@ -696,6 +704,7 @@ public class ActiveSkill {
                     }
                     case Element.wind -> {
                         atk = attacker.getWind();
+                        dmg_mult *= attacker.set_wind;
                         dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getWind_res();
                     }
@@ -814,12 +823,12 @@ public class ActiveSkill {
                     if (Main.balance1 && total > defender.hp) {
                         total = defender.hp;
                     }
-                    if (Main.balance2) {
-                        total += extra_attack(attacker, defender, dmg_mult * dmg_mult1 * dmg_mult2 * dmg_mult3 * Math.pow(1.1,
-                                calc_hits) * (1 - enemy_resist));
+                    double ea_mult = dmg_mult * dmg_mult2 * dmg_mult3 * Math.pow(1.1,calc_hits);
+                    if (Main.balance2) ea_mult *= dmg_mult1;
+                    if (game_version >= 1674) {
+                        total += extra_attack(attacker, defender, ea_mult);
                     } else {
-                        total += extra_attack(attacker, defender, dmg_mult * dmg_mult2 * dmg_mult3 * Math.pow(1.1,
-                                calc_hits) * (1 - enemy_resist));
+                        total += extra_attack_bugged(attacker, defender, ea_mult * (1 - enemy_resist));
                     }
                 }
             }
@@ -843,6 +852,9 @@ public class ActiveSkill {
         if (name.equals("Throw Sand")) {
             defender.getBarrier();
         }
+        if (total > 0 && attacker.vampiric > 0) {
+            attacker.setHp(attacker.hp + total * attacker.vampiric, 0.1);
+        }
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         attacker.last_skill = this;
         if (owner.name.equals("Dark Reaper")) {
@@ -851,7 +863,7 @@ public class ActiveSkill {
         return total;
     }
 
-    public double extra_attack(Actor attacker, Actor defender, double dmg_mult) {
+    public double extra_attack_bugged(Actor attacker, Actor defender, double dmg_mult) {
         double def = defender.getDef();
         double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
         double atk = attacker.getAtk() + attacker.getWater();
@@ -873,6 +885,26 @@ public class ActiveSkill {
             attacker.last_crit = false;
         }
 
+        dmg = max(1, dmg);
+        extra_dmg_sum += dmg;
+        dmg = max(0, dmg - defender.getBarrier());
+        if (log.contains("skill_attack")) {
+            System.out.println(attacker.name + " dealt " + (int) dmg + " extra damage with " + this.name +
+                    " to " + defender.name);
+        }
+        if (attacker.last_crit && attacker.no_overkill_crit > Math.random()) {
+            dmg = Math.min(dmg, defender.hp);
+        }
+        return dmg;
+    }
+
+    public double extra_attack(Actor attacker, Actor defender, double dmg_mult) {
+        double def = defender.getDef();
+        double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
+        double atk = attacker.getAtk() + attacker.getWater();
+        atk = applyCrit(attacker, defender, atk);
+        dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
+        dmg = dmg * (1 - defender.getWater_res());
         dmg = max(1, dmg);
         extra_dmg_sum += dmg;
         dmg = max(0, dmg - defender.getBarrier());

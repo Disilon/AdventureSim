@@ -21,9 +21,11 @@ public enum Zone {
     z12("Lamia", 100),
     z13("Tyrant", 125),
     z14("Fairy", 150),
-    z15("Raum", 175),
-    z16("Asura", 200, 2, 4),
-    z17("Tree Golem", 250),
+    z15("Fire Lizard/Blood Lizard", 150, 1, 2),
+    z16("Raum", 175),
+    z17("Asura", 200, 2, 4),
+    z18("Empress", 225),
+    z19("Tree Golem", 250),
     test("Caco", 250),
     Dummy("Dummy", 100),
     HelplessDummy("Dummy", 100),
@@ -180,8 +182,8 @@ public enum Zone {
             case z4 -> 4;
             case z5 -> 4.5;
             case z6, z7, z8, z9 -> 5;
-            case z10, z11, z12, z13, z14, z15 -> 6;
-            case z16, z17 -> 7.5;
+            case z10, z11, z12, z13, z14, z15, z16 -> game_version >= 1674 ? 5 : 6;
+            case z17, z18, z19 -> game_version >= 1674 ? 5 : 7.5;
             default -> 6;
         };
     }
@@ -284,9 +286,10 @@ public enum Zone {
         if (game_version == 1649) return -1;
         return switch (this) {
             case z14 -> 30;
-            case z15 -> 20;
-            case z16 -> 60;
-            case z17 -> 15;
+            case z15, z16 -> 20;
+            case z17 -> game_version >= 1674 ? 40 : 60;
+            case z18 -> 20;
+            case z19 -> game_version >= 1674 ? 20 : 15;
             case test -> 20;
             default -> -1;
         };
@@ -295,14 +298,14 @@ public enum Zone {
     public double getZoneOfflineMult() {
         return switch (this) {
             case z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12 -> 1.03;
-            case z13, z14, z15, z16, z17 -> 1.01;
+            case z13, z14, z15, z16, z17, z18, z19 -> 1.01;
             default -> 1;
         };
     }
 
     public boolean allowsSquirrel() {
         return switch (this) {
-            case z1,z2,z3,z4,z5,z6,z7,z8,z9,z10,z11,z12,z13,z14,z15,z16 -> true;
+            case z1,z2,z3,z4,z5,z6,z7,z8,z9,z10,z11,z12,z13,z14,z15,z16,z17 -> true;
             default -> false;
         };
     }

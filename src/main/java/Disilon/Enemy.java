@@ -21,7 +21,6 @@ public class Enemy extends Actor {
         skills.disableAll();
         counter_dodge = false;
         counter_heal = false;
-//        counter_strike = 0;
         base_lvl = 0;
         fire_res = 0;
         water_res = 0;
@@ -197,6 +196,38 @@ public class Enemy extends Actor {
                 skills.enableActive("Charge Up");
                 skills.enableActive("Arrow Of Light");
             }
+            case "Fire Lizard" -> {
+                base_lvl = 150;
+                base_hp_max = 82500 / base_lvl;
+                base_exp = 49500 / base_lvl;
+                base_atk = 2100 / base_lvl;
+                base_def = 1050 / base_lvl;
+                base_int = 1500 / base_lvl;
+                base_res = 1200 / base_lvl;
+                base_hit = 1950 / base_lvl;
+                base_speed = 900 / base_lvl;
+                base_fire = 300 / base_lvl;
+                base_fire_res = 0.5;
+                base_water_res = -0.5;
+                skills.enableActive("Fire Slash");
+                passives.get("Survival Instinct").enabled = true;
+            }
+            case "Blood Lizard" -> {
+                base_lvl = 150;
+                base_hp_max = 67500 / base_lvl;
+                base_exp = 42000 / base_lvl;
+                base_atk = 1800 / base_lvl;
+                base_def = 1200 / base_lvl;
+                base_int = 1500 / base_lvl;
+                base_res = 1500 / base_lvl;
+                base_hit = 2250 / base_lvl;
+                base_speed = 900 / base_lvl;
+                base_water = 300 / base_lvl;
+                base_fire_res = -0.5;
+                base_water_res = 0.5;
+                skills.enableActive("Bloody Slash");
+                passives.get("Blood Drain").enabled = true;
+            }
             case "Raum" -> {
                 base_lvl = 175;
                 if (Main.game_version < 1568) {
@@ -218,11 +249,6 @@ public class Enemy extends Actor {
                 skills.enableActive("Rapid Stabs");
                 counter_dodge = true;
                 passives.get("Counter Strike").enabled = true;
-//                if (Main.game_version < 1580) {
-//                    counter_strike = 0.25;
-//                } else {
-//                    counter_strike = 0.3;
-//                }
             }
             case "Asura" -> {
                 base_lvl = 200;
@@ -254,6 +280,26 @@ public class Enemy extends Actor {
                 skills.enableActive("Holy Slash");
                 skills.enableActive("Holy Power Slash");
                 skills.enableActive("Sense");
+            }
+            case "Empress" -> {
+                base_lvl = 225;
+                base_hp_max = 213750 / base_lvl;
+                if (Main.game_version >= 1676) {
+                    base_exp = 90000 / base_lvl;
+                } else {
+                    base_exp = 85500 / base_lvl;
+                }
+                base_atk = 1125 / base_lvl;
+                base_def = 1350 / base_lvl;
+                base_int = 3375 / base_lvl;
+                base_res = 1350 / base_lvl;
+                base_hit = 2700 / base_lvl;
+                base_speed = 1912 / base_lvl;
+                if (Main.game_version >= 1676) {
+                    base_earth_res = -0.2;
+                }
+                skills.enableActive("Electric Beam", 5, SkillMod.Basic);
+                skills.enableActive("Magic Blast", 10, SkillMod.Damage);
             }
             case "Tree Golem" -> {
                 base_lvl = 250;

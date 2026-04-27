@@ -4,7 +4,7 @@
 
   <groupId>Disilon</groupId>
   <artifactId>AdventureSim</artifactId>
-  <version>1.7</version>
+  <version>1.92</version>
   <packaging>jar</packaging>
 
   <name>AdventureSim</name>
@@ -25,6 +25,16 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
@@ -35,12 +45,16 @@
           </execution>
         </executions>
         <configuration>
+          <finalName>AdventureSim</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>Disilon.Main</mainClass>
             </manifest>
+            <manifestEntries>
+              <Implementation-Version>${project.version}</Implementation-Version>
+            </manifestEntries>
           </archive>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -60,8 +74,8 @@
             </goals>
             <configuration>
               <headerType>gui</headerType>
-              <outfile>${project.build.directory}/${project.build.finalName}.exe</outfile>
-              <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
+              <outfile>${project.build.directory}/${project.artifactId}.exe</outfile>
+              <jar>${project.build.directory}/${project.artifactId}.jar</jar>
               <errTitle>App Error</errTitle>
               <classPath>
                 <mainClass>Disilon.Main</mainClass>

@@ -84,6 +84,7 @@ public class ActorStats {
     public double set_training = 0;
     public double set_water = 1;
     public double set_fire = 1;
+    public double set_wind = 1;
     public double set_earth = 1;
     public double set_dark = 1;
     public double set_mana = 0;
@@ -99,6 +100,7 @@ public class ActorStats {
     public double hit_mult = 1;
     public double speed_mult = 1;
     public double dodge_mult = 1;
+    public double dodge = 0;
 
     public double water_res;
     public double fire_res;
@@ -121,6 +123,7 @@ public class ActorStats {
     public double p_mp_cost_mult = 1;
     public double mp_cost_mult = 1;
     public double cast_speed_mult = 1;
+    public double pill_cast_speed_mult = 1;
     public double delay_speed_mult = 1;
     public double mana_regen_mult = 1;
 
@@ -154,6 +157,8 @@ public class ActorStats {
     public double potion_effect = 1;
     public double pill_effect = 1;
     public double berserk_dmg = 0;
+    public double vampiric = 0;
+    public boolean surv_instinct = false;
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;

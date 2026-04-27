@@ -12,7 +12,7 @@ public class Pill {
     public void applyEffects(Actor a) {
         a.add_resist("All", 0.2 * getEffect(a, "Toughness"));
 
-        a.cast_speed_mult *= 1.0 - 0.1 * getEffect(a, "Speedy");
+        a.pill_cast_speed_mult *= 1.0 - 0.1 * getEffect(a, "Speedy");
         if (name.equals("Speedy")) {
             a.mp_cost_mult *= 1.0 + 0.1 * a.pill_effect;
         }

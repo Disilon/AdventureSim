@@ -17,6 +17,13 @@
             "WIND_RES": -2,
             "EARTH_RES": 4,
             "SET": "Earthen"
+        }, "Aero Hood": {
+            "SPD": 6,
+            "INT": 2,
+            "RES": 6,
+            "WIND_RES": 4,
+            "EARTH_RES": -2,
+            "SET": "Aero"
 		}, "Holy Hood": {
             "DEF": 4,
             "RES": 10,
@@ -27,7 +34,7 @@
             "DEF": 6,
             "RES": 4,
             "SET": "Leather"
-        }, "Windy Hat": {
+        }, "Aim Hat": {
             "DEF": 6,
             "RES": 6,
             "HIT": 2,
@@ -104,6 +111,12 @@
             "PHYS_RES": 1,
             "EARTH_RES": 4,
             "SET": "Earthen"
+		}, "Aero Boots": {
+            "SPD": 14,
+            "INT": 2,
+            "WIND": 4,
+            "WIND_RES": 6,
+            "SET": "Aero"
         }, "Holy Boots": {
             "RES": 6,
             "SPD": 10,
@@ -113,7 +126,7 @@
         }, "Leather Boots": {
             "SPD": 10,
             "SET": "Leather"
-        }, "Windy Boots": {
+        }, "Aim Boots": {
             "DEF": 2,
             "HIT": 2,
             "SPD": 12,
@@ -181,6 +194,13 @@
             "EARTH": 40,
             "WIND_RES": -4,
             "SET": "Earthen"
+		}, "Aero Bracers": {
+            "SPD": 6,
+            "INT": 6,
+			"HIT": 6,
+            "WIND": 40,
+            "EARTH_RES": -4,
+            "SET": "Aero"
 		}, "Holy Bracers": {
             "RES": 6,
             "HIT": 6,
@@ -190,7 +210,7 @@
         }, "Leather Bracers": {
             "HIT": 10,
             "SET": "Leather"
-        }, "Windy Bracers": {
+        }, "Aim Bracers": {
             "HIT": 12,
             "WIND": 60,
             "FIRE_RES": -4,
@@ -266,6 +286,13 @@
             "PHYS_RES": 1,
             "EARTH_RES": 6,
             "SET": "Earthen"
+		}, "Aero Skirt": {
+            "SPD": 6,
+			"RES": 10,
+            "INT": 2,
+            "WIND": 10,
+            "WIND_RES": 8,
+            "SET": "Aero"
 		}, "Holy Pants": {
             "DEF": 6,
             "RES": 12,
@@ -275,7 +302,7 @@
         }, "Leather Pants": {
             "DEF": 10,
             "SET": "Leather"
-        }, "Windy Pants": {
+        }, "Aim Pants": {
             "DEF": 10,
             "RES": 6,
             "HIT": 2,
@@ -353,6 +380,15 @@
             "WIND_RES": -6,
             "EARTH_RES": 10,
             "SET": "Earthen"
+		}, "Aero Chest Piece": {
+			"DEF": 4,
+            "RES": 6,
+            "SPD": 14,
+            "INT": 4,
+            "WIND": 20,
+            "WIND_RES": 14,
+            "EARTH_RES": -6,
+            "SET": "Aero"
 		}, "Holy Chest Piece": {
             "DEF": 8,
             "RES": 18,
@@ -364,7 +400,7 @@
             "DEF": 12,
             "RES": 6,
             "SET": "Leather"
-        }, "Windy Chest Piece": {
+        }, "Aim Chest Piece": {
             "DEF": 14,
             "RES": 8,
             "HIT": 4,

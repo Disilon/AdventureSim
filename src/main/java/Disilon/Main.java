@@ -20,7 +20,7 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1575, 1580, 1587, 1591, 1605, 1620,
-            1621, 1622, 1627, 1638, 1639, 1648, 1649, 1652, 1658, 1660, 1667, 1670, 1700));
+            1621, 1622, 1627, 1638, 1639, 1648, 1649, 1652, 1658, 1660, 1667, 1670, 1674, 1676, 1700));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;
@@ -63,10 +63,16 @@ public class Main {
 //        log.add("skill_enough_mp");
 //        log.add("research");
         try {
-            UserForm uf = new UserForm();
+            UserForm uf = new UserForm("Adventure sim " + getVersionFromManifest());
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getVersionFromManifest() {
+        Package pkg = Main.class.getPackage();
+        String version = pkg.getImplementationVersion();
+        return version != null ? "v" + version : "development";
     }
 
     public static class EquipmentData {

@@ -12,6 +12,10 @@
 			"HIT": 32,
 			"STUN": 0.05,
 			"LVL_REQUIRED": 20
+		},"Teak Bow": {
+			"ATK": 48,
+			"HIT": 48,
+			"LVL_REQUIRED": 35
 		},"Wooden Wand": {
 			"INT": 20
 		},"Iron Wand": {
@@ -29,6 +33,16 @@
 			"EARTH": 36,
 			"BARRIER": 0.1,
 			"LVL_REQUIRED": 20
+		},"Aero Wand": {
+			"INT": 24,
+			"SPD": 16,
+			"WIND": 36,
+			"DODGE": 0.02,
+			"LVL_REQUIRED": 20
+		},"Teak Wand": {
+			"INT": 72,
+			"HIT": 25,
+			"LVL_REQUIRED": 35
 		},"Metal Knuckles": {
 			"ATK": 8,
 			"SPD": 8

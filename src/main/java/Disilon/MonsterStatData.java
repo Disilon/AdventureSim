@@ -229,7 +229,7 @@ public class MonsterStatData {
             gain += getCoreRP(new_grade, name) * drop_rate;
             if (new_grade < grade_cutoff) rp_no_highest += getCoreRP(new_grade, name) * drop_rate;
         }
-        if (p.lvling && Main.game_version >= 1574) p.rp_balance += gain;
+        if (p.lvling && game_version >= 1574) p.rp_balance += gain;
         gained_rp += gain;
 //        addCoreRandom(name, grade, p);
     }
@@ -418,15 +418,18 @@ public class MonsterStatData {
             case "Tengu" -> 10;
             case "Akuma" -> 12;
             case "Devil" -> 18;
-            case "Shax" -> Main.game_version < 1568 ? 40 : 45;
+            case "Shax" -> game_version < 1568 ? 40 : 45;
             case "Dagon" -> 60;
             case "Lamia" -> 70;
             case "Tyrant" -> 100;
-            case "Fairy" -> Main.game_version < 1568 ? 175 : 350;
-            case "Raum" -> Main.game_version < 1568 ? 150 : (Main.game_version < 1574 ? 180 : 230);
+            case "Fairy" -> game_version < 1568 ? 175 : 350;
+            case "Fire Lizard" -> 175;
+            case "Blood Lizard" -> 200;
+            case "Raum" -> game_version < 1568 ? 150 : (game_version < 1574 ? 180 : 230);
             case "Asura" -> 165;
-            case "Tree Golem" -> Main.game_version < 1667 ? 500 : 650;
-            case "Squirrel Mage" -> Main.game_version < 1621 ? 2000 : (Main.game_version < 1622 ? 3000 : 2500);
+            case "Empress" -> game_version < 1676 ? 380 : 400;
+            case "Tree Golem" -> game_version < 1667 ? 500 : 650;
+            case "Squirrel Mage" -> game_version < 1621 ? 2000 : (game_version < 1622 ? 3000 : 2500);
             default -> 0;
         };
     }
