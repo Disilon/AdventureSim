@@ -334,10 +334,11 @@ public class ActiveSkill {
         }
         if (actor.current_skill_hit) actor.ambush_bonus = 0;
         if (actor.ambushing) actor.ambushing = false;
-        if (actor.berserk_dmg > 0 && hit > 0) {
-//            actor.setHp(actor.hp - actor.berserk_dmg);
-            actor.doDamage(actor.berserk_dmg);
-            actor.berserk_damage_taken += actor.berserk_dmg;
+        if (actor.berserk_dmg > 0) {
+            if (game_version < 1676 || max > 0) {
+                actor.doDamage(actor.berserk_dmg);
+                actor.berserk_damage_taken += actor.berserk_dmg;
+            }
         }
         Enemy enemy = null;
         if (actor.getClass().equals(Enemy.class)) enemy = (Enemy) actor;
