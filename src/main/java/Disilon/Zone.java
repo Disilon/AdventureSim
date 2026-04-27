@@ -193,7 +193,7 @@ public enum Zone {
             return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.buff_count() > 0).findFirst().get();
         }
         if (skill.equals("Back Stab")) {
-            return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.smoked || e.bound > 0).findFirst().orElse(getRandomEnemy());
+            return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.smoked).findFirst().orElse(getRandomEnemy());
         }
         return getRandomEnemy();
     }

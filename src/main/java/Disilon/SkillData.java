@@ -337,7 +337,7 @@ public class SkillData {
         active_skills.get("Magic Blast").weapon_required = false;
         addActive("Fire Slash", 1, 199.8, 244.2, 1, 71, 0.9, 0.9, Scaling.atk,
                 Element.fire,true, false);
-        addActive("Bloody Slash", 1, 199.8, 244.2, 1, 71, 0.9, 0.9, Scaling.atk,
+        addActive("Bloody Slash", 1, 199.8, 244.2, 1.5, 71, 1.2, 1, Scaling.atk,
                 Element.water,true, false);
         addActive("Dark Blast", 1, 315, 385, 1, 150, 1.7, 1.7, Scaling.intel,
                 Element.dark,true, false);

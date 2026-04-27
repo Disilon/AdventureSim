@@ -638,6 +638,9 @@ public class ActiveSkill {
         if (game_version >= 1674 && defender.name.equals("Squirrel Mage") && name.equals("Back Stab")) {
             dmg_mult3 *= 1.25;
         }
+        if (defender.hide_bonus > 0 && name.equals("Blood Slash")) {
+            dmg_mult3 *= 2;
+        }
         hit_chance = max(0.05, hit_chance / defender.getDodge_mult());
         hit_chance = Math.min(hit_chance, 1);
         if (defender.dodge > 0 && (Math.random() < defender.dodge)) {
