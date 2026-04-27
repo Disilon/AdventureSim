@@ -2793,7 +2793,7 @@ public class UserForm extends JFrame {
         return new ArrayList<>(Arrays.asList(
                 "Slime", "Goblin", "Imp", "Ghoul", "Wraith",
                 "Shinigami", "Astaroth", "Tengu", "Amon", "Akuma", "Devil", "Shax", "Dagon", "Lamia",
-                "Tyrant", "Fairy", "Raum", "Asura", "Squirrel Mage", "Tree Golem"
+                "Tyrant", "Fairy", "Fire Lizard", "Blood Lizard", "Raum", "Asura", "Squirrel Mage", "Empress", "Tree Golem"
         ));
     }
 
@@ -2801,28 +2801,28 @@ public class UserForm extends JFrame {
         return new ArrayList<>(Arrays.asList(
                 "Research slot",
                 "Research spd",
+                "Core drop",
+                "Core quality",
+                "Drop rate",
+                "Exp gain",
+                "Max CL",
                 "Max skill lvl",
+                "Skill exp",
                 "Min pow",
                 "Enemy Min lvl",
                 "Reduce CL req",
                 "Crit chance",
                 "Crit damage",
                 "No overkill crit",
-                "Max CL",
-                "Exp gain",
-                "Core drop",
-                "Core quality",
-                "Skill exp",
                 "Sidecraft spd",
-                "Crafting spd",
-                "Alchemy spd",
-                "Smithing spd",
                 "Crafting exp",
-                "Alchemy exp",
+                "Crafting spd",
                 "Smithing exp",
-                "E. Quality mult",
+                "Smithing spd",
+                "Alchemy exp",
+                "Alchemy spd",
                 "E. Quality min",
-                "Drop rate",
+                "E. Quality mult",
                 "Equip HP",
                 "Equip Atk",
                 "Equip Def",
