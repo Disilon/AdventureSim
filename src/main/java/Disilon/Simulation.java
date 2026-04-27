@@ -131,7 +131,7 @@ public class Simulation {
             int skill_cycle = 1;
             ActiveSkill previous_cast = null;
             status = StatusType.respawn;
-            player.zone.respawn(Math.round(player.set_squirrel_rate), player.getEnemyMinLvl());
+            player.zone.respawn(Math.round(player.set_squirrel_rate), player);
             player.checkAmbush();
             player.remove_charge = false;
 //            player.pill.name = "Berserk";

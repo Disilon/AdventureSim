@@ -332,16 +332,21 @@ public class SkillData {
         addActive("Electric Beam", 1, 135, 165, 1.5, 50, 0.5, 0.5, Scaling.intel,
                 Element.light,false, false);
         active_skills.get("Electric Beam").addDebuff("Resist Break", 3, 0.25);
+        active_skills.get("Electric Beam").weapon_required = false;
         addActive("Magic Blast", 1, 270, 330, 1.8, 100, 1.5, 1.5, Scaling.intel,
                 Element.light,false, false);
         active_skills.get("Magic Blast").weapon_required = false;
         addActive("Fire Slash", 1, 199.8, 244.2, 1, 71, 0.9, 0.9, Scaling.atk,
                 Element.fire,true, false);
+        active_skills.get("Fire Slash").weapon_required = false;
         addActive("Bloody Slash", 1, 199.8, 244.2, 1.5, 71, 1.2, 1, Scaling.atk,
                 Element.water,true, false);
+        active_skills.get("Bloody Slash").weapon_required = false;
         addActive("Dark Blast", 1, 315, 385, 1, 150, 1.7, 1.7, Scaling.intel,
                 Element.dark,true, false);
+        active_skills.get("Dark Blast").weapon_required = false;
         addActive("Dark Revenge", 1, 599.4, 732.6, 99, 0, 2.5, 2.5, Scaling.intel,
                 Element.dark,true, false);
+        active_skills.get("Dark Revenge").weapon_required = false;
     }
 }

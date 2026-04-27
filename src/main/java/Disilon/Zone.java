@@ -80,7 +80,9 @@ public enum Zone {
         enemy_num = enemy_num < max_enemies ? enemy_num + 1 : min_enemies;
     }
 
-    public void respawn(double squirrel_threshold, int min_lvl) {
+    public void respawn(double squirrel_threshold, Player p) {
+        int min_lvl = p.getEnemyMinLvl();
+        int actual_lvl = level;
         clear();
         if (squirrel_counter >= squirrel_threshold && game_version >= 1620) {
             enemies[0].makeSquirrel(getLvl());
@@ -88,7 +90,7 @@ public enum Zone {
                 enemies[0].passives.get("Dodge").enabled = false;
             }
             enemies[0].strength = 1;
-            enemies[0].reroll(level, 0, hard_hp, hard_stats);
+            enemies[0].reroll(actual_lvl, 0, hard_hp, hard_stats);
             squirrel_counter -= squirrel_threshold;
             stats.squirrel_spawns++;
         } else {
@@ -99,7 +101,16 @@ public enum Zone {
             for (Enemy e : enemies) {
                 if (e.active) {
                     e.strength = strength + individual_str_add;
-                    e.reroll(level, min_lvl, hard_hp, hard_stats);
+                    if (this == Boss) {
+                        actual_lvl = (int) (p.bestiary.getOrDefault(e.name,0.0) + 1) * 150;
+                    }
+                    e.reroll(actual_lvl, min_lvl, hard_hp, hard_stats);
+                    if (this == Boss) {
+                        int slvl = (int) Math.ceil(actual_lvl / 20.0);
+                        slvl = Math.min(slvl, p.max_skill_lvl);
+                        e.active_skills.get("Fire Slash").setSkill(slvl, SkillMod.Damage);
+                        e.active_skills.get("Dark Blast").setSkill(slvl, SkillMod.Damage);;
+                    }
                     if (strength > 1) {
                         individual_str_add -= 0.02;
                     } else {

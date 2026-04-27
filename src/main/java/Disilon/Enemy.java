@@ -541,7 +541,9 @@ public class Enemy extends Actor {
         min_lvl = Math.min(max_lvl, min_lvl + min_lvl_incr);
         lvl = Math.min(max_lvl, Math.max(min_lvl, lvl));
         refreshStats();
-        if (name.equals("Dark Reaper")) lvl = level;
+        if (name.equals("Dark Reaper")) {
+            lvl = level;
+        }
         this.exp = base_exp * lvl;
         double stat_lvl = Math.max(2, lvl);
         this.atk = base_atk * stat_lvl * stats_mult;
@@ -569,8 +571,6 @@ public class Enemy extends Actor {
         this.hp_max = getHp_max();
         this.hp = this.hp_max;
         this.mp = this.getMp_max();
-
-        if (name.equals("Dark Reaper")) dmg_mult = 1.6;
     }
 
     public ActiveSkill rollAttack(Player player) {

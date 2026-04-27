@@ -2793,7 +2793,8 @@ public class UserForm extends JFrame {
         return new ArrayList<>(Arrays.asList(
                 "Slime", "Goblin", "Imp", "Ghoul", "Wraith",
                 "Shinigami", "Astaroth", "Tengu", "Amon", "Akuma", "Devil", "Shax", "Dagon", "Lamia",
-                "Tyrant", "Fairy", "Fire Lizard", "Blood Lizard", "Raum", "Asura", "Squirrel Mage", "Empress", "Tree Golem"
+                "Tyrant", "Fairy", "Fire Lizard", "Blood Lizard", "Raum", "Asura", "Squirrel Mage",
+                "Empress", "Tree Golem", "Dark Reaper"
         ));
     }
 

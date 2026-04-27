@@ -774,7 +774,9 @@ public class ActiveSkill {
                 dmg_mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
                 dmg_mult *= (1 - attacker.set_training);
                 atk *= enrage_mult;
-                if (attacker.wrong_weapon) atk *= 0.7;
+                if (attacker.wrong_weapon) {
+                    atk *= 0.7;
+                }
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
                 if (this.name.equals("Dispel")) {
                     calc_hits = defender.buff_count();
@@ -856,7 +858,7 @@ public class ActiveSkill {
             defender.getBarrier();
         }
         if (total > 0 && attacker.vampiric > 0) {
-            attacker.setHp(attacker.hp + total * attacker.vampiric, 0.1);
+            attacker.setHp(attacker.hp + total * attacker.vampiric, 1);
         }
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         attacker.last_skill = this;
