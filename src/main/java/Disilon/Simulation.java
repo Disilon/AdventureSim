@@ -25,7 +25,6 @@ public class Simulation {
     String title = "Default simulation.";
     int crafting_lvl = 20;
     int alchemy_lvl = 20;
-    int alchemist_lvl = 0;
     int sim_type = 1;
     double time_to_respawn = 1;
     String skills_info = "";
@@ -44,7 +43,6 @@ public class Simulation {
         player = new Player(setup);
         crafting_lvl = setup.crafting_lvl;
         alchemy_lvl = setup.alchemy_lvl;
-        alchemist_lvl = setup.alchemist_lvl;
         offline = setup.offline;
         Main.balance1 = setup.extra_atk_overkill;
         Main.balance2 = setup.extra_atk_backstab_mult;
@@ -64,10 +62,6 @@ public class Simulation {
         double squirrel_time = 0;
         double death_time = 0;
         double prepare_time = 0;
-        double crafting_time = 0;
-        double potion_sidecraft_time = 0;
-        double combat_potion_sidecraft_time = 0;
-        double pill_sidecraft_time = 0;
         double min_time = 9999;
         double max_time = 0;
         double squirrel_min_time = 9999;
@@ -95,6 +89,10 @@ public class Simulation {
         player.berserk_damage_taken = 0;
         player.research_slots_stat = 0;
         player.rp_drain = 0;
+        player.maincrafting_time = 0;
+        player.potion_sidecraft_time = 0;
+        player.pill_sidecraft_time = 0;
+        player.combat_potion_sidecraft_time = 0;
         title = player.zone.toString();
         time_to_respawn = player.zone.getTime_to_respawn();
         time_mult = offline ? player.zone.getZoneOfflineMult() : 1;
@@ -116,6 +114,7 @@ public class Simulation {
         item_drop *= player.drop_mult;
         item_drop *= 1 + 0.01 * player.getBestiaryMedals(10000);
         item_drop *= 1 + player.zone.getRoughItemDropBonus(player);
+        item_drop *= player.core_item_drop;
         boolean end = false;
         if (offline && player.zone.getZoneTimeCap() > 0) {
             time_limit /= (120*60 + player.zone.getZoneTimeCap()) / (120*60);
@@ -162,7 +161,7 @@ public class Simulation {
             }
             while (status == StatusType.combat) {
                 int cycled = 0;
-                if (time > 36000 || total_time > 1e10) {
+                if (time > 36000 || total_time > 1e11) {
                     end = true; //stop simulations so that we don't freeze
                 }
                 while (player.casting == null) {
@@ -256,7 +255,7 @@ public class Simulation {
                             }
                         }
                         if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
-                                (skill1.name.equals("Throw Sand") && skill1.use_setting == 2 && Arrays.stream(player.zone.enemies).noneMatch(e -> e.active && (e.smoked || e.bound > 0)))) {
+                                (skill1.name.equals("Throw Sand") && skill1.use_setting == 2 && Arrays.stream(player.zone.enemies).noneMatch(e -> e.active && (e.smoked > 0 || e.bound > 0)))) {
                             player.casting = skill1;
                             skill_cycle = 1; //resets rotation, should be fine for CS
                             if (skill1 != null) skill1.used_in_rotation = 0;
@@ -279,15 +278,17 @@ public class Simulation {
                     }
                 }
                 if (player.zone == Zone.Boss) {
+//                    player.gear_potion = 0.184;
 //                    if (time - weapon_switch >= 2) {
-//                        player.wrong_weapon = false;
-//                        player.gear_potion = 1;
+//                        player.weapon_type = "bow";
+//                        player.gear_potion = 0;
 //                    }
-//                    if (player.hp < player.getHp_max() * 0.6 && player.potion2.cooldown <= 1) {
+//                    if (player.hp < player.getHp_max() * 0.6 && player.potions[0].cooldown <= 1.0) {
 //                        weapon_switch = time;
-//                        player.wrong_weapon = true;
-//                        player.gear_potion = 1.147;
+//                        player.weapon_type = "cauldron";
+//                        player.gear_potion = 0.184;
 //                    }
+
 //                    if (time > 180 && !player.pill.name.equals("Toughness")) {
 //                        player.pill.name = "Toughness";
 //                        player.refreshStats();
@@ -401,11 +402,9 @@ public class Simulation {
 //                        for (Debuff d : enemy.debuffs) {
 //                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
 //                        }
-                            double exp_gain =
-                                    enemy.exp * player.total_exp_mult * player.milestone_exp_mult * player.hard_reward;
-                            base_exp += enemy.exp * player.hard_reward;
-                            exp_gain *= 1 + 0.01 * player.getBestiaryMedals(50000);
+                            double exp_gain = enemy.exp * player.getExpMult() * player.hard_reward;
                             exp_gain *= 1 + player.getBestiaryBonus(enemy.name);
+                            base_exp += enemy.exp * player.hard_reward * (1 + player.getBestiaryBonus(enemy.name));
                             if (enemy.name.equals("Squirrel Mage")) {
                                 exp_gain *= player.getSquirrelMult(player.zone.getLvl());
                                 double nuts = player.zone.getLvl() * 0.005;
@@ -516,6 +515,15 @@ public class Simulation {
                         delay_left = player.casting.delay;
                         player.casting = null;
                     }
+                    if (player.zone == Zone.Boss) {
+                        player.debuffs.clear();
+                        player.buffs.clear();
+                        player.pending_debuffs.clear();
+                        player.pending_buffs.clear();
+                        player.setHp(player.getHp_max());
+                        player.setMp(player.getMp_max());
+                        player.resetPotionCd();
+                    }
                 }
             }
 
@@ -582,38 +590,23 @@ public class Simulation {
                 player.levelPassives(time);
                 player.tick_research(time);
                 player.pill.usePill(player, time);
+                if (!player.alchemy_consumption_based) {
+                    PassiveSkill p = player.getLowestCrafting();
+                    if (p != null) {
+                        p.gainCraftingExp(time);
+                    }
+                }
             }
-            int research_craft = player.research_lvls.getOrDefault("Crafting spd", 0.0).intValue();
-            int research_alch = player.research_lvls.getOrDefault("Alchemy spd", 0.0).intValue();
-            double add_time = 0;
-            if (player.potion1 != null) {
-                add_time += player.potion1.calc_time(crafting_lvl, alchemy_lvl, alchemist_lvl, research_craft,
-                        research_alch);
-            }
-            if (player.potion2 != null) {
-                add_time += player.potion2.calc_time(crafting_lvl, alchemy_lvl, alchemist_lvl, research_craft, research_alch);
-            }
-            if (player.potion3 != null) {
-                add_time += player.potion3.calc_time(crafting_lvl, alchemy_lvl, alchemist_lvl, research_craft, research_alch);
-            }
-            if (add_time > 0 && getSidecraftingSpeed() > 0) {
-                potion_sidecraft_time += add_time / getSidecraftingSpeed();
-            } else {
-                crafting_time += add_time;
-            }
-            add_time = player.pill.calc_time(time, alchemy_lvl, alchemist_lvl, research_alch);
-            if (add_time > 0 && getSidecraftingSpeed() > 0) {
-                pill_sidecraft_time += add_time / getSidecraftingSpeed();
-            } else {
-                crafting_time += add_time;
-            }
+
+            player.calcConsumables(time);
+
             if ((cleared + failed) >= 10000000) end = true;
             switch (sim_type) {
                 default -> {
                     if ((cleared + failed) >= sim_limit) end = true;
                 }
                 case 2 -> {
-                    if ((total_time + death_time + crafting_time) >= time_limit * 3600) end = true;
+                    if ((total_time + death_time + player.maincrafting_time) >= time_limit * 3600) end = true;
                 }
                 case 3 -> {
                     if (player.cl >= cl_limit) end = true;
@@ -629,28 +622,23 @@ public class Simulation {
         min_time /= time_mult;
         max_time /= time_mult;
         double exph = (exp / (total_time + death_time) * 3600);
-        double exp_total_bonus = player.total_exp_mult * player.milestone_exp_mult * (1 + 0.005 * player.getEnemyMinLvl()) * (1 + 0.01 * player.getBestiaryMedals(50000));
+        double exp_total_bonus = player.getExpMult() * (1 + 0.005 * player.getEnemyMinLvl());
         result.append("Exp/h: ").append(shorthand(exph)).append(" (");
         result.append(df2.format(exp_total_bonus * 100)).append("%; ");
         result.append(shorthand(base_exp / (total_time + death_time) * 3600)).append(" at 100%)\n");
-        if (player.potion1 != null) {
-            result.append(player.potion1.getRecordedData(total_time + death_time));
+        for (int i = 0; i < 3; i++) {
+            if (player.potions[i] != null) {
+                result.append(player.potions[i].getRecordedData(total_time + death_time));
+            }
         }
-        if (player.potion2 != null) {
-            result.append(player.potion2.getRecordedData(total_time + death_time));
-        }
-        if (player.potion3 != null) {
-            result.append(player.potion3.getRecordedData(total_time + death_time));
-        }
-        combat_potion_sidecraft_time += player.combat_potion_time(crafting_lvl, alchemy_lvl, alchemist_lvl) / getSidecraftingSpeed();
-        if (player.potions_thrown > 0) {
-            result.append("Combat p. used: ").append(player.potions_thrown).append(", per hour: ");
-            result.append((int) (player.potions_thrown / (total_time + death_time) * 3600));
-            result.append(", flask return: ").append((int) (100 - player.flask_used * 100.0 / player.potions_thrown));
+        if (player.total_potions_thrown > 0) {
+            result.append("Combat p. used: ").append(player.total_potions_thrown).append(", per hour: ");
+            result.append((int) (player.total_potions_thrown / (total_time + death_time) * 3600));
+            result.append(", flask return: ").append((int) (100 - player.total_flask_used * 100.0 / player.total_potions_thrown));
             result.append("%\n");
         }
-        if (crafting_time > 0) {
-            result.append("Effective exp/h: ").append(shorthand((exp / (total_time + crafting_time + death_time) * 3600))).append("\n");
+        if (player.maincrafting_time > 0) {
+            result.append("Effective exp/h: ").append(shorthand((exp / (total_time + player.maincrafting_time + death_time) * 3600))).append("\n");
         }
         if (player.prepare != null) {
             result.append("Time preparing: ").append(df2.format(prepare_time / total_time * 100)).append("% " +
@@ -676,62 +664,45 @@ public class Simulation {
         }
         result.append("\nSimulations: ").append(cleared).append("\n");
         result.append("Kills: ").append(player.zone.stats.getKillCount()).append("\n");
-        result.append("Total sim time: ").append(Main.secToTime(total_time + crafting_time + death_time)).append("\n");
+        result.append("Total sim time: ").append(Main.secToTime(total_time + player.maincrafting_time + death_time)).append("\n");
         result.append("Time in combat: ").append(Main.secToTime(total_time));
         result.append(" (").append(df2.format(total_time / 3600)).append(" h)\n");
         if (death_time > 0) {
             result.append("Time dead: ").append(Main.secToTime(death_time)).append("\n");
         }
-        if (crafting_time > 0) {
-            result.append("Crafting time: ").append(Main.secToTime(crafting_time)).append("\n");
+        if (player.maincrafting_time > 0) {
+            result.append("Crafting time: ").append(Main.secToTime(player.maincrafting_time)).append("\n");
         }
-        int smithing_lvl = 44;
-        double sidecraft_time = potion_sidecraft_time + combat_potion_sidecraft_time + pill_sidecraft_time;
+        double sidecraft_time = player.potion_sidecraft_time + player.combat_potion_sidecraft_time + player.pill_sidecraft_time;
         if (sidecraft_time > 0) {
-            if (potion_sidecraft_time > 0) {
-                result.append("Potion sidecrafting time: ").append(Main.secToTime(potion_sidecraft_time));
-                result.append(" (").append(df2.format(potion_sidecraft_time / (total_time + crafting_time + death_time) * 100));
+            if (player.potion_sidecraft_time > 0) {
+                result.append("Potion sidecrafting time: ").append(Main.secToTime(player.potion_sidecraft_time));
+                result.append(" (").append(df2.format(player.potion_sidecraft_time / (total_time + player.maincrafting_time + death_time) * 100));
                 result.append("%)\n");
             }
-            if (combat_potion_sidecraft_time > 0) {
-                result.append("Combat p. sidecrafting time: ").append(Main.secToTime(combat_potion_sidecraft_time));
-                result.append(" (").append(df2.format(combat_potion_sidecraft_time / (total_time + crafting_time + death_time) * 100));
+            if (player.combat_potion_sidecraft_time > 0) {
+                result.append("Combat p. sidecrafting time: ").append(Main.secToTime(player.combat_potion_sidecraft_time));
+                result.append(" (").append(df2.format(player.combat_potion_sidecraft_time / (total_time + player.maincrafting_time + death_time) * 100));
                 result.append("%)\n");
             }
-            if (pill_sidecraft_time > 0) {
-                result.append("Pill sidecrafting time: ").append(Main.secToTime(pill_sidecraft_time));
-                result.append(" (").append(df2.format(pill_sidecraft_time / (total_time + crafting_time + death_time) * 100));
+            if (player.pill_sidecraft_time > 0) {
+                result.append("Pill sidecrafting time: ").append(Main.secToTime(player.pill_sidecraft_time));
+                result.append(" (").append(df2.format(player.pill_sidecraft_time / (total_time + player.maincrafting_time + death_time) * 100));
                 result.append("%)\n");
             }
-            double diff = (total_time + crafting_time + death_time) - sidecraft_time;
+            double diff = (total_time + player.maincrafting_time + death_time) - sidecraft_time;
             if (diff > 0) {
-                double side_craft_spd = getSidecraftingSpeed();
+                if (player.alchemy_consumption_based) {
+                    for (int i = 0; i < 1000; i++) {
+                        PassiveSkill p = player.getLowestCrafting();
+                        if (p != null) {
+                            p.gainCraftingExp(diff / 1000);
+                        }
+                    }
+                }
                 result.append("Free sidecrafting time: ").append(df2.format(diff / 3600)).append(" hours");
-                result.append(" (").append(df2.format(100 - (sidecraft_time / (total_time + crafting_time + death_time) * 100)));
+                result.append(" (").append(df2.format(100 - (sidecraft_time / (total_time + player.maincrafting_time + death_time) * 100)));
                 result.append("%)\n");
-//                double fairy_c = diff / 2 * 10 / (220 + 120) * (1 + 0.01 * crafting_lvl) * side_craft_spd *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("Crafting spd", 0.0));
-//                double fairyr_c = diff / 2 / (220 + 120) * Math.pow(1 + 0.01 * crafting_lvl, 2) * side_craft_spd *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("Crafting spd", 0.0)) *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("E. Quality mult", 0.0)) *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("E. Quality min", 0.0));
-//                double cobalt_c = diff / 2 * 20 / (20 * 20 + 80 + 2 * 23) * (1 + 0.01 * smithing_lvl) * side_craft_spd *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("Smithing spd", 0.0));
-//                double cobaltr_c =
-//                        diff / 2 / (20 * 20 + 80 + 2 * 23) * Math.pow(1 + 0.01 * smithing_lvl, 2) * side_craft_spd *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("Smithing spd", 0.0)) *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("E. Quality mult", 0.0)) *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("E. Quality min", 0.0));
-//                double heat_c =
-//                        diff / 2 * 23 / (20 * 20 + 80 + 2 * 23) * (1 + 0.01 * smithing_lvl) * side_craft_spd *
-//                        (1 + 0.01 * player.research_lvls.getOrDefault("Smithing spd", 0.0));
-//                StringBuilder crafting = new StringBuilder();
-//                crafting.append(df2.format(fairy_c)).append("\t");
-//                crafting.append(df2.format(fairyr_c)).append("\t");
-//                crafting.append(df2.format(cobalt_c)).append("\t");
-//                crafting.append(df2.format(cobaltr_c)).append("\t");
-//                crafting.append(df2.format(heat_c)).append("\t");
-//                System.out.println(crafting.toString());
             } else {
                 result.append("Deficient sidecrafting time: ").append(df2.format(-diff / 3600)).append(" hours\n");
             }
@@ -811,7 +782,8 @@ public class Simulation {
                 }
             }
             for (PassiveSkill p : player.passives.values()) {
-                if ((p.enabled && p.old_lvl < player.max_skill_lvl) || (p.available && p.name.equals("Tsury Finke"))) {
+                if ((p.enabled && p.old_lvl < player.max_skill_lvl) || (p.available && p.name.equals("Tsury Finke")) ||
+                        p.name.equals("Crafting") || p.name.equals("Smithing") || p.name.equals("Alchemy")) {
                     lvling_log.append(p.name).append(": ").append((int) p.old_lvl).append(" -> ").append(p.lvl).append(" (");
                     lvling_log.append(df2.format(p.getLpercent())).append("%)\n");
                 }
@@ -825,6 +797,9 @@ public class Simulation {
                     lvling_log.append(entry.getKey()).append(" +").append(df2.format(change)).append("\n");
                 }
             }
+//            double eqm = 1 + 0.01 * player.passives.get("Crafting").lvl;
+//            eqm *= 1 + 0.01 * Math.floor(player.research_lvls.get("E. Quality mult"));
+//            lvling_log.append("EQM: ").append(df4.format(eqm)).append("\n");
 //            StringBuilder research = new StringBuilder();
 //            research.append(df2.format(player.research_lvls.get("Research slot"))).append("\t");
 //            research.append(df2.format(player.research_lvls.get("Research spd"))).append("\t");
@@ -845,31 +820,9 @@ public class Simulation {
         return player;
     }
 
-    public double getSidecraftingSpeed() {
-        double side_craft_spd = 0;
-        if (game_version >= 1573) {
-            if (crafting_lvl >= 10 && alchemy_lvl >= 10) {
-                side_craft_spd = 0.05 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
-            }
-            if (crafting_lvl >= 20 && alchemy_lvl >= 20) side_craft_spd += 0.05;
-            if (crafting_lvl >= 30 && alchemy_lvl >= 30) side_craft_spd += 0.1;
-            if (crafting_lvl >= 40 && alchemy_lvl >= 40) side_craft_spd += 0.05;
-            if (crafting_lvl >= 50 && alchemy_lvl >= 50) side_craft_spd += 0.05;
-            if (crafting_lvl >= 60 && alchemy_lvl >= 60) side_craft_spd += 0.05;
-            if (crafting_lvl >= 70 && alchemy_lvl >= 70) side_craft_spd += 0.05;
-            if (crafting_lvl >= 80 && alchemy_lvl >= 80) side_craft_spd += 0.05;
-            if (crafting_lvl >= 90 && alchemy_lvl >= 90) side_craft_spd += 0.05;
-        } else {
-            if (crafting_lvl >= 30 && alchemy_lvl >= 30) {
-                side_craft_spd = game_version >= 1568 ? 0.2 + 0.01 * player.research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue() : 0.2;
-            }
-        }
-        return side_craft_spd;
-    }
-
     public void checkLvlup() {
         if (player.name.equals("Alchemist")) {
-            alchemist_lvl = player.cl;
+            player.alchemist_lvl = player.cl;
         }
     }
 }

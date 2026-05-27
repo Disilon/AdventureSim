@@ -26,7 +26,7 @@ public class Actor extends ActorStats {
     }
 
     public void check_debuffs() {
-        smoked = false;
+        smoked = 0;
         def_break = 0;
         res_break = 0;
         mark = 0;
@@ -35,7 +35,8 @@ public class Actor extends ActorStats {
         bound = 0;
         freeze = 0;
         for (Debuff d : debuffs) {
-            if (d.name.equals("Smoke")) smoked = true;
+            if (d.name.equals("Smoke")) smoked = 0.5;
+            if (d.name.equals("Sand")) smoked = game_version >= 1701 ? 0.25 : 0.5;
             if (d.name.equals("Defense Break")) def_break = d.effect;
             if (d.name.equals("Resist Break")) res_break = d.effect;
             if (d.name.equals("Weaken")) weaken = d.effect;
@@ -71,7 +72,9 @@ public class Actor extends ActorStats {
         empower_hp = 0;
         elemental_buff = 0;
         analyze_buff = 0;
+        kyrie = 0;
         for (Buff b : buffs) {
+            if (b.name.equals("Kyrie Eleyson")) kyrie = b.effect;
             if (b.name.equals("Charge Up")) charge = b.effect;
             if (b.name.equals("Bless")) blessed = b.effect;
             if (b.name.equals("Empower HP")) empower_hp = b.effect;
@@ -87,7 +90,7 @@ public class Actor extends ActorStats {
             if (log.contains("buff_duration")) System.out.println(b.name + " duration = " + b.duration);
             switch (b.name) {
                 case "Charge Up", "Elemental Buff", "Taking Notes" -> b.duration = b.duration - (attack ? 1 : 0);
-                case "Stone Barrier" -> {}
+                case "Stone Barrier","Kyrie Eleyson" -> {}
                 default -> b.duration--;
             }
 //            if (!b.name.equals("Charge Up") && !b.name.contains("Barrier")) {
@@ -317,23 +320,35 @@ public class Actor extends ActorStats {
 
     public void applyGear() {
         clear_gear_stats();
-        if (equipment.get("MH") != null && equipment.get("MH").name.equals("Tsury Finke")) {
-            if (passives.get("Tsury Finke").available) {
-                equipment.get("MH").upgrade = passives.get("Tsury Finke").lvl;
+        if (equipment.get("MH") != null) {
+            String mh = equipment.get("MH").name.toLowerCase();
+            if(mh.equals("tsury finke")) {
+                if (passives.get("Tsury Finke").available) {
+                    equipment.get("MH").upgrade = passives.get("Tsury Finke").lvl;
+                }
+                equipment.get("MH").quality = switch (equipment.get("MH").upgrade / 10) {
+                    default -> Quality.Poor;
+                    case 1 -> Quality.Flawed;
+                    case 2 -> Quality.Normal;
+                    case 3 -> Quality.Good;
+                    case 4 -> Quality.Superior;
+                    case 5 -> Quality.Exceptional;
+                    case 6 -> Quality.Divine;
+                    case 7 -> Quality.Legendary;
+                    case 8 -> Quality.Mythic;
+                    case 9, 10 -> Quality.Godly;
+                };
+                equipment.get("MH").calcStats();
+                weapon_type = "dagger";
+            } else {
+                if (mh.contains("dagger")) weapon_type = "dagger";
+                if (mh.contains("bow")) weapon_type = "bow";
+                if (mh.contains("book")) weapon_type = "book";
+                if (mh.contains("sword")) weapon_type = "sword";
+                if (mh.contains("wand")) weapon_type = "wand";
+                if (mh.contains("spear")) weapon_type = "spear";
+                if (mh.contains("knuckles")) weapon_type = "knuckles";
             }
-            equipment.get("MH").quality = switch (equipment.get("MH").upgrade / 10) {
-                default -> Quality.Poor;
-                case 1 -> Quality.Flawed;
-                case 2 -> Quality.Normal;
-                case 3 -> Quality.Good;
-                case 4 -> Quality.Superior;
-                case 5 -> Quality.Exceptional;
-                case 6 -> Quality.Divine;
-                case 7 -> Quality.Legendary;
-                case 8 -> Quality.Mythic;
-                case 9, 10 -> Quality.Godly;
-            };
-            equipment.get("MH").calcStats();
         }
         for (Map.Entry<String, Equipment> slot : equipment.entrySet()) {
             Equipment item = slot.getValue();
@@ -407,6 +422,9 @@ public class Actor extends ActorStats {
         dodge_mult = 1;
         dodge = 0;
         dmg_mult = 1;
+        dmg_taken_mult = 1;
+        wind_dmg_mult = 1;
+        holy_dmg_mult = 1;
         poison_mult = 1;
         ailment_res = 1;
         exp_mult = 1;
@@ -415,6 +433,7 @@ public class Actor extends ActorStats {
         delay_speed_mult = 1;
         mana_regen_mult = 1;
         core_mult = 0;
+        core_cdr_add = 0;
         core_mult_mult = 1;
         counter_strike = 0;
         multi_arrows = 0;
@@ -429,23 +448,18 @@ public class Actor extends ActorStats {
         surv_instinct = false;
         mp_cost_mult = 1;
 
+        core_atkdam = 1;
+        core_intdam = 1;
+        core_poison = 1;
+        core_critdmg = 1;
+        core_manacost = 1;
+        core_item_drop = 1;
+        core_exp = 1;
+
         potion_effect *= 1 + 0.01 * Math.max(passives.get("Potion Inventor").lvl - 10, 0);
         if (name.equals("Alchemist")) potion_effect *= 1 + passives.get("Potion Slots").getBonus();
         pill_effect *= 1 + (name.equals("Alchemist") ? 0.03 : 0.01) * passives.get("Pill Inventor").lvl;
         atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
-        poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
-        dmg_mult *= 1.0 + passives.get("Dagger Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Fist Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Sword Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Spear Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Bow Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Wand Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Book Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Weapon Mastery").getBonus();
-        dmg_mult *= 1.0 + passives.get("Dual Wield").getBonus();
-        dmg_mult *= 1.0 + passives.get("Concentration").getBonus();
-        dmg_mult *= 1.0 + passives.get("Stealth").getBonus();
-        poison_mult *= 1.0 + passives.get("Stealth").getBonus();
         speed_mult *= 1.0 + passives.get("Speed Boost").getBonus();
         exp_mult *= 1.0 + passives.get("Exp Boost").getBonus();
         def_mult *= 1.0 + passives.get("Defense Boost").getBonus();
@@ -478,6 +492,25 @@ public class Actor extends ActorStats {
         p_mp_cost_add = 0;
         p_mp_cost_mult = 1;
         applyGear();
+
+        dmg_mult *= 1.0 + passives.get("Dagger Mastery").getBonus("dagger");
+        dmg_mult *= 1.0 + passives.get("Fist Mastery").getBonus("knuckles");
+        dmg_mult *= 1.0 + passives.get("Sword Mastery").getBonus("sword");
+        dmg_mult *= 1.0 + passives.get("Spear Mastery").getBonus("spear");
+        dmg_mult *= 1.0 + passives.get("Bow Mastery").getBonus("bow");
+        dmg_mult *= 1.0 + passives.get("Wand Mastery").getBonus("wand");
+        dmg_mult *= 1.0 + passives.get("Book Mastery").getBonus("book");
+        dmg_mult *= 1.0 + passives.get("Weapon Mastery").getBonus();
+        dmg_mult *= 1.0 + passives.get("Dual Wield").getBonus();
+        dmg_mult *= 1.0 + passives.get("Concentration").getBonus();
+        dmg_mult *= 1.0 + passives.get("True Sight").getBonus();
+        dmg_mult *= 1.0 + passives.get("Stealth").getBonus();
+        poison_mult *= 1.0 + passives.get("Stealth").getBonus();
+        poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
+        dmg_taken_mult *= 1.0 - passives.get("Divine Boost").getBonus();
+        wind_dmg_mult *= 1.0 + passives.get("Divine Boost").getBonus();
+        holy_dmg_mult *= 1.0 + passives.get("Divine Boost").getBonus();
+
         if (cores != null) {
             for (int id : cores.keySet()) {
                 cores.get(id).applyStats(this, id);
@@ -550,6 +583,7 @@ public class Actor extends ActorStats {
     }
 
     public void clear_gear_stats() {
+        weapon_type = null;
         gear_atk = 0;
         gear_def = 0;
         gear_hit = 0;
@@ -634,14 +668,20 @@ public class Actor extends ActorStats {
     }
 
     public void setHp(double hp) {
+//        double old = this.hp;
         this.hp = Math.min(getHp_max(), hp);
+//        System.out.println(old + " -> " + this.hp);
     }
 
     public void setHp(double hp, double overheal) {
+
         this.hp = Math.min(getHp_max() * (1 + overheal), hp);
+
     }
 
     public void doDamage(double dmg) {
+        if (kyrie > 0) return;
+        dmg *= dmg_taken_mult;
         dmg = dmg < 1 ? 1 : dmg;
         if (shield > dmg) {
             shield -= dmg;
@@ -794,7 +834,11 @@ public class Actor extends ActorStats {
     }
 
     public double getCrit_damage() {
-        return base_crit_damage + gear_crit_dmg;
+        if (game_version < 1681) {
+            return base_crit_damage + gear_crit_dmg + (core_critdmg - 1);
+        } else {
+            return (base_crit_damage + gear_crit_dmg) * core_critdmg;
+        }
     }
 
     public double stealthDelay() {

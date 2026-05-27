@@ -1,6 +1,7 @@
 package Disilon;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.game_version;
 import static Disilon.MonsterStatData.getCoreRP;
 
 public class Core {
@@ -27,176 +28,192 @@ public class Core {
 
     public void applyStats(Actor actor, int id) {
         if (enabled && !name.equals("None")) {
-            double flat = getFlatBonus();
-            double scaling = getScaling(actor, id);
-            double base = getBaseBonus();
+            double bonus = getBonus(actor, id);
             switch (name) {
                 case "Slime" -> {
-                    actor.set_magicdmg *= 1 + (flat + base * scaling) / 100;
+                    actor.core_intdam += bonus / 100;
                 }
                 case "Goblin" -> {
-                    actor.set_physdmg *= 1 + (flat + base * scaling) / 100;
+                    actor.core_atkdam += bonus / 100;
                 }
                 case "Devil" -> {
-                    actor.poison_mult *= 1 + (flat + base * scaling) / 100;
+                    actor.core_poison += bonus / 100;
                 }
                 case "Fire Lizard" -> {
-                    actor.gear_crit += (flat + base * scaling) / 100;
+                    actor.gear_crit += bonus / 100;
                 }
                 case "Blood Lizard" -> {
-                    actor.gear_crit_dmg += (flat + base * scaling) / 100;
+                    actor.core_critdmg += bonus / 100;
                 }
                 case "Empress" -> {
-                    actor.mp_cost_mult *= 1.0 - (flat + base * scaling) / 100;
+                    actor.core_manacost += bonus / 100;
                 }
                 case "Tengu" -> {
-                    actor.drop_mult *= 1 + (flat + base * scaling) / 100;
+                    actor.core_item_drop += bonus / 100;
                 }
                 case "Akuma" -> {
-                    actor.exp_mult *= 1 + (flat + base * scaling) / 100;
+                    actor.core_exp += bonus / 100;
                 }
                 case "Squirrel Mage" -> {
-                    actor.core_mult_mult *= 1 + (flat + base * scaling) / 100;
+                    actor.core_cdr_add += bonus / 100;
                 }
                 case "Asura" -> {
-                    actor.gear_atk += flat + base * scaling;
+                    actor.gear_atk += bonus;
                 }
                 case "Lamia" -> {
-                    actor.gear_int += flat + base * scaling;
+                    actor.gear_int += bonus;
                 }
                 case "Imp" -> {
-                    actor.gear_fire += flat + base * scaling;
+                    actor.gear_fire += bonus;
                 }
                 case "Ghoul" -> {
-                    actor.gear_earth += flat + base * scaling;
+                    actor.gear_earth += bonus;
                 }
                 case "Wraith" -> {
-                    actor.gear_wind += flat + base * scaling;
+                    actor.gear_wind += bonus;
                 }
                 case "Dagon" -> {
-                    actor.gear_water += flat + base * scaling;
+                    actor.gear_water += bonus;
                 }
                 case "Shinigami" -> {
-                    actor.gear_dark += flat + base * scaling;
+                    actor.gear_dark += bonus;
                 }
                 case "Astaroth" -> {
-                    actor.gear_light += flat + base * scaling;
+                    actor.gear_light += bonus;
                 }
                 case "Raum" -> {
-                    actor.gear_no_elem += flat + base * scaling;
+                    actor.gear_no_elem += bonus;
                 }
                 case "Tyrant" -> {
-                    actor.gear_def += flat + base * scaling;
+                    actor.gear_def += bonus;
                 }
                 case "Amon" -> {
-                    actor.gear_res += flat + base * scaling;
+                    actor.gear_res += bonus;
                 }
                 case "Shax" -> {
-                    actor.gear_speed += flat + base * scaling;
+                    actor.gear_speed += bonus;
                 }
                 case "Fairy" -> {
-                    actor.gear_hit += flat + base * scaling;
+                    actor.gear_hit += bonus;
                 }
                 case "Tree Golem" -> {
-                    actor.gear_hp += flat + base * scaling;
+                    actor.gear_hp += bonus;
                 }
                 case "Gloom Flower" -> {
-                    actor.shield_max += flat + base * scaling;
+                    actor.shield_max += bonus;
                 }
                 case "Dark Reaper" -> {
-                    actor.gear_atk += flat + base * scaling;
-                    actor.gear_int += flat + base * scaling;
-                    actor.gear_def += flat + base * scaling;
-                    actor.gear_res += flat + base * scaling;
-                    actor.gear_hit += flat + base * scaling;
-                    actor.gear_speed += flat + base * scaling;
+                    actor.gear_hp += bonus;
+                    actor.gear_atk += bonus;
+                    actor.gear_int += bonus;
+                    actor.gear_def += bonus;
+                    actor.gear_res += bonus;
+                    actor.gear_hit += bonus;
+                    actor.gear_speed += bonus;
                 }
             }
         }
     }
 
     public double getBaseBonus() {
-        return switch (name) {
-            case "Slime" -> 0.99*100/6831;
-            case "Goblin" -> 0.99*100/6831;
-            case "Devil" -> 0.99*100/6831;
-            case "Fire Lizard" -> 0.99*100/6831;
-            case "Blood Lizard" -> 0.99*100/6831;
-            case "Empress" -> 0.99*100/6831;
-            case "Tengu" -> 0.99*100/6831;
-            case "Akuma" -> 0.99*100/6831;
-            case "Squirrel Mage" -> 0.99*100/6831;
-            case "Tree Golem" -> 0.998*30000/36349*4;
-            case "Asura" -> 0.998*30000/36349;
-            case "Lamia" -> 0.998*30000/36349;
-            case "Tyrant" -> 0.998*30000/36349;
-            case "Amon" -> 0.998*30000/36349;
-            case "Fairy" -> 0.998*30000/36349;
-            case "Shax" -> 0.998*30000/36349;
-            case "Dark Reaper" -> 0.998*30000/36349;
-            case "Imp" -> 0.998*300*80/36349;
-            case "Ghoul" -> 0.998*300*80/36349;
-            case "Wraith" -> 0.998*300*80/36349;
-            case "Dagon" -> 0.998*300*80/36349;
-            case "Shinigami" -> 0.998*300*80/36349;
-            case "Astaroth" -> 0.998*300*80/36349;
-            case "Raum" -> 0.998*300*80/36349;
-            case "Gloom Flower" -> 0.498*300*350/36349;
-            default -> 0;
-        };
+        double max_power = Math.pow(equipLvl(), 100);
+        max_power *= Math.pow(equipQual(), 10);
+        max_power *= Math.pow(coreLvl(), 15);
+        max_power *= Math.pow(coreGrade(), 9);
+        return 1 / max_power * (getMaxBonus() - getFlatBonus());
     }
 
     public double getFlatBonus() {
         return switch (name) {
-            case "Slime" -> 1;
-            case "Goblin" -> 1;
-            case "Devil" -> 1;
+            case "Tree Golem" -> 60*10;
+            case "Dark Reaper" -> 60/2;
+            case "Imp" -> 40;
+            case "Ghoul" -> 40;
+            case "Wraith" -> 40;
+            case "Dagon" -> 40;
+            case "Shinigami" -> 40;
+            case "Astaroth" -> 40;
+            case "Raum" -> 40;
+            case "Gloom Flower" -> 200;
             case "Fire Lizard" -> 1;
             case "Blood Lizard" -> 1;
-            case "Empress" -> 1;
-            case "Tengu" -> 1;
-            case "Akuma" -> 1;
-            case "Squirrel Mage" -> 1;
-            case "Tree Golem" -> 60*4;
-            case "Asura" -> 60;
-            case "Lamia" -> 60;
-            case "Tyrant" -> 60;
-            case "Amon" -> 60;
-            case "Fairy" -> 60;
-            case "Shax" -> 60;
-            case "Dark Reaper" -> 60;
-            case "Imp" -> 48;
-            case "Ghoul" -> 48;
-            case "Wraith" -> 48;
-            case "Dagon" -> 48;
-            case "Shinigami" -> 48;
-            case "Astaroth" -> 48;
-            case "Raum" -> 48;
-            case "Gloom Flower" -> 210;
-            default -> 0;
+            case "Squirrel Mage" -> game_version >= 1680 ? 2 : 1;
+            default -> {
+                yield isFlat() ? 60 : 1;
+            }
         };
     }
 
-    public double getScaling(Actor actor, int id) {
+    public double getMaxBonus() {
+        return switch (name) {
+            case "Tree Golem" -> 24000*10;
+            case "Dark Reaper" -> 24000/2;
+            case "Imp" -> 19200;
+            case "Ghoul" -> 19200;
+            case "Wraith" -> 19200;
+            case "Dagon" -> 19200;
+            case "Shinigami" -> 19200;
+            case "Astaroth" -> 19200;
+            case "Raum" -> 19200;
+            case "Gloom Flower" -> 35000;
+            case "Fire Lizard" -> 70;
+            case "Blood Lizard" -> 70;
+            case "Squirrel Mage" -> game_version >= 1680 ? 140 : 70;
+            default -> {
+                yield isFlat() ? 24000 : 70;
+            }
+        };
+    }
+
+    public double getBonus(Actor actor, int id) {
         if (enabled && !name.equals("None")) {
             Equipment item = actor.equipment.get(getSlot(actor, id));
             if (item != null) {
-                if (isFlat()) {
-                    double scaling = Math.pow(1.015, Math.min(item.upgrade, item.skill_required + 15));
-                    scaling *= Math.pow(1.35, item.quality.ordinal() + 1);
-                    scaling *= Math.pow(1.22, lvl);
-                    scaling *= Math.pow(1.4, grade + 1);
-                    return scaling;
-                } else {
-                    double scaling = Math.pow(1.01, Math.min(item.upgrade, item.skill_required + 15));
-                    scaling *= Math.pow(1.2, item.quality.ordinal() + 1);
-                    scaling *= Math.pow(1.22, lvl);
-                    scaling *= Math.pow(1.4, grade + 1);
-                    return scaling;
-                }
+                int upgrade = Math.min(item.upgrade, item.skill_required + 15);
+                double flat = getFlatBonus();
+                double scaling = getScaling(upgrade, item.quality.ordinal());
+                double base = getBaseBonus();
+                return flat + base * scaling;
             }
         }
         return 0;
+    }
+
+    public double getScaling(int upgrade, int quality) {
+        double scaling = Math.pow(equipLvl(), upgrade);
+        scaling *= Math.pow(equipQual(), quality + 1);
+        scaling *= Math.pow(coreLvl(), lvl);
+        scaling *= Math.pow(coreGrade(), grade + 1);
+        return scaling;
+    }
+
+    public double equipLvl() {
+        if (isFlat()) {
+            return 1.015;
+        } else {
+            return 1.01;
+        }
+    }
+    public double equipQual() {
+        if (isFlat()) {
+            return 1.2;
+        } else {
+            return 1.15;
+        }
+    }
+    public double coreLvl() {
+        if (isFlat()) {
+            return 1.25;
+        } else {
+            return game_version >= 1680 ? 1.2 : 1.25;
+        }
+    }
+    public double coreGrade() {
+        if (isFlat()) {
+            return 1.4;
+        } else {
+            return 1.3;
+        }
     }
 
     public double calcRpWorth() {
@@ -258,11 +275,12 @@ public class Core {
             case "Slime" -> false;
             case "Goblin" -> false;
             case "Devil" -> false;
-            case "Fire Lizard" -> false;
-            case "Blood Lizard" -> false;
+            case "Fire Lizard" -> game_version < 1681;
+            case "Blood Lizard" -> game_version < 1681;
             case "Tengu" -> false;
             case "Akuma" -> false;
             case "Squirrel Mage" -> false;
+            case "Empress" -> false;
             default -> true;
         };
     }

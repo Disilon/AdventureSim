@@ -125,8 +125,6 @@ public class UserForm extends JFrame {
     private JComboBox Enemy;
     private JComboBox GameVersion;
     private JSpinner Milestone;
-    private JSpinner Crafting_lvl;
-    private JSpinner Alchemy_lvl;
     private JSpinner Alchemist_CL;
     private JSpinner R_spd_bonus;
     private JSpinner Rp_balance;
@@ -155,6 +153,10 @@ public class UserForm extends JFrame {
     private JCheckBox Balance1;
     private JCheckBox Balance2;
     private JCheckBox Balance3;
+    private JCheckBox CraftingProgress;
+    private JCheckBox SmithingProgress;
+    private JCheckBox AlchemyProgress;
+    private JCheckBox AlchemyConsumptionBased;
     private JMenuBar Bar;
     private JButton New_tab;
     private JTable ActiveSkills;
@@ -180,6 +182,7 @@ public class UserForm extends JFrame {
     Gson gson = new Gson();
     Font default_font = new Font("Courier", Font.BOLD, 12);
     Font disabled_font = new Font("Courier", Font.BOLD, 12);
+    HashMap<Integer, int[]> core_slaves = new HashMap<>();
 
     public class CoreUI {
         public JComboBox name;
@@ -233,6 +236,12 @@ public class UserForm extends JFrame {
                 }
             }
         }
+        core_slaves.put(0, new int[]{10});
+        core_slaves.put(1, new int[]{11});
+        core_slaves.put(20, new int[]{30, 40});
+        core_slaves.put(50, new int[]{60});
+        core_slaves.put(21, new int[]{31, 41});
+        core_slaves.put(70, new int[]{80});
         menuListener = new SampleMenuListener();
         itemListener = new MenuItemActionListener();
         fileChooser = new JFileChooser(Main.getJarPath());
@@ -1243,33 +1252,43 @@ public class UserForm extends JFrame {
         gbc.gridy = row + 1;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Milestone, gbc);
-        final JLabel label26 = new JLabel("Crafting lvl");
+        column += 1;
+        CraftingProgress = new JCheckBox("Crafting leveling");
         gbc = new GridBagConstraints();
-        gbc.gridx = column + 1;
+        gbc.gridx = column;
         gbc.gridy = row;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(5, 5, 0, 5);
-        LeftPanel.add(label26, gbc);
-        Crafting_lvl = new JSpinner(new SpinnerNumberModel(22, 0, 100, 1));
+//        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(CraftingProgress, gbc);
+        row += 1;
+        SmithingProgress = new JCheckBox("Smithing leveling");
         gbc = new GridBagConstraints();
-        gbc.gridx = column + 1;
-        gbc.gridy = row + 1;
-        gbc.anchor = GridBagConstraints.NORTH;
-        //gbc.insets = new Insets(10, 5, 0, 5);
-        LeftPanel.add(Crafting_lvl, gbc);
-        final JLabel label27 = new JLabel("Alchemy lvl");
-        gbc = new GridBagConstraints();
-        gbc.gridx = column + 2;
+        gbc.gridx = column;
         gbc.gridy = row;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(5, 5, 0, 5);
-        LeftPanel.add(label27, gbc);
-        Alchemy_lvl = new JSpinner(new SpinnerNumberModel(22, 0, 100, 1));
+//        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(SmithingProgress, gbc);
+        row += 1;
+        AlchemyProgress = new JCheckBox("Alchemy leveling");
         gbc = new GridBagConstraints();
-        gbc.gridx = column + 2;
-        gbc.gridy = row + 1;
+        gbc.gridx = column;
+        gbc.gridy = row;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.NORTH;
-        LeftPanel.add(Alchemy_lvl, gbc);
+//        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(AlchemyProgress, gbc);
+        row += 1;
+        AlchemyConsumptionBased = new JCheckBox("Use cons. progress");
+        gbc = new GridBagConstraints();
+        gbc.gridx = column;
+        gbc.gridy = row;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.NORTH;
+//        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(AlchemyConsumptionBased, gbc);
+        row += 1;
 
         final JLabel label27_1 = new JLabel("Alchemist CL");
         gbc = new GridBagConstraints();
@@ -1285,35 +1304,35 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Alchemist_CL, gbc);
 
-        final JLabel r_spd = new JLabel("Research spd bonus %");
+        final JLabel r_spd = new JLabel("RS statue %");
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 6;
-        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(r_spd, gbc);
         R_spd_bonus = createCustomSpinner(0, 0, 1000, 0.5);
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 7;
-        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(R_spd_bonus, gbc);
 
         final JLabel rp_balance_l = new JLabel("Current RP");
         gbc = new GridBagConstraints();
-        gbc.gridx = 0;
+        gbc.gridx = 1;
         gbc.gridy = 8;
-        gbc.gridwidth = 3;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(rp_balance_l, gbc);
         Rp_balance = new JSpinner(new SpinnerNumberModel(1000, 0, 1000000000, 1000));
         gbc = new GridBagConstraints();
-        gbc.gridx = 0;
+        gbc.gridx = 1;
         gbc.gridy = 9;
-        gbc.gridwidth = 3;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Rp_balance, gbc);
 
@@ -1685,7 +1704,8 @@ public class UserForm extends JFrame {
                         }
                     }
                     for (PassiveSkill a : player.passives.values()) {
-                        if ((a.enabled && a.old_lvl < player.max_skill_lvl) || (a.available && a.name.equals("Tsury Finke"))) {
+                        if ((a.enabled && a.old_lvl < player.max_skill_lvl) || (a.available && a.name.equals("Tsury Finke")) ||
+                                a.name.equals("Crafting") || a.name.equals("Smithing") || a.name.equals("Alchemy")) {
                             info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
                             info.append(a.name);
                             info.append("</td></tr>");
@@ -1738,6 +1758,9 @@ public class UserForm extends JFrame {
                         for (String s : player.passives.keySet()) {
                             int max_lvl = s.equals("Tsury Finke") ? 100 : player.max_skill_lvl;
                             if (s.endsWith(" pill")) max_lvl = 1000;
+                            if (s.equals("Crafting") || s.equals("Smithing") || s.equals("Alchemy")) {
+                                max_lvl = 100;
+                            }
                             setup.passives_lvls.put(s, Math.min(max_lvl, player.passives.get(s).getLvl()));
                         }
                         setup.rp_balance = (int) player.rp_balance;
@@ -1746,7 +1769,7 @@ public class UserForm extends JFrame {
                             setup.result_skills = simulation.skills_info;
                             setup.result_lvling = simulation.lvling_info;
                             setup.stats = simulation.player.getAllStats();
-                            setup.alchemist_lvl = simulation.alchemist_lvl;
+                            setup.alchemist_lvl = simulation.player.alchemist_lvl;
                         }
                         loadSetup(setup);
                     }
@@ -2013,6 +2036,43 @@ public class UserForm extends JFrame {
                 updateUI();
             }
         });
+        for (Integer key : core_slaves.keySet()) {
+            CoreUI core = cores.get(key);
+            if (core != null) {
+                CoreUI master = core;
+                int[] slaves = core_slaves.get(key);
+                master.name.addActionListener(e -> {
+                    if (SetSetup.isSelected()) {
+                        for (int i = 0; i < slaves.length; i++) {
+                            CoreUI slaveCore = cores.get(slaves[i]);
+                            if (slaveCore != null) {
+                                slaveCore.name.setSelectedIndex(master.name.getSelectedIndex());
+                            }
+                        }
+                    }
+                });
+                master.grade.addActionListener(e -> {
+                    if (SetSetup.isSelected()) {
+                        for (int i = 0; i < slaves.length; i++) {
+                            CoreUI slaveCore = cores.get(slaves[i]);
+                            if (slaveCore != null) {
+                                slaveCore.grade.setSelectedIndex(master.grade.getSelectedIndex());
+                            }
+                        }
+                    }
+                });
+                master.lvl.addChangeListener(e -> {
+                    if (SetSetup.isSelected()) {
+                        for (int i = 0; i < slaves.length; i++) {
+                            CoreUI slaveCore = cores.get(slaves[i]);
+                            if (slaveCore != null) {
+                                slaveCore.lvl.setValue(master.lvl.getValue());
+                            }
+                        }
+                    }
+                });
+            }
+        }
         loadEquipment();
         ArrayList<String> load_list = loadSettings(Main.getJarPath() + "/Settings.ini").getDefault_setups();
         for (String s : load_list) {
@@ -2292,7 +2352,6 @@ public class UserForm extends JFrame {
         data.accessory2_lvl = (int) Double.parseDouble(Accessory2_lvl.getValue().toString());
         data.accessory2_name = Accessory2_name.getSelectedItem().toString();
         data.accessory2_tier = (Equipment.Quality) Accessory2_tier.getSelectedItem();
-        data.alchemy_lvl = (int) Double.parseDouble(Alchemy_lvl.getValue().toString());
         data.alchemist_lvl = (int) Double.parseDouble(Alchemist_CL.getValue().toString());
         data.boots_lvl = (int) Double.parseDouble(Boots_lvl.getValue().toString());
         data.boots_name = Boots_name.getSelectedItem().toString();
@@ -2304,7 +2363,6 @@ public class UserForm extends JFrame {
         data.chest_name = Chest_name.getSelectedItem().toString();
         data.chest_tier = (Equipment.Quality) Chest_tier.getSelectedItem();
         data.cl = ((int) Double.parseDouble(CL.getValue().toString()) + Double.parseDouble(CL_p.getValue().toString()) / 100);
-        data.crafting_lvl = (int) Double.parseDouble(Crafting_lvl.getValue().toString());
         data.zone = (Zone) Enemy.getSelectedItem();
         data.gameversion = GameVersion.getSelectedItem().toString();
         data.helmet_lvl = (int) Double.parseDouble(Helmet_lvl.getValue().toString());
@@ -2344,6 +2402,10 @@ public class UserForm extends JFrame {
         data.extra_atk_overkill = Balance1.isSelected();
         data.extra_atk_backstab_mult = Balance2.isSelected();
         data.crit_overkill_reduced = Balance3.isSelected();
+        data.crafting_progress = CraftingProgress.isSelected();
+        data.smithing_progress = SmithingProgress.isSelected();
+        data.alchemy_progress = AlchemyProgress.isSelected();
+        data.alchemy_consumption_based = AlchemyConsumptionBased.isSelected();
 
         data.skill1 = Skill1.getSelectedItem().toString();
         data.skill1_mod = (SkillMod) Skill1_mod.getSelectedItem();
@@ -2434,6 +2496,13 @@ public class UserForm extends JFrame {
         if (data.helmet_name.equals("Windy Hat")) data.helmet_name = "Aim Hat";
         if (data.bracer_name.equals("Windy Bracers")) data.bracer_name = "Aim Bracers";
         if (data.boots_name.equals("Windy Boots")) data.boots_name = "Aim Boots";
+        if (data.crafting_lvl > 0 && data.passives_lvls.getOrDefault("Crafting", 0.0) == 0) {
+            data.passives_lvls.put("Crafting", Double.valueOf(data.crafting_lvl));
+            data.passives_lvls.put("Smithing", Double.valueOf(Math.min(data.crafting_lvl, data.alchemy_lvl)));
+            data.passives_lvls.put("Alchemy", Double.valueOf(data.alchemy_lvl));
+            data.crafting_lvl = 0;
+            data.alchemy_lvl = 0;
+        }
     }
 
     private Setup loadFile(String path) {
@@ -2483,6 +2552,10 @@ public class UserForm extends JFrame {
         Balance1.setSelected(data.extra_atk_overkill);
         Balance2.setSelected(data.extra_atk_backstab_mult);
         Balance3.setSelected(data.crit_overkill_reduced);
+        CraftingProgress.setSelected(data.crafting_progress);
+        SmithingProgress.setSelected(data.smithing_progress);
+        AlchemyProgress.setSelected(data.alchemy_progress);
+        AlchemyConsumptionBased.setSelected(data.alchemy_consumption_based);
         switch (data.sim_type) {
             case 2:
                 Sim_time.doClick();
@@ -2583,8 +2656,6 @@ public class UserForm extends JFrame {
     }
 
     private void loadResearch(Setup data) {
-        Alchemy_lvl.setValue(data.alchemy_lvl);
-        Crafting_lvl.setValue(data.crafting_lvl);
         Alchemist_CL.setValue(data.alchemist_lvl);
         Milestone.setValue(data.milestone);
         R_spd_bonus.setValue(data.r_spd_bonus);
@@ -2697,11 +2768,11 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
         LeftPanel.add(spinner_lvl, gbc);
-        min_value = 0;
+        min_value = -999;
         max_value = 999;
-        if (name.equals("Research slot")) {
-            min_value = -15;
-        }
+//        if (name.equals("Research slot")) {
+//            min_value = -15;
+//        }
         JSpinner spinner_w = createCustomSpinner(0, min_value, max_value, 1.0);
         spinner_w.setName(name + "_w");
         research_w.put(name, spinner_w);
@@ -2815,7 +2886,6 @@ public class UserForm extends JFrame {
                 "Crit chance",
                 "Crit damage",
                 "No overkill crit",
-                "Sidecraft spd",
                 "Crafting exp",
                 "Crafting spd",
                 "Smithing exp",
@@ -2824,6 +2894,7 @@ public class UserForm extends JFrame {
                 "Alchemy spd",
                 "E. Quality min",
                 "E. Quality mult",
+                "Sidecraft spd",
                 "Equip HP",
                 "Equip Atk",
                 "Equip Def",
@@ -2927,11 +2998,8 @@ public class UserForm extends JFrame {
 
             }
         }
-        if (MH_name.getSelectedItem() != null) {
-            String item_name = MH_name.getSelectedItem().toString();
-            if (equipmentData.twohanded.contains(item_name)) {
-                OH_name.setSelectedItem("None");
-            }
+        if (OH_name.getSelectedItem() != null) {
+            String item_name = OH_name.getSelectedItem().toString();
             if (OH_tier.getSelectedIndex() > 5) oh_slots++;
             if (equipmentData.less_slots.contains(item_name)) oh_slots--;
             if (item_name.equals("None")) oh_slots = 0;

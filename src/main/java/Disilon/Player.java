@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,8 @@ public class Player extends Actor {
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
             "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer",
-            "Onion Knight", "Scholar", "Alchemist", "Ninja"};
+            "Onion Knight", "Scholar", "Alchemist",
+            "Holy Archer",  "Ninja"};
 
     double rp_balance;
     double old_rp;
@@ -29,6 +31,15 @@ public class Player extends Actor {
     double total_exp_mult = 1;
     String previous_research;
     boolean decide_research = false;
+    int alchemist_lvl = 0;
+    boolean crafting_progress = false;
+    boolean smithing_progress = false;
+    boolean alchemy_progress = false;
+    boolean alchemy_consumption_based = false;
+    double maincrafting_time = 0;
+    double potion_sidecraft_time = 0;
+    double pill_sidecraft_time = 0;
+    double combat_potion_sidecraft_time = 0;
     LinkedHashMap<String, Double> research_weight_sorted = new LinkedHashMap<>(32);
 
     public Player() {
@@ -53,11 +64,18 @@ public class Player extends Actor {
         this.old_ml = setup.ml;
         this.lvling = setup.leveling;
         this.zone = setup.zone;
+        this.alchemist_lvl = setup.alchemist_lvl;
+        crafting_progress = setup.crafting_progress;
+        smithing_progress = setup.smithing_progress;
+        alchemy_progress = setup.alchemy_progress;
+        alchemy_consumption_based = setup.alchemy_consumption_based;
         if (setup.hard_hp > 0) zone.hard_hp = setup.hard_hp / 100;
         if (setup.hard_stats > 0) zone.hard_stats = setup.hard_stats / 100;
         if (setup.hard_reward > 0) hard_reward = setup.hard_reward / 100;
         this.zone.stats.clear_recorded_data();
-        this.setupPotions(setup.potion1, setup.potion1_t, setup.potion2, setup.potion2_t, setup.potion3, setup.potion3_t);
+        setupPotions(0, setup.potion1, setup.potion1_t);
+        setupPotions(1, setup.potion2, setup.potion2_t);
+        setupPotions(2, setup.potion3, setup.potion3_t);
         this.clear_skills_recorded_data();
         this.equipment.clear();
         this.setEquip("MH", setup.mh_name, setup.mh_tier, setup.mh_lvl);
@@ -110,41 +128,30 @@ public class Player extends Actor {
         this.zone.stats.setGradeCutoff(this);
     }
 
-    public void setupPotions(String type1, int threshold1, String type2, int threshold2,
-                             String type3, int threshold3) {
-        if (!type1.equals("None")) {
-            potion1 = new Potion(type1, threshold1);
+    public void setupPotions(int id, String type, int threshold) {
+        if (!type.equals("None")) {
+            potions[id] = new Potion(this, type, threshold);
         } else {
-            potion1 = null;
-        }
-        if (!type2.equals("None")) {
-            potion2 = new Potion(type2, threshold2);
-        } else {
-            potion2 = null;
-        }
-        if (!type3.equals("None")) {
-            potion3 = new Potion(type3, threshold3);
-        } else {
-            potion3 = null;
+            potions[id] = null;
         }
     }
 
     public void checkPotion(double delta) {
-        if (potion1 != null) potion1.checkPotion(this, delta);
-        if (potion2 != null) potion2.checkPotion(this, delta);
-        if (potion3 != null) potion3.checkPotion(this, delta);
+        for (int i = 0; i < 3; i++) {
+            if (potions[i] != null) potions[i].checkPotion(this, delta);
+        }
     }
 
     public void tickPotion(double delta) {
-        if (potion1 != null) potion1.tickPotion(delta);
-        if (potion2 != null) potion2.tickPotion(delta);
-        if (potion3 != null) potion3.tickPotion(delta);
+        for (int i = 0; i < 3; i++) {
+            if (potions[i] != null) potions[i].tickPotion(delta);
+        }
     }
 
     public void resetPotionCd() {
-        if (potion1 != null) potion1.cooldown = 0;
-        if (potion2 != null) potion2.cooldown = 0;
-        if (potion3 != null) potion3.cooldown = 0;
+        for (int i = 0; i < 3; i++) {
+            if (potions[i] != null) potions[i].cooldown = 0;
+        }
     }
 
     public void setClass(String name) {
@@ -160,175 +167,32 @@ public class Player extends Actor {
         base_dark_res = 0;
         switch (name) {
             case "Assassin" -> {
-                tier = 3;
                 base_dark_res = 0.5;
                 base_light_res = -0.5;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Dagger Mastery");
-                skills.enablePassive("Stealth");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Poison Boost");
-                skills.enablePassive("Defense Boost");
-                skills.enablePassive("Dodge");
-                skills.enablePassive("Fist Mastery");
-                skills.enablePassive("Counter Strike");
-                skills.enableActive("Killing Strike");
-                skills.enableActive("Hide");
-                skills.enableActive("Steal");
-                skills.enableActive("Dragon Punch");
-                skills.enableActive("Whirling Foot");
-                skills.enableActive("Double Attack");
-                skills.enableActive("Poison Attack");
-                skills.enableActive("Smoke Screen");
-                skills.enableActive("Prepare");
-            }
-            case "Fighter" -> {
-                tier = 2;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Defense Boost");
-                skills.enablePassive("Fist Mastery");
-                skills.enablePassive("Counter Strike");
-                skills.enableActive("Attack");
-                skills.enableActive("Quick Hit");
-                skills.enableActive("Aura Shot");
-                skills.enableActive("Dragon Punch");
-                skills.enableActive("Whirling Foot");
-                skills.enableActive("First Aid");
             }
             case "Pyromancer" -> {
-                tier = 3;
                 base_fire_res = 0.5;
                 base_water_res = -0.5;
-                skills.enablePassive("Int Boost");
-                skills.enablePassive("Res Boost");
-                skills.enablePassive("Casting Boost");
-                skills.enablePassive("Wand Mastery");
-                skills.enablePassive("Fire Boost");
-                skills.enablePassive("Fire Resistance");
-                skills.enableActive("Fire Pillar");
-                skills.enableActive("Fire Ball");
-                skills.enableActive("Explosion");
-                skills.enableActive("Elemental Blast");
-                skills.enableActive("Push Blast");
-                skills.enableActive("Magic Arrow");
-                skills.enableActive("Magic Missile");
             }
             case "Geomancer" -> {
-                tier = 3;
                 base_earth_res = 0.5;
                 base_wind_res = -0.5;
-                skills.enablePassive("Int Boost");
-                skills.enablePassive("Res Boost");
-                skills.enablePassive("Casting Boost");
-                skills.enablePassive("Wand Mastery");
-                skills.enablePassive("Earth Boost");
-                skills.enablePassive("Earth Resistance");
-                skills.enableActive("Rock Shot");
-                skills.enableActive("Stone Barrier");
-                skills.enableActive("Earth Quake");
-                skills.enableActive("Elemental Blast");
-                skills.enableActive("Push Blast");
-                skills.enableActive("Magic Arrow");
-                skills.enableActive("Magic Missile");
             }
             case "Priest" -> {
-                tier = 3;
                 base_dark_res = -0.5;
                 base_light_res = 0.5;
-                skills.enablePassive("Int Boost");
-                skills.enablePassive("Res Boost");
-                skills.enablePassive("Light Boost");
-                skills.enablePassive("Book Mastery");
-                skills.enablePassive("Bless Mastery");
-                skills.enablePassive("Ailment Res");
-                skills.enableActive("Holy Ray");
-                skills.enableActive("Dispel");
-                skills.enableActive("Prayer");
-                skills.enableActive("Holy Light");
-                skills.enableActive("Magic Arrow");
-                skills.enableActive("Heal");
-                skills.enableActive("Bless");
             }
-            case "Scholar" -> {
-                tier = 3;
+            case "Scholar","Hunter" -> {
                 base_fire_res = 0.2;
                 base_water_res = 0.2;
                 base_wind_res = 0.2;
                 base_earth_res = 0.2;
-                skills.enablePassive("Int Boost");
-                skills.enablePassive("Res Boost");
-                skills.enablePassive("Casting Boost");
-                skills.enablePassive("Wand Mastery");
-                skills.enableActive("Elemental Blast");
-                skills.enableActive("Push Blast");
-                skills.enableActive("Magic Arrow");
-                skills.enableActive("Magic Missile");
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Speed Boost");
-                skills.enableActive("Bash");
-                skills.enableActive("Prepare");
-                skills.enableActive("Analyze");
-                skills.enableActive("Taking Notes");
-                skills.enablePassive("Safe Distance");
-                skills.enablePassive("Speedy Analyze");
-                skills.enablePassive("Smart Analyze");
-            }
-            case "Mage" -> {
-                tier = 2;
-                skills.enablePassive("Int Boost");
-                skills.enablePassive("Res Boost");
-                skills.enablePassive("Casting Boost");
-                skills.enablePassive("Wand Mastery");
-                skills.enableActive("Elemental Blast");
-                skills.enableActive("Push Blast");
-                skills.enableActive("Magic Arrow");
-                skills.enableActive("Magic Missile");
-            }
-            case "Student" -> {
-                tier = 1;
-                skills.enablePassive("Int Boost");
-                skills.enablePassive("Res Boost");
-                skills.enableActive("Magic Arrow");
             }
             case "Sniper" -> {
-                tier = 3;
                 base_wind_res = 0.5;
                 base_fire_res = -0.5;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Bow Mastery");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Defense Boost");
-                skills.enablePassive("Ambush");
-                skills.enablePassive("HP Regen");
-                skills.enablePassive("Concentration");
-                skills.enablePassive("Hit Boost");
-                skills.enableActive("Arrow Rain");
-                skills.enableActive("Sharp Shooting");
-                skills.enableActive("Mark Target");
-                skills.enableActive("Charge Up");
-                skills.enableActive("Defense Break");
-                skills.enableActive("Prepare");
-                skills.enableActive("Bash");
-                skills.enableActive("Trap");
-                skills.enableActive("Double Shot");
-                skills.enableActive("Quick Hit");
-            }
-            case "Archer" -> {
-                tier = 2;
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Bow Mastery");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Ambush");
-                skills.enableActive("Double Shot");
-                skills.enableActive("Arrow Rain");
-                skills.enableActive("Prepare");
-                skills.enableActive("Bash");
-                skills.enableActive("Trap");
             }
             case "Knight" -> {
-                tier = 3;
                 base_phys_res = 0.1;
                 base_fire_res = 0.1;
                 base_water_res = 0.1;
@@ -337,199 +201,16 @@ public class Player extends Actor {
                 base_light_res = 0.1;
                 base_dark_res = 0.1;
                 base_magic_res = -0.5;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Sword Mastery");
-                skills.enablePassive("Fist Mastery");
-                skills.enablePassive("Spear Mastery");
-                skills.enablePassive("HP Boost");
-                skills.enablePassive("Defense Boost");
-                skills.enablePassive("HP Regen");
-                skills.enablePassive("Counter Strike");
-                skills.enableActive("Empower HP");
-                skills.enableActive("Pierce");
-                skills.enableActive("Rapid Stabs");
-                skills.enableActive("Dragon Punch");
-                skills.enableActive("Whirling Foot");
-                skills.enableActive("Quick Hit");
-                skills.enableActive("Aura Blade");
-                skills.enableActive("Defense Break");
-                skills.enableActive("Sword Rush");
-            }
-            case "Warrior" -> {
-                tier = 2;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Sword Mastery");
-                skills.enablePassive("Defense Boost");
-                skills.enablePassive("HP Regen");
-                skills.enableActive("Attack");
-                skills.enableActive("Quick Hit");
-                skills.enableActive("Aura Blade");
-                skills.enableActive("Defense Break");
-                skills.enableActive("Sword Rush");
-            }
-            case "Squire" -> {
-                tier = 1;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Defense Boost");
-                skills.enableActive("Attack");
-                skills.enableActive("Quick Hit");
-            }
-            case "Cleric" -> {
-                tier = 2;
-                skills.enablePassive("Int Boost");
-                skills.enablePassive("Res Boost");
-                skills.enablePassive("Book Mastery");
-                skills.enablePassive("Ailment Res");
-
-                skills.enableActive("Holy Light");
-                skills.enableActive("Magic Arrow");
-                skills.enableActive("Heal");
-                skills.enableActive("Bless");
-            }
-            case "Thief" -> {
-                tier = 2;
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Dagger Mastery");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Dodge");
-                skills.enableActive("Double Attack");
-                skills.enableActive("Bash");
-                skills.enableActive("Steal");
-                skills.enableActive("Hide");
-                skills.enableActive("Prepare");
-            }
-            case "Adventurer" -> {
-                tier = 1;
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Speed Boost");
-                skills.enableActive("Bash");
-                skills.enableActive("Prepare");
-            }
-            case "Hunter" -> {
-                tier = 3;
-                base_fire_res = 0.2;
-                base_water_res = 0.2;
-                base_wind_res = 0.2;
-                base_earth_res = 0.2;
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Bow Mastery");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Ambush");
-                skills.enablePassive("Multi Arrows");
-                skills.enablePassive("Core Boost");
-                skills.enableActive("Careful Shot");
-                skills.enableActive("Weakening Shot");
-                skills.enableActive("Aimed Shot");
-                skills.enableActive("Double Shot");
-                skills.enableActive("Arrow Rain");
-                skills.enableActive("Prepare");
-                skills.enableActive("Bash");
-                skills.enableActive("Trap");
             }
             case "Rogue" -> {
-                tier = 3;
                 base_water_res = -0.5;
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Bow Mastery");
-                skills.enablePassive("Dagger Mastery");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Ambush");
-                skills.enablePassive("Dodge");
-                skills.enablePassive("Extra Attack");
-                skills.enablePassive("Dual Wield");
-                skills.enableActive("Throw Sand");
-                skills.enableActive("Binding Shot");
-                skills.enableActive("Back Stab");
-                skills.enableActive("Arrow Rain");
-                skills.enableActive("Double Attack");
-                skills.enableActive("Hide");
-                skills.enableActive("Double Shot");
-                skills.enableActive("Steal");
-                skills.enableActive("Prepare");
-                skills.enableActive("Bash");
             }
-            case "Alchemist" -> {
-                tier = 3;
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Potion Inventor");
-                skills.enablePassive("Potion Slots");
-                skills.enablePassive("Pill Inventor");
-                skills.enableActive("Bash");
-                skills.enableActive("Prepare");
-                skills.enableActive("Throw Potion");
-                skills.makeUnavailable("Throw Potion");
-                skills.enableActive("Throw Burning");
-                skills.enableActive("Throw Freezing");
-                skills.enableActive("Throw Geo");
-                skills.enableActive("Throw Acid");
-                skills.enableActive("Throw Black");
-                skills.enableActive("Throw Luminary");
-                skills.makeInvisible("Throw Burning");
-                skills.makeInvisible("Throw Freezing");
-                skills.makeInvisible("Throw Geo");
-                skills.makeInvisible("Throw Acid");
-                skills.makeInvisible("Throw Black");
-                skills.makeInvisible("Throw Luminary");
-                skills.enableActive("Alchemic Reaction");
-            }
-            case "Ninja" -> {
-                tier = 6;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Dagger Mastery");
-                skills.enablePassive("Stealth");
-                skills.enablePassive("Poison Boost");
-                skills.enablePassive("Defense Boost");
-                skills.enablePassive("Fist Mastery");
-                skills.enablePassive("Counter Strike");
-                skills.enableActive("Killing Strike");
-                skills.enableActive("Dragon Punch");
-                skills.enableActive("Whirling Foot");
-                skills.enableActive("Poison Attack");
-                skills.enableActive("Smoke Screen");
-                skills.enablePassive("Drop Boost");
-                skills.enablePassive("Bow Mastery");
-                skills.enablePassive("Dagger Mastery");
-                skills.enablePassive("Speed Boost");
-                skills.enablePassive("Ambush");
-                skills.enablePassive("Dodge");
-                skills.enablePassive("Extra Attack");
-                skills.enablePassive("Dual Wield");
-                skills.enableActive("Throw Sand");
-                skills.enableActive("Binding Shot");
-                skills.enableActive("Back Stab");
-                skills.enableActive("Arrow Rain");
-                skills.enableActive("Double Attack");
-                skills.enableActive("Hide");
-                skills.enableActive("Double Shot");
-                skills.enableActive("Steal");
-                skills.enableActive("Prepare");
-                skills.enableActive("Bash");
-            }
-            case "Onion Knight" -> {
-                tier = 3;
-                skills.enablePassive("Attack Boost");
-                skills.enablePassive("Weapon Mastery");
-                skills.enablePassive("Tsury Finke");
-                skills.enablePassive("Water Boost");
-                skills.enableActive("Onion Slash");
-                skills.enableActive("Onion Wave");
-            }
-            case "Newbie" -> {
-                tier = 1;
+            case "Holy Archer" -> {
+                base_fire_res = -0.5;
+                base_dark_res = -0.5;
             }
         }
-        skills.enableActive("Basic Attack");
-        skills.enableActive("First Aid");
-        skills.enablePassive("Exp Boost");
-        skills.makeVisible("Potion Inventor");
-        skills.makeVisible("Pill Inventor");
-        skills.makeVisible("Toughness pill");
-        skills.makeVisible("Speedy pill");
-        skills.makeVisible("Berserk pill");
-        skills.makeVisible("Wise pill");
-        skills.makeVisible("Critical pill");
-        skills.makeVisible("Ultimate pill");
+        enableSkills(name);
     }
 
     public ArrayList<String> getAvailableActiveSkills() {
@@ -752,13 +433,13 @@ public class Player extends Actor {
                 base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Ninja" -> {
-                base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
-                base_atk = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
-                base_def = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
-                base_int = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
-                base_res = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
-                base_hit = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
-                base_speed = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
+                base_hp_max = (double) (125 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (170 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (145 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (140 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (170 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Onion Knight" -> {
                 if (cl >= 99) {
@@ -778,6 +459,15 @@ public class Player extends Actor {
                     base_hit = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
                     base_speed = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
                 }
+            }
+            case "Holy Archer" -> {
+                base_hp_max = (double) (120 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Newbie" -> {
                 base_hp_max = (double) (60 * (cl + 100)) / 10000 * 30 * ml;
@@ -840,7 +530,7 @@ public class Player extends Actor {
     public double getWind() {
         double result = gear_wind;
         switch (name) {
-            case "Sniper" -> {
+            case "Sniper","Holy Archer" -> {
                 result += getAvgAtkInt();
             }
             case "Geomancer" -> {
@@ -894,7 +584,7 @@ public class Player extends Actor {
             case "Assassin", "Sniper" -> {
                 result -= getAvgAtkInt();
             }
-            case "Priest" -> {
+            case "Priest","Holy Archer" -> {
                 result += getAvgAtkInt();
             }
             case "Alchemist" -> result += getAvgAtkInt() * 0.4;
@@ -1034,7 +724,7 @@ public class Player extends Actor {
             Core core = cores.get(id);
             if (core.enabled && !core.name.equals("None")) {
                 double rp = core.calcRpWorth();
-                double bonus = core.getFlatBonus() + core.getBaseBonus() * core.getScaling(this, id);
+                double bonus = core.getBonus(this, id);
                 if (coreStats.containsKey(core.name)) {
                     coreStats.get(core.name).rp += rp;
                     coreStats.get(core.name).bonus += bonus;
@@ -1111,6 +801,16 @@ public class Player extends Actor {
         });
     }
 
+    public PassiveSkill getLowestCrafting() {
+        PassiveSkill c = passives.get("Crafting");
+        PassiveSkill s = passives.get("Smithing");
+        PassiveSkill a = passives.get("Alchemy");
+        PassiveSkill result = crafting_progress ? c : null;
+        if (result == null || (s.getLvl() < result.getLvl() && smithing_progress)) result = s;
+        if (a.getLvl() < result.getLvl() && alchemy_progress) result = a;
+        return result;
+    }
+
     public void tick_research(double time) {
         int max_slots = research_lvls.getOrDefault("Research slot", 1.0).intValue();
         double r_spd = 1 + 0.01 * research_lvls.getOrDefault("Research spd", 0.0).intValue();
@@ -1182,6 +882,11 @@ public class Player extends Actor {
                 if (entry.getValue() > 0) {
                     if (research_lvls.getOrDefault(entry.getKey(), 0.0).intValue() < maxResearchLvl(entry.getKey())) {
                         temp.put(entry.getKey(), entry.getValue() * 36000 / research_time(entry.getKey()));
+                    }
+                }
+                if (entry.getValue() < 0) {
+                    if (research_lvls.getOrDefault(entry.getKey(), 0.0).intValue() < entry.getValue() * -1) {
+                        temp.put(entry.getKey(), 3600000 / research_time(entry.getKey()));
                     }
                 }
             }
@@ -1342,14 +1047,10 @@ public class Player extends Actor {
 
     public double getNextPotionTime() {
         double time = 0;
-        if (potion1 != null && potion1.cooldown > 0) {
-            time = minIfNotZero(time, potion1.cooldown);
-        }
-        if (potion2 != null && potion2.cooldown > 0) {
-            time = minIfNotZero(time, potion2.cooldown);
-        }
-        if (potion3 != null && potion3.cooldown > 0) {
-            time = minIfNotZero(time, potion3.cooldown);
+        for (int i = 0; i < 3; i++) {
+            if (potions[i] != null && potions[i].cooldown > 0) {
+                time = minIfNotZero(time, potions[i].cooldown);
+            }
         }
         return time;
     }
@@ -1396,19 +1097,318 @@ public class Player extends Actor {
         return Math.min(bonus, 0.1);
     }
 
-    public double combat_potion_time(int crafting, int alchemy, int alchemist_lvl) {
-        double time = 0;
-        if (potions_thrown > 0) {
-            double craft_spd =
-                    (1 + 0.01 * crafting) * (1 + 0.01 * research_lvls.getOrDefault("Crafting spd", 0.0).intValue());
-            double alch_spd =
-                    (1 + 0.01 * alchemy) * (1 + 0.01 * research_lvls.getOrDefault("Alchemy spd", 0.0).intValue());
-            if (alchemist_lvl >= 90) {
-                alch_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
-            }
-            time += potions_thrown * 7.5 / alch_spd;
-            time += flask_used * 6.0 / craft_spd;
+    public double getExpMult() {
+        double result = total_exp_mult * milestone_exp_mult * core_exp;
+        result *= 1 + 0.01 * getBestiaryMedals(50000);
+        return  result;
+    }
+
+    public void calcConsumables(double time) {
+        double craft_spd = 1 + 0.01 * passives.get("Crafting").lvl;
+        craft_spd *= (1 + 0.01 * research_lvls.getOrDefault("Crafting spd", 0.0).intValue());
+        double alch_spd = 1 + 0.01 * passives.get("Alchemy").lvl;
+        alch_spd *= (1 + 0.01 * research_lvls.getOrDefault("Alchemy spd", 0.0).intValue());
+        if (alchemist_lvl >= 90) {
+            alch_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
         }
-        return time;
+        double side_craft_spd = getSidecraftingSpeed();
+        double craft_time = 0;
+        double alchemy_time = 0;
+        for (int i = 0; i < 3; i++) {
+            if (potions[i] != null && potions[i].count < 0) {
+                int need_to_craft = potions[i].count * -1;
+                double t1 = potions[i].base_craft_time() * need_to_craft / craft_spd;
+                double t2 = potions[i].base_alch_time() * need_to_craft / alch_spd;
+                craft_time += t1;
+                alchemy_time += t2;
+                if (side_craft_spd > 0) {
+                    potion_sidecraft_time += (t1 + t2) / side_craft_spd;
+                } else {
+                    maincrafting_time += t1 + t2;
+                }
+                potions[i].count = 0;
+            }
+        }
+        if (pill != null) {
+            double t2 = pill.getBaseCraftTime() * time / 7200.0 / alch_spd;
+            alchemy_time += t2;
+            if (side_craft_spd > 0) {
+                pill_sidecraft_time += t2 / side_craft_spd;
+            } else {
+                maincrafting_time += t2;
+            }
+        }
+        if (potions_thrown > 0) {
+            double t1 = flask_used * 6.0 / craft_spd;
+            double t2 = potions_thrown * 7.5 / alch_spd;
+            if (side_craft_spd > 0) {
+                combat_potion_sidecraft_time += (t1 + t2) / side_craft_spd;
+            } else {
+                maincrafting_time += t1 + t2;
+            }
+            potions_thrown = 0;
+            flask_used = 0;
+        }
+        if (alchemy_consumption_based) {
+            if (side_craft_spd > 0) {
+                passives.get("Crafting").gainCraftingExp(craft_time / side_craft_spd);
+                passives.get("Alchemy").gainCraftingExp(alchemy_time / side_craft_spd);
+            } else {
+                passives.get("Crafting").gainCraftingExp(craft_time);
+                passives.get("Alchemy").gainCraftingExp(alchemy_time);
+            }
+        }
+    }
+
+    public double getSidecraftingSpeed() {
+        double side_craft_spd = 0;
+        int crafting_lvl = passives.get("Crafting").lvl;
+        int smithing_lvl = passives.get("Smithing").lvl;
+        int alchemy_lvl = passives.get("Alchemy").lvl;
+        int min_lvl = Math.min(alchemy_lvl, Math.min(crafting_lvl, smithing_lvl));
+        if (min_lvl >= 10) {
+            side_craft_spd = 0.05 + 0.01 * research_lvls.getOrDefault("Sidecraft spd", 0.0).intValue();
+        }
+        if (min_lvl >= 20) side_craft_spd += 0.05;
+        if (min_lvl >= 30) side_craft_spd += 0.1;
+        if (min_lvl >= 40) side_craft_spd += 0.05;
+        if (min_lvl >= 50) side_craft_spd += 0.05;
+        if (min_lvl >= 60) side_craft_spd += 0.05;
+        if (min_lvl >= 70) side_craft_spd += 0.05;
+        if (min_lvl >= 80) side_craft_spd += 0.05;
+        if (min_lvl >= 90) side_craft_spd += 0.05;
+        return side_craft_spd;
+    }
+
+    public void enableSkills(String name) {
+        switch (name) {
+            case "Newbie" -> {
+                tier = 1;
+                skills.enableActive("Basic Attack");
+                skills.enableActive("First Aid");
+                skills.enablePassive("Exp Boost");
+                skills.makeVisible("Potion Inventor");
+                skills.makeVisible("Pill Inventor");
+                skills.makeVisible("Toughness pill");
+                skills.makeVisible("Speedy pill");
+                skills.makeVisible("Berserk pill");
+                skills.makeVisible("Wise pill");
+                skills.makeVisible("Critical pill");
+                skills.makeVisible("Ultimate pill");
+                skills.makeVisible("Crafting");
+                skills.makeVisible("Smithing");
+                skills.makeVisible("Alchemy");
+            }
+            case "Adventurer" -> {
+                enableSkills("Newbie");
+                tier = 1;
+                skills.enablePassive("Drop Boost");
+                skills.enablePassive("Speed Boost");
+                skills.enableActive("Bash");
+                skills.enableActive("Prepare");
+            }
+            case "Squire" -> {
+                enableSkills("Newbie");
+                tier = 1;
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Defense Boost");
+                skills.enableActive("Attack");
+                skills.enableActive("Quick Hit");
+            }
+            case "Student" -> {
+                enableSkills("Newbie");
+                tier = 1;
+                skills.enablePassive("Int Boost");
+                skills.enablePassive("Res Boost");
+                skills.enableActive("Magic Arrow");
+            }
+            case "Thief" -> {
+                enableSkills("Adventurer");
+                tier = 2;
+                skills.enablePassive("Dagger Mastery");
+                skills.enablePassive("Dodge");
+                skills.enableActive("Double Attack");
+                skills.enableActive("Steal");
+                skills.enableActive("Hide");
+            }
+            case "Archer" -> {
+                enableSkills("Adventurer");
+                tier = 2;
+                skills.enablePassive("Bow Mastery");
+                skills.enablePassive("Ambush");
+                skills.enableActive("Double Shot");
+                skills.enableActive("Arrow Rain");
+                skills.enableActive("Trap");
+            }
+            case "Warrior" -> {
+                enableSkills("Squire");
+                tier = 2;
+                skills.enablePassive("Sword Mastery");
+                skills.enablePassive("HP Regen");
+                skills.enableActive("Aura Blade");
+                skills.enableActive("Defense Break");
+                skills.enableActive("Sword Rush");
+            }
+            case "Fighter" -> {
+                enableSkills("Squire");
+                tier = 2;
+                skills.enablePassive("Fist Mastery");
+                skills.enablePassive("Counter Strike");
+                skills.enableActive("Aura Shot");
+                skills.enableActive("Dragon Punch");
+                skills.enableActive("Whirling Foot");
+            }
+            case "Mage" -> {
+                enableSkills("Student");
+                tier = 2;
+                skills.enablePassive("Casting Boost");
+                skills.enablePassive("Wand Mastery");
+                skills.enableActive("Elemental Blast");
+                skills.enableActive("Push Blast");
+                skills.enableActive("Magic Missile");
+            }
+            case "Cleric" -> {
+                enableSkills("Student");
+                tier = 2;
+                skills.enablePassive("Book Mastery");
+                skills.enablePassive("Ailment Res");
+                skills.enableActive("Holy Light");
+                skills.enableActive("Heal");
+                skills.enableActive("Bless");
+            }
+            case "Sniper" -> {
+                enableSkills("Archer");
+                enableSkills("Warrior");
+                tier = 3;
+                skills.enablePassive("Concentration");
+                skills.enablePassive("Hit Boost");
+                skills.enableActive("Sharp Shooting");
+                skills.enableActive("Mark Target");
+                skills.enableActive("Charge Up");
+            }
+            case "Hunter" -> {
+                enableSkills("Archer");
+                tier = 3;
+                skills.enablePassive("Multi Arrows");
+                skills.enablePassive("Core Boost");
+                skills.enableActive("Careful Shot");
+                skills.enableActive("Weakening Shot");
+                skills.enableActive("Aimed Shot");
+            }
+            case "Rogue" -> {
+                enableSkills("Thief");
+                enableSkills("Archer");
+                tier = 3;
+                skills.enablePassive("Extra Attack");
+                skills.enablePassive("Dual Wield");
+                skills.enableActive("Throw Sand");
+                skills.enableActive("Binding Shot");
+                skills.enableActive("Back Stab");
+            }
+            case "Assassin" -> {
+                enableSkills("Fighter");
+                enableSkills("Thief");
+                tier = 3;
+                skills.enablePassive("Stealth");
+                skills.enablePassive("Poison Boost");
+                skills.enableActive("Killing Strike");
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Smoke Screen");
+            }
+            case "Knight" -> {
+                enableSkills("Warrior");
+                enableSkills("Fighter");
+                tier = 3;
+                skills.enablePassive("Spear Mastery");
+                skills.enablePassive("HP Boost");
+                skills.enableActive("Empower HP");
+                skills.enableActive("Pierce");
+                skills.enableActive("Rapid Stabs");
+            }
+            case "Pyromancer" -> {
+                enableSkills("Mage");
+                tier = 3;
+                skills.enablePassive("Fire Boost");
+                skills.enablePassive("Fire Resistance");
+                skills.enableActive("Fire Pillar");
+                skills.enableActive("Fire Ball");
+                skills.enableActive("Explosion");
+            }
+            case "Geomancer" -> {
+                enableSkills("Mage");
+                tier = 3;
+                skills.enablePassive("Earth Boost");
+                skills.enablePassive("Earth Resistance");
+                skills.enableActive("Rock Shot");
+                skills.enableActive("Stone Barrier");
+                skills.enableActive("Earth Quake");
+            }
+            case "Priest" -> {
+                enableSkills("Cleric");
+                tier = 3;
+                skills.enablePassive("Light Boost");
+                skills.enablePassive("Bless Mastery");
+                skills.enableActive("Holy Ray");
+                skills.enableActive("Dispel");
+                skills.enableActive("Prayer");
+            }
+            case "Scholar" -> {
+                enableSkills("Adventurer");
+                enableSkills("Mage");
+                tier = 3;
+                skills.enableActive("Analyze");
+                skills.enableActive("Taking Notes");
+                skills.enablePassive("Safe Distance");
+                skills.enablePassive("Speedy Analyze");
+                skills.enablePassive("Smart Analyze");
+            }
+            case "Alchemist" -> {
+                enableSkills("Adventurer");
+                tier = 3;
+                skills.enablePassive("Potion Inventor");
+                skills.enablePassive("Potion Slots");
+                skills.enablePassive("Pill Inventor");
+                skills.enableActive("Throw Potion");
+                skills.makeUnavailable("Throw Potion");
+                skills.enableActive("Throw Burning");
+                skills.enableActive("Throw Freezing");
+                skills.enableActive("Throw Geo");
+                skills.enableActive("Throw Acid");
+                skills.enableActive("Throw Black");
+                skills.enableActive("Throw Luminary");
+                skills.makeInvisible("Throw Burning");
+                skills.makeInvisible("Throw Freezing");
+                skills.makeInvisible("Throw Geo");
+                skills.makeInvisible("Throw Acid");
+                skills.makeInvisible("Throw Black");
+                skills.makeInvisible("Throw Luminary");
+                skills.enableActive("Alchemic Reaction");
+            }
+            case "Onion Knight" -> {
+                enableSkills("Newbie");
+                tier = 3;
+                skills.enablePassive("Attack Boost");
+                skills.enablePassive("Weapon Mastery");
+                skills.enablePassive("Tsury Finke");
+                skills.enablePassive("Water Boost");
+                skills.enableActive("Onion Slash");
+                skills.enableActive("Onion Wave");
+            }
+            case "Ninja" -> {
+                enableSkills("Assassin");
+                enableSkills("Rogue");
+                tier = 6;
+            }
+            case "Holy Archer" -> {
+                enableSkills("Priest");
+                enableSkills("Sniper");
+                tier = 6;
+                skills.enableActive("Kyrie Eleyson");
+                skills.enableActive("Celestial Arrow");
+                skills.enableActive("Celestial Ray");
+                skills.enablePassive("True Sight");
+                skills.enablePassive("Divine Boost");
+            }
+        }
     }
 }

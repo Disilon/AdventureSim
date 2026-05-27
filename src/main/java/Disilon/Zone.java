@@ -107,9 +107,12 @@ public enum Zone {
                     e.reroll(actual_lvl, min_lvl, hard_hp, hard_stats);
                     if (this == Boss) {
                         int slvl = (int) Math.ceil(actual_lvl / 20.0);
-                        slvl = Math.min(slvl, p.max_skill_lvl);
+                        if (game_version < 1678) {
+                            slvl = Math.min(slvl, p.max_skill_lvl);
+                        }
                         e.active_skills.get("Fire Slash").setSkill(slvl, SkillMod.Damage);
-                        e.active_skills.get("Dark Blast").setSkill(slvl, SkillMod.Damage);;
+                        e.active_skills.get("Dark Blast").setSkill(slvl, SkillMod.Damage);
+                        e.active_skills.get("Dark Revenge").setSkill(slvl, SkillMod.Pow);
                     }
                     if (strength > 1) {
                         individual_str_add -= 0.02;
@@ -204,7 +207,7 @@ public enum Zone {
             return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.buff_count() > 0).findFirst().get();
         }
         if (skill.equals("Back Stab")) {
-            return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.smoked).findFirst().orElse(getRandomEnemy());
+            return Arrays.stream(enemies).filter(e -> e.active).filter(e -> e.smoked > 0).findFirst().orElse(getRandomEnemy());
         }
         return getRandomEnemy();
     }

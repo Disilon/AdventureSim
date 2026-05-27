@@ -145,7 +145,11 @@ public class Enemy extends Actor {
                 base_speed = 3500 / base_lvl;
                 base_wind = 100 / base_lvl;
                 base_earth_res = 0.5;
-                base_wind_res = -0.5;
+                if (game_version >= 1678) {
+                    base_wind_res = -0.4;
+                } else {
+                    base_wind_res = -0.5;
+                }
                 skills.enableActive("Gust");
                 skills.enableActive("Air Compression");
                 counter_dodge = true;
@@ -505,7 +509,7 @@ public class Enemy extends Actor {
             }
             case "Dummy" -> {
                 base_lvl = 100;
-                base_hp_max = 400000 / base_lvl;
+                base_hp_max = 10000000 / base_lvl;
                 base_exp = 100000 / base_lvl;
                 base_atk = 600 / base_lvl;
                 base_def = 600 / base_lvl;
@@ -527,8 +531,8 @@ public class Enemy extends Actor {
                 base_speed = 7500 / base_lvl;
                 base_fire = 3750 / base_lvl;
                 base_dark = 3750 / base_lvl;
-                skills.enableActive("Fire Slash", 24, SkillMod.Damage);
-                skills.enableActive("Dark Blast", 24, SkillMod.Damage);
+                skills.enableActive("Fire Slash");
+                skills.enableActive("Dark Blast");
             }
         }
         active = true;
@@ -598,7 +602,7 @@ public class Enemy extends Actor {
                 return roll < 50 ? active_skills.get("Dragon Punch") : active_skills.get("Aura Shot");
             }
             case "Tree Golem" -> {
-                return (!hasBuff("Stone Barrier") && roll < 30) ? active_skills.get("Stone Barrier") :
+                return (!hasBuff("Stone Barrier") && roll < 50) ? active_skills.get("Stone Barrier") :
                         active_skills.get("Earth Blast");
             }
             case "Fairy" -> {
@@ -610,6 +614,9 @@ public class Enemy extends Actor {
                 } else {
                     return roll < 30 ? active_skills.get("Holy Power Slash") : active_skills.get("Holy Slash");
                 }
+            }
+            case "Empress" -> {
+                return roll < 70 ? active_skills.get("Electric Beam") : active_skills.get("Magic Blast");
             }
             case "Dummy" -> {
                 return active_skills.get("Cupid Hard Love Shot");
@@ -625,7 +632,7 @@ public class Enemy extends Actor {
                 }
             }
             case "Dark Reaper" -> {
-                if (this.smoked) return active_skills.get("Dark Revenge");
+                if (this.smoked > 0) return active_skills.get("Dark Revenge");
                 return getRandomSkill();
             }
             default -> {

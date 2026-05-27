@@ -94,13 +94,21 @@ public class Setup implements Serializable {
     boolean extra_atk_overkill = true;
     boolean extra_atk_backstab_mult = true;
     boolean crit_overkill_reduced = false;
+    boolean crafting_progress = true;
+    boolean smithing_progress = true;
+    boolean alchemy_progress = true;
+    boolean alchemy_consumption_based = true;
 
     public Setup() {
         this.passives_lvls = new HashMap<>();
         this.actives_lvls = new HashMap<>();
         Player player = new Player();
         for (String s : player.passives.keySet()) {
-            passives_lvls.put(s, 0.0);
+            if (s.equals("Crafting") || s.equals("Smithing") || s.equals("Alchemy")) {
+                passives_lvls.put(s, 30.0);
+            } else {
+                passives_lvls.put(s, 0.0);
+            }
         }
         for (String s : player.active_skills.keySet()) {
             actives_lvls.put(s, 0.0);
@@ -171,8 +179,6 @@ public class Setup implements Serializable {
         this.zone = Zone.z9;
         this.gameversion = String.valueOf(Main.availableVersions.getLast());
         this.milestone = 252.5;
-        this.crafting_lvl = 30;
-        this.alchemy_lvl = 30;
         this.alchemist_lvl = 0;
         this.setsetup = true;
         this.leveling = false;
@@ -898,5 +904,37 @@ public class Setup implements Serializable {
 
     public void setCores(HashMap<Integer, Core> cores) {
         this.cores = cores;
+    }
+
+    public boolean isCrafting_progress() {
+        return crafting_progress;
+    }
+
+    public void setCrafting_progress(boolean crafting_progress) {
+        this.crafting_progress = crafting_progress;
+    }
+
+    public boolean isSmithing_progress() {
+        return smithing_progress;
+    }
+
+    public void setSmithing_progress(boolean smithing_progress) {
+        this.smithing_progress = smithing_progress;
+    }
+
+    public boolean isAlchemy_progress() {
+        return alchemy_progress;
+    }
+
+    public void setAlchemy_progress(boolean alchemy_progress) {
+        this.alchemy_progress = alchemy_progress;
+    }
+
+    public boolean isAlchemy_consumption_based() {
+        return alchemy_consumption_based;
+    }
+
+    public void setAlchemy_consumption_based(boolean alchemy_consumption_based) {
+        this.alchemy_consumption_based = alchemy_consumption_based;
     }
 }

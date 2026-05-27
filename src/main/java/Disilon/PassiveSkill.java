@@ -127,6 +127,10 @@ public class PassiveSkill {
         return enabled ? bonus : 0;
     }
 
+    public double getBonus(String weapon_type) {
+        return enabled && weapon_type.equals(owner.weapon_type) ? bonus : 0;
+    }
+
     public double getBonus2() {
         return enabled ? bonus2 : 0;
     }
@@ -140,6 +144,41 @@ public class PassiveSkill {
                 exp -= need;
                 setLvl(lvl);
             }
+        }
+    }
+
+    public void gainCraftingExp(double time) {
+        Player p = (Player) owner;
+        int crafting_lvl = owner.passives.get("Crafting").lvl;
+        int smithing_lvl = owner.passives.get("Smithing").lvl;
+        int alchemy_lvl = owner.passives.get("Alchemy").lvl;
+        double s_mult = 1;
+        double e_mult = 1;
+        if (name.equals("Crafting")) {
+            s_mult = 1 + 0.01 * owner.research_lvls.getOrDefault("Crafting spd", 0.0).intValue();
+            s_mult *= 1 + 0.01 * crafting_lvl;
+            e_mult = 1 + 0.01 * owner.research_lvls.getOrDefault("Crafting exp", 0.0).intValue();
+        }
+        if (name.equals("Smithing")) {
+            s_mult = 1 + 0.01 * owner.research_lvls.getOrDefault("Smithing spd", 0.0).intValue();
+            s_mult *= 1 + 0.01 * smithing_lvl;
+            e_mult = 1 + 0.01 * owner.research_lvls.getOrDefault("Smithing exp", 0.0).intValue();
+        }
+        if (name.equals("Alchemy")) {
+            s_mult = 1 + 0.01 * owner.research_lvls.getOrDefault("Alchemy spd", 0.0).intValue();
+            s_mult *= 1 + 0.01 * alchemy_lvl;
+
+            if (p.alchemist_lvl >= 90) {
+                s_mult *= 1 + 0.0000125 * Math.pow(p.alchemist_lvl, 2);
+            }
+            e_mult = 1 + 0.01 * owner.research_lvls.getOrDefault("Alchemy exp", 0.0).intValue();
+        }
+        exp += time * 0.25 * p.getSidecraftingSpeed() * s_mult * e_mult;
+        int need = need_for_lvl(lvl);
+        if (exp >= need && lvl < 100) {
+            lvl++;
+            exp -= need;
+            setLvl(lvl);
         }
     }
 
@@ -158,6 +197,9 @@ public class PassiveSkill {
     public int need_for_lvl(int lvl) {
         if (name.equals("Tsury Finke")) {
             return 10000 * (1 + lvl);
+        }
+        if (name.equals("Crafting") || name.equals("Smithing") || name.equals("Alchemy")) {
+            return (int) (10 + 80 * Math.pow(lvl, 2));
         }
         if (name.endsWith(" pill")) {
             return 100;

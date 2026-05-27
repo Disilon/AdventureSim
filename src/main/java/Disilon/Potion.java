@@ -5,6 +5,7 @@ import java.util.Vector;
 import static Disilon.Main.df2;
 
 public class Potion {
+    Player owner;
     String type;
     byte type_id;
     int tier;
@@ -13,7 +14,8 @@ public class Potion {
     int used;
     int count;
 
-    public Potion(String type, int threshold) {
+    public Potion(Player player, String type, int threshold) {
+        this.owner = player;
         this.type = type.toLowerCase().substring(0, 2);
         switch (this.type) {
             case "hp" -> type_id = 1;
@@ -122,36 +124,36 @@ public class Potion {
         };
     }
 
-    public double craft_time(int crafting, int alchemy, int alchemist_lvl, int research_craft, int research_alch) {
-        double craft_spd = (1 + 0.01 * crafting) * (1 + 0.01 * research_craft);
-        double alch_spd = (1 + 0.01 * alchemy) * (1 + 0.01 * research_alch);
-        if (alchemist_lvl >= 90) {
-            alch_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
-        }
+    public double base_craft_time() {
         return switch (tier) {
-            case 1 -> 2 / craft_spd + 3 / alch_spd;
-            case 2 -> 4 / craft_spd + 6 / alch_spd;
-            case 3 -> 6 / craft_spd + 9 / alch_spd;
-            case 4 -> 8 / craft_spd + 12 / alch_spd;
-            case 5 -> 10 / craft_spd + 15 / alch_spd;
-            case 11 -> 2 / craft_spd + 3 / alch_spd * 1.5;
-            case 12 -> 4 / craft_spd + 6 / alch_spd * 1.5;
-            case 13 -> 6 / craft_spd + 9 / alch_spd * 1.5;
-            case 14 -> 8 / craft_spd + 12 / alch_spd * 1.5;
-            case 15 -> 10 / craft_spd + 15 / alch_spd * 1.5;
+            case 1 -> 2;
+            case 2 -> 4;
+            case 3 -> 6;
+            case 4 -> 8;
+            case 5 -> 10;
+            case 11 -> 2;
+            case 12 -> 4;
+            case 13 -> 6;
+            case 14 -> 8;
+            case 15 -> 10;
             default -> 0;
         };
     }
 
-    public double calc_time(int crafting, int alchemy, int alchemist_lvl, int research_craft, int research_alch) {
-        int need_to_craft = 0;
-        double time = 0;
-        if (count < 0) {
-            need_to_craft = count * -1;
-            time = craft_time(crafting, alchemy, alchemist_lvl, research_craft, research_alch) * need_to_craft;
-            count = 0;
-        }
-        return time;
+    public double base_alch_time() {
+        return switch (tier) {
+            case 1 -> 3;
+            case 2 -> 6;
+            case 3 -> 9;
+            case 4 -> 12;
+            case 5 -> 15;
+            case 11 -> 4.5;
+            case 12 -> 9;
+            case 13 -> 13.5;
+            case 14 -> 18;
+            case 15 -> 22.5;
+            default -> 0;
+        };
     }
 
     public static Vector<String> getAvailablePotions() {

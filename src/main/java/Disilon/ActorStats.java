@@ -72,6 +72,7 @@ public class ActorStats {
     public double gear_analyze;
     public double gear_barrier;
     public double gear_potion;
+    public String weapon_type;
 
     public double set_hit = 1;
     public double set_res = 1;
@@ -91,6 +92,15 @@ public class ActorStats {
     public double set_squirrel_drop = 1;
     public double set_squirrel_rate = 100;
 
+    public double core_atkdam = 1;
+    public double core_intdam = 1;
+    public double core_poison = 1;
+    public double core_critdmg = 1;
+    public double core_manacost = 1;
+    public double core_item_drop = 1;
+    public double core_cdr_add = 0;
+    public double core_exp = 1;
+
     public double hp_mult = 1;
     public double mp_mult = 1;
     public double atk_mult = 1;
@@ -100,6 +110,9 @@ public class ActorStats {
     public double hit_mult = 1;
     public double speed_mult = 1;
     public double dodge_mult = 1;
+    public double dmg_taken_mult = 1;
+    public double wind_dmg_mult = 1;
+    public double holy_dmg_mult = 1;
     public double dodge = 0;
 
     public double water_res;
@@ -128,7 +141,7 @@ public class ActorStats {
     public double mana_regen_mult = 1;
 
     public double hide_bonus = 0;
-    public boolean smoked = false;
+    public double smoked = 0;
     public double bound = 0;
     public boolean ambushing = false;
     public double charge;
@@ -159,6 +172,7 @@ public class ActorStats {
     public double berserk_dmg = 0;
     public double vampiric = 0;
     public boolean surv_instinct = false;
+    public double kyrie = 0;
     public double cl_exp;
     public double ml_exp;
     public boolean lvling = false;
@@ -200,15 +214,14 @@ public class ActorStats {
 
     int flask_used = 0;
     int potions_thrown = 0;
-    boolean wrong_weapon = false;
+    int total_flask_used = 0;
+    int total_potions_thrown = 0;
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;
     public ActiveSkill skill3;
     public ActiveSkill skill4;
-    public Potion potion1;
-    public Potion potion2;
-    public Potion potion3;
+    public Potion[] potions = new Potion[3];
     public Pill pill;
 
     public ArrayList<Debuff> debuffs = new ArrayList<Debuff>();

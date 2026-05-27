@@ -66,7 +66,7 @@ public class ActiveSkill {
     public boolean available = true;
     public boolean visible;
     public boolean triggers_counter = true;
-    public boolean weapon_required = true;
+    public String weapon_required;
     public boolean attack;
     public double enrage_mult = 1;
 
@@ -107,6 +107,29 @@ public class ActiveSkill {
         this.element = element;
         this.aoe = aoe;
         this.heal = heal;
+        this.attack = max > 0;
+        setSkill(lvl, SkillMod.Enemy);
+    }
+
+    public ActiveSkill(ActorStats owner, String name, int hits, double min, double max, double hit, double mp,
+                       double cast_mult, double delay_mult,
+                       Scaling scaling, Element element, boolean aoe, boolean heal, String weapon_required) {
+        this.owner = owner;
+        this.name = name;
+        this.base_min = min;
+        this.base_max = max;
+        this.base_hit = hit;
+        this.base_mp = mp;
+        this.base_cast = cast_mult;
+        this.base_delay = delay_mult;
+        this.lvl = 0;
+        this.hits = hits;
+        this.mp_mult = 1;
+        this.scaling = scaling;
+        this.element = element;
+        this.aoe = aoe;
+        this.heal = heal;
+        this.weapon_required = weapon_required;
         this.attack = max > 0;
         setSkill(lvl, SkillMod.Enemy);
     }
@@ -153,12 +176,43 @@ public class ActiveSkill {
                 } else {
                     base_hit = 2;
                 }
-                if (game_version >= 1700) {
+                if (game_version >= 1679) {
                     base_min = 225 * 0.8;
                     base_max = 275 * 0.8;
                 } else {
                     base_min = 225;
                     base_max = 275;
+                }
+            }
+            case "Sharp Shooting" -> {
+                if (game_version >= 1679) {
+                    base_min = 250 * 0.9;
+                    base_max = 250 * 1.1;
+                    base_delay = 2;
+//                    base_mp = 65;
+                } else {
+                    base_min = 207;
+                    base_max = 253;
+                    base_delay = 3;
+//                    base_mp = 80;
+                }
+            }
+            case "Mark Target" -> {
+                if (game_version >= 1679) {
+                    base_debuff_dmg = 0.25;
+                } else {
+                    base_debuff_dmg = 0.2;
+                }
+            }
+            case "Empower HP" -> {
+                if (game_version >= 1679) {
+                    base_buff_duration = 4;
+                    base_cast = 1;
+                    base_delay = 1;
+                } else {
+                    base_buff_duration = 7;
+                    base_cast = 2;
+                    base_delay = 2;
                 }
             }
             case "Killing Strike" -> {
@@ -223,6 +277,7 @@ public class ActiveSkill {
 
     public void startCastPlayer(Actor attacker, boolean offline, double time, double total_time) {
         double speed_mult = Math.clamp((attacker.zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
+//        speed_mult = 0.75;
         attacker.speed_mult_sum += speed_mult;
         attacker.speed_mult_count += 1;
         if (name.equals("Analyze")) {
@@ -349,6 +404,10 @@ public class ActiveSkill {
         }
         if (buff_name != null) {
             applyBuff(actor);
+        }
+        if (name.equals("Charge Up")) {
+            actor.remove_buff("Kyrie Eleyson");
+            actor.check_buffs();
         }
         actor.tick_debuffs();
         pay_manacost(actor);
@@ -580,7 +639,7 @@ public class ActiveSkill {
         }
         Zone zone = attacker.zone;
         if (log.contains("skill_attack")) {
-            System.out.println(attacker.name + " used " + name + " at " + df2.format(time));
+            System.out.println(attacker.name + " used " + name + " at " + df2.format(time) + "s");
         }
         if (zone != null) {
             for (Enemy enemy : zone.enemies) {
@@ -607,6 +666,8 @@ public class ActiveSkill {
             max_power = (tp.max * base_max / 100) * attacker.getPotion_effect();
             attacker.flask_used += 1;
             attacker.potions_thrown += 1;
+            attacker.total_flask_used += 1;
+            attacker.total_potions_thrown += 1;
         }
         if (name.equals("Alchemic Reaction")) {
             ActiveSkill ls = owner.last_skill;
@@ -618,6 +679,7 @@ public class ActiveSkill {
                 min_power = (min * ls.base_min / 100) * attacker.getPotion_effect();
                 max_power = (max * ls.base_max / 100) * attacker.getPotion_effect();
                 attacker.flask_used -= 1;
+                attacker.total_flask_used -= 1;
             }
         }
         double gain = attacker.getHp_max() * attacker.hp_regen;
@@ -627,19 +689,25 @@ public class ActiveSkill {
             attacker.setHp(attacker.hp + gain);
         }
         if (!this.aoe && defender.hide_bonus > 0) {
-            //System.out.println("The target is hidden!");
-            return 0;
+            if (game_version < 1701 || Math.random() < 0.5) {
+                if (log.contains("skill_attack")) {
+                    System.out.println(attacker.name + " missed(hide) with " + this.name +
+                            " at " + defender.name + " at " + df2.format(time) + "s");
+                }
+                return 0;
+            }
         }
         double total = 0;
-        double hit_chance = (attacker.smoked ? 0.5 : 1) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
+        double true_sight = attacker.passives.get("True Sight").getBonus();
+        double hit_chance = (1 - attacker.smoked) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
         if (game_version >= 1627 && attacker.set_squirrel_rate == 1) hit_chance /= 1.25;
         if (game_version >= 1670 && defender.name.equals("Squirrel Mage") && name.equals("Back Stab")) {
             hit_chance *= 2;
         }
-        if (game_version >= 1674 && defender.name.equals("Squirrel Mage") && name.equals("Back Stab")) {
+        if (game_version >= 1679 && defender.name.equals("Squirrel Mage") && name.equals("Back Stab")) {
             dmg_mult3 *= 1.25;
         }
-        if (defender.hide_bonus > 0 && name.equals("Blood Slash")) {
+        if (defender.hide_bonus > 0 && name.equals("Bloody Slash")) {
             dmg_mult3 *= 2;
         }
         hit_chance = max(0.05, hit_chance / defender.getDodge_mult());
@@ -648,20 +716,19 @@ public class ActiveSkill {
             return 0;
         }
         if (this.hit >= 99) hit_chance = 1;
-        hit_chance_sum += hit_chance;
-        if (name.equals("Back Stab") && !(defender.smoked || defender.bound > 0)) {
+        if (name.equals("Back Stab") && !(defender.smoked > 0 || defender.bound > 0)) {
             hit_chance *= 0.5;
         }
+        hit_chance_sum += hit_chance;
         if (defender.zone != null) {
             defender.zone.stats.incrementHit(attacker.name, name, hit_chance);
             if (!attacker.debuffs.isEmpty()) defender.zone.stats.incrementUsedDebuffed(attacker.name, name, 1);
         }
         if (!attacker.debuffs.isEmpty()) used_debuffed++;
-        if ((hit_chance >= 1) || (Math.random() < hit_chance)) {
+        if ((hit_chance >= 1) || (Math.random() < hit_chance) || (Math.random() < true_sight)) {
             attacker.current_skill_hit = true;
-            hits_total++;
             boolean stun = false;
-            if (debuff_to_apply != null && !attacker.wrong_weapon) {
+            if (debuff_to_apply != null && (!name.equals("Binding Shot") || weapon_required == null || weapon_required.equals(attacker.weapon_type))) {
                 stun = applyDebuff(debuff_to_apply, debuff_to_apply_duration, debuff_to_apply_effect, attacker,
                         defender);
             }
@@ -680,7 +747,7 @@ public class ActiveSkill {
                 dmg_mult *= 1.0 + attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
-                if (name.equals("Back Stab") && (defender.smoked || defender.bound > 0)) {
+                if (name.equals("Back Stab") && (defender.smoked > 0 || defender.bound > 0)) {
                     dmg_mult1 *= 2;
                 }
                 enemy_resist = switch (element_to_apply) {
@@ -697,6 +764,7 @@ public class ActiveSkill {
                     }
                     case Element.light -> {
                         atk = attacker.getLight();
+                        dmg_mult *= attacker.holy_dmg_mult;
                         yield defender.getLight_res();
                     }
                     case Element.water -> {
@@ -709,6 +777,7 @@ public class ActiveSkill {
                     case Element.wind -> {
                         atk = attacker.getWind();
                         dmg_mult *= attacker.set_wind;
+                        dmg_mult *= attacker.wind_dmg_mult;
                         dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getWind_res();
                     }
@@ -742,30 +811,36 @@ public class ActiveSkill {
                     case atk -> {
                         atk += attacker.getAtk();
                         dmg_mult *= attacker.set_physdmg;
+                        dmg_mult *= attacker.core_atkdam;
                         yield defender.getDef();
                     }
                     case atkint -> {
                         atk += attacker.getAtk() / 2 + attacker.getIntel() / 2;
                         dmg_mult *= attacker.set_magicdmg;
+                        dmg_mult *= attacker.core_intdam;
                         yield defender.getDef() / 2 + defender.getResist() / 2;
                     }
                     case atkhit -> {
                         atk += attacker.getAtk() / 2 + attacker.getHit() / 2;
                         dmg_mult *= attacker.set_physdmg;
+                        dmg_mult *= attacker.core_atkdam;
                         yield defender.getDef();
                     }
                     case intel -> {
                         atk += attacker.getIntel();
                         dmg_mult *= attacker.set_magicdmg;
+                        dmg_mult *= attacker.core_intdam;
                         yield defender.getResist();
                     }
                     case resint -> {
                         atk += attacker.getResist() / 2 + attacker.getIntel() / 2;
                         dmg_mult *= attacker.set_magicdmg;
+                        dmg_mult *= attacker.core_intdam;
                         yield defender.getResist();
                     }
                     case res -> {
                         atk += attacker.getResist();
+//                        dmg_mult *= attacker.core_intdam;
                         yield defender.getResist();
                     }
                 };
@@ -775,9 +850,6 @@ public class ActiveSkill {
                 dmg_mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
                 dmg_mult *= (1 - attacker.set_training);
                 atk *= enrage_mult;
-                if (attacker.wrong_weapon) {
-                    atk *= 0.7;
-                }
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
                 if (this.name.equals("Dispel")) {
                     calc_hits = defender.buff_count();
@@ -789,12 +861,13 @@ public class ActiveSkill {
                 }
                 int extra = (attacker.passives.get("Extra Attack").enabled && !name.equals("Extra Attack")) ? 1 : 0;
                 for (int i = 0; i < calc_hits; i++) {
-                    double atk_c = applyCrit(attacker, defender, atk);
+                    hits_total++;
+                    double atk_c = applyCrit(attacker, defender, atk, false);
                     if (attacker.gear_stun > 0 && game_version < 1566 && Math.random() < attacker.gear_stun) {
                         defender.stun_time += 2.0;
                     }
                     double dmg = max_power - Math.random() * (max_power - min_power) * (1 - attacker.dmg_range);
-                    if (attacker.zone == null && weapon_required) {
+                    if (weapon_required != null && !weapon_required.equals(attacker.weapon_type)) {
                         dmg *= 0.7;
                     }
                     dmg =
@@ -806,7 +879,7 @@ public class ActiveSkill {
                     dmg = max(0, dmg - defender.getBarrier());
                     if (log.contains("skill_attack")) {
                         System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name +
-                                " to " + defender.name + " at " + df2.format(time) + " chance " + df2.format(hit_chance*100) + "%");
+                                " to " + defender.name + " at " + df2.format(time) + "s hit chance " + df2.format(hit_chance*100) + "%");
                     }
                     if (name.equals("Careful Shot")) {
                         dmg = Math.min(dmg, defender.hp);
@@ -832,10 +905,13 @@ public class ActiveSkill {
                     double ea_mult = dmg_mult * dmg_mult2 * dmg_mult3 * Math.pow(1.1,calc_hits);
                     if (Main.balance2) ea_mult *= dmg_mult1;
                     if (game_version >= 1674) {
-                        total += extra_attack(attacker, defender, ea_mult);
+                        total += extra_attack(attacker, defender, ea_mult * (1 - enemy_resist));
                     } else {
                         total += extra_attack_bugged(attacker, defender, ea_mult * (1 - enemy_resist));
                     }
+                }
+                if (game_version >= 1678 && attacker.last_crit && attacker.no_overkill_crit > Math.random()) {
+                    total = Math.min(total, defender.hp);
                 }
             }
         } else {
@@ -844,13 +920,13 @@ public class ActiveSkill {
             }
             if (log.contains("skill_attack")) {
                 System.out.println(attacker.name + " missed with " + this.name +
-                        " at " + defender.name + " at " + df2.format(time));
+                        " at " + defender.name + " at " + df2.format(time) + "s");
             }
         }
         if (total > 0 && !name.equals("Mark Target")) defender.remove_mark();
         if (total == 0 && log.contains("skill_attack")) {
             System.out.println(attacker.name + " used " + this.name +
-                    " at " + defender.name + " at " + df2.format(time));
+                    " at " + defender.name + " at " + df2.format(time) + "s");
         }
         if (name.equals("Push Blast")) {
             pushCast(attacker, defender, 0.2);
@@ -863,7 +939,7 @@ public class ActiveSkill {
         }
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
         attacker.last_skill = this;
-        if (owner.name.equals("Dark Reaper")) {
+        if (owner.name.equals("Dark Reaper") && !name.equals("Dark Revenge")) {
             enrage_mult += 0.01;
         }
         return total;
@@ -908,9 +984,9 @@ public class ActiveSkill {
         double def = defender.getDef();
         double dmg = attacker.passives.get("Extra Attack").getBonus() * 100;
         double atk = attacker.getAtk() + attacker.getWater();
-        atk = applyCrit(attacker, defender, atk);
+        atk = applyCrit(attacker, defender, atk, true);
         dmg = (dmg * atk / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * dmg_mult;
-        dmg = dmg * (1 - defender.getWater_res());
+//        dmg = dmg * (1 - defender.getWater_res());
         dmg = max(1, dmg);
         extra_dmg_sum += dmg;
         dmg = max(0, dmg - defender.getBarrier());
@@ -927,7 +1003,7 @@ public class ActiveSkill {
     public void counter_attack(Actor attacker, Actor defender, boolean counter_dodge) {
         double atk = defender.getAtk();
         double def = attacker.getDef();
-        atk = applyCrit(defender, attacker, atk);
+        atk = applyCrit(defender, attacker, atk, false);
         double enemy_mult = 2;
         double dmg = (atk * 100 / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1, 1);
         if (game_version >= 1568) {
@@ -965,6 +1041,9 @@ public class ActiveSkill {
         if (buff_name.equals("Bless")) {
             duration += (int) attacker.bless_duration;
             bonus *= attacker.bless_boost;
+        }
+        if (buff_name.equals("Charge Up") && attacker.hasBuff("Kyrie Eleyson")) {
+            bonus *= 1 + attacker.kyrie;
         }
         attacker.applyBuff(buff_name, duration, bonus);
     }
@@ -1054,7 +1133,7 @@ public class ActiveSkill {
                 duration += 1;
             }
             double dmg = switch (debuff) {
-                case "Poison" -> calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() + attacker.getAtk()) * attacker.poison_mult;
+                case "Poison" -> calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() + attacker.getAtk()) * attacker.poison_mult * attacker.core_poison;
                 case "Burn" ->
                         calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() / 10 + attacker.getFire() / 5) *
                                 (1 - defender.fire_res) * (attacker.burn_mult + attacker.gear_burn);
@@ -1069,13 +1148,13 @@ public class ActiveSkill {
                 String str = debuff + " was applied to " + name + " duration = " + duration;
                 if (dmg > 0) str += " dmg = " + (int) dmg;
                 if (effect > 0) str += " effect = " + df2.format(effect);
-                System.out.println(str + " chance = " + df2.format(hit_chance * 100));
+                System.out.println(str + " chance = " + df2.format(hit_chance * 100) + "%");
             }
 
         } else {
             if (log.contains("debuff_applied")) {
                 String str = debuff + " was resisted by " + name;
-                System.out.println(str + " chance = " + df2.format(hit_chance * 100));
+                System.out.println(str + " chance = " + df2.format(hit_chance * 100) + "%");
             }
         }
         return stun;
@@ -1102,15 +1181,15 @@ public class ActiveSkill {
     }
 
     public double average_dmg() {
-        return hits_total > 0 ? dmg_sum / hits_total : 0;
+        return hits_total > 0 ? dmg_sum / hits_total * hits : 0;
     }
 
     public double average_extra_dmg() {
-        return hits_total > 0 ? extra_dmg_sum / hits_total : 0;
+        return hits_total > 0 ? extra_dmg_sum / hits_total * hits : 0;
     }
 
     public double average_debuff_chance() {
-        return hits_total > 0 ? debuff_chance_sum / hits_total : 0;
+        return hits_total > 0 ? debuff_chance_sum / hits_total * hits : 0;
     }
 
     public void clear_recorded_data() {
@@ -1167,14 +1246,18 @@ public class ActiveSkill {
         return (!aoe && !random_targets);
     }
 
-    private double applyCrit(Actor attacker, Actor defender, double atk) {
+    private double applyCrit(Actor attacker, Actor defender, double atk, boolean extra) {
         double crit_chance = getCritChance(attacker, defender, true);
         double crit_dmg = attacker.getCrit_damage();
         if (crit_chance > 0 && Math.random() < crit_chance) {
             atk *= crit_dmg;
             attacker.last_crit = true;
             if (log.contains("skill_attack")) {
-                System.out.println(attacker.name + " dealt crit with " + this.name);
+                if (extra) {
+                    System.out.println(attacker.name + " dealt crit with " + this.name + " extra attack");
+                } else {
+                    System.out.println(attacker.name + " dealt crit with " + this.name);
+                }
             }
         } else {
             attacker.last_crit = false;

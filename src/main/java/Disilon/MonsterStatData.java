@@ -202,7 +202,7 @@ public class MonsterStatData {
         }
         double bestiary = 1 + 0.01 * p.getBestiaryMedals(25000);
         bestiary *= 1 + p.getBestiaryBonus(name);
-        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult + p.core_cdr_add
                 + research_bonus * r_mult) * mult * p.hard_reward * bestiary;
         drop_rate *= p.core_mult_mult;
         if (!cores.containsKey(name)) {
@@ -236,7 +236,7 @@ public class MonsterStatData {
 
     public void addCoreRandom(String name, int grade, Player p) {
         int research = p.research_lvls.get("Core quality").intValue();
-        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult + p.core_cdr_add
                 + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
         drop_rate *= p.core_mult_mult;
         double fractional = research / 100.0 - (double) (research / 100);
@@ -346,7 +346,7 @@ public class MonsterStatData {
                 }
                 double bestiary = 1 + 0.01 * p.getBestiaryMedals(25000);
                 bestiary *= 1 + p.getBestiaryBonus(name);
-                double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult
+                double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult + p.core_cdr_add
                         + research_bonus * r_mult) * mult * p.hard_reward * bestiary;
                 drop_rate *= p.core_mult_mult;
                 double total_count = 0;
