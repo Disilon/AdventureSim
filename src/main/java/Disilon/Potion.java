@@ -36,7 +36,7 @@ public class Potion {
             switch (type_id) {
                 case 1 -> {
                     if (player.hp < player.getHp_max() * threshold / 100) {
-                        player.setHp(player.hp + hp_gain() * player.getPotion_effect());
+                        player.setHp(player.hp + hp_gain() * player.getPotion_effect(true));
                         cooldown = hp_cd();
                         used++;
                         count--;
@@ -44,7 +44,7 @@ public class Potion {
                 }
                 case 2 -> {
                     if (player.mp < player.getMp_max_no_buffs() * threshold / 100) {
-                        player.setMp(player.mp + mp_gain() * player.getPotion_effect());
+                        player.setMp(player.mp + mp_gain() * player.getPotion_effect(false));
                         cooldown = mp_cd();
                         used++;
                         count--;

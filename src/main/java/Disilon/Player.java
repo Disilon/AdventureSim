@@ -19,7 +19,7 @@ import static Disilon.UserForm.maxResearchLvl;
 public class Player extends Actor {
     public static String[] availableClasses = {"Newbie", "Squire", "Adventurer", "Student",
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
-            "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer",
+            "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer", "Monk",
             "Onion Knight", "Scholar", "Alchemist",
             "Holy Archer",  "Ninja"};
 
@@ -40,6 +40,7 @@ public class Player extends Actor {
     double potion_sidecraft_time = 0;
     double pill_sidecraft_time = 0;
     double combat_potion_sidecraft_time = 0;
+    int[] skill_setting = {1,1,1,1};
     LinkedHashMap<String, Double> research_weight_sorted = new LinkedHashMap<>(32);
 
     public Player() {
@@ -110,18 +111,22 @@ public class Player extends Actor {
         this.skill1 = getSkill(setup.skill1, setup.skill1_s);
         if (this.skill1 != null) {
             this.skill1.setSkill(setup.skill1_mod);
+            skill_setting[0] = setup.skill1_s;
         }
         this.skill2 = getSkill(setup.skill2, setup.skill2_s);
         if (this.skill2 != null) {
             this.skill2.setSkill(setup.skill2_mod);
+            skill_setting[1] = setup.skill2_s;
         }
         this.skill3 = getSkill(setup.skill3, setup.skill3_s);
         if (this.skill3 != null) {
             this.skill3.setSkill(setup.skill3_mod);
+            skill_setting[2] = setup.skill3_s;
         }
         this.skill4 = getSkill(setup.skill4, setup.skill4_s);
         if (this.skill4 != null) {
             this.skill4.setSkill(setup.skill4_mod);
+            skill_setting[3] = setup.skill4_s;
         }
         this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3, setup.pskill4});
         apply_research_effects();
@@ -169,6 +174,10 @@ public class Player extends Actor {
             case "Assassin" -> {
                 base_dark_res = 0.5;
                 base_light_res = -0.5;
+            }
+            case "Monk" -> {
+                base_dark_res = 0.5;
+                base_water_res = -0.5;
             }
             case "Pyromancer" -> {
                 base_fire_res = 0.5;
@@ -287,6 +296,15 @@ public class Player extends Actor {
                 base_res = (double) (50 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (80 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+            }
+            case "Monk" -> {
+                base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (100 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Knight" -> {
                 base_hp_max = (double) (130 * (cl + 100)) / 10000 * 30 * ml;
@@ -495,7 +513,7 @@ public class Player extends Actor {
     public double getFire() {
         double result = gear_fire;
         switch (name) {
-            case "Pyromancer" -> {
+            case "Pyromancer", "Monk" -> {
                 result += getAvgAtkInt();
             }
             case "Alchemist" -> result += getAvgAtkInt() * 0.4;
@@ -503,6 +521,13 @@ public class Player extends Actor {
             }
         }
         result += getAvgStats() * 2 * passives.get("Fire Boost").getBonus();
+        result += (getAtk() + getIntel()) * 0.4 * passives.get("Fiery Aura").getBonus();
+        if (active_skills.get("Aura Shot").enabled) {
+            result += 0.15 * getAtk();
+        }
+        if (active_skills.get("Elemental Blast").enabled) {
+            result += 0.05 * getIntel();
+        }
         result += getEblast();
         return result;
     }
@@ -522,7 +547,9 @@ public class Player extends Actor {
             }
         }
         result += getAvgStats() * 2 * passives.get("Water Boost").getBonus();
-        result += getEblast();
+        if (active_skills.get("Elemental Blast").enabled) {
+            result += 0.05 * getIntel();
+        }
         return result;
     }
 
@@ -540,7 +567,9 @@ public class Player extends Actor {
             default -> {
             }
         }
-        result += getEblast();
+        if (active_skills.get("Elemental Blast").enabled) {
+            result += 0.05 * getIntel();
+        }
         return result;
     }
 
@@ -556,7 +585,9 @@ public class Player extends Actor {
             }
         }
         result += getAvgStats() * 2 * passives.get("Earth Boost").getBonus();
-        result += getEblast();
+        if (active_skills.get("Elemental Blast").enabled) {
+            result += 0.05 * getIntel();
+        }
         return result;
     }
 
@@ -567,7 +598,7 @@ public class Player extends Actor {
             case "Assassin","Ninja" -> {
                 result += getAvgAtkInt();
             }
-            case "Priest" -> {
+            case "Priest", "Monk" -> {
                 result -= getAvgAtkInt();
             }
             case "Alchemist" -> result += getAvgAtkInt() * 0.4;
@@ -592,9 +623,15 @@ public class Player extends Actor {
             }
         }
         result += getAvgStats() * 2 * passives.get("Light Boost").getBonus();
-        result += (holylight_enabled ? getResist() * 0.25 : 0);
-        result += (prayer_enabled ? getResist() * 0.25 : 0);
-        result += (aurablade_enabled ? getAtk() * 0.1 : 0);
+        if (active_skills.get("Holy Light").enabled) {
+            result += 0.25 * getResist();
+        }
+        if (active_skills.get("Prayer").enabled) {
+            result += 0.25 * getResist();
+        }
+        if (active_skills.get("Aura Blade").enabled) {
+            result += 0.1 * getAtk();
+        }
         return result;
     }
 
@@ -714,22 +751,27 @@ public class Player extends Actor {
         class CoreInfo {
             double rp;
             double bonus;
-            CoreInfo(double rp, double bonus) {
+            double removal;
+            CoreInfo(double rp, double bonus, double removal) {
                 this.rp = rp;
                 this.bonus = bonus;
+                this.removal = removal;
             }
         }
         HashMap<String, CoreInfo> coreStats = new HashMap<>();
+        double cost_mult = 1 - 0.01 * research_lvls.getOrDefault("Core removal cost", 0.0);
         for (int id : cores.keySet()) {
             Core core = cores.get(id);
             if (core.enabled && !core.name.equals("None")) {
                 double rp = core.calcRpWorth();
                 double bonus = core.getBonus(this, id);
+                double removal = core.calcRemovalCost() * cost_mult;
                 if (coreStats.containsKey(core.name)) {
                     coreStats.get(core.name).rp += rp;
                     coreStats.get(core.name).bonus += bonus;
+                    coreStats.get(core.name).removal += removal;
                 } else {
-                    coreStats.put(core.name, new CoreInfo(rp, bonus));
+                    coreStats.put(core.name, new CoreInfo(rp, bonus, removal));
                 }
             }
         }
@@ -737,7 +779,10 @@ public class Player extends Actor {
             sb.append("\nCores:\n");
             for (String core : coreStats.keySet()) {
                 sb.append(core).append(":").append(getBonusType(core, coreStats.get(core).bonus));
-                sb.append(", RP ").append((int) (coreStats.get(core).rp / 1000)).append("K\n");
+                if (coreStats.get(core).rp > 0) {
+                    sb.append(", RP ").append((int) (coreStats.get(core).rp / 1000)).append("K");
+                }
+                sb.append(", removal ").append((int) (coreStats.get(core).removal)).append("\n");
             }
         }
         return sb.toString();
@@ -954,6 +999,7 @@ public class Player extends Actor {
             case "God MS" -> 54000;
             case "God SD" -> 54000;
             case "God MV" -> 28800;
+            case "Core removal cost" -> 7200;
             default -> 0;
         };
         if (name.equals("Research slot")) {
@@ -1314,6 +1360,16 @@ public class Player extends Actor {
                 skills.enableActive("Killing Strike");
                 skills.enableActive("Poison Attack");
                 skills.enableActive("Smoke Screen");
+            }
+            case "Monk" -> {
+                enableSkills("Cleric");
+                enableSkills("Fighter");
+                tier = 3;
+                skills.enablePassive("Might Aura");
+                skills.enablePassive("Speed Aura");
+                skills.enablePassive("Fiery Aura");
+                skills.enableActive("Chain Combo");
+                skills.enableActive("Asura Strike");
             }
             case "Knight" -> {
                 enableSkills("Warrior");

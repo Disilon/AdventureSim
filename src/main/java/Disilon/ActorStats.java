@@ -123,6 +123,7 @@ public class ActorStats {
     public double dark_res;
     public double phys_res;
     public double magic_res;
+    public double poison_res;
 
     public double dmg_mult = 1;
     public double burn_mult = 1;
@@ -140,6 +141,7 @@ public class ActorStats {
     public double delay_speed_mult = 1;
     public double mana_regen_mult = 1;
 
+    public double combo = 0;
     public double hide_bonus = 0;
     public double smoked = 0;
     public double bound = 0;
@@ -160,6 +162,7 @@ public class ActorStats {
     public double bless_duration = 0;
     public double core_mult = 0;
     public double core_mult_mult = 1;
+    public double core_quality = 0;
     public double drop_mult = 1;
     public double counter_strike = 0;
     public double multi_arrows = 0;
@@ -168,6 +171,7 @@ public class ActorStats {
     public double analyze_mult = 0;
     public double finke_bonus = 0;
     public double potion_effect = 1;
+    public double hp_potion_effect = 1;
     public double pill_effect = 1;
     public double berserk_dmg = 0;
     public double vampiric = 0;

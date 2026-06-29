@@ -131,10 +131,10 @@ public class Simulation {
             ActiveSkill previous_cast = null;
             status = StatusType.respawn;
             player.zone.respawn(Math.round(player.set_squirrel_rate), player);
+            player.refreshStats();
             player.checkAmbush();
             player.remove_charge = false;
-//            player.pill.name = "Berserk";
-//            player.refreshStats();
+            player.combo = 0;
             player.shield = player.shield_max;
             player.surv_instinct = player.passives.get("Survival Instinct").enabled;
             if (skill1 != null) skill1.used_in_rotation = 0;
@@ -165,104 +165,109 @@ public class Simulation {
                     end = true; //stop simulations so that we don't freeze
                 }
                 while (player.casting == null) {
-                    switch (skill_cycle) {
-                        case 1 -> {
-                            if (skill1 != null && skill1.shouldUse(player)) {
-                                if (skill1.canCast(player)) {
-                                    player.casting = skill1;
+                    if (player.active_skills.get("Bless").enabled && !player.hasBuff("Bless")) {
+                        player.casting = player.active_skills.get("Bless");
+                    } else {
+                        switch (skill_cycle) {
+                            case 1 -> {
+                                if (skill1 != null && skill1.shouldUse(player, player.skill_setting[0])) {
+                                    if (skill1.canCast(player)) {
+                                        player.casting = skill1;
+                                    } else {
+                                        player.casting = player.getWeakSkill();
+                                    }
+                                    skill1.used_in_rotation++;
+                                    cycled = 0;
                                 } else {
-                                    player.casting = player.getWeakSkill();
+                                    if (skill1 != null) skill1.used_in_rotation = 0;
+                                    if (log.contains("skill_rotation")) System.out.println("Skill 1 skipped");
+                                    skill_cycle++;
+                                    cycled++;
                                 }
-                                skill1.used_in_rotation++;
-                                cycled = 0;
-                            } else {
+                            }
+                            case 2 -> {
+                                if (skill2 != null && skill2.shouldUse(player, player.skill_setting[1])) {
+                                    if (skill2.canCast(player)) {
+                                        player.casting = skill2;
+                                    } else {
+                                        player.casting = player.getWeakSkill();
+                                    }
+                                    skill2.used_in_rotation++;
+                                    cycled = 0;
+                                } else {
+                                    if (skill2 != null) skill2.used_in_rotation = 0;
+                                    if (log.contains("skill_rotation")) System.out.println("Skill 2 skipped");
+                                    skill_cycle++;
+                                    cycled++;
+                                }
+                            }
+                            case 3 -> {
+                                if (skill3 != null && skill3.shouldUse(player, player.skill_setting[2])) {
+                                    if (skill3.canCast(player)) {
+                                        player.casting = skill3;
+                                    } else {
+                                        player.casting = player.getWeakSkill();
+                                    }
+                                    skill3.used_in_rotation++;
+                                    cycled = 0;
+                                } else {
+                                    if (skill3 != null) skill3.used_in_rotation = 0;
+                                    if (log.contains("skill_rotation")) System.out.println("Skill 3 skipped");
+                                    skill_cycle++;
+                                    cycled++;
+                                }
+                            }
+                            case 4 -> {
+                                if (skill4 != null && skill4.shouldUse(player, player.skill_setting[3])) {
+                                    if (skill4.canCast(player)) {
+                                        player.casting = skill4;
+                                    } else {
+                                        player.casting = player.getWeakSkill();
+                                    }
+                                    skill4.used_in_rotation++;
+                                    cycled = 0;
+                                } else {
+                                    if (skill4 != null) skill4.used_in_rotation = 0;
+                                    if (log.contains("skill_rotation")) System.out.println("Skill 4 skipped");
+                                    skill_cycle = 1;
+                                    cycled++;
+                                }
+                            }
+                        }
+                        if (cycled >= 5) {
+                            player.casting = player.getWeakSkill();
+                            cycled = 0;
+                            skill_cycle = 1;
+                        }
+                        if (skill1 != null && skill1.canCast(player)) {
+                            if (skill1.name.equals("Dispel") && player.zone.getEnemyBuffCount() > 0) {
+                                player.casting = skill1;
+                                switch (skill_cycle) {
+                                    case 1 -> {
+                                        if (skill1 != null) skill1.used_in_rotation++;
+                                    }
+                                    case 2 -> {
+                                        if (skill2 != null) skill2.used_in_rotation++;
+                                    }
+                                    case 3 -> {
+                                        if (skill3 != null) skill3.used_in_rotation++;
+                                    }
+                                    case 4 -> {
+                                        if (skill4 != null) skill4.used_in_rotation++;
+                                    }
+                                }
+                            }
+                            if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
+                                    (skill1.name.equals("Throw Sand") && skill1.use_setting == 2 && Arrays.stream(player.zone.enemies).noneMatch(e -> e.active && (e.smoked > 0 || e.bound > 0)))) {
+                                player.casting = skill1;
+                                skill_cycle = 1; //resets rotation, should be fine for CS
                                 if (skill1 != null) skill1.used_in_rotation = 0;
-                                if (log.contains("skill_rotation")) System.out.println("Skill 1 skipped");
-                                skill_cycle++;
-                                cycled++;
-                            }
-                        }
-                        case 2 -> {
-                            if (skill2 != null && skill2.shouldUse(player)) {
-                                if (skill2.canCast(player)) {
-                                    player.casting = skill2;
-                                } else {
-                                    player.casting = player.getWeakSkill();
-                                }
-                                skill2.used_in_rotation++;
-                                cycled = 0;
-                            } else {
                                 if (skill2 != null) skill2.used_in_rotation = 0;
-                                if (log.contains("skill_rotation")) System.out.println("Skill 2 skipped");
-                                skill_cycle++;
-                                cycled++;
-                            }
-                        }
-                        case 3 -> {
-                            if (skill3 != null && skill3.shouldUse(player)) {
-                                if (skill3.canCast(player)) {
-                                    player.casting = skill3;
-                                } else {
-                                    player.casting = player.getWeakSkill();
-                                }
-                                skill3.used_in_rotation++;
-                                cycled = 0;
-                            } else {
                                 if (skill3 != null) skill3.used_in_rotation = 0;
-                                if (log.contains("skill_rotation")) System.out.println("Skill 3 skipped");
-                                skill_cycle++;
-                                cycled++;
-                            }
-                        }
-                        case 4 -> {
-                            if (skill4 != null && skill4.shouldUse(player)) {
-                                if (skill4.canCast(player)) {
-                                    player.casting = skill4;
-                                } else {
-                                    player.casting = player.getWeakSkill();
-                                }
-                                skill4.used_in_rotation++;
-                                cycled = 0;
-                            } else {
                                 if (skill4 != null) skill4.used_in_rotation = 0;
-                                if (log.contains("skill_rotation")) System.out.println("Skill 4 skipped");
-                                skill_cycle = 1;
-                                cycled++;
                             }
                         }
-                    }
-                    if (cycled >= 5) {
-                        player.casting = player.getWeakSkill();
-                        cycled = 0;
-                        skill_cycle = 1;
-                    }
-                    if (skill1 != null && skill1.canCast(player)) {
-                        if (skill1.name.equals("Dispel") && player.zone.getEnemyBuffCount() > 0) {
-                            player.casting = skill1;
-                            switch (skill_cycle) {
-                                case 1 -> {
-                                    if (skill1 != null) skill1.used_in_rotation++;
-                                }
-                                case 2 -> {
-                                    if (skill2 != null) skill2.used_in_rotation++;
-                                }
-                                case 3 -> {
-                                    if (skill3 != null) skill3.used_in_rotation++;
-                                }
-                                case 4 -> {
-                                    if (skill4 != null) skill4.used_in_rotation++;
-                                }
-                            }
-                        }
-                        if ((skill1.name.equals("Careful Shot") && player.zone.getMaxEnemyHp() < skill1.use_setting) ||
-                                (skill1.name.equals("Throw Sand") && skill1.use_setting == 2 && Arrays.stream(player.zone.enemies).noneMatch(e -> e.active && (e.smoked > 0 || e.bound > 0)))) {
-                            player.casting = skill1;
-                            skill_cycle = 1; //resets rotation, should be fine for CS
-                            if (skill1 != null) skill1.used_in_rotation = 0;
-                            if (skill2 != null) skill2.used_in_rotation = 0;
-                            if (skill3 != null) skill3.used_in_rotation = 0;
-                            if (skill4 != null) skill4.used_in_rotation = 0;
-                        }
+
                     }
                     if (player.casting != null) {
                         player.casting.startCastPlayer(player, offline, time, total_time);
@@ -278,7 +283,6 @@ public class Simulation {
                     }
                 }
                 if (player.zone == Zone.Boss) {
-//                    player.gear_potion = 0.184;
 //                    if (time - weapon_switch >= 2) {
 //                        player.weapon_type = "bow";
 //                        player.gear_potion = 0;
@@ -287,11 +291,6 @@ public class Simulation {
 //                        weapon_switch = time;
 //                        player.weapon_type = "cauldron";
 //                        player.gear_potion = 0.184;
-//                    }
-
-//                    if (time > 180 && !player.pill.name.equals("Toughness")) {
-//                        player.pill.name = "Toughness";
-//                        player.refreshStats();
 //                    }
                 }
                 if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta(player));
@@ -406,9 +405,9 @@ public class Simulation {
                             exp_gain *= 1 + player.getBestiaryBonus(enemy.name);
                             base_exp += enemy.exp * player.hard_reward * (1 + player.getBestiaryBonus(enemy.name));
                             if (enemy.name.equals("Squirrel Mage")) {
-                                exp_gain *= player.getSquirrelMult(player.zone.getLvl());
-                                double nuts = player.zone.getLvl() * 0.005;
-                                nuts *= player.getSquirrelMult(player.zone.getLvl());
+                                exp_gain *= player.getSquirrelMult(player.zone.level);
+                                double nuts = player.zone.level * 0.005;
+                                nuts *= player.getSquirrelMult(player.zone.level);
                                 nuts *= item_drop;
                                 if (player.last_skill.name.equals("Careful Shot")) nuts *= 1.5;
                                 player.zone.stats.nuts += nuts;
@@ -723,7 +722,7 @@ public class Simulation {
 
         skills_log.append("Damage skill casts: ").append(min_casts).append(" - ").append(max_casts);
         skills_log.append("; avg: ").append(df2.format((double) total_casts / (cleared + failed))).append("\n");
-        skills_log.append("Average player action time: ").append(df2.format(player.speed_mult_sum / player.speed_mult_count * 100)).append("%\n");
+        skills_log.append(player.zone.stats.getSpeedData(player));
         skills_log.append("Average Overkill: ").append((int) (player.overkill / kills)).append("(");
         skills_log.append(df2.format(player.zone.stats.overkill_sum / player.zone.stats.kills)).append("%; base: ");
         skills_log.append(df2.format(player.zone.stats.base_overkill_sum / player.zone.stats.kills)).append("%)");
@@ -797,9 +796,12 @@ public class Simulation {
                     lvling_log.append(entry.getKey()).append(" +").append(df2.format(change)).append("\n");
                 }
             }
-//            double eqm = 1 + 0.01 * player.passives.get("Crafting").lvl;
-//            eqm *= 1 + 0.01 * Math.floor(player.research_lvls.get("E. Quality mult"));
-//            lvling_log.append("EQM: ").append(df4.format(eqm)).append("\n");
+            double eqm1 = 1 + 0.01 * Math.floor(player.research_lvls.get("E. Quality mult"));
+            double eqm2 = eqm1;
+            eqm1 *= 1 + 0.01 * player.passives.get("Crafting").lvl;
+            eqm2 *= 1 + 0.01 * player.passives.get("Smithing").lvl;
+            lvling_log.append("EQM: ").append(df4.format(eqm1));
+            lvling_log.append("/").append(df4.format(eqm2)).append("\n");
 //            StringBuilder research = new StringBuilder();
 //            research.append(df2.format(player.research_lvls.get("Research slot"))).append("\t");
 //            research.append(df2.format(player.research_lvls.get("Research spd"))).append("\t");

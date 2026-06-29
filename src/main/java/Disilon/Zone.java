@@ -26,7 +26,7 @@ public enum Zone {
     z17("Asura", 200, 2, 4),
     z18("Empress", 225),
     z19("Tree Golem", 250),
-    test("Caco", 250),
+    z20("Gloom Flower", 300),
     Dummy("Dummy", 100),
     HelplessDummy("Dummy", 100),
     Boss("Dark Reaper", 750);
@@ -85,7 +85,7 @@ public enum Zone {
         int actual_lvl = level;
         clear();
         if (squirrel_counter >= squirrel_threshold && game_version >= 1620) {
-            enemies[0].makeSquirrel(getLvl());
+            enemies[0].makeSquirrel(level);
             if (disable_squirrel_passive) {
                 enemies[0].passives.get("Dodge").enabled = false;
             }
@@ -112,7 +112,11 @@ public enum Zone {
                         }
                         e.active_skills.get("Fire Slash").setSkill(slvl, SkillMod.Damage);
                         e.active_skills.get("Dark Blast").setSkill(slvl, SkillMod.Damage);
-                        e.active_skills.get("Dark Revenge").setSkill(slvl, SkillMod.Pow);
+                        if (game_version >= 1681) {
+                            e.active_skills.get("Dark Revenge").setSkill(slvl, SkillMod.Damage);
+                        } else {
+                            e.active_skills.get("Dark Revenge").setSkill(slvl, SkillMod.Enemy);
+                        }
                     }
                     if (strength > 1) {
                         individual_str_add -= 0.02;
@@ -167,25 +171,6 @@ public enum Zone {
     public void incrementStrength() {
         strength += 0.01;
         if (strength > 1.1) strength = 0.9;
-    }
-
-    public int getLvl() {
-        return level;
-//        return switch (this) {
-//            case z1 -> 1;
-//            case z2 -> 10;
-//            case z3 -> 20;
-//            case z4 -> 30;
-//            case z5 -> 40;
-//            case z6, z7, z8 -> 50;
-//            case z9 -> 90;
-//            case z10, z11, z12 -> 100;
-//            case z13 -> 125;
-//            case z14 -> 150;
-//            case z15 -> 175;
-//            case z16 -> 200;
-//            default -> 200;
-//        };
     }
 
     public double getTime_to_respawn() {
@@ -304,7 +289,6 @@ public enum Zone {
             case z17 -> game_version >= 1674 ? 40 : 60;
             case z18 -> 20;
             case z19 -> game_version >= 1674 ? 20 : 15;
-            case test -> 20;
             default -> -1;
         };
     }

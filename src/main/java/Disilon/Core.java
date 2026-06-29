@@ -137,7 +137,7 @@ public class Core {
             case "Gloom Flower" -> 200;
             case "Fire Lizard" -> 1;
             case "Blood Lizard" -> 1;
-            case "Squirrel Mage" -> game_version >= 1680 ? 2 : 1;
+            case "Squirrel Mage" -> 1;
             default -> {
                 yield isFlat() ? 60 : 1;
             }
@@ -158,7 +158,7 @@ public class Core {
             case "Gloom Flower" -> 35000;
             case "Fire Lizard" -> 70;
             case "Blood Lizard" -> 70;
-            case "Squirrel Mage" -> game_version >= 1680 ? 140 : 70;
+            case "Squirrel Mage" -> game_version >= 1681 ? 160 : (game_version >= 1680 ? 140 : 70);
             default -> {
                 yield isFlat() ? 24000 : 70;
             }
@@ -169,14 +169,43 @@ public class Core {
         if (enabled && !name.equals("None")) {
             Equipment item = actor.equipment.get(getSlot(actor, id));
             if (item != null) {
-                int upgrade = Math.min(item.upgrade, item.skill_required + 15);
+                int upgrade = getUpgradeCap(item.skill_required, item.upgrade);
+                int quality = getQualityCap(item.skill_required, item.quality.ordinal());
                 double flat = getFlatBonus();
-                double scaling = getScaling(upgrade, item.quality.ordinal());
+                double scaling = getScaling(upgrade, quality);
                 double base = getBaseBonus();
                 return flat + base * scaling;
             }
         }
         return 0;
+    }
+
+    public static int getUpgradeCap(int skill_required, int value) {
+        if (game_version <= 1681) return value;
+        int max = switch (skill_required) {
+            default -> 10;
+            case 10 -> 20;
+            case 20 -> 30;
+            case 35 -> 45;
+            case 50 -> 60;
+            case 65 -> 75;
+            case 80 -> 100;
+        };
+        return Math.min(value, max);
+    }
+
+    public static int getQualityCap(int skill_required, int value) {
+        if (game_version <= 1681) return value;
+        int max = switch (skill_required) {
+            default -> 5;
+            case 10 -> 6;
+            case 20 -> 7;
+            case 35 -> 8;
+            case 50 -> 9;
+            case 65 -> 10;
+            case 80 -> 10;
+        };
+        return Math.min(value, max);
     }
 
     public double getScaling(int upgrade, int quality) {
@@ -220,6 +249,12 @@ public class Core {
         if (!enabled) return 0;
         double base = getCoreRP(grade, name);
         return Math.pow(2, lvl - 1) * base;
+    }
+
+    public double calcRemovalCost() {
+        if (!enabled) return 0;
+        if (game_version >= 1681 & lvl < 4) return 0;
+        return Math.ceil(6 * Math.pow(1.3, lvl) * Math.pow(2, grade + 1));
     }
 
     public String getSlot(Actor actor, int id) {

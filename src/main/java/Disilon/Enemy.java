@@ -52,6 +52,7 @@ public class Enemy extends Actor {
         base_dark_res = 0;
         base_phys_res = 0;
         dodge_mult = 1;
+        poison_res = 1;
     }
 
     public void makeSquirrel(int lvl) {
@@ -66,11 +67,9 @@ public class Enemy extends Actor {
         base_res = Math.pow(lvl, 0.9) * 10 / base_lvl;
         base_hit = Math.pow(lvl, 0.95) * 10 / base_lvl;
         base_speed = Math.pow(lvl, 0.95) * 25 / base_lvl;
-        skills.enableActive("Elemental Blast");
-        active_skills.get("Elemental Blast").setSkill(10, SkillMod.Basic);
+        skills.enableActive("Elemental Blast",10, SkillMod.Basic);
         skills.enableActive("Flee");
         passives.get("Dodge").enabled = true;
-//        passives.get("Stealth").setLvl(20);
         active = true;
     }
 
@@ -196,8 +195,7 @@ public class Enemy extends Actor {
                 base_res = 2250 / base_lvl;
                 base_hit = 11250 / base_lvl;
                 base_speed = 750 / base_lvl;
-                active_skills.get("Charge Up").setSkill(10, SkillMod.Basic);
-                skills.enableActive("Charge Up");
+                skills.enableActive("Charge Up",10, SkillMod.Basic);
                 skills.enableActive("Arrow Of Light");
             }
             case "Fire Lizard" -> {
@@ -249,8 +247,7 @@ public class Enemy extends Actor {
                 if (Main.game_version < 1573) {
                     dark_res = 0.5;
                 }
-                active_skills.get("Rapid Stabs").setSkill(13, SkillMod.Damage);
-                skills.enableActive("Rapid Stabs");
+                skills.enableActive("Rapid Stabs",13, SkillMod.Damage);
                 counter_dodge = true;
                 passives.get("Counter Strike").enabled = true;
             }
@@ -322,10 +319,25 @@ public class Enemy extends Actor {
                     base_phys_res = 0.2;
                 }
                 base_earth_res = 0.5;
-                active_skills.get("Stone Barrier").setSkill(10, SkillMod.Basic);
-                skills.enableActive("Stone Barrier");
-                active_skills.get("Earth Blast").setSkill(10, SkillMod.Damage);
-                skills.enableActive("Earth Blast");
+                skills.enableActive("Stone Barrier",10, SkillMod.Basic);
+                skills.enableActive("Earth Blast",10, SkillMod.Damage);
+            }
+            case "Gloom Flower" -> {
+                base_lvl = 300;
+                base_hp_max = 495000 / base_lvl;
+                base_exp = 225000 / base_lvl;
+                base_atk = 1800 / base_lvl;
+                base_def = 3600 / base_lvl;
+                base_int = 5400 / base_lvl;
+                base_res = 3600 / base_lvl;
+                base_hit = 3600 / base_lvl;
+                base_speed = 3600 / base_lvl;
+                base_water_res = 0.4;
+                base_fire_res = -0.2;
+                base_dark_res = 0.2;
+                base_light_res = -0.2;
+                skills.enableActive("Poison Cloud",10, SkillMod.Basic);
+                skills.enableActive("Dark Blast",10, SkillMod.Damage);
             }
             case "Caco" -> {
                 base_lvl = 250;
@@ -572,6 +584,7 @@ public class Enemy extends Actor {
         check_buffs();
         check_debuffs();
         previous_spell = null;
+        this.hp_mult *= hp_mult;
         this.hp_max = getHp_max();
         this.hp = this.hp_max;
         this.mp = this.getMp_max();
@@ -618,6 +631,9 @@ public class Enemy extends Actor {
             case "Empress" -> {
                 return roll < 70 ? active_skills.get("Electric Beam") : active_skills.get("Magic Blast");
             }
+            case "Gloom Flower" -> {
+                return roll < 70 ? active_skills.get("Poison Cloud") : active_skills.get("Dark Blast");
+            }
             case "Dummy" -> {
                 return active_skills.get("Cupid Hard Love Shot");
             }
@@ -632,7 +648,7 @@ public class Enemy extends Actor {
                 }
             }
             case "Dark Reaper" -> {
-                if (this.smoked > 0) return active_skills.get("Dark Revenge");
+                if (this.hasBuff("Sand")) return active_skills.get("Dark Revenge");
                 return getRandomSkill();
             }
             default -> {

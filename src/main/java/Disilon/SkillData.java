@@ -130,6 +130,9 @@ public class SkillData {
         addPassive("Tsury Finke", 0.0, 0, 0);
         addPassive("Extra Attack", 0.8, 15, 0.1);
         addPassive("Dual Wield", 0.25, 0, 0);
+        addPassive("Might Aura", 0.02, 10, 0.2);
+        addPassive("Speed Aura", 0.25, 5, 0.2);
+        addPassive("Fiery Aura", 0.5, 10, 0.2);
         addPassive("Exp Boost", 0.15, 10, 0.1);
         addPassive("Potion Inventor", 0.0, 15, 0.15);
         addPassive("Potion Slots", 0.2, 10, 0.15);
@@ -184,6 +187,10 @@ public class SkillData {
                 false);
         addActive("Aura Shot", 1, 112.5, 137.5, 1, 15, 0.9, 0.9, Scaling.atkint, Element.fire,
                 false,false);
+        addActive("Chain Combo", 1, 108, 132, 1.2, 30, 2.0/3, 0.5, Scaling.atkint, Element.fire,
+                false,false, "knuckles");
+        addActive("Asura Strike", 1, 1300*0.9, 1300*1.1, 1.2, 220, 0.5, 15, Scaling.atkint, Element.fire,
+                true,false, "knuckles");
         addActive("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
                 false);
         active_skills.get("Defense Break").addDebuff("Defense Break", 3, 0.25);
@@ -335,6 +342,8 @@ public class SkillData {
                 Element.dark,true, false);
         addActive("Dark Revenge", 1, 599.4, 732.6, 99, 0, 2.5, 2.5, Scaling.intel,
                 Element.dark,true, false);
+        addActive("Poison Cloud", 1, 36, 44, 9.99, 20, 1.0, 1.0, Scaling.atk, Element.phys, true, false);
+        active_skills.get("Poison Cloud").addDebuff("Poison", 4, 0.13);
         addActive("Celestial Arrow", 1, 499.5, 610.5, 1, 555, 2.2, 2.2, Scaling.atkhit, Element.light,
                 false, false, "bow");
         addActive("Celestial Ray", 1, 599.4, 732.6, 1.5, 666, 2.5, 2.5, Scaling.resint, Element.wind,

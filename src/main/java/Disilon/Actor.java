@@ -427,6 +427,7 @@ public class Actor extends ActorStats {
         holy_dmg_mult = 1;
         poison_mult = 1;
         ailment_res = 1;
+        poison_res = 0;
         exp_mult = 1;
         cast_speed_mult = 1;
         pill_cast_speed_mult = 1;
@@ -435,6 +436,7 @@ public class Actor extends ActorStats {
         core_mult = 0;
         core_cdr_add = 0;
         core_mult_mult = 1;
+        core_quality = 0;
         counter_strike = 0;
         multi_arrows = 0;
         bless_boost = 1;
@@ -442,11 +444,13 @@ public class Actor extends ActorStats {
         analyze_mult = 0;
         analyze_speed = 1;
         potion_effect = 1;
+        hp_potion_effect = 1;
         pill_effect = 1;
         berserk_dmg = 0;
         vampiric = 0;
         surv_instinct = false;
         mp_cost_mult = 1;
+        combo = 0;
 
         core_atkdam = 1;
         core_intdam = 1;
@@ -477,6 +481,9 @@ public class Actor extends ActorStats {
         delay_speed_mult *= 1.0 + (passives.get("Concentration").getBonus() > 0 ? 0.25 : 0);
         bless_boost *= 1.0 + passives.get("Bless Mastery").getBonus();
         bless_duration = passives.get("Bless Mastery").getBonus2();
+        if (game_version >= 1681) {
+            hp_potion_effect *= 1.0 + passives.get("HP Boost").getBonus();
+        }
         hp_mult *= 1.0 + passives.get("HP Boost").getBonus();
         hp_regen = passives.get("HP Regen").getBonus();
         drop_mult = 1 + passives.get("Drop Boost").getBonus();
@@ -486,6 +493,12 @@ public class Actor extends ActorStats {
         }
         if (passives.get("Core Boost").enabled) {
             core_mult = passives.get("Core Boost").getBonus();
+//            if (game_version == 1682) {
+//                core_mult = passives.get("Core Boost").getBonus()/2;
+//                core_quality = passives.get("Core Boost").getBonus()/2;
+//            } else {
+//                core_mult = passives.get("Core Boost").getBonus();
+//            }
         }
         vampiric += passives.get("Blood Drain").getBonus();
         surv_instinct = passives.get("Survival Instinct").enabled;
@@ -557,6 +570,9 @@ public class Actor extends ActorStats {
         if (passives.get("Earth Resistance").enabled) {
             add_resist("Earth", passives.get("Earth Resistance").getBonus());
         }
+        if (passives.get("Fiery Aura").enabled) {
+            add_resist("Poison", passives.get("Fiery Aura").getBonus());
+        }
     }
 
     public void add_resist(String type, double value) {
@@ -569,6 +585,7 @@ public class Actor extends ActorStats {
             case "Wind" -> wind_res = 1.0 - (1.0 - wind_res) * (1.0 - value);
             case "Light" -> light_res = 1.0 - (1.0 - light_res) * (1.0 - value);
             case "Dark" -> dark_res = 1.0 - (1.0 - dark_res) * (1.0 - value);
+            case "Poison" -> poison_res = 1.0 - (1.0 - poison_res) * (1.0 - value);
             case "All" -> {
                 phys_res = 1.0 - (1.0 - phys_res) * (1.0 - value);
                 magic_res = 1.0 - (1.0 - magic_res) * (1.0 - value);
@@ -614,6 +631,7 @@ public class Actor extends ActorStats {
         wind_res = base_wind_res;
         light_res = base_light_res;
         dark_res = base_dark_res;
+        poison_res = 0;
         disableSet();
     }
 
@@ -687,6 +705,7 @@ public class Actor extends ActorStats {
             shield -= dmg;
         } else {
             hp -= dmg - shield;
+            shield = 0;
         }
         if (hp < 1 && surv_instinct) {
             hp = 1;
@@ -825,8 +844,8 @@ public class Actor extends ActorStats {
         return dmg_mult * mult;
     }
 
-    public double getPotion_effect() {
-        return potion_effect * (1 + gear_potion);
+    public double getPotion_effect(boolean health) {
+        return potion_effect * (1 + gear_potion) * (health ? hp_potion_effect : 1);
     }
 
     public double getCrit_chance() {
@@ -898,5 +917,13 @@ public class Actor extends ActorStats {
     public int getResearchLvl(String name) {
         if (research_lvls == null) return 0;
         return research_lvls.getOrDefault(name, 0.0).intValue();
+    }
+
+    public static double getSpeedMult(double spd1, double spd2) {
+        if (game_version >= 1682) {
+            return Math.clamp(Math.pow(spd1 / spd2, 0.5), 0.75, 1.5);
+        } else {
+            return Math.clamp((spd1 + 1000) / (spd2 + 1000), 0.75, 1.5);
+        }
     }
 }

@@ -200,8 +200,10 @@ public class ActiveSkill {
             case "Mark Target" -> {
                 if (game_version >= 1679) {
                     base_debuff_dmg = 0.25;
+                    base_hit = 3;
                 } else {
                     base_debuff_dmg = 0.2;
+                    base_hit = 1.5;
                 }
             }
             case "Empower HP" -> {
@@ -225,11 +227,11 @@ public class ActiveSkill {
         }
     }
 
-    public boolean shouldUse(Actor actor) {
+    public boolean shouldUse(Actor actor, int skill_setting) {
         if (name.equals("Prepare")) return false;
         if (heal) {
             used_in_rotation++;
-            return actor.hp / actor.getHp_max() * 100.0 < use_setting;
+            return actor.hp / actor.getHp_max() * 100.0 < skill_setting;
         } else {
             if (name.equals("Bless") && actor.blessed > 0) {
                 return false;
@@ -246,11 +248,17 @@ public class ActiveSkill {
             if (name.equals("Stone Barrier") && (actor.hasBuff(name) || actor.checkLastSkill(name))) {
                 return false;
             }
-            if (name.equals("Throw Sand") && use_setting == 2) {
+            if (name.equals("Throw Sand") && skill_setting == 2) {
                 return false;
             }
-            if (log.contains("skill_use")) System.out.println(name + " used: " + used_in_rotation + " setting: " + use_setting);
-            return used_in_rotation < use_setting;
+            if (name.equals("Chain Combo") && (actor.last_skill == null || actor.last_skill.name.equals("Chain Combo"))) {
+                return false;
+            }
+            if (name.equals("Asura Strike") && actor.combo < Math.max(0.12, 0.01 * skill_setting)) {
+                return false;
+            }
+            if (log.contains("skill_use")) System.out.println(name + " used: " + used_in_rotation + " setting: " + skill_setting);
+            return used_in_rotation < skill_setting;
         }
     }
 
@@ -262,7 +270,16 @@ public class ActiveSkill {
     }
 
     public void startCast(Actor attacker, Actor target, boolean offline, double time, double total_time) {
-        double speed_mult = Math.clamp((target.getSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
+        double speed_mult = Actor.getSpeedMult(target.getSpeed(), attacker.getSpeed());
+        if (target.zone != null) {
+            if (attacker.name.equals("Squirrel Mage")) {
+                target.zone.stats.squirrel_speed_mult_sum += speed_mult;
+                target.zone.stats.squirrel_speed_mult_count += 1;
+            } else {
+                target.zone.stats.speed_mult_sum += speed_mult;
+                target.zone.stats.speed_mult_count += 1;
+            }
+        }
         cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult + target.stealthDelay() + attacker.freezeDelay();
         if (attacker.ambushing) cast = max(0.0, cast - 5);
         cast = max(0.01, cast);
@@ -276,10 +293,13 @@ public class ActiveSkill {
     }
 
     public void startCastPlayer(Actor attacker, boolean offline, double time, double total_time) {
-        double speed_mult = Math.clamp((attacker.zone.getAvgSpeed() + 1000) / (attacker.getSpeed() + 1000), 0.75, 1.5);
-//        speed_mult = 0.75;
-        attacker.speed_mult_sum += speed_mult;
-        attacker.speed_mult_count += 1;
+        double speed_mult = Actor.getSpeedMult(attacker.zone.getAvgSpeed(), attacker.getSpeed());
+        if (game_version >= 1681) {
+            speed_mult = 0.75;
+        } else {
+            attacker.speed_mult_sum += speed_mult;
+            attacker.speed_mult_count += 1;
+        }
         if (name.equals("Analyze")) {
             cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult * attacker.analyze_speed;
             cast *= attacker.pill_cast_speed_mult;
@@ -293,6 +313,10 @@ public class ActiveSkill {
             cast = 3 * speed_mult * attacker.cast_speed_mult * cast_mult;
             if (!name.equals("Alchemic Reaction") || game_version >= 1676) {
                 cast *= attacker.pill_cast_speed_mult;
+            }
+            double b = attacker.passives.get("Speed Aura").getBonus();
+            if (b > 0 && (name.equals("Aura Shot") || name.equals("Chain Combo"))) {
+                cast *= 1 - b;
             }
             cast += attacker.zone.stealthDelay() + attacker.freezeDelay();
             if (attacker.ambushing) cast = max(0.0, cast - 5);
@@ -394,6 +418,11 @@ public class ActiveSkill {
                 actor.doDamage(actor.berserk_dmg);
                 actor.berserk_damage_taken += actor.berserk_dmg;
             }
+        }
+        double b = actor.passives.get("Might Aura").getBonus();
+        if (b > 0) {
+            if (actor.passives.get("Speed Aura").enabled) b *= 1.25;
+            actor.combo = Math.min(b * 25, actor.combo + b);
         }
         Enemy enemy = null;
         if (actor.getClass().equals(Enemy.class)) enemy = (Enemy) actor;
@@ -662,8 +691,8 @@ public class ActiveSkill {
         double dmg_mult3 = 1;
         if (potion_skills.contains(name)) {
             ActiveSkill tp = owner.active_skills.get("Throw Potion");
-            min_power = (tp.min * base_min / 100) * attacker.getPotion_effect();
-            max_power = (tp.max * base_max / 100) * attacker.getPotion_effect();
+            min_power = (tp.min * base_min / 100) * attacker.getPotion_effect(false);
+            max_power = (tp.max * base_max / 100) * attacker.getPotion_effect(false);
             attacker.flask_used += 1;
             attacker.potions_thrown += 1;
             attacker.total_flask_used += 1;
@@ -676,8 +705,8 @@ public class ActiveSkill {
                 debuff_to_apply_duration = ls.base_debuff_duration;
                 debuff_to_apply_effect = ls.base_debuff_dmg;
                 element_to_apply = ls.element;
-                min_power = (min * ls.base_min / 100) * attacker.getPotion_effect();
-                max_power = (max * ls.base_max / 100) * attacker.getPotion_effect();
+                min_power = (min * ls.base_min / 100) * attacker.getPotion_effect(false);
+                max_power = (max * ls.base_max / 100) * attacker.getPotion_effect(false);
                 attacker.flask_used -= 1;
                 attacker.total_flask_used -= 1;
             }
@@ -747,6 +776,7 @@ public class ActiveSkill {
                 dmg_mult *= 1.0 + attacker.hide_bonus;
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
+                dmg_mult *= 1 + attacker.combo;
                 if (name.equals("Back Stab") && (defender.smoked > 0 || defender.bound > 0)) {
                     dmg_mult1 *= 2;
                 }
@@ -914,6 +944,7 @@ public class ActiveSkill {
                     total = Math.min(total, defender.hp);
                 }
             }
+            attacker.last_skill = this;
         } else {
             if (defender.counter_dodge && triggers_counter) {
                 counter_attack(attacker, defender, true);
@@ -934,11 +965,14 @@ public class ActiveSkill {
         if (name.equals("Throw Sand")) {
             defender.getBarrier();
         }
+        if (name.equals("Asura Strike")) {
+            attacker.combo = 0;
+        }
         if (total > 0 && attacker.vampiric > 0) {
             attacker.setHp(attacker.hp + total * attacker.vampiric, 1);
         }
         if (attacker.hide_bonus > 0) attacker.hide_bonus = 0;
-        attacker.last_skill = this;
+        if (this.name.equals("Analyze")) attacker.last_skill = this;
         if (owner.name.equals("Dark Reaper") && !name.equals("Dark Revenge")) {
             enrage_mult += 0.01;
         }
@@ -1099,7 +1133,7 @@ public class ActiveSkill {
         double effect = calcDebuffEffect(debuff, base_effect);
         double hit_chance = (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
         if (debuff.equals("Poison")) {
-            hit_chance = (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
+            hit_chance = (attacker.getHit() + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
             if (attacker.passives.get("Poison Boost").enabled) hit_chance *= 2;
 //            System.out.println(name + " poison chance: " + hit_chance);
         }
@@ -1133,7 +1167,8 @@ public class ActiveSkill {
                 duration += 1;
             }
             double dmg = switch (debuff) {
-                case "Poison" -> calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() + attacker.getAtk()) * attacker.poison_mult * attacker.core_poison;
+                case "Poison" -> calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() + attacker.getAtk())
+                        * attacker.poison_mult * attacker.core_poison * (1 - defender.poison_res);
                 case "Burn" ->
                         calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() / 10 + attacker.getFire() / 5) *
                                 (1 - defender.fire_res) * (attacker.burn_mult + attacker.gear_burn);

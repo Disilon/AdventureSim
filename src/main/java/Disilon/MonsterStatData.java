@@ -31,6 +31,10 @@ public class MonsterStatData {
     public int kills;
     public int squirrel_spawns;
     public int grade_cutoff;
+    public double speed_mult_sum = 0;
+    public int speed_mult_count = 0;
+    public double squirrel_speed_mult_sum = 0;
+    public int squirrel_speed_mult_count = 0;
 
     public MonsterStatData(String[] possibleEnemies) {
         cores = new HashMap<>();
@@ -100,6 +104,10 @@ public class MonsterStatData {
         base_overkill_sum = 0;
         kills = 0;
         squirrel_spawns = 0;
+        speed_mult_sum = 0;
+        speed_mult_count = 0;
+        squirrel_speed_mult_sum = 0;
+        squirrel_speed_mult_count = 0;
         rp_instance = new double[7];
         dmg_sum.clear();
         hit_chance_sum.clear();
@@ -192,7 +200,7 @@ public class MonsterStatData {
         double r_mult = 1;
         double research_bonus = 1 + p.core_drop_research;
         if (name.equals("Squirrel Mage")) {
-            mult = p.getSquirrelMult(p.zone.getLvl());
+            mult = p.getSquirrelMult(p.zone.level);
         }
 //        if (p.enemy_min_lvl_enabled && (game_version == 1638 || !name.equals("Squirrel Mage"))) {
 //            r_mult = 1 + 0.005 * p.enemy_min_lvl;
@@ -202,7 +210,7 @@ public class MonsterStatData {
         }
         double bestiary = 1 + 0.01 * p.getBestiaryMedals(25000);
         bestiary *= 1 + p.getBestiaryBonus(name);
-        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult + p.core_cdr_add
+        double drop_rate = 0.01 * (p.set_core * 1.5 * (1 + p.core_cdr_add) + p.core_mult + p.core_cdr_add
                 + research_bonus * r_mult) * mult * p.hard_reward * bestiary;
         drop_rate *= p.core_mult_mult;
         if (!cores.containsKey(name)) {
@@ -213,8 +221,9 @@ public class MonsterStatData {
             cores.put(name, nested);
         }
         base_rp += getCoreRP(grade, name) * 0.01 * p.hard_reward * mult;
-        double fractional = p.core_quality_research - (int) p.core_quality_research;
-        int new_grade = Math.min(8, grade + (int) p.core_quality_research);
+        double quality = p.core_quality_research + p.core_quality;
+        double fractional = quality - (int) quality;
+        int new_grade = Math.min(8, grade + (int) quality);
         double gain = 0;
         if (fractional > 0 && new_grade < 8) {
             double count = 1 - fractional;
@@ -231,31 +240,6 @@ public class MonsterStatData {
         }
         if (p.lvling && game_version >= 1574) p.rp_balance += gain;
         gained_rp += gain;
-//        addCoreRandom(name, grade, p);
-    }
-
-    public void addCoreRandom(String name, int grade, Player p) {
-        int research = p.research_lvls.get("Core quality").intValue();
-        double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult + p.core_cdr_add
-                + 0.01 * p.research_lvls.getOrDefault("Core drop", 0.0).intValue()) * p.hard_reward;
-        drop_rate *= p.core_mult_mult;
-        double fractional = research / 100.0 - (double) (research / 100);
-        int new_grade = Math.min(8, grade + research / 100);
-        for (int i = 1; i < rp_instance.length; i++) {
-            if (drop_rate > Math.random()) {
-                double gain = 0;
-                if (fractional > 0 && new_grade < 8) {
-                    if (fractional > Math.random()) {
-                        gain = getCoreRP(new_grade + 1, name);
-                    } else {
-                        gain = getCoreRP(new_grade, name);
-                    }
-                } else {
-                    gain = getCoreRP(new_grade, name);
-                }
-                rp_instance[i] += gain;
-            }
-        }
     }
 
     public String getSkillData(int simulations) {
@@ -339,14 +323,14 @@ public class MonsterStatData {
                 double r_mult = 1;
                 double per_enemy = 0;
                 if (name.equals("Squirrel Mage")) {
-                    mult = p.getSquirrelMult(p.zone.getLvl());
+                    mult = p.getSquirrelMult(p.zone.level);
                 }
                 if (p.enemy_min_lvl_enabled && (game_version == 1638 || !name.equals("Squirrel Mage"))) {
                     r_mult = 1 + 0.005 * p.enemy_min_lvl;
                 }
                 double bestiary = 1 + 0.01 * p.getBestiaryMedals(25000);
                 bestiary *= 1 + p.getBestiaryBonus(name);
-                double drop_rate = 0.01 * (p.set_core * 1.5 + p.core_mult + p.core_cdr_add
+                double drop_rate = 0.01 * (p.set_core * 1.5 * (1 + p.core_cdr_add) + p.core_mult + p.core_cdr_add
                         + research_bonus * r_mult) * mult * p.hard_reward * bestiary;
                 drop_rate *= p.core_mult_mult;
                 double total_count = 0;
@@ -400,13 +384,17 @@ public class MonsterStatData {
     }
 
     public static double getCoreGradeRP(int grade) {
-        double mult = Math.pow(1.3, Math.min(grade, 5));
-        if (grade > 5) mult = mult * Math.pow(1.5, grade - 5);
-        return mult;
+        if (game_version >= 1681) {
+            return Math.pow(1.3, grade);
+        } else {
+            double mult = Math.pow(1.3, Math.min(grade, 5));
+            if (grade > 5) mult = mult * Math.pow(1.5, grade - 5);
+            return mult;
+        }
     }
 
     public static double getCoreTypeRP(String name) {
-        return switch (name) {
+        double base = switch (name) {
             case "Slime" -> 4;
             case "Goblin" -> 5;
             case "Imp" -> 5;
@@ -429,13 +417,15 @@ public class MonsterStatData {
             case "Asura" -> 165;
             case "Empress" -> game_version < 1676 ? 380 : 400;
             case "Tree Golem" -> game_version < 1667 ? 500 : 650;
+            case "Gloom Flower" -> 800;
             case "Squirrel Mage" -> game_version < 1621 ? 2000 : (game_version < 1622 ? 3000 : 2500);
             default -> 0;
         };
+        return game_version >= 1681 ? base * 1.2 : base;
     }
 
     public void setGradeCutoff(Player p) {
-        double cq = p.core_quality_research;
+        double cq = p.core_quality_research + p.core_quality;
         switch (p.name) {
             case "Hunter" -> grade_cutoff = (int) (5 + cq);
             case "Rogue" -> grade_cutoff = (int) (4.2 + cq);
@@ -464,5 +454,17 @@ public class MonsterStatData {
         }
     }
 
-
+    public String getSpeedData(Player player) {
+        StringBuilder sb = new StringBuilder();
+        if (game_version < 1681) {
+            sb.append("Average player action time: ").append(df2.format(player.speed_mult_sum / player.speed_mult_count * 100)).append("%\n");
+        }
+        sb.append("Average enemy action time: ").append(df2.format(speed_mult_sum / speed_mult_count * 100)).append("%");
+        if (squirrel_speed_mult_count > 0) {
+            sb.append(", squirrel: ").append(df2.format(squirrel_speed_mult_sum / squirrel_speed_mult_count * 100)).append("%\n");
+        } else {
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 }

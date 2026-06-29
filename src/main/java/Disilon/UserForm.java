@@ -1622,13 +1622,13 @@ public class UserForm extends JFrame {
                     info.append("Milestone exp:");
                     info.append("</td></tr>");
                     info.append("<tr>");
-                    info.append("<td style=\"width:40%;height:10px;\">");
+                    info.append("<td style=\"width:45%;height:10px;\">");
                     info.append(dfm.format(Milestone.getValue())).append("%");
                     info.append("</td>");
-                    info.append("<td style=\"width:20%;height:10px;\">");
+                    info.append("<td style=\"width:10%;height:10px;\">");
                     info.append("->");
                     info.append("</td>");
-                    info.append("<td style=\"width:40%;height:10px;\">");
+                    info.append("<td style=\"width:45%;height:10px;\">");
                     info.append(dfm.format(player.milestone_exp_mult * 100)).append("%");
                     info.append("</td>");
 
@@ -1637,22 +1637,15 @@ public class UserForm extends JFrame {
                     info.append("</td></tr>");
                     info.append("<tr style=\"height:10px;\">");
                     info.append("<td>");
-                    info.append((int) player.old_cl);
+                    info.append((int) player.old_cl).append(" (");
+                    info.append(df2.format((player.old_cl - (int) player.old_cl) * 100)).append("%)");
                     info.append("</td>");
                     info.append("<td>");
                     info.append("->");
                     info.append("</td>");
                     info.append("<td>");
-                    info.append(player.cl);
-                    info.append("</td>");
-                    info.append("<tr style=\"height:10px;\">");
-                    info.append("<td>");
-                    info.append(df2.format((player.old_cl - (int) player.old_cl) * 100)).append("%");
-                    info.append("</td>");
-                    info.append("<td>");
-                    info.append("</td>");
-                    info.append("<td>");
-                    info.append(df2.format(player.getCLpercent())).append("%");
+                    info.append(player.cl).append(" (");
+                    info.append(df2.format(player.getCLpercent())).append("%)");
                     info.append("</td>");
 
                     info.append("<tr style=\"height:10px;\"><td colspan=\"3\">");
@@ -1660,22 +1653,15 @@ public class UserForm extends JFrame {
                     info.append("</td></tr>");
                     info.append("<tr style=\"height:10px;\">");
                     info.append("<td>");
-                    info.append((int) player.old_ml);
+                    info.append((int) player.old_ml).append(" (");
+                    info.append(df2.format((player.old_ml - (int) player.old_ml) * 100)).append("%)");
                     info.append("</td>");
                     info.append("<td>");
                     info.append("->");
                     info.append("</td>");
                     info.append("<td>");
-                    info.append(player.ml);
-                    info.append("</td>");
-                    info.append("<tr style=\"height:10px;\">");
-                    info.append("<td>");
-                    info.append(df2.format((player.old_ml - (int) player.old_ml) * 100)).append("%");
-                    info.append("</td>");
-                    info.append("<td>");
-                    info.append("</td>");
-                    info.append("<td>");
-                    info.append(df2.format(player.getMLpercent())).append("%");
+                    info.append(player.ml).append(" (");
+                    info.append(df2.format(player.getMLpercent())).append("%)");
                     info.append("</td>");
                     for (ActiveSkill a : player.active_skills.values()) {
                         if (a.checkEnabled() && a.old_lvl < player.max_skill_lvl) {
@@ -1684,22 +1670,15 @@ public class UserForm extends JFrame {
                             info.append("</td></tr>");
                             info.append("<tr style=\"height:10px;\">");
                             info.append("<td>");
-                            info.append((int) a.old_lvl);
+                            info.append((int) a.old_lvl).append(" (");
+                            info.append(df2.format((a.old_lvl - (int) a.old_lvl) * 100)).append("%)");
                             info.append("</td>");
                             info.append("<td>");
                             info.append("->");
                             info.append("</td>");
                             info.append("<td>");
-                            info.append(a.lvl);
-                            info.append("</td>");
-                            info.append("<tr style=\"height:10px;\">");
-                            info.append("<td>");
-                            info.append(df2.format((a.old_lvl - (int) a.old_lvl) * 100)).append("%");
-                            info.append("</td>");
-                            info.append("<td>");
-                            info.append("</td>");
-                            info.append("<td>");
-                            info.append(df2.format((a.exp / a.need_for_lvl(a.lvl)) * 100)).append("%");
+                            info.append(a.lvl).append(" (");
+                            info.append(df2.format((a.exp / a.need_for_lvl(a.lvl)) * 100)).append("%)");
                             info.append("</td>");
                         }
                     }
@@ -1711,22 +1690,15 @@ public class UserForm extends JFrame {
                             info.append("</td></tr>");
                             info.append("<tr style=\"height:10px;\">");
                             info.append("<td>");
-                            info.append((int) a.old_lvl);
+                            info.append((int) a.old_lvl).append(" (");
+                            info.append(df2.format((a.old_lvl - (int) a.old_lvl) * 100)).append("%)");
                             info.append("</td>");
                             info.append("<td>");
                             info.append("->");
                             info.append("</td>");
                             info.append("<td>");
-                            info.append(a.lvl);
-                            info.append("</td>");
-                            info.append("<tr style=\"height:10px;\">");
-                            info.append("<td>");
-                            info.append(df2.format((a.old_lvl - (int) a.old_lvl) * 100)).append("%");
-                            info.append("</td>");
-                            info.append("<td>");
-                            info.append("</td>");
-                            info.append("<td>");
-                            info.append(df2.format((a.exp / a.need_for_lvl(a.lvl)) * 100)).append("%");
+                            info.append(a.lvl).append(" (");
+                            info.append(df2.format((a.exp / a.need_for_lvl(a.lvl)) * 100)).append("%)");
                             info.append("</td>");
                         }
                     }
@@ -1905,8 +1877,8 @@ public class UserForm extends JFrame {
                 if (equipmentData.less_slots.contains(item_name)) slots--;
                 if (item_name.equals("None")) slots = 0;
                 cores.get(20).enabled = slots >= 1;
-                cores.get(21).enabled = slots >= 2;
-                cores.get(22).enabled = slots >= 3;
+                cores.get(22).enabled = slots >= 2;
+                cores.get(21).enabled = slots >= 3;
                 updateUI();
             }
         });
@@ -2865,7 +2837,7 @@ public class UserForm extends JFrame {
                 "Slime", "Goblin", "Imp", "Ghoul", "Wraith",
                 "Shinigami", "Astaroth", "Tengu", "Amon", "Akuma", "Devil", "Shax", "Dagon", "Lamia",
                 "Tyrant", "Fairy", "Fire Lizard", "Blood Lizard", "Raum", "Asura", "Squirrel Mage",
-                "Empress", "Tree Golem", "Dark Reaper"
+                "Empress", "Tree Golem", "Gloom Flower", "Dark Reaper"
         ));
     }
 
@@ -2902,6 +2874,7 @@ public class UserForm extends JFrame {
                 "Equip Res",
                 "Equip Hit",
                 "Equip Spd",
+                "Core removal cost",
                 "God HP",
                 "God Atk",
                 "God Mystic",
@@ -2926,6 +2899,7 @@ public class UserForm extends JFrame {
             case "No overkill crit" -> 100;
             case "Sidecraft spd" -> 50;
             case "E. Quality min" -> 100;
+            case "Core removal cost" -> 100;
             default -> 9999;
         };
     }
