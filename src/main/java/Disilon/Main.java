@@ -20,7 +20,7 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1670, 1674, 1676, 1678, 1679, 1680, 1681,
-            1682, 1690));
+            1682, 1690, 1700));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;
@@ -208,6 +208,7 @@ public class Main {
         if (input == null || input.isEmpty()) {
             return input;
         }
+        if (input.equals("hp")) return "HP";
         return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }

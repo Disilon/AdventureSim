@@ -283,14 +283,14 @@ public class Simulation {
                     }
                 }
                 if (player.zone == Zone.Boss) {
-//                    if (time - weapon_switch >= 2) {
+//                    if (time - weapon_switch >= 1) {
 //                        player.weapon_type = "bow";
 //                        player.gear_potion = 0;
 //                    }
 //                    if (player.hp < player.getHp_max() * 0.6 && player.potions[0].cooldown <= 1.0) {
 //                        weapon_switch = time;
 //                        player.weapon_type = "cauldron";
-//                        player.gear_potion = 0.184;
+//                        player.gear_potion = 0.25;
 //                    }
                 }
                 if (player.casting != null) delta = Math.min(delta, player.casting.calculate_delta(player));
@@ -737,12 +737,12 @@ public class Simulation {
             skills_log.append(skill3.getRecordedData(cleared + failed));
         if (skill4 != null && !skill4.name.equals("Prepare"))
             skills_log.append(skill4.getRecordedData(cleared + failed));
-//        if (player.active_skills.get("Extra Attack").used > 0)
-//            skills_log.append(player.active_skills.get("Extra Attack").getRecordedData(cleared + failed));
         if (player.counter_strike_log.used > 0)
             skills_log.append(player.counter_strike_log.getRecordedData(cleared + failed));
         if (player.counter_dodge_log.used > 0)
             skills_log.append(player.counter_dodge_log.getRecordedData(cleared + failed));
+        if (player.active_skills.get("Execute").hits_total > 0)
+            skills_log.append(player.active_skills.get("Execute").getRecordedData(cleared + failed));
         skills_log.append("\n");
         if (player.damage_taken > 0 && cleared > 0) {
             skills_log.append("Average enemy dmg per fight: ").append((int) player.damage_taken / (cleared + failed));

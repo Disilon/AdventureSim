@@ -176,6 +176,7 @@ public class ActorStats {
     public double berserk_dmg = 0;
     public double vampiric = 0;
     public boolean surv_instinct = false;
+    public boolean critical_poison = false;
     public double kyrie = 0;
     public double cl_exp;
     public double ml_exp;

@@ -157,7 +157,8 @@ public class Core {
             case "Raum" -> 19200;
             case "Gloom Flower" -> 35000;
             case "Fire Lizard" -> 70;
-            case "Blood Lizard" -> 70;
+            case "Blood Lizard" -> 70*1.25;
+            case "Devil" -> 100;
             case "Squirrel Mage" -> game_version >= 1681 ? 160 : (game_version >= 1680 ? 140 : 70);
             default -> {
                 yield isFlat() ? 24000 : 70;

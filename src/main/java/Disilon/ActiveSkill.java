@@ -1,5 +1,7 @@
 package Disilon;
 
+import java.util.Objects;
+
 import static Disilon.Main.df2;
 import static Disilon.Main.df2p;
 import static Disilon.Main.df4;
@@ -421,8 +423,11 @@ public class ActiveSkill {
         }
         double b = actor.passives.get("Might Aura").getBonus();
         if (b > 0) {
-            if (actor.passives.get("Speed Aura").enabled) b *= 1.25;
-            actor.combo = Math.min(b * 25, actor.combo + b);
+            double b_a = b;
+            if (actor.passives.get("Speed Aura").enabled) {
+                b_a *= 1 + 0.025 * actor.passives.get("Speed Aura").lvl;
+            }
+            actor.combo = Math.min(b * 25, actor.combo + b_a);
         }
         Enemy enemy = null;
         if (actor.getClass().equals(Enemy.class)) enemy = (Enemy) actor;
@@ -717,6 +722,21 @@ public class ActiveSkill {
             //System.out.println(gain);
             attacker.setHp(attacker.hp + gain);
         }
+        if (Objects.equals(weapon_required, "dagger") && attacker.passives.get("Killing Intent").enabled) {
+            if ((defender.hp < defender.hp_max * 0.3) && defender.hasDebuff("Poison")) {
+                ActiveSkill execute = owner.active_skills.get("Execute");
+                double chance = attacker.passives.get("Killing Intent").bonus;
+                execute.hit_chance_sum += chance;
+                execute.attacks_total++;
+                execute.used++;
+                if (Math.random() < chance) {
+                    execute.dmg_sum += defender.hp;
+                    execute.hits_total++;
+                    this.hit_chance_sum++;
+                    return defender.hp;
+                }
+            }
+        }
         if (!this.aoe && defender.hide_bonus > 0) {
             if (game_version < 1701 || Math.random() < 0.5) {
                 if (log.contains("skill_attack")) {
@@ -784,6 +804,7 @@ public class ActiveSkill {
                     case Element.dark -> {
                         atk = attacker.getDark();
                         dmg_mult *= attacker.set_dark;
+                        dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getDark_res();
                     }
                     case Element.fire -> {
@@ -795,6 +816,7 @@ public class ActiveSkill {
                     case Element.light -> {
                         atk = attacker.getLight();
                         dmg_mult *= attacker.holy_dmg_mult;
+                        dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getLight_res();
                     }
                     case Element.water -> {
@@ -840,6 +862,12 @@ public class ActiveSkill {
                 def = switch (this.scaling) {
                     case atk -> {
                         atk += attacker.getAtk();
+                        dmg_mult *= attacker.set_physdmg;
+                        dmg_mult *= attacker.core_atkdam;
+                        yield defender.getDef();
+                    }
+                    case atkspd -> {
+                        atk += attacker.getAtk() / 2 + attacker.getSpeed() / 2;
                         dmg_mult *= attacker.set_physdmg;
                         dmg_mult *= attacker.core_atkdam;
                         yield defender.getDef();
@@ -1176,6 +1204,13 @@ public class ActiveSkill {
             };
             if (defender.zone != null) {
                 defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
+            }
+            if (debuff.equals("Poison") && attacker.critical_poison) {
+                double crit_chance = getCritChance(attacker, defender, true);
+                double crit_dmg = attacker.getCrit_damage();
+                if (crit_chance > 0 && Math.random() < crit_chance) {
+                    dmg *= crit_dmg;
+                }
             }
             defender.applyDebuff(debuff, duration, dmg, effect);
             if (debuff.equals("Stun")) stun = true;

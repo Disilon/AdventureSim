@@ -27,6 +27,8 @@ public enum Zone {
     z18("Empress", 225),
     z19("Tree Golem", 250),
     z20("Gloom Flower", 300),
+    z21("Z21", 400),
+    z21d("Z21_x2def", 400),
     Dummy("Dummy", 100),
     HelplessDummy("Dummy", 100),
     Boss("Dark Reaper", 750);
@@ -183,7 +185,8 @@ public enum Zone {
             case z6, z7, z8, z9 -> 5;
             case z10, z11, z12, z13, z14, z15, z16 -> game_version >= 1674 ? 5 : 6;
             case z17, z18, z19 -> game_version >= 1674 ? 5 : 7.5;
-            default -> 6;
+            case z20, z21 -> 5;
+            default -> 5;
         };
     }
 
@@ -289,6 +292,8 @@ public enum Zone {
             case z17 -> game_version >= 1674 ? 40 : 60;
             case z18 -> 20;
             case z19 -> game_version >= 1674 ? 20 : 15;
+            case z20 -> 20;
+            case z21 -> 20;
             default -> -1;
         };
     }

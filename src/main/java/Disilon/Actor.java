@@ -66,6 +66,21 @@ public class Actor extends ActorStats {
         if (hp < 0) hp *= 0.5; //dots give 50% overkill
     }
 
+    public void trigger_poison(double power) {
+        double total = 0;
+        Iterator<Debuff> debuff_iterator = debuffs.iterator();
+        while (debuff_iterator.hasNext()) {
+            Debuff d = debuff_iterator.next();
+            if (d.name.equals("Poison")) {
+                total += d.dmg * d.duration;
+                debuff_iterator.remove();
+            }
+        }
+        doDamage(total * power);
+        check_debuffs();
+        if (hp < 0) hp = 0; //zero overkill
+    }
+
     public void check_buffs() {
         charge = 0;
         blessed = 0;
@@ -449,6 +464,7 @@ public class Actor extends ActorStats {
         berserk_dmg = 0;
         vampiric = 0;
         surv_instinct = false;
+        critical_poison = false;
         mp_cost_mult = 1;
         combo = 0;
 
@@ -460,7 +476,7 @@ public class Actor extends ActorStats {
         core_item_drop = 1;
         core_exp = 1;
 
-        potion_effect *= 1 + 0.01 * Math.max(passives.get("Potion Inventor").lvl - 10, 0);
+        potion_effect *= 1 + 0.02 * Math.max(passives.get("Potion Inventor").lvl - 10, 0);
         if (name.equals("Alchemist")) potion_effect *= 1 + passives.get("Potion Slots").getBonus();
         pill_effect *= 1 + (name.equals("Alchemist") ? 0.03 : 0.01) * passives.get("Pill Inventor").lvl;
         atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
@@ -523,6 +539,11 @@ public class Actor extends ActorStats {
         dmg_taken_mult *= 1.0 - passives.get("Divine Boost").getBonus();
         wind_dmg_mult *= 1.0 + passives.get("Divine Boost").getBonus();
         holy_dmg_mult *= 1.0 + passives.get("Divine Boost").getBonus();
+        critical_poison = passives.get("Critical Poison").enabled;
+        gear_crit += passives.get("Critical Poison").getBonus();
+        if (passives.get("Critical Poison").enabled) {
+//            gear_crit_dmg += 0.2;
+        }
 
         if (cores != null) {
             for (int id : cores.keySet()) {
@@ -553,11 +574,11 @@ public class Actor extends ActorStats {
         resist = (base_res + gear_res * (1 + 0.01 * getResearchLvl("Equip Res"))) * set_res;
         hit = (base_hit + gear_hit * (1 + 0.01 * getResearchLvl("Equip Hit"))) * set_hit;
         speed = base_speed + gear_speed * (1 + 0.01 * getResearchLvl("Equip Spd"));
-        hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip Hp"));
+        hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip HP"));
         mp_max = (resist * 3 + intel) * mp_mult;
 
         if (research_lvls != null) {
-            if (tier >= 3) {
+            if (tier == 3) {
                 exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0,
                         120 + research_lvls.getOrDefault("Max CL", 0.0).intValue() - cl));
             } else {
@@ -667,7 +688,11 @@ public class Actor extends ActorStats {
     }
 
     public double getMp_regen() {
-        return getMp_max() / 360.0 * mana_regen_mult;
+        if (game_version >= 1700) {
+            return getMp_max() / 360.0 * mana_regen_mult * 0.5;
+        } else {
+            return getMp_max() / 360.0 * mana_regen_mult;
+        }
     }
 
     public double getHp_max() {

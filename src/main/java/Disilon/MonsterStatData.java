@@ -418,6 +418,7 @@ public class MonsterStatData {
             case "Empress" -> game_version < 1676 ? 380 : 400;
             case "Tree Golem" -> game_version < 1667 ? 500 : 650;
             case "Gloom Flower" -> 800;
+            case "Z21" -> 1155;
             case "Squirrel Mage" -> game_version < 1621 ? 2000 : (game_version < 1622 ? 3000 : 2500);
             default -> 0;
         };

@@ -141,6 +141,8 @@ public class SkillData {
         addPassive("Survival Instinct", 0, 5, 0.1);
         addPassive("True Sight", 0.25, 25, 0.4);
         addPassive("Divine Boost", 0.25, 25, 0.4);
+        addPassive("Critical Poison", 0.20, 25, 0.4);
+        addPassive("Killing Intent", 0.20, 25, 0.4);
 
         addPassive("Toughness pill", 0.0, 0, 0);
         addPassive("Speedy pill", 0.0, 0, 0);
@@ -187,9 +189,9 @@ public class SkillData {
                 false);
         addActive("Aura Shot", 1, 112.5, 137.5, 1, 15, 0.9, 0.9, Scaling.atkint, Element.fire,
                 false,false);
-        addActive("Chain Combo", 1, 108, 132, 1.2, 30, 2.0/3, 0.5, Scaling.atkint, Element.fire,
+        addActive("Chain Combo", 1, 130*0.9, 130*1.1, 1.2, 30, 2.0/3, 0.5, Scaling.atkint, Element.fire,
                 false,false, "knuckles");
-        addActive("Asura Strike", 1, 1300*0.9, 1300*1.1, 1.2, 220, 0.5, 15, Scaling.atkint, Element.fire,
+        addActive("Asura Strike", 1, 1300*0.9, 1300*1.1, 1.2, 220, 0.5, 10/0.75, Scaling.atkint, Element.fire,
                 true,false, "knuckles");
         addActive("Defense Break", 1, 90, 110, 1, 10, 1, 1, Scaling.atk, Element.phys, false,
                 false);
@@ -312,8 +314,8 @@ public class SkillData {
         addActive("First Aid", 1, 15, 15, 0, 5, 0.9, 1.1, Scaling.atk, Element.none, false,
                 true);
         addActive("Prepare", 0, 1, 1);
-        addActive("Extra Attack", 1, 75, 75, 100, 0, 0, 0, Scaling.atk,
-                Element.water,false, false);
+        addActive("Execute", 1, 100, 100, 100, 0, 0, 0, Scaling.atk,
+                Element.phys,false, false);
         potion_skills = new HashSet<>(List.of("Throw Burning","Throw Freezing","Throw Geo","Throw Acid","Throw Black","Throw Luminary"));
         addActive("Throw Burning", 1, 666, 666, 1, 50, 3, 3, Scaling.atk, Element.fire,false, false);
         active_skills.get("Throw Burning").addDebuff("Burn", 3, 2.5);
@@ -344,12 +346,21 @@ public class SkillData {
                 Element.dark,true, false);
         addActive("Poison Cloud", 1, 36, 44, 9.99, 20, 1.0, 1.0, Scaling.atk, Element.phys, true, false);
         active_skills.get("Poison Cloud").addDebuff("Poison", 4, 0.13);
-        addActive("Celestial Arrow", 1, 499.5, 610.5, 1, 555, 2.2, 2.2, Scaling.atkhit, Element.light,
+        addActive("Celestial Arrow", 1, 888*0.9, 888*1.1, 1, 555, 2.2, 2.2, Scaling.atkhit, Element.light,
                 false, false, "bow");
-        addActive("Celestial Ray", 1, 599.4, 732.6, 1.5, 666, 2.5, 2.5, Scaling.resint, Element.wind,
+        addActive("Celestial Ray", 1, 999*0.9, 999*1.1, 1.5, 666, 2.5, 2.5, Scaling.resint, Element.wind,
                 false, false, "book");
         addActive("Kyrie Eleyson", 1, 0, 0, 0, 250, 1, 1, Scaling.atk, Element.none, false,
                 false);
         active_skills.get("Kyrie Eleyson").addBuff("Kyrie Eleyson", 1, 0.3);
+        addActive("Poisoned Kunai", 1, 450*0.9, 450*1.1, 1.2, 350, 1.2, 1.5, Scaling.atkspd, Element.dark, false
+                , false, "dagger");
+        active_skills.get("Poisoned Kunai").addDebuff("Poison", 3, 0.13);
+        addActive("Poisoned Dagger", 1, 54, 66, 1, 25, 1/3.0, 2/3.0, Scaling.atkspd, Element.water, false
+                , false, "dagger");
+        active_skills.get("Poisoned Dagger").addDebuff("Poison", 3, 0.13);
+        addActive("Poison Trigger", 1, 0, 0, 1, 200, 0.6, 0.5, Scaling.atk, Element.dark,
+                false, false);
+        active_skills.get("Poison Trigger").addDebuff("Poison Trigger", 1, 0.65);
     }
 }

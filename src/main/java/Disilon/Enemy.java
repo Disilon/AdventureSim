@@ -339,6 +339,32 @@ public class Enemy extends Actor {
                 skills.enableActive("Poison Cloud",10, SkillMod.Basic);
                 skills.enableActive("Dark Blast",10, SkillMod.Damage);
             }
+            case "Z21" -> {
+                base_lvl = 400;
+                base_hp_max = 3000000 / base_lvl;
+                base_exp = 982000 / base_lvl;
+                base_atk = 4800 / base_lvl;
+                base_def = 4800 / base_lvl;
+                base_int = 4800 / base_lvl;
+                base_res = 4800 / base_lvl;
+                base_hit = 4800 / base_lvl;
+                base_speed = 4800 / base_lvl;
+                skills.enableActive("Attack",10, SkillMod.Basic);
+                passives.get("Extra Attack").enabled = true;
+            }
+            case "Z21_x2def" -> {
+                base_lvl = 400;
+                base_hp_max = 3000000 / base_lvl;
+                base_exp = 982000 / base_lvl;
+                base_atk = 4800 / base_lvl;
+                base_def = 4800*2 / base_lvl;
+                base_int = 4800 / base_lvl;
+                base_res = 4800*2 / base_lvl;
+                base_hit = 4800 / base_lvl;
+                base_speed = 4800 / base_lvl;
+                skills.enableActive("Attack",10, SkillMod.Basic);
+                passives.get("Extra Attack").enabled = true;
+            }
             case "Caco" -> {
                 base_lvl = 250;
                 base_hp_max = 350000 / base_lvl;

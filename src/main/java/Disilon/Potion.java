@@ -3,6 +3,7 @@ package Disilon;
 import java.util.Vector;
 
 import static Disilon.Main.df2;
+import static Disilon.Main.game_version;
 
 public class Potion {
     Player owner;
@@ -81,13 +82,13 @@ public class Potion {
             case 1 -> 125;
             case 2 -> 300;
             case 3 -> 700;
-            case 4 -> 1500;
-            case 5 -> 3000;
+            case 4 -> game_version >= 1700 ? 2250 : 1500;
+            case 5 -> game_version >= 1700 ? 5000 : 3000;
             case 11 -> 150;
             case 12 -> 350;
             case 13 -> 800;
-            case 14 -> 1750;
-            case 15 -> 3500;
+            case 14 -> game_version >= 1700 ? 2500 : 1750;
+            case 15 -> game_version >= 1700 ? 6000 : 3500;
             default -> 0;
         };
     }
@@ -111,15 +112,15 @@ public class Potion {
     private double mp_cd() {
         return switch (tier) {
             case 1 -> 15;
-            case 2 -> 25;
-            case 3 -> 45;
-            case 4 -> 60;
-            case 5 -> 90;
+            case 2 -> game_version >= 1700 ? 20 : 25;
+            case 3 -> game_version >= 1700 ? 30 : 45;
+            case 4 -> game_version >= 1700 ? 40 : 60;
+            case 5 -> game_version >= 1700 ? 50 : 90;
             case 11 -> 7.5;
-            case 12 -> 12.5;
-            case 13 -> 22.5;
-            case 14 -> 30;
-            case 15 -> 45;
+            case 12 -> game_version >= 1700 ? 10 : 12.5;
+            case 13 -> game_version >= 1700 ? 15 : 22.5;
+            case 14 -> game_version >= 1700 ? 20 : 30;
+            case 15 -> game_version >= 1700 ? 25 : 45;
             default -> 0;
         };
     }

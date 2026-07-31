@@ -21,7 +21,7 @@ public class Player extends Actor {
             "Thief", "Warrior", "Archer", "Fighter", "Mage", "Cleric",
             "Assassin", "Pyromancer", "Sniper",  "Knight", "Priest", "Hunter", "Rogue", "Geomancer", "Monk",
             "Onion Knight", "Scholar", "Alchemist",
-            "Holy Archer",  "Ninja"};
+            "Holy Archer",  "Ninja", "Tea Rogue"};
 
     double rp_balance;
     double old_rp;
@@ -451,13 +451,13 @@ public class Player extends Actor {
                 base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Ninja" -> {
-                base_hp_max = (double) (125 * (cl + 100)) / 10000 * 30 * ml;
-                base_atk = (double) (170 * (cl + 100)) / 10000 * 4 * ml;
-                base_def = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
-                base_int = (double) (145 * (cl + 100)) / 10000 * 4 * ml;
+                base_hp_max = (double) (130 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (140 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
                 base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
-                base_hit = (double) (140 * (cl + 100)) / 10000 * 4 * ml;
-                base_speed = (double) (170 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
             }
             case "Onion Knight" -> {
                 if (cl >= 99) {
@@ -476,6 +476,25 @@ public class Player extends Actor {
                     base_res = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
                     base_hit = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
                     base_speed = (double) (60 * (cl + 100)) / 10000 * 4 * ml;
+                }
+            }
+            case "Tea Rogue" -> {
+                if (cl >= 99) {
+                    base_hp_max = (double) (180 * (cl + 100)) / 10000 * 30 * ml;
+                    base_atk = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                    base_def = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                    base_int = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                    base_res = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                    base_hit = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                    base_speed = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
+                } else {
+                    base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
+                    base_atk = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                    base_def = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                    base_int = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                    base_res = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                    base_hit = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
+                    base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
                 }
             }
             case "Holy Archer" -> {
@@ -539,7 +558,7 @@ public class Player extends Actor {
             case "Pyromancer" -> {
                 result -= getAvgAtkInt();
             }
-            case "Rogue", "Ninja" -> {
+            case "Rogue", "Ninja", "Tea Rogue" -> {
                 result += getAvgAtkInt();
             }
             case "Alchemist" -> result += getAvgAtkInt() * 0.4;
@@ -1039,7 +1058,11 @@ public class Player extends Actor {
     }
 
     public double exp_to_cl(int lvl) {
-        return (Math.pow(lvl, 5) / 340 + Math.pow(lvl, 2) * 50 + 10) * Math.pow(2, tier - 1);
+        double tier_mult = Math.pow(2, Math.min(tier, 3) - 1);
+        if (tier >= 4) {
+            tier_mult *= 1 + 0.5 * cl;
+        }
+        return (Math.pow(lvl, 5) / 340 + Math.pow(lvl, 2) * 50 + 10) * tier_mult;
     }
 
     public double exp_to_ml(int lvl) {
@@ -1453,17 +1476,26 @@ public class Player extends Actor {
             case "Ninja" -> {
                 enableSkills("Assassin");
                 enableSkills("Rogue");
-                tier = 6;
+                tier = 4;
+                skills.enableActive("Poisoned Dagger");
+                skills.enableActive("Poisoned Kunai");
+//                skills.enableActive("Poison Burst?");
+                skills.enablePassive("Critical Poison");
+                skills.enablePassive("Killing Intent");
             }
             case "Holy Archer" -> {
                 enableSkills("Priest");
                 enableSkills("Sniper");
-                tier = 6;
+                tier = 4;
                 skills.enableActive("Kyrie Eleyson");
                 skills.enableActive("Celestial Arrow");
                 skills.enableActive("Celestial Ray");
                 skills.enablePassive("True Sight");
                 skills.enablePassive("Divine Boost");
+            }
+            case "Tea Rogue" -> {
+                enableSkills("Onion Knight");
+                tier = 4;
             }
         }
     }
