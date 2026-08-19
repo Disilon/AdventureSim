@@ -9,6 +9,7 @@ public class Enemy extends Actor {
     double strength = 1;
     double lvl = 1;
     double base_lvl;
+    double e_ailment_res = 1;
     boolean active = false;
     String previous_spell = null;
 
@@ -51,8 +52,7 @@ public class Enemy extends Actor {
         base_light_res = 0;
         base_dark_res = 0;
         base_phys_res = 0;
-        dodge_mult = 1;
-        poison_res = 1;
+        e_ailment_res = 1;
     }
 
     public void makeSquirrel(int lvl) {
@@ -312,7 +312,6 @@ public class Enemy extends Actor {
                 base_res = 2500 / base_lvl;
                 base_hit = 3000 / base_lvl;
                 base_speed = 1750 / base_lvl;
-//                base_earth = 1000 / base_lvl;
                 if (Main.game_version >= 1660) {
                     base_water_res = 0.2;
                 } else {
@@ -339,50 +338,54 @@ public class Enemy extends Actor {
                 skills.enableActive("Poison Cloud",10, SkillMod.Basic);
                 skills.enableActive("Dark Blast",10, SkillMod.Damage);
             }
-            case "Z21" -> {
+            case "Mammon" -> {
                 base_lvl = 400;
                 base_hp_max = 3000000 / base_lvl;
-                base_exp = 982000 / base_lvl;
-                base_atk = 4800 / base_lvl;
-                base_def = 4800 / base_lvl;
-                base_int = 4800 / base_lvl;
-                base_res = 4800 / base_lvl;
-                base_hit = 4800 / base_lvl;
+                base_exp = 1600000 / base_lvl;
+                if (game_version >= 1695) base_exp /= 1.5;
+                if (game_version >= 1698) base_exp *= 1.1;
+                base_atk = 6000 / base_lvl;
+                base_def = 10000 / base_lvl;
+                base_int = 4000 / base_lvl;
+                base_res = 10000 / base_lvl;
+                base_hit = 8000 / base_lvl;
                 base_speed = 4800 / base_lvl;
-                skills.enableActive("Attack",10, SkillMod.Basic);
-                passives.get("Extra Attack").enabled = true;
+                base_dark_res = -0.2;
+                base_light_res = 0.2;
+                e_ailment_res = 0.8;
+                skills.enableActive("Greedy Slash",10, SkillMod.Damage);
+                skills.enableActive("Absolute Greed",10, SkillMod.Damage);
             }
-            case "Z21_x2def" -> {
-                base_lvl = 400;
-                base_hp_max = 3000000 / base_lvl;
-                base_exp = 982000 / base_lvl;
-                base_atk = 4800 / base_lvl;
-                base_def = 4800*2 / base_lvl;
-                base_int = 4800 / base_lvl;
-                base_res = 4800*2 / base_lvl;
-                base_hit = 4800 / base_lvl;
-                base_speed = 4800 / base_lvl;
-                skills.enableActive("Attack",10, SkillMod.Basic);
-                passives.get("Extra Attack").enabled = true;
+            case "Gargoyle" -> {
+                base_lvl = 450;
+                base_hp_max = 4500000 / base_lvl;
+                base_exp = 2475000 / base_lvl;
+                if (game_version >= 1695) base_exp /= 1.5;
+                base_atk = 6750 / base_lvl;
+                base_def = 4500 / base_lvl;
+                base_int = 3600 / base_lvl;
+                base_res = 4500 / base_lvl;
+                base_hit = 6750 / base_lvl;
+                base_speed = 17100 / base_lvl;
+                e_ailment_res = 0.25;
+                skills.enableActive("Stunning Blow",10, SkillMod.Damage);
             }
-            case "Caco" -> {
-                base_lvl = 250;
-                base_hp_max = 350000 / base_lvl;
-                base_exp = 320000 / base_lvl;
-                base_atk = 3000 / base_lvl;
-                base_def = 4000 / base_lvl;
-                base_int = 500 / base_lvl;
-                base_res = 4000 / base_lvl;
-                base_hit = 20000 / base_lvl;
-                base_speed = 4500 / base_lvl;
-                base_fire_res = 0.35;
-                base_dark_res = 0.15;
-                base_light_res = 0.05;
-                base_earth_res = -0.05;
-                base_phys_res = -0.25;
-                base_wind_res = -0.4;
-                ailment_res = 1.5;
-                skills.enableActive("Hurricane");
+            case "Red Killer" -> {
+                base_lvl = 500;
+                base_hp_max = 5500000 / base_lvl;
+                base_exp = 3250000 / base_lvl;
+                if (game_version >= 1695) base_exp /= 1.5;
+                if (game_version >= 1698) base_exp *= 0.9;
+                base_atk = 7500 / base_lvl;
+                base_def = 5000 / base_lvl;
+                base_int = 5000 / base_lvl;
+                base_res = 5000 / base_lvl;
+                base_hit = 9000 / base_lvl;
+                base_speed = 7500 / base_lvl;
+                base_light_res = 0.2;
+                e_ailment_res = 0.6;
+                skills.enableActive("Extreme Assault",10, SkillMod.Damage);
+                skills.enableActive("Evil Assault",10, SkillMod.Damage);
             }
             case "Devil" -> {
                 base_lvl = 90;
@@ -412,9 +415,9 @@ public class Enemy extends Actor {
                 base_speed = 325 / base_lvl;
                 base_wind = 100 / base_lvl;
                 base_wind_res = 0.75;
-                dodge_mult = 1.25;
                 skills.enableActive("Bash");
                 skills.enableActive("Double Attack");
+                skills.enablePassive("Dodge");
             }
             case "Amon" -> {
                 base_lvl = 50;
@@ -571,6 +574,7 @@ public class Enemy extends Actor {
                 base_dark = 3750 / base_lvl;
                 skills.enableActive("Fire Slash");
                 skills.enableActive("Dark Blast");
+                skills.enableActive("Dark Revenge");
             }
         }
         active = true;
@@ -601,6 +605,8 @@ public class Enemy extends Actor {
         this.earth = base_earth * stat_lvl * stats_mult;
         this.light = base_light * stat_lvl * stats_mult;
         this.dark = base_dark * stat_lvl * stats_mult;
+
+        ailment_res = e_ailment_res;
 
         this.buffs.clear();
         this.debuffs.clear();
@@ -660,6 +666,17 @@ public class Enemy extends Actor {
             case "Gloom Flower" -> {
                 return roll < 70 ? active_skills.get("Poison Cloud") : active_skills.get("Dark Blast");
             }
+            case "Mammon" -> {
+                return roll < 70 ? active_skills.get("Greedy Slash") : active_skills.get("Absolute Greed");
+            }
+            case "Red Killer" -> {
+                if (active_skills.get("Extreme Assault").used == 0) {
+                    active_skills.get("Extreme Assault").used++;
+                    return active_skills.get("Extreme Assault");
+                } else {
+                    return active_skills.get("Evil Assault");
+                }
+            }
             case "Dummy" -> {
                 return active_skills.get("Cupid Hard Love Shot");
             }
@@ -674,8 +691,8 @@ public class Enemy extends Actor {
                 }
             }
             case "Dark Reaper" -> {
-                if (this.hasBuff("Sand")) return active_skills.get("Dark Revenge");
-                return getRandomSkill();
+                if (this.hasDebuff("Sand")) return active_skills.get("Dark Revenge");
+                return roll < 50 ? active_skills.get("Dark Slash") : active_skills.get("Fire Slash");
             }
             default -> {
                 return getRandomSkill();

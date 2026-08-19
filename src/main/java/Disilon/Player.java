@@ -59,6 +59,7 @@ public class Player extends Actor {
         this.rp_balance = setup.rp_balance;
         this.old_rp = setup.rp_balance;
         this.pill = new Pill(setup.pill);
+        this.highest_cl = setup.highest_cl;
         this.setClass(setup.playerclass);
         this.setCLML(setup.cl, setup.ml);
         this.old_cl = setup.cl;
@@ -214,9 +215,15 @@ public class Player extends Actor {
             case "Rogue" -> {
                 base_water_res = -0.5;
             }
+            case "Ninja" -> {
+                base_wind_res = -0.5;
+                base_dark_res = 0.5;
+                base_light_res = -0.5;
+            }
             case "Holy Archer" -> {
                 base_fire_res = -0.5;
                 base_dark_res = -0.5;
+                base_light_res = 0.5;
             }
         }
         enableSkills(name);
@@ -269,6 +276,7 @@ public class Player extends Actor {
     public void setCLML(int cl, int ml) {
         this.cl = cl;
         this.ml = ml;
+        if (cl > highest_cl) highest_cl = cl;
         switch (name) {
             case "Assassin" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
@@ -450,15 +458,6 @@ public class Player extends Actor {
                 base_hit = (double) (110 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (125 * (cl + 100)) / 10000 * 4 * ml;
             }
-            case "Ninja" -> {
-                base_hp_max = (double) (130 * (cl + 100)) / 10000 * 30 * ml;
-                base_atk = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
-                base_def = (double) (140 * (cl + 100)) / 10000 * 4 * ml;
-                base_int = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
-                base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
-                base_hit = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
-                base_speed = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
-            }
             case "Onion Knight" -> {
                 if (cl >= 99) {
                     base_hp_max = (double) (120 * (cl + 100)) / 10000 * 30 * ml;
@@ -497,12 +496,21 @@ public class Player extends Actor {
                     base_speed = (double) (90 * (cl + 100)) / 10000 * 4 * ml;
                 }
             }
+            case "Ninja" -> {
+                base_hp_max = (double) (130 * (cl + 100)) / 10000 * 30 * ml;
+                base_atk = (double) (190 * (cl + 100)) / 10000 * 4 * ml;
+                base_def = (double) (140 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_hit = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
+                base_speed = (double) (190 * (cl + 100)) / 10000 * 4 * ml;
+            }
             case "Holy Archer" -> {
                 base_hp_max = (double) (120 * (cl + 100)) / 10000 * 30 * ml;
-                base_atk = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_atk = (double) (130 * (cl + 100)) / 10000 * 4 * ml;
                 base_def = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
-                base_int = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
-                base_res = (double) (150 * (cl + 100)) / 10000 * 4 * ml;
+                base_int = (double) (160 * (cl + 100)) / 10000 * 4 * ml;
+                base_res = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
                 base_hit = (double) (180 * (cl + 100)) / 10000 * 4 * ml;
                 base_speed = (double) (120 * (cl + 100)) / 10000 * 4 * ml;
             }
@@ -558,8 +566,11 @@ public class Player extends Actor {
             case "Pyromancer" -> {
                 result -= getAvgAtkInt();
             }
-            case "Rogue", "Ninja", "Tea Rogue" -> {
+            case "Rogue", "Ninja" -> {
                 result += getAvgAtkInt();
+            }
+            case "Tea Rogue" -> {
+                result += (cl >= 99 ? 2 : 1) * getAvgAtkInt();
             }
             case "Alchemist" -> result += getAvgAtkInt() * 0.4;
             default -> {
@@ -745,6 +756,8 @@ public class Player extends Actor {
         if (set_fire > 1) sb.append("Set FireDmg = ").append(df2.format(set_fire * 100 - 100)).append("%\n");
         if (set_earth > 1) sb.append("Set EarthDmg = ").append(df2.format(set_earth * 100 - 100)).append("%\n");
         if (set_dark > 1) sb.append("Set DarkDmg = ").append(df2.format(set_dark * 100 - 100)).append("%\n");
+        if (set_holy > 1) sb.append("Set HolyDmg = ").append(df2.format(set_holy * 100 - 100)).append("%\n");
+        if (set_poison > 1) sb.append("Set Poison = ").append(df2.format(set_poison * 100 - 100)).append("%\n");
         if (set_magicdmg > 1) sb.append("Set MagicDmg = ").append(df2.format(set_magicdmg * 100 - 100)).append("%\n");
         if (set_physdmg > 1) sb.append("Set PhysDmg = ").append(df2.format(set_physdmg * 100 - 100)).append("%\n");
         if (set_core > 0) {
@@ -1172,14 +1185,30 @@ public class Player extends Actor {
         return  result;
     }
 
-    public void calcConsumables(double time) {
+    public double getCraftingSpeed() {
         double craft_spd = 1 + 0.01 * passives.get("Crafting").lvl;
         craft_spd *= (1 + 0.01 * research_lvls.getOrDefault("Crafting spd", 0.0).intValue());
-        double alch_spd = 1 + 0.01 * passives.get("Alchemy").lvl;
-        alch_spd *= (1 + 0.01 * research_lvls.getOrDefault("Alchemy spd", 0.0).intValue());
+        return craft_spd;
+    }
+
+    public double getSmithingSpeed() {
+        double craft_spd = 1 + 0.01 * passives.get("Smithing").lvl;
+        craft_spd *= (1 + 0.01 * research_lvls.getOrDefault("Smithing spd", 0.0).intValue());
+        return craft_spd;
+    }
+
+    public double getAlchemySpeed() {
+        double craft_spd = 1 + 0.01 * passives.get("Alchemy").lvl;
+        craft_spd *= (1 + 0.01 * research_lvls.getOrDefault("Alchemy spd", 0.0).intValue());
         if (alchemist_lvl >= 90) {
-            alch_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
+            craft_spd *= 1 + 0.0000125 * Math.pow(alchemist_lvl, 2);
         }
+        return craft_spd;
+    }
+
+    public void calcConsumables(double time) {
+        double craft_spd = getCraftingSpeed();
+        double alch_spd = getAlchemySpeed();
         double side_craft_spd = getSidecraftingSpeed();
         double craft_time = 0;
         double alchemy_time = 0;
@@ -1479,9 +1508,10 @@ public class Player extends Actor {
                 tier = 4;
                 skills.enableActive("Poisoned Dagger");
                 skills.enableActive("Poisoned Kunai");
-//                skills.enableActive("Poison Burst?");
+                skills.enableActive("Poison Trigger");
                 skills.enablePassive("Critical Poison");
                 skills.enablePassive("Killing Intent");
+                skills.disablePassive("Drop Boost");
             }
             case "Holy Archer" -> {
                 enableSkills("Priest");
@@ -1492,11 +1522,66 @@ public class Player extends Actor {
                 skills.enableActive("Celestial Ray");
                 skills.enablePassive("True Sight");
                 skills.enablePassive("Divine Boost");
+                skills.disablePassive("Drop Boost");
             }
             case "Tea Rogue" -> {
                 enableSkills("Onion Knight");
+                skills.enableActive("Brew Tea");
+                skills.enableActive("Drink Tea");
+                skills.enableActive("Tea Do Ken");
+                skills.enablePassive("Tea Boost");
+                skills.enablePassive("Patient Counter");
                 tier = 4;
             }
+        }
+    }
+
+    public String getEquipData() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Equipment data:\n");
+        if (equipment.get("MH") != null && equipment.get("OH") != null && equipment.get("MH").name.equals(equipment.get("OH").name)) {
+            processEquipment(sb, "Weapons", "MH", "OH");
+        } else {
+            if (equipment.get("MH") != null) {
+                processEquipment(sb, equipment.get("MH").name, "MH");
+            }
+            if (equipment.get("OH") != null) {
+                processEquipment(sb, equipment.get("OH").name, "OH");
+            }
+        }
+        processEquipment(sb, "Armor set", "Helmet","Chest","Pants","Bracer","Boots");
+        processEquipment(sb, "Accessory set", "Accessory1","Accessory2","Necklace");
+        return sb.toString();
+    }
+
+    private void processEquipment(StringBuilder sb, String title, String... slots) {
+        double totalTime = 0;
+        StringBuilder materialsSb = new StringBuilder();
+        LinkedHashMap<String, HashMap<String, Double>> map = new LinkedHashMap<>();
+        for (String slot : slots) {
+            Equipment item = equipment.get(slot);
+            if (item == null) continue;
+            item.getUpgradeMats(map, this);
+        }
+        if (map.isEmpty()) return;
+
+        for (Map.Entry<String, HashMap<String, Double>> entry : map.entrySet()) {
+            String key = entry.getKey();
+            HashMap<String, Double> values = entry.getValue();
+
+            materialsSb.append(key).append(" = ").append(values.get("amount").intValue());
+            if (values.getOrDefault("time", 0.0) > 0) {
+                materialsSb.append(", time = ")
+                        .append(df2.format(values.getOrDefault("time", 0.0)/3600))
+                        .append("h");
+            }
+            materialsSb.append("\n");
+
+            totalTime += values.getOrDefault("time", 0.0);
+        }
+        if (!materialsSb.toString().isEmpty()) {
+            sb.append(title).append(": total time = ").append(df2.format(totalTime/3600)).append("h\n");
+            sb.append(materialsSb).append("\n");
         }
     }
 }

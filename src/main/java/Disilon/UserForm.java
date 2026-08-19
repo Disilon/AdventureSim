@@ -149,6 +149,7 @@ public class UserForm extends JFrame {
     private JSpinner Hard_hp;
     private JSpinner Hard_stats;
     private JSpinner Hard_reward;
+    private JSpinner Highest_cl;
     private JCheckBox EnemyMinLvlIncrease;
     private JCheckBox Balance1;
     private JCheckBox Balance2;
@@ -272,7 +273,7 @@ public class UserForm extends JFrame {
         New_tab.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (tabs.size() < 10) {
+                if (tabs.size() < 15) {
                     JMenu new_tab = createTab();
                     loadSetup(tabs.get(selected_tab));
                 }
@@ -333,7 +334,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 3;
         SkillPanel.add(ClassLabel, gbc);
         PlayerClass = new JComboBox(Player.availableClasses);
-        PlayerClass.setMaximumRowCount(30);
+        PlayerClass.setMaximumRowCount(40);
         PlayerClass.setSelectedIndex(0);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -460,7 +461,7 @@ public class UserForm extends JFrame {
         SkillPanel.add(label2, gbc);
         element_row++;
         Skill1 = new JComboBox();
-        Skill1.setMaximumRowCount(20);
+        Skill1.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
@@ -469,7 +470,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         SkillPanel.add(Skill1, gbc);
         Skill2 = new JComboBox();
-        Skill2.setMaximumRowCount(20);
+        Skill2.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = element_row;
@@ -478,7 +479,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         SkillPanel.add(Skill2, gbc);
         Skill3 = new JComboBox();
-        Skill3.setMaximumRowCount(20);
+        Skill3.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 5;
         gbc.gridy = element_row;
@@ -487,7 +488,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         SkillPanel.add(Skill3, gbc);
         Skill4 = new JComboBox();
-        Skill4.setMaximumRowCount(20);
+        Skill4.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
         gbc.gridy = element_row;
@@ -597,7 +598,7 @@ public class UserForm extends JFrame {
         SkillPanel.add(label3, gbc);
         element_row++;
         Pskill1 = new JComboBox();
-        Pskill1.setMaximumRowCount(16);
+        Pskill1.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
@@ -606,7 +607,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         SkillPanel.add(Pskill1, gbc);
         Pskill2 = new JComboBox();
-        Pskill2.setMaximumRowCount(16);
+        Pskill2.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = element_row;
@@ -615,7 +616,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         SkillPanel.add(Pskill2, gbc);
         Pskill3 = new JComboBox();
-        Pskill3.setMaximumRowCount(16);
+        Pskill3.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 5;
         gbc.gridy = element_row;
@@ -624,7 +625,7 @@ public class UserForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         SkillPanel.add(Pskill3, gbc);
         Pskill4 = new JComboBox();
-        Pskill4.setMaximumRowCount(16);
+        Pskill4.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 7;
         gbc.gridy = element_row;
@@ -651,7 +652,7 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         EquipPanel.add(label5, gbc);
         MH_name = new JComboBox<String>();
-        MH_name.setMaximumRowCount(20);
+        MH_name.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
@@ -685,7 +686,7 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         EquipPanel.add(label6, gbc);
         OH_name = new JComboBox();
-        OH_name.setMaximumRowCount(20);
+        OH_name.setMaximumRowCount(30);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;
@@ -1380,34 +1381,47 @@ public class UserForm extends JFrame {
         LeftPanel.add(Hard_reward, gbc);
 
         row = 12;
-        Balance1 = new JCheckBox("Extra attack overkill overwrite");
+//        Balance1 = new JCheckBox("Extra attack overkill overwrite");
+//        gbc = new GridBagConstraints();
+//        gbc.gridx = column;
+//        gbc.gridy = row;
+//        gbc.gridwidth = 3;
+//        gbc.anchor = GridBagConstraints.NORTH;
+//        LeftPanel.add(Balance1, gbc);
+//        row += 1;
+//        Balance2 = new JCheckBox("Extra attack backstab dmg mult");
+//        gbc = new GridBagConstraints();
+//        gbc.gridx = column;
+//        gbc.gridy = row;
+//        gbc.gridwidth = 3;
+//        gbc.anchor = GridBagConstraints.NORTH;
+//        LeftPanel.add(Balance2, gbc);
+//        row += 1;
+//        Balance3 = new JCheckBox("Reduced overkill for crits");
+//        Balance3.setSelected(false);
+//        Balance3.setVisible(false);
+//        gbc = new GridBagConstraints();
+//        gbc.gridx = column;
+//        gbc.gridy = row;
+//        gbc.gridwidth = 3;
+//        gbc.anchor = GridBagConstraints.NORTH;
+//        LeftPanel.add(Balance3, gbc);
+
+        final JLabel Highest_cl_l = new JLabel("Highest CL");
         gbc = new GridBagConstraints();
-        gbc.gridx = column;
+        gbc.gridx = column + 2;
         gbc.gridy = row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.NORTH;
-//        gbc.insets = new Insets(5, 5, 0, 5);
-        LeftPanel.add(Balance1, gbc);
-        row += 1;
-        Balance2 = new JCheckBox("Extra attack backstab dmg mult");
+        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(Highest_cl_l, gbc);
+        row++;
+        Highest_cl = createCustomSpinner(0, 0, 200, 1);
+        Highest_cl.setToolTipText("used for Training set secondary bonus");
         gbc = new GridBagConstraints();
-        gbc.gridx = column;
+        gbc.gridx = column + 2;
         gbc.gridy = row;
-        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.NORTH;
-//        gbc.insets = new Insets(5, 5, 0, 5);
-        LeftPanel.add(Balance2, gbc);
-        row += 1;
-        Balance3 = new JCheckBox("Reduced overkill for crits");
-        Balance3.setSelected(false);
-        Balance3.setVisible(false);
-        gbc = new GridBagConstraints();
-        gbc.gridx = column;
-        gbc.gridy = row;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.NORTH;
-//        gbc.insets = new Insets(5, 5, 0, 5);
-        LeftPanel.add(Balance3, gbc);
+        LeftPanel.add(Highest_cl, gbc);
 
         row++;
         final JLabel label29 = new JLabel("Bestiary");
@@ -1742,6 +1756,7 @@ public class UserForm extends JFrame {
                             setup.result_lvling = simulation.lvling_info;
                             setup.stats = simulation.player.getAllStats();
                             setup.alchemist_lvl = simulation.player.alchemist_lvl;
+                            setup.highest_cl = simulation.player.highest_cl;
                         }
                         loadSetup(setup);
                     }
@@ -2371,9 +2386,9 @@ public class UserForm extends JFrame {
         data.result_skills = simulation.skills_info;
         data.result_lvling = simulation.lvling_info;
         data.setsetup = SetSetup.isSelected();
-        data.extra_atk_overkill = Balance1.isSelected();
-        data.extra_atk_backstab_mult = Balance2.isSelected();
-        data.crit_overkill_reduced = Balance3.isSelected();
+//        data.extra_atk_overkill = Balance1.isSelected();
+//        data.extra_atk_backstab_mult = Balance2.isSelected();
+//        data.crit_overkill_reduced = Balance3.isSelected();
         data.crafting_progress = CraftingProgress.isSelected();
         data.smithing_progress = SmithingProgress.isSelected();
         data.alchemy_progress = AlchemyProgress.isSelected();
@@ -2424,6 +2439,7 @@ public class UserForm extends JFrame {
         data.hard_hp = Double.parseDouble(Hard_hp.getValue().toString());
         data.hard_stats = Double.parseDouble(Hard_stats.getValue().toString());
         data.hard_reward = Double.parseDouble(Hard_reward.getValue().toString());
+        data.highest_cl = Integer.parseInt(Highest_cl.getValue().toString());
         return data;
     }
 
@@ -2521,9 +2537,9 @@ public class UserForm extends JFrame {
         simulation.result_info = data.result_essential;
         simulation.skills_info = data.result_skills;
         simulation.lvling_info = data.result_lvling;
-        Balance1.setSelected(data.extra_atk_overkill);
-        Balance2.setSelected(data.extra_atk_backstab_mult);
-        Balance3.setSelected(data.crit_overkill_reduced);
+//        Balance1.setSelected(data.extra_atk_overkill);
+//        Balance2.setSelected(data.extra_atk_backstab_mult);
+//        Balance3.setSelected(data.crit_overkill_reduced);
         CraftingProgress.setSelected(data.crafting_progress);
         SmithingProgress.setSelected(data.smithing_progress);
         AlchemyProgress.setSelected(data.alchemy_progress);
@@ -2635,6 +2651,7 @@ public class UserForm extends JFrame {
         ML_p.setValue((data.ml - (int) data.ml) * 100);
         actives_lvls = cloneIfPresent(actives_lvls, data.actives_lvls);
         passives_lvls = cloneIfPresent(passives_lvls, data.passives_lvls);
+        Highest_cl.setValue(data.highest_cl);
         loadSkillLvls();
         Rp_balance.setValue(data.rp_balance);
         for (String name : getAllResearches()) {

@@ -56,6 +56,7 @@ public class ActiveSkill {
     public double dmg_sum;
     public double extra_dmg_sum;
     public double debuff_chance_sum;
+    public double dot_dmg_sum;
     public double mana_used;
     public int used;
     public int attacks_total;
@@ -226,11 +227,26 @@ public class ActiveSkill {
                     base_hit = 0.7;
                 }
             }
+            case "Smoke Screen" -> {
+                if (game_version >= 1697) {
+                    base_debuff_duration = 5;
+                } else {
+                    base_debuff_duration = 3;
+                }
+            }
         }
     }
 
     public boolean shouldUse(Actor actor, int skill_setting) {
         if (name.equals("Prepare")) return false;
+        if (actor.passives.get("Patient Counter").enabled) {
+            if(name.equals("Brew Tea")) {
+                return !actor.hasBuff("Tea"); //!actor.hasBuff("Tea")
+            } else {
+                return false;
+            }
+        }
+        if (actor.hasBuff("Tea") && name.equals("Drink Tea")) return true;
         if (heal) {
             used_in_rotation++;
             return actor.hp / actor.getHp_max() * 100.0 < skill_setting;
@@ -290,6 +306,7 @@ public class ActiveSkill {
             cast -= 0.5;
             delay += 0.5;
         }
+        delay = max(0.5, delay);
         if (log.contains("enemy_skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
                 " at " + df2.format(time) + ", cast_time = " + df2.format(cast) + ", delay_time = " + df2.format(delay));
     }
@@ -325,7 +342,7 @@ public class ActiveSkill {
             delay = 1 * speed_mult * attacker.delay_speed_mult * delay_mult;
         }
         cast = max(0.01, cast);
-        delay = max(0.5*0.75, delay);
+        delay = max(0.5, delay);
         if (log.contains("skill_cast_start")) System.out.println("\n" + attacker.name + " started casting " + name +
                 " at " + df2.format(time) + ", cast_time = " + df2.format(cast) + ", delay_time = " + df2.format(delay));
     }
@@ -394,13 +411,13 @@ public class ActiveSkill {
 
     public double calculate_manacost(Actor actor) {
         double cost = (mp * mp_mult + mp_additive) * actor.p_mp_cost_mult + actor.p_mp_cost_add;
-        cost *= actor.mp_cost_mult;
+        cost *= actor.mp_cost_mult * Math.max(0.2, actor.core_manacost);
         if (element == Element.water) cost *= 1 - actor.finke_bonus;
         return cost;
     }
 
     public void pay_manacost(Actor actor) {
-        double cost = actor.casting.calculate_manacost(actor);
+        double cost = this.calculate_manacost(actor);
         mana_used += cost;
         actor.setMp(actor.mp - cost);
     }
@@ -588,15 +605,7 @@ public class ActiveSkill {
         switch (name) {
             case "Hide":
                 if (attacker.passives.get("Extra Attack").enabled && Math.random() < 0.05) {
-//                    double mult = attacker.getDmg_mult() * this.dmg_mult * 1.1;
-//                    mult *= 1.0 + attacker.ambush_bonus;
-//                    mult *= 1 + attacker.finke_bonus;
-//                    mult *= attacker.set_water;
-//                    mult *= 1 + attacker.elemental_buff;
-//                    mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
-//                    mult *= (1 - attacker.set_training);
-//                    mult *= attacker.set_physdmg;
-//                    extra_attack(attacker, attacker, mult); it was "fixed", maybe v1631?
+
                 } else {
                     attacker.hide_bonus = this.min;
                 }
@@ -659,6 +668,18 @@ public class ActiveSkill {
                 double absorb = min * (attacker.getDef() + attacker.getResist()) * (1 + attacker.getEarth_res());
                 attacker.remove_buff(name);
                 attacker.buffs.add(new Buff(name, 1, absorb));
+                break;
+            case "Drink Tea":
+                double eff = attacker.passives.get("Patient Counter").getBonus(1.0);
+                eff *= 1 + attacker.passives.get("Tea Boost").getBonus();
+                eff *= min / 100;
+                if (log.contains("skill_attack")) {
+                    System.out.println("Drank tea for " + df2.format(eff * 100) + "% hp/mp");
+                }
+                attacker.setHp(attacker.hp + attacker.getHp_max() * eff);
+                attacker.setMp(attacker.mp + attacker.getMp_max() * eff);
+                attacker.applyBuff("Charge Up", 1, eff * 3);
+                attacker.remove_buff("Tea");
                 break;
             default:
                 if (buff_name != null) {
@@ -746,6 +767,8 @@ public class ActiveSkill {
                 return 0;
             }
         }
+        if (defender.casting != null && defender.casting.name.equals("Charge Up") && defender.kyrie > 0) return 0;
+        if (defender.casting != null && defender.casting.name.equals("Brew Tea") && defender.casting.cast > 0) return 0;
         double total = 0;
         double true_sight = attacker.passives.get("True Sight").getBonus();
         double hit_chance = (1 - attacker.smoked) * attacker.getHit() * this.hit / defender.getSpeed() / 1.2;
@@ -815,6 +838,7 @@ public class ActiveSkill {
                     }
                     case Element.light -> {
                         atk = attacker.getLight();
+                        dmg_mult *= attacker.set_holy;
                         dmg_mult *= attacker.holy_dmg_mult;
                         dmg_mult2 *= 1 + attacker.elemental_buff;
                         yield defender.getLight_res();
@@ -935,6 +959,9 @@ public class ActiveSkill {
                     dmg = max(1, dmg);
                     dmg_sum += dmg;
                     dmg = max(0, dmg - defender.getBarrier());
+                    if (name.equals("Evil Assault")) {
+                        dmg = 666;
+                    }
                     if (log.contains("skill_attack")) {
                         System.out.println(attacker.name + " dealt " + (int) dmg + " damage with " + this.name +
                                 " to " + defender.name + " at " + df2.format(time) + "s hit chance " + df2.format(hit_chance*100) + "%");
@@ -957,11 +984,11 @@ public class ActiveSkill {
                     defender.zone.stats.incrementDmg(attacker.name, name, total);
                 }
                 if (extra == 1 && defender == attacker.target) {
-                    if (Main.balance1 && total > defender.hp) {
+                    if (game_version < 1685 && total > defender.hp) {
                         total = defender.hp;
                     }
                     double ea_mult = dmg_mult * dmg_mult2 * dmg_mult3 * Math.pow(1.1,calc_hits);
-                    if (Main.balance2) ea_mult *= dmg_mult1;
+                    ea_mult *= dmg_mult1;
                     if (game_version >= 1674) {
                         total += extra_attack(attacker, defender, ea_mult * (1 - enemy_resist));
                     } else {
@@ -1176,6 +1203,9 @@ public class ActiveSkill {
         if (name.equals("Smoke Screen")) {
             hit_chance = 1;
         }
+        if (name.equals("Poison Trigger")) {
+            hit_chance = 1;
+        }
         if (debuff.equals("Mark")) {
             hit_chance = 1;
         }
@@ -1196,15 +1226,12 @@ public class ActiveSkill {
             }
             double dmg = switch (debuff) {
                 case "Poison" -> calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() + attacker.getAtk())
-                        * attacker.poison_mult * attacker.core_poison * (1 - defender.poison_res);
+                        * attacker.poison_mult * attacker.core_poison * (1 - defender.poison_res) * attacker.set_poison;
                 case "Burn" ->
                         calcDebuffDmg(debuff, base_effect) * (attacker.getIntel() / 10 + attacker.getFire() / 5) *
                                 (1 - defender.fire_res) * (attacker.burn_mult + attacker.gear_burn);
                 default -> 0;
             };
-            if (defender.zone != null) {
-                defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
-            }
             if (debuff.equals("Poison") && attacker.critical_poison) {
                 double crit_chance = getCritChance(attacker, defender, true);
                 double crit_dmg = attacker.getCrit_damage();
@@ -1212,6 +1239,10 @@ public class ActiveSkill {
                     dmg *= crit_dmg;
                 }
             }
+            if (defender.zone != null) {
+                defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
+            }
+            dot_dmg_sum += dmg * duration;
             defender.applyDebuff(debuff, duration, dmg, effect);
             if (debuff.equals("Stun")) stun = true;
             if (log.contains("debuff_applied")) {
@@ -1258,6 +1289,10 @@ public class ActiveSkill {
         return hits_total > 0 ? extra_dmg_sum / hits_total * hits : 0;
     }
 
+    public double average_dot_dmg() {
+        return attacks_total > 0 ? dot_dmg_sum / attacks_total : 0;
+    }
+
     public double average_debuff_chance() {
         return hits_total > 0 ? debuff_chance_sum / hits_total * hits : 0;
     }
@@ -1271,6 +1306,7 @@ public class ActiveSkill {
         dmg_sum = 0;
         extra_dmg_sum = 0;
         debuff_chance_sum = 0;
+        dot_dmg_sum = 0;
         used_debuffed = 0;
     }
 
@@ -1295,8 +1331,11 @@ public class ActiveSkill {
             if (extra_dmg_sum > 0) {
                 sb.append("; extra: ").append((int) average_extra_dmg());
             }
+            if (dot_dmg_sum > 0) {
+                sb.append("; dot: ").append((int) average_dot_dmg());
+            }
             sb.append("; mana used: ").append((int) mana_used / simulations);
-            if (debuff_name != null) {
+            if (debuff_name != null && hits_total > 0) {
                 sb.append("; debuff chance: ").append((int) (average_debuff_chance() * 100)).append("%");
             }
             if (used_debuffed != 0) {

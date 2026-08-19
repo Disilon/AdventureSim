@@ -13,7 +13,7 @@ public class Settings implements Serializable {
     public Settings() {
         this.default_setups = new ArrayList<>();
         this.default_setups.add("Default.json");
-        this.window_size_x = 1350;
+        this.window_size_x = 1650;
         this.window_size_y = 1060;
         this.simulation_time_limit = 60000;
     }

@@ -71,6 +71,11 @@ public class SkillData {
         passives.get(name).visible = true;
     }
 
+    public void disablePassive(String name) {
+        passives.get(name).available = false;
+        passives.get(name).visible = false;
+    }
+
     public void enablePassive(String name, int lvl) {
         passives.get(name).available = true;
         passives.get(name).visible = true;
@@ -139,10 +144,12 @@ public class SkillData {
         addPassive("Pill Inventor", 0.0, 10, 0.15);
         addPassive("Blood Drain", 10, 5, 0.1);
         addPassive("Survival Instinct", 0, 5, 0.1);
-        addPassive("True Sight", 0.25, 25, 0.4);
+        addPassive("True Sight", 0.25, 25, 0.3);
         addPassive("Divine Boost", 0.25, 25, 0.4);
         addPassive("Critical Poison", 0.20, 25, 0.4);
         addPassive("Killing Intent", 0.20, 25, 0.4);
+        addPassive("Tea Boost", 0.5, 25, 0.4);
+        addPassive("Patient Counter", 0.65, 25, 0.4);
 
         addPassive("Toughness pill", 0.0, 0, 0);
         addPassive("Speedy pill", 0.0, 0, 0);
@@ -346,21 +353,39 @@ public class SkillData {
                 Element.dark,true, false);
         addActive("Poison Cloud", 1, 36, 44, 9.99, 20, 1.0, 1.0, Scaling.atk, Element.phys, true, false);
         active_skills.get("Poison Cloud").addDebuff("Poison", 4, 0.13);
-        addActive("Celestial Arrow", 1, 888*0.9, 888*1.1, 1, 555, 2.2, 2.2, Scaling.atkhit, Element.light,
+        addActive("Greedy Slash", 1, 235*0.9, 235*1.1, 1, 150, 0.7, 0.7, Scaling.atk,
+                Element.dark,false, false);
+        addActive("Absolute Greed", 1, 666*0.9, 666*1.1, 1, 450, 2.2, 1.5, Scaling.atk,
+                Element.dark,false, false);
+        addActive("Stunning Blow", 1, 567*0.9, 567*1.1, 1, 200, 1.6, 0.8, Scaling.atk,
+                Element.light,false, false);
+        active_skills.get("Stunning Blow").addDebuff("Stun", 0, 2);
+        addActive("Extreme Assault", 1, 3500*0.9, 3500*1.1, 1.5, 1000, 1, 6, Scaling.atk,
+                Element.phys,true, false);
+        addActive("Evil Assault", 6, 666, 666, 1.45, 200, 0.8, 1, Scaling.atk,
+                Element.phys,false, false);
+        addActive("Celestial Arrow", 1, 850*0.9, 850*1.1, 1, 555, 2.2, 2.2, Scaling.atkhit, Element.wind,
                 false, false, "bow");
-        addActive("Celestial Ray", 1, 999*0.9, 999*1.1, 1.5, 666, 2.5, 2.5, Scaling.resint, Element.wind,
+        addActive("Celestial Ray", 1, 999*0.9, 999*1.1, 1.2, 666, 2.5, 2.5, Scaling.resint, Element.light,
                 false, false, "book");
-        addActive("Kyrie Eleyson", 1, 0, 0, 0, 250, 1, 1, Scaling.atk, Element.none, false,
+        addActive("Kyrie Eleyson", 1, 0, 0, 0, 180, 0.8, 1, Scaling.atk, Element.none, false,
                 false);
-        active_skills.get("Kyrie Eleyson").addBuff("Kyrie Eleyson", 1, 0.3);
-        addActive("Poisoned Kunai", 1, 450*0.9, 450*1.1, 1.2, 350, 1.2, 1.5, Scaling.atkspd, Element.dark, false
-                , false, "dagger");
+        active_skills.get("Kyrie Eleyson").addBuff("Kyrie Eleyson", 1, 0.35);
+        addActive("Poisoned Kunai", 1, 520*0.9, 520*1.1, 1.35, 350, 1.2, 1.5, Scaling.atkspd, Element.dark, false,
+                false, "dagger");
         active_skills.get("Poisoned Kunai").addDebuff("Poison", 3, 0.13);
-        addActive("Poisoned Dagger", 1, 54, 66, 1, 25, 1/3.0, 2/3.0, Scaling.atkspd, Element.water, false
-                , false, "dagger");
+        addActive("Poisoned Dagger", 1, 54, 66, 1, 30, 0.35, 2/3.0, Scaling.atkspd, Element.dark, false,
+                false, "dagger");
         active_skills.get("Poisoned Dagger").addDebuff("Poison", 3, 0.13);
         addActive("Poison Trigger", 1, 0, 0, 1, 200, 0.6, 0.5, Scaling.atk, Element.dark,
                 false, false);
-        active_skills.get("Poison Trigger").addDebuff("Poison Trigger", 1, 0.65);
+        active_skills.get("Poison Trigger").addDebuff("Poison Trigger", 0, 0.65);
+        addActive("Brew Tea", 1, 0, 0, 0, 99, 1.8, 0.9, Scaling.atk, Element.none, false,
+                false);
+        active_skills.get("Brew Tea").addBuff("Tea", 1, 0);
+        addActive("Drink Tea", 1, 4, 0, 0, 0, 1, 2, Scaling.atk, Element.none, false,
+                false);
+        addActive("Tea Do Ken", 1, 750*0.9, 750*1.1, 1.25, 2500, 1.8, 1.8, Scaling.atk, Element.water, false,
+                false);
     }
 }

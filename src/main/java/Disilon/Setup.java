@@ -98,6 +98,7 @@ public class Setup implements Serializable {
     boolean smithing_progress = true;
     boolean alchemy_progress = true;
     boolean alchemy_consumption_based = true;
+    int highest_cl;
 
     public Setup() {
         this.passives_lvls = new HashMap<>();
@@ -936,5 +937,13 @@ public class Setup implements Serializable {
 
     public void setAlchemy_consumption_based(boolean alchemy_consumption_based) {
         this.alchemy_consumption_based = alchemy_consumption_based;
+    }
+
+    public int getHighest_cl() {
+        return highest_cl;
+    }
+
+    public void setHighest_cl(int highest_cl) {
+        this.highest_cl = highest_cl;
     }
 }

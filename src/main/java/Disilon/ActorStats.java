@@ -88,6 +88,8 @@ public class ActorStats {
     public double set_wind = 1;
     public double set_earth = 1;
     public double set_dark = 1;
+    public double set_holy = 1;
+    public double set_poison = 1;
     public double set_mana = 0;
     public double set_squirrel_drop = 1;
     public double set_squirrel_rate = 100;
@@ -221,6 +223,7 @@ public class ActorStats {
     int potions_thrown = 0;
     int total_flask_used = 0;
     int total_potions_thrown = 0;
+    int highest_cl = 0;
 
     public ActiveSkill skill1;
     public ActiveSkill skill2;

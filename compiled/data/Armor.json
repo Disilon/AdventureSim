@@ -3,66 +3,105 @@
         "Cloth Hood": {
             "RES": 6,
             "SET": "Cloth"
-        }, "Blazing Hood": {
+        },
+        "Blazing Hood": {
             "DEF": 4,
             "INT": 2,
             "RES": 8,
             "WATER_RES": -2,
             "FIRE_RES": 4,
-            "SET": "Blazing"
-        }, "Earthen Mask": {
+            "SET": "Blazing",
+            "MATS": "SilkyCloth=50;FireJewel=5"
+        },
+        "Earthen Mask": {
             "DEF": 6,
             "INT": 2,
             "RES": 6,
             "WIND_RES": -2,
             "EARTH_RES": 4,
-            "SET": "Earthen"
-        }, "Aero Hood": {
+            "SET": "Earthen",
+            "MATS": "SilkyCloth=50;EarthJewel=5"
+        },
+        "Aero Hood": {
             "SPD": 6,
             "INT": 2,
             "RES": 6,
             "WIND_RES": 4,
             "EARTH_RES": -2,
-            "SET": "Aero"
-		}, "Holy Hood": {
+            "SET": "Aero",
+            "MATS": "LizardLeather=50;WindJewel=5"
+		},
+        "Holy Hood": {
             "DEF": 4,
             "RES": 10,
             "DARK_RES": -2,
             "LIGHT_RES": 4,
-            "SET": "Holy"
-        }, "Leather Helmet": {
+            "SET": "Holy",
+            "MATS": "SilkyCloth=50;LightJewel=5"
+        },
+        "Leather Helmet": {
             "DEF": 6,
             "RES": 4,
-            "SET": "Leather"
-        }, "Aim Hat": {
+            "SET": "Leather",
+            "MATS": "Leather=50"
+        },
+        "Aim Hat": {
             "DEF": 6,
             "RES": 6,
             "HIT": 2,
             "FIRE_RES": -2,
             "WIND_RES": 4,
-            "SET": "Windy"
-        }, "Dark Leather Hood": {
+            "SET": "Windy",
+            "MATS": "SmoothLeather=50;WindJewel=5"
+        },
+        "Dark Leather Hood": {
             "ATK": 2,
             "DEF": 6,
             "RES": 6,
             "LIGHT_RES": -2,
             "DARK_RES": 4,
-            "SET": "Dark"
-		}, "Hunting Hood": {
+            "SET": "Dark",
+            "MATS": "SmoothLeather=50;DarkJewel=5"
+		},
+        "Hunting Hood": {
             "DEF": 6,
             "RES": 6,
             "FIRE_RES": 2,
             "WIND_RES": 2,
 			"WATER_RES": 2,
             "EARTH_RES": 2,
-            "SET": "Hunter"
-		}, "Training Helmet": {
+            "SET": "Hunter",
+            "MATS": "FairyLeather=25;MagicPowder=5"
+		},
+        "Poison Hat": {
+            "DEF": 6,
+            "SPD": 6,
+            "WATER_RES": 2,
+            "FIRE_RES": -2,
+            "DARK_RES": 2,
+            "LIGHT_RES": -2,
+            "SET": "Poison",
+            "MATS": "PoisonLeather=25;MagicPowder=5"
+        },
+        "Ninja Hood": {
+            "DEF": 30,
+            "RES": 30,
+            "HIT": 20,
+            "SPD": 20,
+            "DARK": 20,
+            "DARK_RES": 4,
+            "SET": "Ninja",
+            "MATS": "EvilLeather=25;MagicPowder=5"
+        },
+        "Training Helmet": {
             "DEF": 10,
             "RES": 10,
             "SPD": -10,
             "PHY_RES": 1,
-            "SET": "Training"
-		}, "Aquatic Helmet": {
+            "SET": "Training",
+            "MATS": "CobaltBar=60;MagicPowder=5;Heat=600"
+		},
+        "Aquatic Helmet": {
             "DEF": 24,
             "RES": 24,
 			"HIT": -8,
@@ -70,172 +109,287 @@
             "PHY_RES": 2,
 			"WATER_RES": 2,
 			"WATER": 10,
-            "SET": "Aquatic"
-        }, "Metal Helmet": {
+            "SET": "Aquatic",
+            "MATS": "CobaltBar=30;WaterJewel=5;Heat=600"
+        },
+        "Golden Helmet": {
+            "DEF": 60,
+            "RES": 60,
+            "HIT": -10,
+            "SPD": -10,
+            "LIGHT": 20,
+            "MAG_RES": 2,
+            "LIGHT_RES": 2,
+            "DARK_RES": -2,
+            "SET": "HolyDmg",
+            "MATS": "GoldBar=60;LightJewel=5;Heat=600"
+        },
+        "Metal Helmet": {
             "DEF": 7,
             "RES": 4,
             "HIT": -4,
             "SPD": -2,
             "PHY_RES": 1,
             "SET": "Metal"
-        }, "Iron Helmet": {
+        },
+        "Iron Helmet": {
             "DEF": 11,
             "RES": 6,
             "HIT": -6,
             "SPD": -2,
             "PHY_RES": 1.5,
-            "SET": "Iron"
-        }, "Bronze Helmet": {
+            "SET": "Iron",
+            "MATS": "IronBar=30;Heat=250"
+        },
+        "Bronze Helmet": {
             "HP": 100,
             "DEF": 16,
             "RES": 10,
             "HIT": -8,
             "SPD": -4,
             "PHY_RES": 2,
-            "SET": "Bronze"
+            "SET": "Bronze",
+            "MATS": "BronzeBar=50;Heat=400"
         }
-    }, "BOOTS":{
+    },
+    "BOOTS":{
         "Cloth Boots": {
             "SPD": 6,
             "SET": "Cloth"
-        }, "Blazing Boots": {
+        },
+        "Blazing Boots": {
             "INT": 2,
             "SPD": 14,
             "FIRE": 10,
             "FIRE_RES": 2,
-            "SET": "Blazing"
-        }, "Earthen Boots": {
+            "SET": "Blazing",
+            "MATS": "SilkyCloth=50;FireJewel=5"
+        },
+        "Earthen Boots": {
             "INT": 2,
             "SPD": 14,
             "EARTH": 4,
             "PHYS_RES": 1,
             "EARTH_RES": 4,
-            "SET": "Earthen"
-		}, "Aero Boots": {
+            "SET": "Earthen",
+            "MATS": "SilkyCloth=50;EarthJewel=5"
+		},
+        "Aero Boots": {
             "SPD": 14,
             "INT": 2,
             "WIND": 4,
             "WIND_RES": 6,
-            "SET": "Aero"
-        }, "Holy Boots": {
+            "SET": "Aero",
+            "MATS": "LizardLeather=50;WindJewel=5"
+        },
+        "Holy Boots": {
             "RES": 6,
             "SPD": 10,
             "LIGHT": 10,
             "LIGHT_RES": 2,
-            "SET": "Holy"
-        }, "Leather Boots": {
+            "SET": "Holy",
+            "MATS": "SilkyCloth=50;LightJewel=5"
+        },
+        "Leather Boots": {
             "SPD": 10,
-            "SET": "Leather"
-        }, "Aim Boots": {
+            "SET": "Leather",
+            "MATS": "Leather=50"
+        },
+        "Aim Boots": {
             "DEF": 2,
             "HIT": 2,
             "SPD": 12,
             "WIND": 10,
             "WIND_RES": 2,
-            "SET": "Windy"
-        }, "Dark Leather Boots": {
+            "SET": "Windy",
+            "MATS": "SmoothLeather=50;WindJewel=5"
+        },
+        "Dark Leather Boots": {
             "ATK": 2,
             "DEF": 4,
             "SPD": 10,
             "DARK": 10,
             "DARK_RES": 2,
-            "SET": "Dark"
-		}, "Hunting Boots": {
+            "SET": "Dark",
+            "MATS": "SmoothLeather=50;DarkJewel=5"
+		},
+        "Hunting Boots": {
             "DEF": 6,
             "RES": 6,
             "FIRE_RES": 2,
             "WIND_RES": 2,
 			"WATER_RES": 2,
             "EARTH_RES": 2,
-            "SET": "Hunter"
-		}, "Training Boots": {
+            "SET": "Hunter",
+            "MATS": "FairyLeather=25;MagicPowder=5"
+		},
+        "Poison Boots": {
+            "DEF": 6,
+            "SPD": 6,
+            "WATER_RES": 2,
+            "FIRE_RES": -2,
+            "DARK_RES": 2,
+            "LIGHT_RES": -2,
+            "SET": "Poison",
+            "MATS": "PoisonLeather=25;MagicPowder=5"
+        },
+        "Ninja Boots": {
+            "DEF": 30,
+            "RES": 30,
+            "SPD": 40,
+            "DARK": 30,
+            "DARK_RES": 4,
+            "SET": "Ninja",
+            "MATS": "EvilLeather=25;MagicPowder=5"
+        },
+        "Training Boots": {
             "DEF": 10,
             "RES": 10,
             "SPD": -10,
             "PHY_RES": 1,
-            "SET": "Training"
-		}, "Aquatic Boots": {
+            "SET": "Training",
+            "MATS": "CobaltBar=60;MagicPowder=5;Heat=600"
+		},
+        "Aquatic Boots": {
             "DEF": 8,
             "RES": 12,
             "SPD": 8,
 			"WATER": 15,
-            "SET": "Aquatic"
-        }, "Metal Boots": {
+            "SET": "Aquatic",
+            "MATS": "CobaltBar=30;WaterJewel=5;Heat=600"
+        },
+        "Golden Boots": {
+            "DEF": 20,
+            "RES": 20,
+            "HIT": -10,
+            "SPD": 40,
+            "LIGHT": 30,
+            "MAG_RES": 2,
+            "LIGHT_RES": 2,
+            "DARK_RES": -2,
+            "SET": "HolyDmg",
+            "MATS": "GoldBar=60;LightJewel=5;Heat=600"
+        },
+        "Metal Boots": {
             "DEF": 2,
             "RES": 2,
             "SPD": 2,
             "SET": "Metal"
-        }, "Iron Boots": {
+        },
+        "Iron Boots": {
             "DEF": 4,
             "RES": 4,
             "SPD": 2,
-            "SET": "Iron"
-        }, "Bronze Boots": {
+            "SET": "Iron",
+            "MATS": "IronBar=30;Heat=250"
+        },
+        "Bronze Boots": {
             "HP": 100,
             "DEF": 6,
             "RES": 6,
             "SPD": 4,
-            "SET": "Bronze"
+            "SET": "Bronze",
+            "MATS": "BronzeBar=50;Heat=400"
         }
-    }, "BRACERS":{
+    },
+    "BRACERS":{
 		"Cloth Bracers": {
 			"HIT": 6,
 			"SET": "Cloth"
-		}, "Blazing Bracers": {
+		},
+        "Blazing Bracers": {
             "INT": 6,
             "HIT": 6,
             "FIRE": 60,
             "WATER_RES": -4,
-            "SET": "Blazing"
-        }, "Earthen Bracers": {
+            "SET": "Blazing",
+            "MATS": "SilkyCloth=50;FireJewel=5"
+        },
+        "Earthen Bracers": {
             "DEF": 6,
             "INT": 6,
             "HIT": 6,
             "EARTH": 40,
             "WIND_RES": -4,
-            "SET": "Earthen"
-		}, "Aero Bracers": {
+            "SET": "Earthen",
+            "MATS": "SilkyCloth=50;EarthJewel=5"
+		},
+        "Aero Bracers": {
             "SPD": 6,
             "INT": 6,
 			"HIT": 6,
             "WIND": 40,
             "EARTH_RES": -4,
-            "SET": "Aero"
-		}, "Holy Bracers": {
+            "SET": "Aero",
+            "MATS": "LizardLeather=50;WindJewel=5"
+		},
+        "Holy Bracers": {
             "RES": 6,
             "HIT": 6,
             "LIGHT": 60,
             "DARK_RES": -4,
-            "SET": "Holy"
-        }, "Leather Bracers": {
+            "SET": "Holy",
+            "MATS": "SilkyCloth=50;LightJewel=5"
+        },
+        "Leather Bracers": {
             "HIT": 10,
-            "SET": "Leather"
-        }, "Aim Bracers": {
+            "SET": "Leather",
+            "MATS": "Leather=50"
+        },
+        "Aim Bracers": {
             "HIT": 12,
             "WIND": 60,
             "FIRE_RES": -4,
-            "SET": "Windy"
-        }, "Dark Leather Bracers": {
+            "SET": "Windy",
+            "MATS": "SmoothLeather=50;WindJewel=5"
+        },
+        "Dark Leather Bracers": {
             "ATK": 6,
             "HIT": 6,
             "DARK": 60,
             "LIGHT_RES": -4,
-            "SET": "Dark"
-		}, "Hunting Bracers": {
+            "SET": "Dark",
+            "MATS": "SmoothLeather=50;DarkJewel=5"
+		},
+        "Hunting Bracers": {
             "DEF": 6,
             "RES": 6,
             "FIRE_RES": 2,
             "WIND_RES": 2,
 			"WATER_RES": 2,
             "EARTH_RES": 2,
-            "SET": "Hunter"
-		}, "Training Bracers": {
+            "SET": "Hunter",
+            "MATS": "FairyLeather=25;MagicPowder=5"
+		},
+        "Poison Bracers": {
+            "DEF": 6,
+            "SPD": 6,
+            "WATER_RES": 2,
+            "FIRE_RES": -2,
+            "DARK_RES": 2,
+            "LIGHT_RES": -2,
+            "SET": "Poison",
+            "MATS": "PoisonLeather=25;MagicPowder=5"
+        },
+        "Ninja Bracers": {
+            "DEF": 10,
+            "RES": 10,
+            "HIT": 10,
+            "SPD": 30,
+            "DARK": 50,
+            "DARK_RES": 4,
+            "SET": "Ninja",
+            "MATS": "EvilLeather=25;MagicPowder=5"
+        },
+        "Training Bracers": {
             "DEF": 10,
             "RES": 10,
             "SPD": -10,
             "PHY_RES": 1,
-            "SET": "Training"
-		}, "Aquatic Bracers": {
+            "SET": "Training",
+            "MATS": "CobaltBar=60;MagicPowder=5;Heat=600"
+		},
+        "Aquatic Bracers": {
             "DEF": 10,
             "RES": 10,
 			"HIT": 10,
@@ -243,135 +397,213 @@
             "PHY_RES": 1,
 			"WATER_RES": 1,
 			"WATER": 30,
-            "SET": "Aquatic"
-        }, "Metal Bracers": {
+            "SET": "Aquatic",
+            "MATS": "CobaltBar=30;WaterJewel=5;Heat=600"
+        },
+        "Golden Bracers": {
+            "DEF": 20,
+            "RES": 20,
+            "HIT": 40,
+            "SPD": -10,
+            "LIGHT": 50,
+            "MAG_RES": 2,
+            "LIGHT_RES": 2,
+            "DARK_RES": -2,
+            "SET": "HolyDmg",
+            "MATS": "GoldBar=60;LightJewel=5;Heat=600"
+        },
+        "Metal Bracers": {
             "DEF": 2,
             "RES": 2,
             "HIT": 4,
 			"SPD": -2,
 			"PHY_RES": 1,
             "SET": "Metal"
-        }, "Iron Bracers": {
+        },
+        "Iron Bracers": {
             "DEF": 5,
             "RES": 4,
             "HIT": 6,
 			"SPD": -4,
 			"PHY_RES": 1.5,
-            "SET": "Iron"
-        }, "Bronze Bracers": {
+            "SET": "Iron",
+            "MATS": "IronBar=30;Heat=250"
+        },
+        "Bronze Bracers": {
             "HP": 100,
             "DEF": 8,
             "RES": 6,
             "HIT": 12,
             "SPD": -6,
             "PHY_RES": 2,
-            "SET": "Bronze"
+            "SET": "Bronze",
+            "MATS": "BronzeBar=50;Heat=400"
         }
-	}, "PANTS":{
+	},
+    "PANTS":{
         "Cloth Pants": {
             "DEF": 8,
             "SET": "Cloth"
-        }, "Blazing Pants": {
+        },
+        "Blazing Pants": {
             "DEF": 6,
             "INT": 2,
             "RES": 10,
 			"FIRE": 20,
             "FIRE_RES": 2,
-            "SET": "Blazing"
-        }, "Earthen Skirt": {
+            "SET": "Blazing",
+            "MATS": "SilkyCloth=60;FireJewel=5"
+        },
+        "Earthen Skirt": {
             "DEF": 6,
             "INT": 2,
             "RES": 10,
             "EARTH": 10,
             "PHYS_RES": 1,
             "EARTH_RES": 6,
-            "SET": "Earthen"
-		}, "Aero Skirt": {
+            "SET": "Earthen",
+            "MATS": "SilkyCloth=60;EarthJewel=5"
+		},
+        "Aero Skirt": {
             "SPD": 6,
 			"RES": 10,
             "INT": 2,
             "WIND": 10,
             "WIND_RES": 8,
-            "SET": "Aero"
-		}, "Holy Pants": {
+            "SET": "Aero",
+            "MATS": "LizardLeather=60;WindJewel=5"
+		},
+        "Holy Pants": {
             "DEF": 6,
             "RES": 12,
 			"LIGHT": 20,
             "LIGHT_RES": 2,
-            "SET": "Holy"
-        }, "Leather Pants": {
+            "SET": "Holy",
+            "MATS": "SilkyCloth=60;LightJewel=5"
+        },
+        "Leather Pants": {
             "DEF": 10,
-            "SET": "Leather"
-        }, "Aim Pants": {
+            "SET": "Leather",
+            "MATS": "Leather=60"
+        },
+        "Aim Pants": {
             "DEF": 10,
             "RES": 6,
             "HIT": 2,
 			"WIND": 20,
             "WIND_RES": 2,
-            "SET": "Windy"
-        }, "Dark Leather Pants": {
+            "SET": "Windy",
+            "MATS": "SmoothLeather=60;WindJewel=5"
+        },
+        "Dark Leather Pants": {
             "ATK": 2,
             "DEF": 10,
             "RES": 6,
 			"DARK": 20,
             "DARK_RES": 2,
-            "SET": "Dark"
-		}, "Hunting Pants": {
+            "SET": "Dark",
+            "MATS": "SmoothLeather=60;DarkJewel=5"
+		},
+        "Hunting Pants": {
             "DEF": 8,
             "RES": 8,
             "FIRE_RES": 2,
             "WIND_RES": 2,
 			"WATER_RES": 2,
             "EARTH_RES": 2,
-            "SET": "Hunter"
-		}, "Training Pants": {
+            "SET": "Hunter",
+            "MATS": "FairyLeather=30;MagicPowder=5"
+		},
+        "Poison Pants": {
+            "DEF": 8,
+            "SPD": 8    ,
+            "WATER_RES": 2,
+            "FIRE_RES": -2,
+            "DARK_RES": 2,
+            "LIGHT_RES": -2,
+            "SET": "Poison",
+            "MATS": "PoisonLeather=30;MagicPowder=5"
+        },
+        "Ninja Pants": {
+            "DEF": 30,
+            "RES": 30,
+            "DARK": 50,
+            "DARK_RES": 4,
+            "SET": "Ninja",
+            "MATS": "EvilLeather=30;MagicPowder=5"
+        },
+        "Training Pants": {
             "DEF": 14,
             "RES": 14,
             "SPD": -10,
             "PHY_RES": 2,
-            "SET": "Training"
-		}, "Aquatic Pants": {
+            "SET": "Training",
+            "MATS": "CobaltBar=80;MagicPowder=5;Heat=999"
+		},
+        "Aquatic Pants": {
             "DEF": 14,
             "RES": 14,
             "SPD": -6,
             "PHY_RES": 1,
 			"WATER_RES": 1,
 			"WATER": 15,
-            "SET": "Aquatic"
-        }, "Metal Pants": {
+            "SET": "Aquatic",
+            "MATS": "CobaltBar=40;WaterJewel=5;Heat=999"
+        },
+        "Golden Pants": {
+            "DEF": 30,
+            "RES": 30,
+            "HIT": -10,
+            "SPD": -10,
+            "LIGHT": 50,
+            "MAG_RES": 2,
+            "LIGHT_RES": 2,
+            "DARK_RES": -2,
+            "SET": "HolyDmg",
+            "MATS": "GoldBar=80;LightJewel=5;Heat=999"
+        },
+        "Metal Pants": {
             "DEF": 5,
             "RES": 2,
             "SPD": -2,
             "PHY_RES": 1,
             "SET": "Metal"
-        }, "Iron Pants": {
+        },
+        "Iron Pants": {
             "DEF": 9,
             "RES": 6,
             "SPD": -6,
             "PHY_RES": 1.5,
-            "SET": "Iron"
-        }, "Bronze Pants": {
+            "SET": "Iron",
+            "MATS": "IronBar=45;Heat=400"
+        },
+        "Bronze Pants": {
             "HP": 100,
             "DEF": 10,
             "RES": 8,
             "SPD": -8,
             "PHY_RES": 2,
-            "SET": "Bronze"
+            "SET": "Bronze",
+            "MATS": "BronzeBar=60;Heat=500"
         }
-    }, "CHEST":{
+    },
+    "CHEST":{
         "Cloth Mantle": {
             "DEF": 4,
 			"RES": 6,
             "SET": "Cloth"
-        }, "Blazing Mantle": {
+        },
+        "Blazing Mantle": {
             "DEF": 8,
             "INT": 4,
             "RES": 14,
 			"FIRE": 30,
             "WATER_RES": -6,
             "FIRE_RES": 6,
-            "SET": "Blazing"
-        }, "Earthen Mantle": {
+            "SET": "Blazing",
+            "MATS": "SilkyCloth=100;FireJewel=10"
+        },
+        "Earthen Mantle": {
             "DEF": 14,
             "INT": 4,
             "SPD": 10,
@@ -379,8 +611,10 @@
             "PHYS_RES": 2,
             "WIND_RES": -6,
             "EARTH_RES": 10,
-            "SET": "Earthen"
-		}, "Aero Chest Piece": {
+            "SET": "Earthen",
+            "MATS": "SilkyCloth=100;EarthJewel=10"
+		},
+        "Aero Chest Piece": {
 			"DEF": 4,
             "RES": 6,
             "SPD": 14,
@@ -388,50 +622,84 @@
             "WIND": 20,
             "WIND_RES": 14,
             "EARTH_RES": -6,
-            "SET": "Aero"
-		}, "Holy Chest Piece": {
+            "SET": "Aero",
+            "MATS": "LizardLeather=100;WindJewel=10"
+		},
+        "Holy Chest Piece": {
             "DEF": 8,
             "RES": 18,
 			"LIGHT": 30,
             "DARK_RES": -6,
             "LIGHT_RES": 6,
-            "SET": "Holy"
-        }, "Leather Shirt": {
+            "SET": "Holy",
+            "MATS": "SilkyCloth=100;LightJewel=10"
+        },
+        "Leather Shirt": {
             "DEF": 12,
             "RES": 6,
-            "SET": "Leather"
-        }, "Aim Chest Piece": {
+            "SET": "Leather",
+            "MATS": "Leather=100"
+        },
+        "Aim Chest Piece": {
             "DEF": 14,
             "RES": 8,
             "HIT": 4,
 			"WIND": 30,
             "FIRE_RES": -6,
             "WIND_RES": 6,
-            "SET": "Windy"
-        }, "Dark Leather Mantle": {
+            "SET": "Windy",
+            "MATS": "SmoothLeather=100;WindJewel=10"
+        },
+        "Dark Leather Mantle": {
             "ATK": 4,
             "DEF": 14,
             "RES": 8,
 			"DARK": 30,
             "LIGHT_RES": -6,
             "DARK_RES": 6,
-            "SET": "Dark"
-		}, "Hunting Shirt": {
+            "SET": "Dark",
+            "MATS": "SmoothLeather=100;DarkJewel=10"
+		},
+        "Hunting Shirt": {
             "DEF": 14,
             "RES": 14,
             "FIRE_RES": 2,
             "WIND_RES": 2,
 			"WATER_RES": 2,
             "EARTH_RES": 2,
-            "SET": "Hunter"
-		}, "Training Mail": {
+            "SET": "Hunter",
+            "MATS": "FairyLeather=50;MagicPowder=10"
+		},
+        "Poison Vest": {
+            "DEF": 14,
+            "SPD": 14,
+            "WATER_RES": 2,
+            "FIRE_RES": -2,
+            "DARK_RES": 2,
+            "LIGHT_RES": -2,
+            "SET": "Poison",
+            "MATS": "PoisonLeather=50;MagicPowder=10"
+        },
+        "Ninja Vest": {
+            "DEF": 70,
+            "RES": 70,
+            "INT": 20,
+            "SPD": 20,
+            "DARK": 50,
+            "DARK_RES": 4,
+            "SET": "Ninja",
+            "MATS": "EvilLeather=50;MagicPowder=10"
+        },
+        "Training Mail": {
             "DEF": 30,
             "RES": 30,
 			"HIT": -10,
             "SPD": -10,
             "PHY_RES": 5,
-            "SET": "Training"
-		}, "Aquatic Chest": {
+            "SET": "Training",
+            "MATS": "CobaltBar=120;MagicPowder=10;Heat=1500"
+		},
+        "Aquatic Chest": {
             "DEF": 40,
             "RES": 40,
 			"HIT": -6,
@@ -439,29 +707,47 @@
             "PHY_RES": 3.5,
 			"WATER_RES": 3.5,
 			"WATER": 30,
-            "SET": "Aquatic"
-        }, "Metal Chest": {
+            "SET": "Aquatic",
+            "MATS": "CobaltBar=60;WaterJewel=10;Heat=1500"
+        },
+        "Golden Chest": {
+            "DEF": 100,
+            "RES": 100,
+            "HIT": -10,
+            "SPD": -10,
+            "LIGHT": 50,
+            "MAG_RES": 4,
+            "LIGHT_RES": 4,
+            "DARK_RES": -4,
+            "SET": "HolyDmg",
+            "MATS": "GoldBar=120;LightJewel=10;Heat=1500"
+        },
+        "Metal Chest": {
             "DEF": 12,
             "RES": 4,
             "HIT": -4,
             "SPD": -4,
             "PHY_RES": 3,
             "SET": "Metal"
-        }, "Iron Chest": {
+        },
+        "Iron Chest": {
             "DEF": 20,
             "RES": 8,
             "HIT": -6,
             "SPD": -6,
             "PHY_RES": 5,
-            "SET": "Iron"
-        }, "Bronze Chest": {
+            "SET": "Iron",
+            "MATS": "IronBar=60;Heat=500"
+        },
+        "Bronze Chest": {
 			"HP": 200,
 			"DEF": 28,
             "RES": 14,
             "HIT": -8,
             "SPD": -10,
             "PHY_RES": 7,
-            "SET": "Bronze"
+            "SET": "Bronze",
+            "MATS": "BronzeBar=100;Heat=800"
         }
     }
 }

@@ -72,11 +72,22 @@ public class Actor extends ActorStats {
         while (debuff_iterator.hasNext()) {
             Debuff d = debuff_iterator.next();
             if (d.name.equals("Poison")) {
-                total += d.dmg * d.duration;
+                if (game_version < 1676) {
+                    total += d.dmg;
+                } else {
+                    total += d.dmg * d.duration;
+                }
                 debuff_iterator.remove();
             }
         }
-        doDamage(total * power);
+        total *= power;
+        dot_tracking += total;
+        if (total > 0) {
+            if (log.contains("skill_attack")) {
+                System.out.println("Poison Trigger dealt " + (int) total + " damage to " + name);
+            }
+            doDamage(total);
+        }
         check_debuffs();
         if (hp < 0) hp = 0; //zero overkill
     }
@@ -105,7 +116,7 @@ public class Actor extends ActorStats {
             if (log.contains("buff_duration")) System.out.println(b.name + " duration = " + b.duration);
             switch (b.name) {
                 case "Charge Up", "Elemental Buff", "Taking Notes" -> b.duration = b.duration - (attack ? 1 : 0);
-                case "Stone Barrier","Kyrie Eleyson" -> {}
+                case "Stone Barrier","Kyrie Eleyson", "Tea" -> {}
                 default -> b.duration--;
             }
 //            if (!b.name.equals("Charge Up") && !b.name.contains("Barrier")) {
@@ -153,6 +164,9 @@ public class Actor extends ActorStats {
         switch (debuff_name) {
             case "Stun" -> {
                 stun_time += effect;
+            }
+            case "Poison Trigger" -> {
+                trigger_poison(effect);
             }
             default -> pending_debuffs.add(new Debuff(debuff_name, duration, dmg, effect));
         }
@@ -234,6 +248,9 @@ public class Actor extends ActorStats {
         sets.put("Hunter", new EquipmentSet("core", 5));
         sets.put("Training", new EquipmentSet("training", 5));
         sets.put("Aquatic", new EquipmentSet("water", 5));
+        sets.put("Poison", new EquipmentSet("poison", 5));
+        sets.put("Ninja", new EquipmentSet("ninja", 5));
+        sets.put("HolyDmg", new EquipmentSet("holydmg", 5));
         sets.put("BronzeAcc", new EquipmentSet("mit1", 3));
         sets.put("CobaltAcc", new EquipmentSet("mana", 3));
         sets.put("Squirrel", new EquipmentSet("squirrel", 3));
@@ -254,7 +271,6 @@ public class Actor extends ActorStats {
             case "res" -> set_res = 1 + stat_scaling;
             case "magicdmg" -> set_magicdmg = 1 + dmg_scaling;
             case "physdmg" -> set_physdmg = 1 + dmg_scaling;
-            case "dark" -> set_dark = 1 + stat_scaling;
             case "mit1" -> {
                 if (Main.game_version < 1566) {
                     set_mit1 = Math.clamp((5 + upgrade / 6.0) * tier, 5, 50) / 100.0;
@@ -274,6 +290,15 @@ public class Actor extends ActorStats {
             case "wind" -> set_wind = 1 + stat_scaling;
             case "fire" -> set_fire = 1 + stat_scaling;
             case "earth" -> set_earth = 1 + stat_scaling;
+            case "poison" -> {
+                set_poison = ((zone != null && game_version >= 1694 && game_version <= 1695) ? 2 : 1) +
+                        stat_scaling * (game_version >= 1676 ? 1.5 : 1);
+            }
+            case "ninja" -> {
+                set_poison = ((zone != null && game_version >= 1694 && game_version <= 1695) ? 2 : 1) + stat_scaling;
+                set_dark = 1 + stat_scaling;
+            }
+            case "holydmg" -> set_holy = 1 + stat_scaling;
             case "training" -> {
                 set_exp = Math.clamp((15 + 0.5 * upgrade) * tier, 15, 150) / 100.0;
                 set_training = Math.clamp((5 + 0.1 * upgrade) * tier, 5, 25) / 100.0;
@@ -301,6 +326,8 @@ public class Actor extends ActorStats {
         set_wind = 1;
         set_earth = 1;
         set_dark = 1;
+        set_holy = 1;
+        set_poison = (zone != null && game_version >= 1694 && game_version <= 1695) ? 2 : 1;
         set_exp = 0;
         set_training = 0;
         set_mana = 0;
@@ -536,7 +563,6 @@ public class Actor extends ActorStats {
         dmg_mult *= 1.0 + passives.get("Stealth").getBonus();
         poison_mult *= 1.0 + passives.get("Stealth").getBonus();
         poison_mult *= 1.0 + passives.get("Poison Boost").getBonus();
-        dmg_taken_mult *= 1.0 - passives.get("Divine Boost").getBonus();
         wind_dmg_mult *= 1.0 + passives.get("Divine Boost").getBonus();
         holy_dmg_mult *= 1.0 + passives.get("Divine Boost").getBonus();
         critical_poison = passives.get("Critical Poison").enabled;
@@ -577,19 +603,16 @@ public class Actor extends ActorStats {
         hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip HP"));
         mp_max = (resist * 3 + intel) * mp_mult;
 
-        if (research_lvls != null) {
-            if (tier == 3) {
-                exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0,
-                        120 + research_lvls.getOrDefault("Max CL", 0.0).intValue() - cl));
-            } else {
-                exp_mult *= 1.0 + set_exp;
-            }
-        }
+        exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0, highest_cl - cl));
+
         if (passives.get("Fire Resistance").enabled) {
             add_resist("Fire", passives.get("Fire Resistance").getBonus());
         }
         if (passives.get("Earth Resistance").enabled) {
             add_resist("Earth", passives.get("Earth Resistance").getBonus());
+        }
+        if (passives.get("Divine Boost").enabled) {
+            add_resist("All", passives.get("Divine Boost").getBonus());
         }
         if (passives.get("Fiery Aura").enabled) {
             add_resist("Poison", passives.get("Fiery Aura").getBonus());
@@ -688,7 +711,7 @@ public class Actor extends ActorStats {
     }
 
     public double getMp_regen() {
-        if (game_version >= 1700) {
+        if (tier >= 4) {
             return getMp_max() / 360.0 * mana_regen_mult * 0.5;
         } else {
             return getMp_max() / 360.0 * mana_regen_mult;
@@ -723,7 +746,6 @@ public class Actor extends ActorStats {
     }
 
     public void doDamage(double dmg) {
-        if (kyrie > 0) return;
         dmg *= dmg_taken_mult;
         dmg = dmg < 1 ? 1 : dmg;
         if (shield > dmg) {

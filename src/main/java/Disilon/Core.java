@@ -46,7 +46,7 @@ public class Core {
                     actor.core_critdmg += bonus / 100;
                 }
                 case "Empress" -> {
-                    actor.core_manacost += bonus / 100;
+                    actor.core_manacost -= bonus / 100;
                 }
                 case "Tengu" -> {
                     actor.core_item_drop += bonus / 100;
@@ -198,13 +198,13 @@ public class Core {
     public static int getQualityCap(int skill_required, int value) {
         if (game_version <= 1681) return value;
         int max = switch (skill_required) {
-            default -> 5;
-            case 10 -> 6;
-            case 20 -> 7;
-            case 35 -> 8;
-            case 50 -> 9;
-            case 65 -> 10;
-            case 80 -> 10;
+            default -> 4;
+            case 10 -> 5;
+            case 20 -> 6;
+            case 35 -> 7;
+            case 50 -> 8;
+            case 65 -> 9;
+            case 80 -> 9;
         };
         return Math.min(value, max);
     }

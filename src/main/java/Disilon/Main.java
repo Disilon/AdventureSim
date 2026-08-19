@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DecimalStyle;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1670, 1674, 1676, 1678, 1679, 1680, 1681,
-            1682, 1690, 1700));
+            1682, 1690, 1694, 1695, 1696, 1697));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;
@@ -210,5 +211,11 @@ public class Main {
         }
         if (input.equals("hp")) return "HP";
         return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
+
+    public static void addToMap(HashMap<String, HashMap<String, Double>> map, String key1, String key2, double value) {
+        map.putIfAbsent(key1, new HashMap<>());
+        HashMap<String, Double> innerMap = map.get(key1);
+        innerMap.put(key2, innerMap.getOrDefault(key2, 0.0) + value);
     }
 }

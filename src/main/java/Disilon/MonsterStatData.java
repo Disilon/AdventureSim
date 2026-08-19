@@ -142,7 +142,7 @@ public class MonsterStatData {
         deaths.put(e.name, deaths.getOrDefault(e.name, 0) + 1);
     }
 
-    public void recordOverkill(Enemy e, Player player, double base_overkill) {
+    public void recordOverkill(Enemy e, Player player, double base_overkill, double extra) {
         double percent = -e.hp / e.getHp_max() * 100;
         double base_percent = -base_overkill / e.getHp_max() * 100;
         overkill_sum += percent;
@@ -151,7 +151,7 @@ public class MonsterStatData {
         int grade = calcGrade(percent);
         int base_grade = calcGrade(base_percent);
         if (grade >= 0) {
-            addCore(e.name, grade, player);
+            addCore(e.name, grade, player, extra);
         }
         if (base_grade >= 0) {
             addBaseOverkill(e.name, base_grade, player);
@@ -176,7 +176,7 @@ public class MonsterStatData {
                 total += deaths.get(enemy);
             }
         }
-        if (game_version >= 1620) {
+        if (squirrel_spawns > 0) {
             return total + ", squirrels: " + squirrels + "/" + squirrel_spawns;
         } else {
             return String.valueOf(total);
@@ -195,7 +195,7 @@ public class MonsterStatData {
 //        base_overkill.get(name).merge(grade, 1.0, Double::sum);
     }
 
-    public void addCore(String name, int grade, Player p) {
+    public void addCore(String name, int grade, Player p, double extra) {
         double mult = 1;
         double r_mult = 1;
         double research_bonus = 1 + p.core_drop_research;
@@ -213,6 +213,7 @@ public class MonsterStatData {
         double drop_rate = 0.01 * (p.set_core * 1.5 * (1 + p.core_cdr_add) + p.core_mult + p.core_cdr_add
                 + research_bonus * r_mult) * mult * p.hard_reward * bestiary;
         drop_rate *= p.core_mult_mult;
+        drop_rate *= extra;
         if (!cores.containsKey(name)) {
             HashMap<Integer, Double> nested = new HashMap<>();
             for (int i = 0; i < 9; i++) {
@@ -220,7 +221,7 @@ public class MonsterStatData {
             }
             cores.put(name, nested);
         }
-        base_rp += getCoreRP(grade, name) * 0.01 * p.hard_reward * mult;
+        base_rp += getCoreRP(grade, name) * 0.01 * p.hard_reward * mult * extra;
         double quality = p.core_quality_research + p.core_quality;
         double fractional = quality - (int) quality;
         int new_grade = Math.min(8, grade + (int) quality);
@@ -304,7 +305,7 @@ public class MonsterStatData {
         return sb.toString();
     }
 
-    public String getCoreData(Player p, double time) {
+    public String getCoreData(Player p, double time, double extra) {
         StringBuilder sb = new StringBuilder();
         StringBuilder pe = new StringBuilder();
         double research_bonus = 1 + p.core_drop_research;
@@ -333,6 +334,7 @@ public class MonsterStatData {
                 double drop_rate = 0.01 * (p.set_core * 1.5 * (1 + p.core_cdr_add) + p.core_mult + p.core_cdr_add
                         + research_bonus * r_mult) * mult * p.hard_reward * bestiary;
                 drop_rate *= p.core_mult_mult;
+                drop_rate *= extra;
                 double total_count = 0;
                 sb.append(name).append(": ");
 
@@ -418,7 +420,9 @@ public class MonsterStatData {
             case "Empress" -> game_version < 1676 ? 380 : 400;
             case "Tree Golem" -> game_version < 1667 ? 500 : 650;
             case "Gloom Flower" -> 800;
-            case "Z21" -> 1155;
+            case "Mammon" -> 2250/1.2;
+            case "Gargoyle" -> 2400/1.2;
+            case "Red Killer" -> 2500/1.2;
             case "Squirrel Mage" -> game_version < 1621 ? 2000 : (game_version < 1622 ? 3000 : 2500);
             default -> 0;
         };

@@ -27,8 +27,9 @@ public enum Zone {
     z18("Empress", 225),
     z19("Tree Golem", 250),
     z20("Gloom Flower", 300),
-    z21("Z21", 400),
-    z21d("Z21_x2def", 400),
+    z21("Mammon", 400),
+    z22("Gargoyle", 450),
+    z23("Red Killer", 500),
     Dummy("Dummy", 100),
     HelplessDummy("Dummy", 100),
     Boss("Dark Reaper", 750);
@@ -185,7 +186,7 @@ public enum Zone {
             case z6, z7, z8, z9 -> 5;
             case z10, z11, z12, z13, z14, z15, z16 -> game_version >= 1674 ? 5 : 6;
             case z17, z18, z19 -> game_version >= 1674 ? 5 : 7.5;
-            case z20, z21 -> 5;
+            case z20, z21, z22, z23 -> 5;
             default -> 5;
         };
     }
@@ -284,16 +285,30 @@ public enum Zone {
         return sum;
     }
 
+    public double getExtraRewardTime() {
+        return switch (this) {
+            case z21, z22, z23 -> 50;
+            default -> -1;
+        };
+    }
+
+    public double getExtraReward(double time) {
+        if (game_version == 1675) return 1;
+        double min = getExtraRewardTime();
+        if (min < 0 || time < min) return 1;
+        return 1 + Math.min(1, 0.01 * (time - min));
+    }
+
     public double getZoneTimeCap() {
         if (game_version == 1649) return -1;
         return switch (this) {
-            case z14 -> 30;
+            case z14 -> game_version >= 1697 ? 27 : 30;
             case z15, z16 -> 20;
             case z17 -> game_version >= 1674 ? 40 : 60;
             case z18 -> 20;
             case z19 -> game_version >= 1674 ? 20 : 15;
             case z20 -> 20;
-            case z21 -> 20;
+            case z21, z22, z23 -> 20;
             default -> -1;
         };
     }

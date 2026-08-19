@@ -3,84 +3,117 @@
 		"Short Bow": {
 			"ATK": 8,
 			"HIT": 8
-		},"Beech Bow": {
+		},
+        "Beech Bow": {
 			"ATK": 16,
 			"HIT": 16,
-			"LVL_REQUIRED": 10
-		},"Oak Bow": {
+			"LVL_REQUIRED": 10,
+			"MATS": "Beech=300"
+		},
+        "Oak Bow": {
 			"ATK": 32,
 			"HIT": 32,
 			"STUN": 0.05,
-			"LVL_REQUIRED": 20
-		},"Teak Bow": {
+			"LVL_REQUIRED": 20,
+			"MATS": "Oak=500"
+		},
+        "Teak Bow": {
 			"ATK": 48,
 			"HIT": 48,
-			"LVL_REQUIRED": 35
-		},"Wooden Wand": {
+			"LVL_REQUIRED": 35,
+			"MATS": "Teak=700"
+		},
+        "Wooden Wand": {
 			"INT": 20
-		},"Iron Wand": {
+		},
+        "Iron Wand": {
 			"DEF": 12,
 			"INT": 24,
-			"LVL_REQUIRED": 10
-		},"Blazing Wand": {
+			"LVL_REQUIRED": 10,
+			"MATS": "IronBar=65;Heat=750"
+		},
+        "Blazing Wand": {
 			"INT": 40,
 			"FIRE": 36,
 			"BURN": 0.05,
-			"LVL_REQUIRED": 20
-		},"Earthen Wand": {
+			"LVL_REQUIRED": 20,
+			"MATS": "Oak=500;FireJewel=20"
+		},
+        "Earthen Wand": {
 			"INT": 28,
 			"DEF": 12,
 			"EARTH": 36,
 			"BARRIER": 0.1,
-			"LVL_REQUIRED": 20
-		},"Aero Wand": {
+			"LVL_REQUIRED": 20,
+			"MATS": "Oak=500;EarthJewel=20"
+		},
+        "Aero Wand": {
 			"INT": 24,
 			"SPD": 16,
 			"WIND": 36,
 			"DODGE": 0.02,
-			"LVL_REQUIRED": 20
-		},"Teak Wand": {
+			"LVL_REQUIRED": 20,
+			"MATS": "Oak=500;WindJewel=20"
+		},
+        "Teak Wand": {
 			"INT": 72,
 			"HIT": 25,
-			"LVL_REQUIRED": 35
-		},"Metal Knuckles": {
+			"LVL_REQUIRED": 35,
+			"MATS": "Teak=700;MagicPowder=20"
+		},
+        "Metal Knuckles": {
 			"ATK": 8,
 			"SPD": 8
-		},"Iron Knuckles": {
+		},
+        "Iron Knuckles": {
 			"ATK": 16,
 			"SPD": 16,
-			"LVL_REQUIRED": 10
-		},"Bronze Knuckles": {
+			"LVL_REQUIRED": 10,
+			"MATS": "IronBar=60;Heat=650"
+		},
+        "Bronze Knuckles": {
 			"ATK": 32,
 			"SPD": 32,
-			"LVL_REQUIRED": 20
-		},"Cobalt Knuckles": {
+			"LVL_REQUIRED": 20,
+			"MATS": "BronzeBar=80;Heat=1100"
+		},
+        "Cobalt Knuckles": {
 			"ATK": 48,
 			"SPD": 48,
-			"LVL_REQUIRED": 35
-		},"Metal Spear": {
+			"LVL_REQUIRED": 35,
+			"MATS": "CobaltBar=100;Heat=1350"
+		},
+        "Metal Spear": {
 			"ATK": 16,
 			"HIT": 4
-		},"Iron Spear": {
+		},
+        "Iron Spear": {
 			"ATK": 20,
 			"DEF": 8,
 			"HIT": 8,
-			"LVL_REQUIRED": 10
-		},"Bronze Spear": {
+			"LVL_REQUIRED": 10,
+			"MATS": "IronBar=70;Heat=750"
+		},
+        "Bronze Spear": {
 			"ATK": 40,
 			"DEF": 16,
 			"HIT": 16,
-			"LVL_REQUIRED": 20
-		},"Cobalt Spear": {
+			"LVL_REQUIRED": 20,
+			"MATS": "BronzeBar=90;Heat=1250"
+		},
+        "Cobalt Spear": {
 			"ATK": 60,
 			"DEF": 24,
 			"HIT": 24,
-			"LVL_REQUIRED": 35
-		},"Cauldron": {
+			"LVL_REQUIRED": 35,
+			"MATS": "CobaltBar=105;Heat=1500"
+		},
+        "Cauldron": {
 			"ATK": 40,
 			"INT": 40,
 			"POTION": 0.07,
-			"LVL_REQUIRED": 35
+			"LVL_REQUIRED": 35,
+			"MATS": "CobaltBar=88;DarkJewel=15;LightJewel=15;Heat=2000"
 		}
 	},
 	"MH":{
@@ -88,88 +121,115 @@
 			"INT": 6,
 			"RES": 2,
 			"MH_ONLY": true
-		},"Hidden Book": {
+		},
+        "Hidden Book": {
 			"INT": 10,
 			"RES": 6,
 			"MH_ONLY": true,
 			"LVL_REQUIRED": 10
-		},"Holy Book": {
+		},
+        "Holy Book": {
 			"INT": 10,
 			"RES": 14,
 			"LIGHT": 14,
 			"MH_ONLY": true,
-			"LVL_REQUIRED": 20
-		},"Metal Dagger": {
+			"LVL_REQUIRED": 20,
+			"MATS": "Paper=150;SmoothLeather=20"
+		},
+		"Wise Book": {
+			"INT": 40,
+			"ANALYZE": 0.05,
+			"LVL_REQUIRED": 35,
+			"MATS": "Paper=230;FairyLeather=12"
+		},
+        "Metal Dagger": {
 			"ATK": 4,
 			"HIT": 2,
 			"SPD": 2
-		},"Iron Dagger": {
+		},
+        "Iron Dagger": {
 			"ATK": 6,
 			"HIT": 4,
 			"SPD": 6,
-			"LVL_REQUIRED": 10
-		},"Bronze Dagger": {
+			"LVL_REQUIRED": 10,
+			"MATS": "IronBar=30;Heat=500"
+		},
+        "Bronze Dagger": {
 			"ATK": 12,
 			"HIT": 8,
 			"SPD": 12,
 			"CRIT": 0.02,
-			"LVL_REQUIRED": 20
-		},"Tsury Finke": {
+			"LVL_REQUIRED": 20,
+			"MATS": "BronzeBar=40;Heat=900"
+		},
+        "Tsury Finke": {
 			"ATK": 24,
 			"HIT": 8,
 			"SPD": 8,
 			"WATER": 20,
 			"TF": 0.05
-		},"Cobalt Dagger": {
+		},
+        "Cobalt Dagger": {
 			"ATK": 18,
 			"HIT": 12,
 			"SPD": 18,
-			"LVL_REQUIRED": 35
-		},"Metal Sword": {
+			"LVL_REQUIRED": 35,
+			"MATS": "CobaltBar=50;Heat=1200"
+		},
+        "Metal Sword": {
 			"ATK": 10
-		},"Iron Sword": {
+		},
+        "Iron Sword": {
 			"ATK": 16,
 			"HIT": 2,
-			"LVL_REQUIRED": 10
-		},"Bronze Sword": {
+			"LVL_REQUIRED": 10,
+			"MATS": "IronBar=35;Leather=10;Heat=500"
+		},
+        "Bronze Sword": {
 			"ATK": 28,
 			"HIT": 8,
-			"LVL_REQUIRED": 20
-		},"Cobalt Sword": {
+			"LVL_REQUIRED": 20,
+			"MATS": "BronzeBar=45;SmoothLeather=5;Heat=1000"
+		},
+        "Cobalt Sword": {
 			"ATK": 42,
 			"HIT": 12,
-			"LVL_REQUIRED": 35
-		},"Wise Book": {
-			"INT": 40,
-			"ANALYZE": 0.05,
-			"LVL_REQUIRED": 35
+			"LVL_REQUIRED": 35,
+			"MATS": "CobaltBar=55;FairyLeather=5;Heat=1200"
 		}
-
 	},
 	"OH":{
 		"Wooden Shield": {
 			"DEF": 7,
 			"RES": 3,
 			"SPD": -2
-		},"Iron Shield": {
+		},
+        "Iron Shield": {
 			"DEF": 12,
 			"RES": 8,
 			"SPD": -4,
-			"LVL_REQUIRED": 10
-		},"Bronze Shield": {
+			"LVL_REQUIRED": 10,
+			"MATS": "IronBar=35;Heat=500"
+		},
+        "Bronze Shield": {
 			"DEF": 20,
 			"RES": 20,
 			"SPD": -8,
-			"LVL_REQUIRED": 20
-		},"Cobalt Shield": {
+			"LVL_REQUIRED": 20,
+			"MATS": "BronzeBar=45;Heat=1000"
+		},
+        "Cobalt Shield": {
 			"DEF": 30,
 			"RES": 30,
 			"SPD": -12,
-			"LVL_REQUIRED": 35
-		},"Spy Glass": {
+			"LVL_REQUIRED": 35,
+			"MATS": "CobaltBar=55;Heat=1200"
+		},
+        "Spy Glass": {
 			"SPD": 40,
 			"ANALYZE": 0.05,
-			"LVL_REQUIRED": 35
+			"LVL_REQUIRED": 35,
+			"MATS": "CobaltBar=44;Sand=30;Heat=900"
 		}
 	}
 }

@@ -1,6 +1,10 @@
 package Disilon;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static Disilon.Main.addToMap;
 
 public class Equipment {
     String name;
@@ -48,6 +52,8 @@ public class Equipment {
     double potion = 0;
     double dodge = 0;
 
+    LinkedHashMap<String,Integer> mats;
+
     Map equipStats;
 
     public Equipment(String name, String slot) {
@@ -55,6 +61,7 @@ public class Equipment {
         this.slot = slot;
         quality = Quality.Normal;
         upgrade = 0;
+        mats = new LinkedHashMap<>();
     }
 
     public Equipment(String name, String slot, Map equipStats) {
@@ -62,6 +69,7 @@ public class Equipment {
         this.slot = slot;
         quality = Quality.Normal;
         upgrade = 0;
+        mats = new LinkedHashMap<>();
         this.equipStats = equipStats;
         calcStats();
     }
@@ -100,6 +108,7 @@ public class Equipment {
         clone.barrier = this.barrier;
         clone.potion = this.potion;
         clone.dodge = this.dodge;
+        clone.mats = new LinkedHashMap<>(this.mats);
         return clone;
     }
     
@@ -179,7 +188,8 @@ public class Equipment {
             skill_required = switch (displayName) {
                 case "Iron","Leather" -> 10;
                 case "Blazing","Earthen","Holy","Windy","Dark","Bronze" -> 20;
-                case "Training","Aquatic","Hunter" -> 35;
+                case "Training","Aquatic","Hunter","Poison" -> 35;
+                case "HolyDmg","Ninja" -> 50;
                 default -> 1;
             };
         }
@@ -189,6 +199,19 @@ public class Equipment {
 
         // If true, then can't be equipped in offhand slot
         if (equipStats.containsKey("MH_ONLY")) this.mh_only = (boolean) equipStats.get("MH_ONLY");
+
+        if (equipStats.containsKey("MATS")) {
+            String line = (String) equipStats.get("MATS");
+            String[] pairs = line.split(";");
+            for (String pair : pairs) {
+                String[] keyValue = pair.split("=");
+                if (keyValue.length == 2) {
+                    String key = keyValue[0].trim();
+                    int value = Integer.parseInt(keyValue[1].trim());
+                    mats.put(key, value);
+                }
+            }
+        }
     }
 
     public static double multiplier(Quality quality, int upgrade, int scaling_type) {
@@ -231,6 +254,210 @@ public class Equipment {
 
         public double getMult() {
             return mult;
+        }
+    }
+
+    public static double costDivisor(String mat) {
+        return switch (mat) {
+            case "Heat","IronBar","BronzeBar","CobaltBar","GoldBar" -> 2;
+            case "Paper" -> 2;
+            case "Beech" -> 10;
+            case "Oak" -> 15;
+            case "Teak" -> 15;
+            default -> 1;
+        };
+    }
+
+    public void getUpgradeMats(LinkedHashMap<String,HashMap<String,Double>> map, Player p) {
+        double eqm = 1 + 0.01 * p.research_lvls.get("E. Quality mult").intValue();
+        eqm *= 1 + 0.01 * p.research_lvls.get("E. Quality min").intValue();
+        double ref_c = eqm;
+        double ref_s = eqm;
+        ref_c *= 1 + 0.01 * p.passives.get("Crafting").lvl;
+        ref_s *= 1 + 0.01 * p.passives.get("Smithing").lvl;
+        double c_spd = p.getCraftingSpeed();
+        double s_spd = p.getSmithingSpeed();
+        double a_spd = p.getAlchemySpeed();
+        double side_craft_spd = p.getSidecraftingSpeed();
+        if (side_craft_spd > 0) {
+            c_spd *= side_craft_spd;
+            s_spd *= side_craft_spd;
+            a_spd *= side_craft_spd;
+        }
+        double heat = 0;
+        for (String mat : mats.keySet()) {
+            double amount = 0;
+            double u = mats.get(mat) / costDivisor(mat) / 10 * quality.getMult();
+            for (int i = 0; i < upgrade; i++) {
+                amount += Math.ceil(u * (i + 2));
+            }
+            switch (mat) {
+                case "Leather" -> {
+                    addToMap(map,"Refined Leather","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"Refined Leather","time", m1/10 * 40 / c_spd);
+                    addToMap(map,"Leather","amount", m1);
+                    addToMap(map,"Leather","time", m1 * 10 / c_spd);
+                    addToMap(map,"Rough Hide","amount", m1*2);
+                }
+                case "SmoothLeather" -> {
+                    addToMap(map,"Refined Smoothy","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"Refined Smoothy","time", m1/10 * 40 / c_spd);
+                    addToMap(map,"Smooth Leather","amount", m1);
+                    addToMap(map,"Smooth Leather","time", m1 * 10 / c_spd);
+                    addToMap(map,"Smooth Hide","amount", m1*2);
+                }
+                case "SilkyCloth" -> {
+                    addToMap(map,"Refined Silky","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"Refined Silky","time", m1/10 * 40 / c_spd);
+                    addToMap(map,"Silky Cloth","amount", m1);
+                    addToMap(map,"Silky Cloth","time", m1 * 10 / c_spd);
+                    addToMap(map,"Feather","amount", m1*4);
+                }
+                case "FairyLeather" -> {
+                    addToMap(map,"Refined Wing","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"Refined Wing","time", m1/10 * 120 / c_spd);
+                    addToMap(map,"Fairy Leather","amount", m1);
+                    addToMap(map,"Fairy Leather","time", m1 * 22 / c_spd);
+                    addToMap(map,"Fairy Wing","amount", m1);
+                }
+                case "LizardLeather" -> {
+                    addToMap(map,"Refined Lizard","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"Refined Lizard","time", m1/10 * 40 / c_spd);
+                    addToMap(map,"Lizard Leather","amount", m1);
+                    addToMap(map,"Lizard Leather","time", m1 * 10 / c_spd);
+                    addToMap(map,"Lizard Skin","amount", m1*2);
+                }
+                case "PoisonLeather" -> {
+                    addToMap(map,"R Poison Leather","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"R Poison Leather","time", m1/10 * 40 / c_spd);
+                    addToMap(map,"Poison Leather","amount", m1);
+                    addToMap(map,"Poison Leather","time", m1 * 20 / c_spd);
+                    addToMap(map,"Lizard Skin","amount", m1*2);
+                    addToMap(map,"Blood Stone","amount", m1);
+                }
+                case "EvilLeather" -> {
+                    addToMap(map,"R Evil Leather","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"R Evil Leather","time", m1/10 * 45 / c_spd);
+                    addToMap(map,"Evil Leather","amount", m1);
+                    addToMap(map,"Evil Leather","time", m1 * 22 / c_spd);
+                    addToMap(map,"Evil Hide","amount", m1*2);
+                    addToMap(map,"Shadow Flower","amount", m1);
+                }
+                case "Paper" -> {
+                    addToMap(map,"Enhanced Paper","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"Enhanced Paper","time", m1/10 * 40 / c_spd);
+                    addToMap(map,"Paper","amount", m1);
+                    int c_lvl = p.passives.get("Crafting").lvl;
+                    double pc = 0;
+                    if (c_lvl >= 35) {
+                        pc = m1 / 4;
+                        addToMap(map,"Teak","amount", pc);
+                        addToMap(map,"Paper","time", pc * 10 / c_spd);
+                    } else {
+                        if (c_lvl >= 20) {
+                            pc = m1 / 3;
+                            addToMap(map,"Oak","amount", pc);
+                            addToMap(map,"Paper","time", pc * 8 / c_spd);
+                        } else {
+                            pc = m1 / 2;
+                            addToMap(map,"Beech","amount", pc);
+                            addToMap(map,"Paper","time", pc * 6 / c_spd);
+                        }
+                    }
+                }
+                case "Beech" -> {
+                    addToMap(map,"Enhanced Beech","amount", amount);
+                    double m1 = amount / ref_c * 60;
+                    addToMap(map,"Enhanced Beech","time", m1/60 * 250 / c_spd);
+                    addToMap(map,"Beech","amount", m1);
+                }
+                case "Oak" -> {
+                    addToMap(map,"Enhanced Oak","amount", amount);
+                    double m1 = amount / ref_c * 60;
+                    addToMap(map,"Enhanced Oak","time", m1/60 * 350 / c_spd);
+                    addToMap(map,"Oak","amount", m1);
+                }
+                case "Teak" -> {
+                    addToMap(map,"Enhanced Teak","amount", amount);
+                    double m1 = amount / ref_c * 60;
+                    addToMap(map,"Enhanced Teak","time", m1/60 * 500 / c_spd);
+                    addToMap(map,"Teak","amount", m1);
+                }
+                case "IronBar" -> {
+                    addToMap(map,"Refined Iron","amount", amount);
+                    double m1 = amount / ref_c * 10;
+                    addToMap(map,"Refined Iron","time", m1/10 * 40 / c_spd);
+                    heat += m1/10*100;
+                    addToMap(map,"Iron Bar","amount", m1);
+                    addToMap(map,"Iron Bar","time", m1 * 13.5 / c_spd);
+                    heat += m1 * 20;
+                    addToMap(map,"Iron Ore","amount", m1*2);
+                }
+                case "BronzeBar" -> {
+                    addToMap(map,"Refined Bronze","amount", amount);
+                    double m1 = amount / ref_c * 15;
+                    addToMap(map,"Refined Bronze","time", m1/15 * 60 / c_spd);
+                    heat += m1/15*150;
+                    addToMap(map,"Bronze Bar","amount", m1);
+                    addToMap(map,"Bronze Bar","time", m1 * 17 / c_spd);
+                    heat += m1 * 30;
+                    addToMap(map,"Copper Ore","amount", m1*4);
+                    addToMap(map,"Tin Ore","amount", m1);
+                }
+                case "CobaltBar" -> {
+                    addToMap(map,"Refined Cobalt","amount", amount);
+                    double m1 = amount / ref_c * 20;
+                    addToMap(map,"Refined Cobalt","time", m1/20 * 80 / c_spd);
+                    heat += m1/20*200;
+                    addToMap(map,"Cobalt Bar","amount", m1);
+                    addToMap(map,"Cobalt Bar","time", m1 * 20 / c_spd);
+                    heat += m1 * 40;
+                    addToMap(map,"Cobalt Ore","amount", m1*5);
+                }
+                case "GoldBar" -> {
+                    addToMap(map,"Refined Gold","amount", amount);
+                    double m1 = amount / ref_c * 20;
+                    addToMap(map,"Refined Gold","time", m1/20 * 100 / c_spd);
+                    heat += m1/20*250;
+                    addToMap(map,"Gold Bar","amount", m1);
+                    addToMap(map,"Gold Bar","time", m1 * 22 / c_spd);
+                    heat += m1 * 50;
+                    addToMap(map,"Gold Ore","amount", m1*5);
+                }
+                case "MagicPowder","FireJewel","WaterJewel","EarthJewel","WindJewel","DarkJewel","LightJewel" -> {
+                    addToMap(map,"Magic Powder","amount", amount);
+                    addToMap(map,"Magic Powder","time", amount * 20 / a_spd);
+                }
+                default -> addToMap(map, mat,"amount", amount);
+            }
+        }
+        if (heat > 0) {
+            addToMap(map,"Heat","amount", heat);
+            int s_lvl = p.passives.get("Smithing").lvl;
+            double hc = 0;
+            if (s_lvl >= 35) {
+                hc = heat / 60;
+                addToMap(map,"Teak","amount", hc);
+                addToMap(map,"Heat","time", hc * 2.5 / s_spd);
+            } else {
+                if (s_lvl >= 20) {
+                    hc = heat / 45;
+                    addToMap(map,"Oak","amount", hc);
+                    addToMap(map,"Heat","time", hc * 2.0 / s_spd);
+                } else {
+                    hc = heat / 30;
+                    addToMap(map,"Beech","amount", hc);
+                    addToMap(map,"Heat","time", hc * 1.5 / s_spd);
+                }
+            }
         }
     }
 }

@@ -127,6 +127,10 @@ public class PassiveSkill {
         return enabled ? bonus : 0;
     }
 
+    public double getBonus(double disabled_value) {
+        return enabled ? bonus : disabled_value;
+    }
+
     public double getBonus(String weapon_type) {
         return enabled && weapon_type.equals(owner.weapon_type) ? bonus : 0;
     }

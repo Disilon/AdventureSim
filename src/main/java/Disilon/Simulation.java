@@ -78,6 +78,7 @@ public class Simulation {
         int cleared = 0;
         int failed = 0;
         double steal_count = 0;
+        double extra_sum = 0;
         double delta;
         double delta_sum = 0;
         int delta_count = 0;
@@ -283,6 +284,7 @@ public class Simulation {
                     }
                 }
                 if (player.zone == Zone.Boss) {
+//                    player.gear_potion = 0.25;
 //                    if (time - weapon_switch >= 1) {
 //                        player.weapon_type = "bow";
 //                        player.gear_potion = 0;
@@ -393,6 +395,8 @@ public class Simulation {
                         enemy.setMp(enemy.mp + enemy.getMp_regen() * delta);
                         if (enemy.hp <= 0) {
                             if (first_kill == 0) first_kill = time;
+                            double extra_reward = player.zone.getExtraReward(time);
+                            extra_sum += extra_reward;
                             double base_overkill = enemy.hp;
                             if (player.last_skill.isSingleTarget() && !player.isMulti_hit_override(player.last_skill.name) && player.set_core > 0 && player.set_core > Math.random()) {
                                 enemy.setHp(0.0);
@@ -415,6 +419,7 @@ public class Simulation {
                             if (player.enemy_min_lvl_enabled && (game_version == 1638 || game_version >= 1658 || !enemy.name.equals("Squirrel Mage"))) {
                                 exp_gain *= 1 + 0.005 * player.enemy_min_lvl;
                             }
+                            exp_gain *= extra_reward;
                             if (player.lvling) player.increment_exp(exp_gain);
                             exp += exp_gain;
                             kills++;
@@ -429,7 +434,7 @@ public class Simulation {
                                 }
                             }
                             if (!player.last_skill.name.equals("Analyze")) {
-                                player.zone.stats.recordOverkill(enemy, player, base_overkill);
+                                player.zone.stats.recordOverkill(enemy, player, base_overkill, extra_reward);
                             }
                             if (log.contains("enemy_death_stat") && enemy.casting != null) System.out.println(enemy.name +
                                     " died while " +
@@ -450,6 +455,26 @@ public class Simulation {
                                             dmg = enemy.casting.attack(enemy, player, 0, time);
                                             previous_cast = enemy.casting;
                                             previous_cast.last_casted_at = time;
+                                        }
+                                        if (player.passives.get("Patient Counter").enabled && player.hasBuff("Tea")) {
+                                            double mp = player.active_skills.get("Drink Tea").calculate_manacost(player);
+                                            mp += player.active_skills.get("Tea Do Ken").calculate_manacost(player);
+                                            if (player.mp >= mp) {
+                                                player.check_debuffs();
+                                                player.check_buffs();
+                                                player.active_skills.get("Drink Tea").used++;
+                                                player.active_skills.get("Drink Tea").use(player, time);
+                                                player.active_skills.get("Drink Tea").finish_cast(player);
+                                                player.active_skills.get("Tea Do Ken").used++;
+                                                double c_dmg = player.active_skills.get("Tea Do Ken").attack(player,
+                                                        enemy, 0, time);
+                                                if (c_dmg > 0) {
+                                                    enemy.doDamage(c_dmg);
+                                                    if (player.charge > 0) player.remove_charge = true;
+                                                }
+                                                player.active_skills.get("Tea Do Ken").finish_cast(player);
+                                                player.tick_buffs(true);
+                                            }
                                         }
                                         if (dmg > 0) {
                                             player.doDamage(dmg);
@@ -663,6 +688,9 @@ public class Simulation {
         }
         result.append("\nSimulations: ").append(cleared).append("\n");
         result.append("Kills: ").append(player.zone.stats.getKillCount()).append("\n");
+        if (extra_sum > kills) {
+            result.append("Slow reward mult: ").append(df2.format(extra_sum/kills*100)).append("%\n");
+        }
         result.append("Total sim time: ").append(Main.secToTime(total_time + player.maincrafting_time + death_time)).append("\n");
         result.append("Time in combat: ").append(Main.secToTime(total_time));
         result.append(" (").append(df2.format(total_time / 3600)).append(" h)\n");
@@ -714,7 +742,7 @@ public class Simulation {
         if (steal_count > 0) {
             result.append("Effective steal count: ").append((int) steal_count).append("\n");
         }
-        result.append(player.zone.stats.getCoreData(player, total_time));
+        result.append(player.zone.stats.getCoreData(player, total_time, extra_sum/kills));
         result.append(player.zone.stats.getBaseOverkill(player, total_time, offline));
 
         long executionTime = (System.nanoTime() - startTime) / 1000000;
@@ -762,6 +790,8 @@ public class Simulation {
 //            System.out.println("seed = " + player.zone.initial_seed + " exph = " + shorthand(exph));
         }
         skills_log.append(player.zone.stats.getSkillData(cleared + failed));
+        skills_log.append("\n");
+        skills_log.append(player.getEquipData());
 
         if (player.lvling) {
             if (player.milestone_exp_mult != player.old_milestone_exp_mult) {
