@@ -259,7 +259,7 @@ public class Equipment {
 
     public static double costDivisor(String mat) {
         return switch (mat) {
-            case "Heat","IronBar","BronzeBar","CobaltBar","GoldBar" -> 2;
+            case "IronBar","BronzeBar","CobaltBar","GoldBar" -> 2;
             case "Paper" -> 2;
             case "Beech" -> 10;
             case "Oak" -> 15;

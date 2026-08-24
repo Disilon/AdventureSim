@@ -387,5 +387,7 @@ public class SkillData {
                 false);
         addActive("Tea Do Ken", 1, 750*0.9, 750*1.1, 1.25, 2500, 1.8, 1.8, Scaling.atk, Element.water, false,
                 false);
+        addActive("Wait Patiently", 1, 0, 0, 0, 0, 0.5, 0.5, Scaling.atk, Element.none, false,
+                false);
     }
 }

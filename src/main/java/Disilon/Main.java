@@ -21,7 +21,7 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1670, 1674, 1676, 1678, 1679, 1680, 1681,
-            1682, 1690, 1694, 1695, 1696, 1697));
+            1682, 1690, 1694, 1695, 1696, 1697, 1698, 1699));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;
@@ -168,9 +168,12 @@ public class Main {
             return String.valueOf((int) number);
         }
         if (number < 1e9) {
-            return String.valueOf((int) number / 1000) + "k";
+            return String.valueOf((int) (number / 1000)) + "k";
         }
-        return String.valueOf((int) number / 1000000) + "m";
+        if (number < 1e12) {
+            return String.valueOf((int) (number / 1e6)) + "m";
+        }
+        return String.valueOf((int) (number / 1e9)) + "b";
     }
 
     public static double minIfNotZero(double a, double b) {

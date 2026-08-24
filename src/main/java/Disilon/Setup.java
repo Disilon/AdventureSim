@@ -84,6 +84,7 @@ public class Setup implements Serializable {
     double hard_hp;
     double hard_stats;
     double hard_reward;
+    double stat_milestone;
     boolean enemy_min_lvl_increase;
     HashMap<String, Double> passives_lvls;
     HashMap<String, Double> actives_lvls;
@@ -192,6 +193,7 @@ public class Setup implements Serializable {
         this.hard_hp = 100;
         this.hard_stats = 100;
         this.hard_reward = 100;
+        this.stat_milestone = 0;
         this.enemy_min_lvl_increase = true;
     }
 
@@ -945,5 +947,13 @@ public class Setup implements Serializable {
 
     public void setHighest_cl(int highest_cl) {
         this.highest_cl = highest_cl;
+    }
+
+    public double getStat_milestone() {
+        return stat_milestone;
+    }
+
+    public void setStat_milestone(double stat_milestone) {
+        this.stat_milestone = stat_milestone;
     }
 }

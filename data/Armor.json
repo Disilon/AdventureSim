@@ -122,7 +122,7 @@
             "LIGHT_RES": 2,
             "DARK_RES": -2,
             "SET": "HolyDmg",
-            "MATS": "GoldBar=60;LightJewel=5;Heat=600"
+            "MATS": "GoldBar=30;LightJewel=5;Heat=600"
         },
         "Metal Helmet": {
             "DEF": 7,
@@ -268,7 +268,7 @@
             "LIGHT_RES": 2,
             "DARK_RES": -2,
             "SET": "HolyDmg",
-            "MATS": "GoldBar=60;LightJewel=5;Heat=600"
+            "MATS": "GoldBar=30;LightJewel=5;Heat=600"
         },
         "Metal Boots": {
             "DEF": 2,
@@ -410,7 +410,7 @@
             "LIGHT_RES": 2,
             "DARK_RES": -2,
             "SET": "HolyDmg",
-            "MATS": "GoldBar=60;LightJewel=5;Heat=600"
+            "MATS": "GoldBar=30;LightJewel=5;Heat=600"
         },
         "Metal Bracers": {
             "DEF": 2,
@@ -560,7 +560,7 @@
             "LIGHT_RES": 2,
             "DARK_RES": -2,
             "SET": "HolyDmg",
-            "MATS": "GoldBar=80;LightJewel=5;Heat=999"
+            "MATS": "GoldBar=40;LightJewel=5;Heat=999"
         },
         "Metal Pants": {
             "DEF": 5,
@@ -720,7 +720,7 @@
             "LIGHT_RES": 4,
             "DARK_RES": -4,
             "SET": "HolyDmg",
-            "MATS": "GoldBar=120;LightJewel=10;Heat=1500"
+            "MATS": "GoldBar=60;LightJewel=10;Heat=1500"
         },
         "Metal Chest": {
             "DEF": 12,

@@ -67,6 +67,7 @@ public class Player extends Actor {
         this.lvling = setup.leveling;
         this.zone = setup.zone;
         this.alchemist_lvl = setup.alchemist_lvl;
+        stat_milestone = setup.stat_milestone;
         crafting_progress = setup.crafting_progress;
         smithing_progress = setup.smithing_progress;
         alchemy_progress = setup.alchemy_progress;
@@ -538,7 +539,7 @@ public class Player extends Actor {
 
     @Override
     public double getFire() {
-        double result = gear_fire;
+        double result = gear_fire * (1 + stat_milestone);
         switch (name) {
             case "Pyromancer", "Monk" -> {
                 result += getAvgAtkInt();
@@ -561,7 +562,7 @@ public class Player extends Actor {
 
     @Override
     public double getWater() {
-        double result = gear_water;
+        double result = gear_water * (1 + stat_milestone);
         switch (name) {
             case "Pyromancer" -> {
                 result -= getAvgAtkInt();
@@ -585,7 +586,7 @@ public class Player extends Actor {
 
     @Override
     public double getWind() {
-        double result = gear_wind;
+        double result = gear_wind * (1 + stat_milestone);
         switch (name) {
             case "Sniper","Holy Archer" -> {
                 result += getAvgAtkInt();
@@ -605,7 +606,7 @@ public class Player extends Actor {
 
     @Override
     public double getEarth() {
-        double result = gear_earth;
+        double result = gear_earth * (1 + stat_milestone);
         switch (name) {
             case "Geomancer" -> {
                 result += getAvgAtkInt();
@@ -623,7 +624,7 @@ public class Player extends Actor {
 
     @Override
     public double getDark() {
-        double result = gear_dark;
+        double result = gear_dark * (1 + stat_milestone);
         switch (name) {
             case "Assassin","Ninja" -> {
                 result += getAvgAtkInt();
@@ -640,7 +641,7 @@ public class Player extends Actor {
 
     @Override
     public double getLight() {
-        double result = gear_light;
+        double result = gear_light * (1 + stat_milestone);
         switch (name) {
             case "Assassin", "Sniper" -> {
                 result -= getAvgAtkInt();
@@ -669,6 +670,7 @@ public class Player extends Actor {
                          boolean research_bonus) {
         if (research_bonus) {
             gear_stat *= 1 + 0.01 * getResearchLvl("Equip " + capitalizeFirst(label.toLowerCase()));
+            gear_stat *=  1 + stat_milestone;
         }
         sb.append(label).append(" = ");
         sb.append(Math.round(stat));
@@ -691,29 +693,30 @@ public class Player extends Actor {
         gearStat(sb, "HIT", getHit(), getHit() - base_hit * hit_mult, true, false);
         gearStat(sb, "SPD", getSpeed(), gear_speed, true, true);
         sb.append("\n");
+        double m = 1 + stat_milestone;
         if (getWater() != 0) {
-            sb.append("Water = ").append(Math.round(getWater())).append(" (").append(Math.round(gear_water)).append(
+            sb.append("Water = ").append(Math.round(getWater())).append(" (").append(Math.round(gear_water * m)).append(
                     ")\n");
         }
         if (getFire() != 0) {
-            sb.append("Fire = ").append(Math.round(getFire())).append(" (").append(Math.round(gear_fire)).append(")\n");
+            sb.append("Fire = ").append(Math.round(getFire())).append(" (").append(Math.round(gear_fire * m)).append(")\n");
         }
         if (getWind() != 0) {
-            sb.append("Wind = ").append(Math.round(getWind())).append(" (").append(Math.round(gear_wind)).append(")\n");
+            sb.append("Wind = ").append(Math.round(getWind())).append(" (").append(Math.round(gear_wind * m)).append(")\n");
         }
         if (getEarth() != 0) {
-            sb.append("Earth = ").append(Math.round(getEarth())).append(" (").append(Math.round(gear_earth)).append(
+            sb.append("Earth = ").append(Math.round(getEarth())).append(" (").append(Math.round(gear_earth * m)).append(
                     ")\n");
         }
         if (getLight() != 0) {
-            sb.append("Light = ").append(Math.round(getLight())).append(" (").append(Math.round(gear_light)).append(
+            sb.append("Light = ").append(Math.round(getLight())).append(" (").append(Math.round(gear_light * m)).append(
                     ")\n");
         }
         if (getDark() != 0) {
-            sb.append("Dark = ").append(Math.round(getDark())).append(" (").append(Math.round(gear_dark)).append(")\n");
+            sb.append("Dark = ").append(Math.round(getDark())).append(" (").append(Math.round(gear_dark * m)).append(")\n");
         }
         if (gear_no_elem != 0) {
-            sb.append("Non elem = ").append(Math.round(gear_no_elem)).append(" (").append(Math.round(gear_no_elem)).append(
+            sb.append("Non elem = ").append(Math.round(gear_no_elem * m)).append(" (").append(Math.round(gear_no_elem * m)).append(
                     ")\n");
         }
         sb.append("\n");

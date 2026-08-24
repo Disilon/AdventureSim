@@ -688,14 +688,16 @@ public class ActiveSkill {
                 break;
         }
         gain += attacker.getHp_max() * attacker.hp_regen;
-        if (gain > 0) {
-            attacker.setHp(attacker.hp + gain);
-            //System.out.println(attacker.name + " healed for " + (int) gain);
-        }
-        Zone zone = attacker.zone;
         if (log.contains("skill_attack")) {
             System.out.println(attacker.name + " used " + name + " at " + df2.format(time) + "s");
         }
+        if (gain > 0) {
+            attacker.setHp(attacker.hp + gain);
+            if (log.contains("skill_attack")) {
+                System.out.println(attacker.name + " healed for " + (int) gain);
+            }
+        }
+        Zone zone = attacker.zone;
         if (zone != null) {
             for (Enemy enemy : zone.enemies) {
                 if (heal && enemy.counter_heal && triggers_counter) {
@@ -1168,6 +1170,8 @@ public class ActiveSkill {
             case "Weaken":
             case "Bound":
             case "Freeze":
+            case "Smoke":
+            case "Poison Trigger":
                 value = switch (this.skillMod) {
                     case SkillMod.Basic -> base_value * (1 + 0.025 * lvl);
                     case SkillMod.Pow -> base_value * (1 + 0.015 * lvl);
@@ -1205,6 +1209,7 @@ public class ActiveSkill {
         }
         if (name.equals("Poison Trigger")) {
             hit_chance = 1;
+            effect *= 1.1 - Math.random() * 0.2 * (1 - attacker.dmg_range);
         }
         if (debuff.equals("Mark")) {
             hit_chance = 1;
@@ -1239,6 +1244,7 @@ public class ActiveSkill {
                     dmg *= crit_dmg;
                 }
             }
+//            dmg *= (1 - attacker.set_training);
             if (defender.zone != null) {
                 defender.zone.stats.incrementDot(attacker.name, name, duration * dmg);
             }

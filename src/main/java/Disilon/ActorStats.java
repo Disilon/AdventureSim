@@ -218,6 +218,7 @@ public class ActorStats {
     public double skill_exp_mult = 1;
     public double speed_mult_sum = 0;
     public int speed_mult_count = 0;
+    public double stat_milestone = 0;
 
     int flask_used = 0;
     int potions_thrown = 0;

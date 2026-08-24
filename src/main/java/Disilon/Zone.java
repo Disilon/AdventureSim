@@ -287,7 +287,7 @@ public enum Zone {
 
     public double getExtraRewardTime() {
         return switch (this) {
-            case z21, z22, z23 -> 50;
+            case z21, z22, z23 -> game_version >= 1699 ? 20 : 50;
             default -> -1;
         };
     }
@@ -296,7 +296,7 @@ public enum Zone {
         if (game_version == 1675) return 1;
         double min = getExtraRewardTime();
         if (min < 0 || time < min) return 1;
-        return 1 + Math.min(1, 0.01 * (time - min));
+        return 1 + Math.min(1, (game_version >= 1699 ? 0.005 : 0.01) * (time - min));
     }
 
     public double getZoneTimeCap() {

@@ -594,13 +594,13 @@ public class Actor extends ActorStats {
                 if (active.getValue().name.equals("Aura Blade")) aurablade_enabled = true;
             }
         }
-        atk = base_atk + gear_atk * (1 + 0.01 * getResearchLvl("Equip Atk"));
-        def = base_def + gear_def * (1 + 0.01 * getResearchLvl("Equip Def"));
-        intel = base_int + gear_int * (1 + 0.01 * getResearchLvl("Equip Int"));
-        resist = (base_res + gear_res * (1 + 0.01 * getResearchLvl("Equip Res"))) * set_res;
-        hit = (base_hit + gear_hit * (1 + 0.01 * getResearchLvl("Equip Hit"))) * set_hit;
-        speed = base_speed + gear_speed * (1 + 0.01 * getResearchLvl("Equip Spd"));
-        hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip HP"));
+        atk = base_atk + gear_atk * (1 + 0.01 * getResearchLvl("Equip Atk")) * (1 + stat_milestone);
+        def = base_def + gear_def * (1 + 0.01 * getResearchLvl("Equip Def")) * (1 + stat_milestone);
+        intel = base_int + gear_int * (1 + 0.01 * getResearchLvl("Equip Int")) * (1 + stat_milestone);
+        resist = (base_res + gear_res * (1 + 0.01 * getResearchLvl("Equip Res")) * (1 + stat_milestone)) * set_res;
+        hit = (base_hit + gear_hit * (1 + 0.01 * getResearchLvl("Equip Hit")) * (1 + stat_milestone)) * set_hit;
+        speed = base_speed + gear_speed * (1 + 0.01 * getResearchLvl("Equip Spd")) * (1 + stat_milestone);
+        hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip HP")) * (1 + stat_milestone);
         mp_max = (resist * 3 + intel) * mp_mult;
 
         exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0, highest_cl - cl));

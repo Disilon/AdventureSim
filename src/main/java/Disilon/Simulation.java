@@ -235,6 +235,13 @@ public class Simulation {
                                 }
                             }
                         }
+                        if (player.passives.get("Patient Counter").enabled) {
+                            if (player.hasBuff("Tea")) {
+                                player.casting = player.active_skills.get("Wait Patiently");
+                                cycled = 0;
+                                skill_cycle = 1;
+                            }
+                        }
                         if (cycled >= 5) {
                             player.casting = player.getWeakSkill();
                             cycled = 0;
@@ -765,6 +772,8 @@ public class Simulation {
             skills_log.append(skill3.getRecordedData(cleared + failed));
         if (skill4 != null && !skill4.name.equals("Prepare"))
             skills_log.append(skill4.getRecordedData(cleared + failed));
+        if (player.passives.get("Patient Counter").enabled)
+            skills_log.append(player.active_skills.get("Wait Patiently").getRecordedData(cleared + failed));
         if (player.counter_strike_log.used > 0)
             skills_log.append(player.counter_strike_log.getRecordedData(cleared + failed));
         if (player.counter_dodge_log.used > 0)

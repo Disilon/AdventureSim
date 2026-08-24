@@ -158,6 +158,7 @@ public class UserForm extends JFrame {
     private JCheckBox SmithingProgress;
     private JCheckBox AlchemyProgress;
     private JCheckBox AlchemyConsumptionBased;
+    private JSpinner Stat_milestone;
     private JMenuBar Bar;
     private JButton New_tab;
     private JTable ActiveSkills;
@@ -1381,31 +1382,19 @@ public class UserForm extends JFrame {
         LeftPanel.add(Hard_reward, gbc);
 
         row = 12;
-//        Balance1 = new JCheckBox("Extra attack overkill overwrite");
-//        gbc = new GridBagConstraints();
-//        gbc.gridx = column;
-//        gbc.gridy = row;
-//        gbc.gridwidth = 3;
-//        gbc.anchor = GridBagConstraints.NORTH;
-//        LeftPanel.add(Balance1, gbc);
-//        row += 1;
-//        Balance2 = new JCheckBox("Extra attack backstab dmg mult");
-//        gbc = new GridBagConstraints();
-//        gbc.gridx = column;
-//        gbc.gridy = row;
-//        gbc.gridwidth = 3;
-//        gbc.anchor = GridBagConstraints.NORTH;
-//        LeftPanel.add(Balance2, gbc);
-//        row += 1;
-//        Balance3 = new JCheckBox("Reduced overkill for crits");
-//        Balance3.setSelected(false);
-//        Balance3.setVisible(false);
-//        gbc = new GridBagConstraints();
-//        gbc.gridx = column;
-//        gbc.gridy = row;
-//        gbc.gridwidth = 3;
-//        gbc.anchor = GridBagConstraints.NORTH;
-//        LeftPanel.add(Balance3, gbc);
+        final JLabel Stat_milestone_l = new JLabel("Stat milestone %");
+        gbc = new GridBagConstraints();
+        gbc.gridx = column;
+        gbc.gridy = row;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(5, 5, 0, 5);
+        LeftPanel.add(Stat_milestone_l, gbc);
+        Stat_milestone = createCustomSpinner(0, 0, 200, 1);
+        gbc = new GridBagConstraints();
+        gbc.gridx = column;
+        gbc.gridy = row + 1;
+        gbc.anchor = GridBagConstraints.NORTH;
+        LeftPanel.add(Stat_milestone, gbc);
 
         final JLabel Highest_cl_l = new JLabel("Highest CL");
         gbc = new GridBagConstraints();
@@ -1414,15 +1403,15 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(Highest_cl_l, gbc);
-        row++;
         Highest_cl = createCustomSpinner(0, 0, 200, 1);
         Highest_cl.setToolTipText("used for Training set secondary bonus");
         gbc = new GridBagConstraints();
         gbc.gridx = column + 2;
-        gbc.gridy = row;
+        gbc.gridy = row + 1;
         gbc.anchor = GridBagConstraints.NORTH;
         LeftPanel.add(Highest_cl, gbc);
 
+        row++;
         row++;
         final JLabel label29 = new JLabel("Bestiary");
         gbc = new GridBagConstraints();
@@ -2440,6 +2429,7 @@ public class UserForm extends JFrame {
         data.hard_stats = Double.parseDouble(Hard_stats.getValue().toString());
         data.hard_reward = Double.parseDouble(Hard_reward.getValue().toString());
         data.highest_cl = Integer.parseInt(Highest_cl.getValue().toString());
+        data.stat_milestone = Double.parseDouble(Stat_milestone.getValue().toString()) / 100;
         return data;
     }
 
@@ -2652,6 +2642,7 @@ public class UserForm extends JFrame {
         actives_lvls = cloneIfPresent(actives_lvls, data.actives_lvls);
         passives_lvls = cloneIfPresent(passives_lvls, data.passives_lvls);
         Highest_cl.setValue(data.highest_cl);
+        Stat_milestone.setValue(data.stat_milestone * 100);
         loadSkillLvls();
         Rp_balance.setValue(data.rp_balance);
         for (String name : getAllResearches()) {
@@ -2854,7 +2845,8 @@ public class UserForm extends JFrame {
                 "Slime", "Goblin", "Imp", "Ghoul", "Wraith",
                 "Shinigami", "Astaroth", "Tengu", "Amon", "Akuma", "Devil", "Shax", "Dagon", "Lamia",
                 "Tyrant", "Fairy", "Fire Lizard", "Blood Lizard", "Raum", "Asura", "Squirrel Mage",
-                "Empress", "Tree Golem", "Gloom Flower", "Dark Reaper"
+                "Empress", "Tree Golem", "Gloom Flower", "Dark Reaper",
+                "Mammon", "Gargoyle", "Red Killer"
         ));
     }
 
