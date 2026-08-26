@@ -77,6 +77,197 @@ public class Enemy extends Actor {
         this.name = name;
         resetStats();
         switch (name) {
+            case "Slime" -> {
+                base_lvl = 10;
+                base_hp_max = 250 / base_lvl;
+                base_exp = 30 / base_lvl;
+                base_atk = 15 / base_lvl;
+                base_def = 10 / base_lvl;
+                base_int = 15 / base_lvl;
+                base_res = 35 / base_lvl;
+                base_hit = 25 / base_lvl;
+                base_speed = 10 / base_lvl;
+                base_water = 10;
+                skills.enableActive("Water Punch");
+            }
+            case "Imp" -> {
+                base_lvl = 10;
+                base_hp_max = 300 / base_lvl;
+                base_exp = 25 / base_lvl;
+                base_atk = 10 / base_lvl;
+                base_def = 35 / base_lvl;
+                base_int = 25 / base_lvl;
+                base_res = 15 / base_lvl;
+                base_hit = 20 / base_lvl;
+                base_speed = 15 / base_lvl;
+                base_fire = 10 / base_lvl;
+                skills.enableActive("Fire Ball");
+            }
+            case "Goblin" -> {
+                base_lvl = 10;
+                base_hp_max = 350 / base_lvl;
+                base_exp = 30 / base_lvl;
+                base_atk = 25 / base_lvl;
+                base_def = 20 / base_lvl;
+                base_int = 10 / base_lvl;
+                base_res = 15 / base_lvl;
+                base_hit = 20 / base_lvl;
+                base_speed = 25 / base_lvl;
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Quick Hit");
+            }
+            case "Ghoul" -> {
+                base_lvl = 20;
+                base_hp_max = 1300 / base_lvl;
+                base_exp = 80 / base_lvl;
+                base_atk = 70 / base_lvl;
+                base_def = 50 / base_lvl;
+                base_int = 20 / base_lvl;
+                base_res = 20 / base_lvl;
+                base_hit = 40 / base_lvl;
+                base_speed = 30 / base_lvl;
+                base_light_res = -0.5;
+                skills.enableActive("Charge Attack");
+            }
+            case "Wraith" -> {
+                base_lvl = 30;
+                base_hp_max = 1500 / base_lvl;
+                base_exp = 120 / base_lvl;
+                base_atk = 105 / base_lvl;
+                base_def = 90 / base_lvl;
+                base_int = 45 / base_lvl;
+                base_res = 5 / base_lvl;
+                base_hit = 90 / base_lvl;
+                base_speed = 75 / base_lvl;
+                base_wind = 45 / base_lvl;
+                base_wind_res = 0.6;
+                base_light_res = -0.5;
+                skills.enableActive("Attack");
+                skills.enableActive("Mark Target");
+            }
+            case "Astaroth" -> {
+                base_lvl = 40;
+                base_hp_max = 1800 / base_lvl;
+                base_exp = 180 / base_lvl;
+                base_atk = 120 / base_lvl;
+                base_def = 60 / base_lvl;
+                base_int = 60 / base_lvl;
+                base_res = 100 / base_lvl;
+                base_hit = 120 / base_lvl;
+                base_speed = 100 / base_lvl;
+                base_fire = 60 / base_lvl;
+                base_fire_res = 0.6;
+                skills.enableActive("Tsunami");
+                skills.enableActive("Blind Enemy");
+                skills.enableActive("Poison Attack");
+            }
+            case "Shinigami" -> {
+                base_lvl = 40;
+                base_hp_max = 2000 / base_lvl;
+                base_exp = 180 / base_lvl;
+                base_atk = 140 / base_lvl;
+                base_def = 60 / base_lvl;
+                base_int = 40 / base_lvl;
+                base_res = 120 / base_lvl;
+                base_hit = 120 / base_lvl;
+                base_speed = 60 / base_lvl;
+                base_dark = 60 / base_lvl;
+                base_dark_res = 0.6;
+                skills.enableActive("Killing Strike");
+                skills.enableActive("Back Stab");
+            }
+            case "Tengu" -> {
+                base_lvl = 50;
+                base_hp_max = 3750 / base_lvl;
+                base_exp = 450 / base_lvl;
+                base_atk = 275 / base_lvl;
+                base_def = 75 / base_lvl;
+                base_int = 50 / base_lvl;
+                base_res = 75 / base_lvl;
+                base_hit = 250 / base_lvl;
+                base_speed = 325 / base_lvl;
+                base_wind = 100 / base_lvl;
+                base_wind_res = 0.75;
+                skills.enableActive("Bash");
+                skills.enableActive("Double Attack");
+                skills.enablePassive("Dodge");
+            }
+            case "Amon" -> {
+                base_lvl = 50;
+                base_hp_max = 2750 / base_lvl;
+                base_exp = 450 / base_lvl;
+                base_atk = 50 / base_lvl;
+                base_def = 300 / base_lvl;
+                base_int = 250 / base_lvl;
+                base_res = 300 / base_lvl;
+                base_hit = 250 / base_lvl;
+                base_speed = 100 / base_lvl;
+                base_water = 100 / base_lvl;
+                base_water_res = 0.75;
+                skills.enableActive("Magic Missile");
+                skills.enableActive("Elemental Blast");
+            }
+            case "Akuma" -> {
+                base_lvl = 50;
+                base_hp_max = 4000 / base_lvl;
+                base_exp = 750 / base_lvl;
+                base_atk = 450 / base_lvl;
+                base_def = 175 / base_lvl;
+                base_int = 450 / base_lvl;
+                base_res = 175 / base_lvl;
+                base_hit = 350 / base_lvl;
+                base_speed = 200 / base_lvl;
+                base_fire = 100 / base_lvl;
+                base_fire_res = 0.5;
+                skills.enableActive("Dragon Punch");
+                skills.enableActive("Aura Shot");
+            }
+            case "Devil" -> {
+                base_lvl = 90;
+                base_hp_max = 10350 / base_lvl;
+                base_exp = 2430 / base_lvl;
+                base_atk = 900 / base_lvl;
+                base_def = 495 / base_lvl;
+                base_int = 630 / base_lvl;
+                base_res = 270 / base_lvl;
+                base_hit = 1080 / base_lvl;
+                base_speed = 225 / base_lvl;
+                base_dark = 180 / base_lvl;
+                base_dark_res = 0.5;
+                base_light_res = -0.5;
+                skills.enableActive("Poison Attack");
+                skills.enableActive("Dark Slash");
+            }
+            case "Shax" -> {
+                base_lvl = 100;
+                base_hp_max = 19200 / base_lvl;
+                if (Main.game_version < 1541) {
+                    base_exp = 9200 / base_lvl;
+                } else {
+                    if (Main.game_version < 1566) {
+                        base_exp = 10500 / base_lvl;
+                    } else {
+                        base_exp = 11500 / base_lvl;
+                    }
+                }
+                base_atk = 1100 / base_lvl;
+                base_def = 600 / base_lvl;
+                base_int = 1000 / base_lvl;
+                base_res = 1100 / base_lvl;
+                base_hit = 1200 / base_lvl;
+                base_speed = 3500 / base_lvl;
+                base_wind = 100 / base_lvl;
+                base_earth_res = 0.5;
+                if (game_version >= 1678) {
+                    base_wind_res = -0.4;
+                } else {
+                    base_wind_res = -0.5;
+                }
+                skills.enableActive("Gust");
+                skills.enableActive("Air Compression");
+                counter_dodge = true;
+                counter_heal = true;
+            }
             case "Dagon" -> {
                 base_lvl = 100;
                 if (Main.game_version < 1541) {
@@ -123,36 +314,6 @@ public class Enemy extends Actor {
                 skills.enableActive("Fire Ball");
                 skills.enableActive("Fire Pillar");
                 skills.enableActive("Explosion");
-            }
-            case "Shax" -> {
-                base_lvl = 100;
-                base_hp_max = 19200 / base_lvl;
-                if (Main.game_version < 1541) {
-                    base_exp = 9200 / base_lvl;
-                } else {
-                    if (Main.game_version < 1566) {
-                        base_exp = 10500 / base_lvl;
-                    } else {
-                        base_exp = 11500 / base_lvl;
-                    }
-                }
-                base_atk = 1100 / base_lvl;
-                base_def = 600 / base_lvl;
-                base_int = 1000 / base_lvl;
-                base_res = 1100 / base_lvl;
-                base_hit = 1200 / base_lvl;
-                base_speed = 3500 / base_lvl;
-                base_wind = 100 / base_lvl;
-                base_earth_res = 0.5;
-                if (game_version >= 1678) {
-                    base_wind_res = -0.4;
-                } else {
-                    base_wind_res = -0.5;
-                }
-                skills.enableActive("Gust");
-                skills.enableActive("Air Compression");
-                counter_dodge = true;
-                counter_heal = true;
             }
             case "Tyrant" -> {
                 base_lvl = 125;
@@ -352,7 +513,6 @@ public class Enemy extends Actor {
                 base_speed = 4800 / base_lvl;
                 base_dark_res = -0.2;
                 base_light_res = 0.2;
-                e_ailment_res = 0.8;
                 skills.enableActive("Greedy Slash",10, SkillMod.Damage);
                 skills.enableActive("Absolute Greed",10, SkillMod.Damage);
             }
@@ -367,7 +527,6 @@ public class Enemy extends Actor {
                 base_res = 4500 / base_lvl;
                 base_hit = 6750 / base_lvl;
                 base_speed = 17100 / base_lvl;
-                e_ailment_res = 0.25;
                 skills.enableActive("Stunning Blow",10, SkillMod.Damage);
             }
             case "Red Killer" -> {
@@ -383,171 +542,10 @@ public class Enemy extends Actor {
                 base_hit = 9000 / base_lvl;
                 base_speed = 7500 / base_lvl;
                 base_light_res = 0.2;
-                e_ailment_res = 0.6;
                 skills.enableActive("Extreme Assault",10, SkillMod.Damage);
                 skills.enableActive("Evil Assault",10, SkillMod.Damage);
             }
-            case "Devil" -> {
-                base_lvl = 90;
-                base_hp_max = 10350 / base_lvl;
-                base_exp = 2430 / base_lvl;
-                base_atk = 900 / base_lvl;
-                base_def = 495 / base_lvl;
-                base_int = 630 / base_lvl;
-                base_res = 270 / base_lvl;
-                base_hit = 1080 / base_lvl;
-                base_speed = 225 / base_lvl;
-                base_dark = 180 / base_lvl;
-                base_dark_res = 0.5;
-                base_light_res = -0.5;
-                skills.enableActive("Poison Attack");
-                skills.enableActive("Dark Slash");
-            }
-            case "Tengu" -> {
-                base_lvl = 50;
-                base_hp_max = 3750 / base_lvl;
-                base_exp = 450 / base_lvl;
-                base_atk = 275 / base_lvl;
-                base_def = 75 / base_lvl;
-                base_int = 50 / base_lvl;
-                base_res = 75 / base_lvl;
-                base_hit = 250 / base_lvl;
-                base_speed = 325 / base_lvl;
-                base_wind = 100 / base_lvl;
-                base_wind_res = 0.75;
-                skills.enableActive("Bash");
-                skills.enableActive("Double Attack");
-                skills.enablePassive("Dodge");
-            }
-            case "Amon" -> {
-                base_lvl = 50;
-                base_hp_max = 2750 / base_lvl;
-                base_exp = 450 / base_lvl;
-                base_atk = 50 / base_lvl;
-                base_def = 300 / base_lvl;
-                base_int = 250 / base_lvl;
-                base_res = 300 / base_lvl;
-                base_hit = 250 / base_lvl;
-                base_speed = 100 / base_lvl;
-                base_water = 100 / base_lvl;
-                base_water_res = 0.75;
-                skills.enableActive("Magic Missile");
-                skills.enableActive("Elemental Blast");
-            }
-            case "Akuma" -> {
-                base_lvl = 50;
-                base_hp_max = 4000 / base_lvl;
-                base_exp = 750 / base_lvl;
-                base_atk = 450 / base_lvl;
-                base_def = 175 / base_lvl;
-                base_int = 450 / base_lvl;
-                base_res = 175 / base_lvl;
-                base_hit = 350 / base_lvl;
-                base_speed = 200 / base_lvl;
-                base_fire = 100 / base_lvl;
-                base_fire_res = 0.5;
-                skills.enableActive("Dragon Punch");
-                skills.enableActive("Aura Shot");
-            }
-            case "Astaroth" -> {
-                base_lvl = 40;
-                base_hp_max = 1800 / base_lvl;
-                base_exp = 180 / base_lvl;
-                base_atk = 120 / base_lvl;
-                base_def = 60 / base_lvl;
-                base_int = 60 / base_lvl;
-                base_res = 100 / base_lvl;
-                base_hit = 120 / base_lvl;
-                base_speed = 100 / base_lvl;
-                base_fire = 60 / base_lvl;
-                base_fire_res = 0.6;
-                skills.enableActive("Tsunami");
-                skills.enableActive("Blind Enemy");
-                skills.enableActive("Poison Attack");
-            }
-            case "Shinigami" -> {
-                base_lvl = 40;
-                base_hp_max = 2000 / base_lvl;
-                base_exp = 180 / base_lvl;
-                base_atk = 140 / base_lvl;
-                base_def = 60 / base_lvl;
-                base_int = 40 / base_lvl;
-                base_res = 120 / base_lvl;
-                base_hit = 120 / base_lvl;
-                base_speed = 60 / base_lvl;
-                base_dark = 60 / base_lvl;
-                base_dark_res = 0.6;
-                skills.enableActive("Killing Strike");
-                skills.enableActive("Back Stab");
-            }
-            case "Wraith" -> {
-                base_lvl = 30;
-                base_hp_max = 1500 / base_lvl;
-                base_exp = 120 / base_lvl;
-                base_atk = 105 / base_lvl;
-                base_def = 90 / base_lvl;
-                base_int = 45 / base_lvl;
-                base_res = 5 / base_lvl;
-                base_hit = 90 / base_lvl;
-                base_speed = 75 / base_lvl;
-                base_wind = 45 / base_lvl;
-                base_wind_res = 0.6;
-                base_light_res = -0.5;
-                skills.enableActive("Attack");
-                skills.enableActive("Mark Target");
-            }
-            case "Ghoul" -> {
-                base_lvl = 20;
-                base_hp_max = 1300 / base_lvl;
-                base_exp = 80 / base_lvl;
-                base_atk = 70 / base_lvl;
-                base_def = 50 / base_lvl;
-                base_int = 20 / base_lvl;
-                base_res = 20 / base_lvl;
-                base_hit = 40 / base_lvl;
-                base_speed = 30 / base_lvl;
-                base_light_res = -0.5;
-                skills.enableActive("Charge Attack");
-            }
-            case "Slime" -> {
-                base_lvl = 10;
-                base_hp_max = 250 / base_lvl;
-                base_exp = 30 / base_lvl;
-                base_atk = 15 / base_lvl;
-                base_def = 10 / base_lvl;
-                base_int = 15 / base_lvl;
-                base_res = 35 / base_lvl;
-                base_hit = 25 / base_lvl;
-                base_speed = 10 / base_lvl;
-                base_water = 10;
-                skills.enableActive("Water Punch");
-            }
-            case "Imp" -> {
-                base_lvl = 10;
-                base_hp_max = 300 / base_lvl;
-                base_exp = 25 / base_lvl;
-                base_atk = 10 / base_lvl;
-                base_def = 35 / base_lvl;
-                base_int = 25 / base_lvl;
-                base_res = 15 / base_lvl;
-                base_hit = 20 / base_lvl;
-                base_speed = 15 / base_lvl;
-                base_fire = 10 / base_lvl;
-                skills.enableActive("Fire Ball");
-            }
-            case "Goblin" -> {
-                base_lvl = 10;
-                base_hp_max = 350 / base_lvl;
-                base_exp = 30 / base_lvl;
-                base_atk = 25 / base_lvl;
-                base_def = 20 / base_lvl;
-                base_int = 10 / base_lvl;
-                base_res = 15 / base_lvl;
-                base_hit = 20 / base_lvl;
-                base_speed = 25 / base_lvl;
-                skills.enableActive("Poison Attack");
-                skills.enableActive("Quick Hit");
-            }
+
             case "Dummy" -> {
                 base_lvl = 100;
                 base_hp_max = 10000000 / base_lvl;
@@ -587,6 +585,7 @@ public class Enemy extends Actor {
         min_lvl = Math.min(max_lvl, min_lvl + min_lvl_incr);
         lvl = Math.min(max_lvl, Math.max(min_lvl, lvl));
         refreshStats();
+//        System.out.println(lvl);
         if (name.equals("Dark Reaper")) {
             lvl = level;
         }

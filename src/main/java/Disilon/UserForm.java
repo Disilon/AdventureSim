@@ -359,7 +359,7 @@ public class UserForm extends JFrame {
         gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        Enemy.setMaximumRowCount(25);
+        Enemy.setMaximumRowCount(35);
         SkillPanel.add(Enemy, gbc);
 
         Save = new JButton();
@@ -653,7 +653,7 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         EquipPanel.add(label5, gbc);
         MH_name = new JComboBox<String>();
-        MH_name.setMaximumRowCount(30);
+        MH_name.setMaximumRowCount(35);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = element_row;

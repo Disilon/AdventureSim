@@ -784,6 +784,9 @@ public class ActiveSkill {
         if (defender.hide_bonus > 0 && name.equals("Bloody Slash")) {
             dmg_mult3 *= 2;
         }
+        if (attacker.last_skill != null && attacker.last_skill.name.equals("Drink Tea") && name.equals("Tea Do Ken")) {
+            dmg_mult3 *= 1.2;
+        }
         hit_chance = max(0.05, hit_chance / defender.getDodge_mult());
         hit_chance = Math.min(hit_chance, 1);
         if (defender.dodge > 0 && (Math.random() < defender.dodge)) {
@@ -954,6 +957,10 @@ public class ActiveSkill {
                     if (weapon_required != null && !weapon_required.equals(attacker.weapon_type)) {
                         dmg *= 0.7;
                     }
+//                    double armor_factor = Math.pow(Math.min(1, dmg * atk_c / def / 1000), 0.8);
+//                    dmg =
+//                            ((dmg * atk_c) / (Math.pow(def, 0.7) + 100) * armor_factor * 0.95) * Math.pow(1.1,
+//                                    calc_hits) * dmg_mult * dmg_mult1 * dmg_mult2 * dmg_mult3;
                     dmg =
                             ((dmg * atk_c) / (Math.pow(def, 0.7) + 100) - Math.pow(def, 0.85)) * Math.pow(1.1,
                                     calc_hits) * dmg_mult * dmg_mult1 * dmg_mult2 * dmg_mult3;
@@ -1190,19 +1197,17 @@ public class ActiveSkill {
                                Actor defender) {
         boolean stun = false;
         double effect = calcDebuffEffect(debuff, base_effect);
-        double hit_chance = (attacker.getHit() * this.hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
+        double skill_hit = attacker.zone != null ? hit : 1;
+        double hit_chance =
+                (attacker.getHit() * hit + attacker.getIntel()) / (defender.getDef() + defender.getResist()) / 1.2;
         if (debuff.equals("Poison")) {
-            hit_chance = (attacker.getHit() + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
-            if (attacker.passives.get("Poison Boost").enabled) hit_chance *= 2;
-//            System.out.println(name + " poison chance: " + hit_chance);
+            hit_chance =
+                    (attacker.getHit() * skill_hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
         }
         if (name.equals("Throw Sand")) {
-            hit_chance = (attacker.getHit() * this.hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
+            hit_chance = (attacker.getHit() * skill_hit + attacker.getSpeed()) / (defender.getDef() + defender.getResist()) / 1.2;
         }
-        if (debuff.equals("Burn")) {
-            // System.out.println(attacker.name + ": " + name + " burn chance: " + hit_chance);
-        }
-
+        if (attacker.passives.get("Poison Boost").enabled) hit_chance *= 2;
         hit_chance /= defender.ailment_res;
         if (name.equals("Smoke Screen")) {
             hit_chance = 1;
