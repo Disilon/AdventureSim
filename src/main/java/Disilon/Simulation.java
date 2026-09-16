@@ -412,7 +412,7 @@ public class Simulation {
 //                        for (Debuff d : enemy.debuffs) {
 //                            if (d.dmg > 0) dot_overkill += d.getMaxTotalDmg();
 //                        }
-                            double exp_gain = enemy.exp * player.getExpMult() * player.hard_reward;
+                            double exp_gain = enemy.exp * player.getExpMult(extra_reward) * player.hard_reward;
                             exp_gain *= 1 + player.getBestiaryBonus(enemy.name);
                             base_exp += enemy.exp * player.hard_reward * (1 + player.getBestiaryBonus(enemy.name));
                             if (enemy.name.equals("Squirrel Mage")) {
@@ -426,7 +426,6 @@ public class Simulation {
                             if (player.enemy_min_lvl_enabled && (game_version == 1638 || game_version >= 1658 || !enemy.name.equals("Squirrel Mage"))) {
                                 exp_gain *= 1 + 0.005 * player.enemy_min_lvl;
                             }
-                            exp_gain *= extra_reward;
                             if (player.lvling) player.increment_exp(exp_gain);
                             exp += exp_gain;
                             kills++;
@@ -653,7 +652,7 @@ public class Simulation {
         min_time /= time_mult;
         max_time /= time_mult;
         double exph = (exp / (total_time + death_time) * 3600);
-        double exp_total_bonus = player.getExpMult() * (1 + 0.005 * player.getEnemyMinLvl());
+        double exp_total_bonus = player.getExpMult(1) * (1 + 0.005 * player.getEnemyMinLvl());
         result.append("Exp/h: ").append(shorthand(exph)).append(" (");
         result.append(df2.format(exp_total_bonus * 100)).append("%; ");
         result.append(shorthand(base_exp / (total_time + death_time) * 3600)).append(" at 100%)\n");

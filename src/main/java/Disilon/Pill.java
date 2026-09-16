@@ -12,9 +12,16 @@ public class Pill {
     public void applyEffects(Actor a) {
         a.add_resist("All", 0.2 * getEffect(a, "Toughness"));
 
-        a.pill_cast_speed_mult *= 1.0 - 0.1 * getEffect(a, "Speedy");
-        if (name.equals("Speedy")) {
-            a.mp_cost_mult *= 1.0 + 0.1 * a.pill_effect;
+        if (Main.game_version >= 1704) {
+            a.pill_cast_speed_mult *= 1.0 - 0.13 * getEffect(a, "Speedy");
+            if (name.equals("Speedy")) {
+                a.mp_cost_mult *= 1.0 + 0.13 * a.pill_effect;
+            }
+        } else {
+            a.pill_cast_speed_mult *= 1.0 - 0.1 * getEffect(a, "Speedy");
+            if (name.equals("Speedy")) {
+                a.mp_cost_mult *= 1.0 + 0.1 * a.pill_effect;
+            }
         }
 
         a.dmg_mult *= 1.0 + 0.2 * getEffect(a, "Berserk");
@@ -27,12 +34,17 @@ public class Pill {
         a.gear_crit += 0.2 * getEffect(a, "Critical");
 
         double stats = 0.18 * getEffect(a, "Ultimate");
-        a.atk_mult *= 1.0 + stats;
-        a.def_mult *= 1.0 + stats;
-        a.int_mult *= 1.0 + stats;
-        a.res_mult *= 1.0 + stats;
-        a.hit_mult *= 1.0 + stats;
-        a.speed_mult *= 1.0 + stats;
+        if (Main.game_version >= 1704) stats = 0.16 * getEffect(a, "Ultimate");
+        if (Main.game_version == 1703) {
+            a.ult_pill = 1.0 + stats;
+        } else {
+            a.atk_mult *= 1.0 + stats;
+            a.def_mult *= 1.0 + stats;
+            a.int_mult *= 1.0 + stats;
+            a.res_mult *= 1.0 + stats;
+            a.hit_mult *= 1.0 + stats;
+            a.speed_mult *= 1.0 + stats;
+        }
     }
 
     public double getEffect(Actor a, String pill) {

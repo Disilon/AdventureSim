@@ -1745,6 +1745,7 @@ public class UserForm extends JFrame {
                             setup.result_lvling = simulation.lvling_info;
                             setup.stats = simulation.player.getAllStats();
                             setup.alchemist_lvl = simulation.player.alchemist_lvl;
+                            setup.stat_milestone = simulation.player.stat_milestone;
                             setup.highest_cl = simulation.player.highest_cl;
                         }
                         loadSetup(setup);

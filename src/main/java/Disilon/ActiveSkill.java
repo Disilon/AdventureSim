@@ -234,6 +234,24 @@ public class ActiveSkill {
                     base_debuff_duration = 3;
                 }
             }
+            case "Poisoned Kunai" -> {
+                if (game_version >= 1704) {
+                    base_min = 585;
+                    base_max = 715;
+                    base_cast = 1.5;
+                } else {
+                    base_min = 468;
+                    base_max = 572;
+                    base_cast = 1.2;
+                }
+            }
+            case "Kyrie Eleyson" -> {
+                if (game_version >= 1704) {
+                    base_cast = 0.5;
+                } else {
+                    base_cast = 0.8;
+                }
+            }
         }
     }
 
@@ -412,7 +430,9 @@ public class ActiveSkill {
     public double calculate_manacost(Actor actor) {
         double cost = (mp * mp_mult + mp_additive) * actor.p_mp_cost_mult + actor.p_mp_cost_add;
         cost *= actor.mp_cost_mult * Math.max(0.2, actor.core_manacost);
+//        if (element == Element.water) cost *= 1 - Math.ceil(actor.finke_bonus * 100) * 0.01;
         if (element == Element.water) cost *= 1 - actor.finke_bonus;
+//        System.out.println(cost);
         return cost;
     }
 
@@ -745,8 +765,10 @@ public class ActiveSkill {
             //System.out.println(gain);
             attacker.setHp(attacker.hp + gain);
         }
-        if (Objects.equals(weapon_required, "dagger") && attacker.passives.get("Killing Intent").enabled) {
-            if ((defender.hp < defender.hp_max * 0.3) && defender.hasDebuff("Poison")) {
+//        if (Objects.equals(weapon_required, "dagger") && attacker.passives.get("Killing Intent").enabled) {
+//        if ((defender.hp < defender.hp_max * 0.3) && defender.hasDebuff("Poison")) {
+        if (attacker.passives.get("Killing Intent").enabled) {
+            if ((defender.hp < defender.hp_max * 0.3)) {
                 ActiveSkill execute = owner.active_skills.get("Execute");
                 double chance = attacker.passives.get("Killing Intent").bonus;
                 execute.hit_chance_sum += chance;

@@ -504,7 +504,7 @@ public class Enemy extends Actor {
                 base_hp_max = 3000000 / base_lvl;
                 base_exp = 1600000 / base_lvl;
                 if (game_version >= 1695) base_exp /= 1.5;
-                if (game_version >= 1698) base_exp *= 1.1;
+                if (game_version >= 1698) base_exp = 1200000 / base_lvl;
                 base_atk = 6000 / base_lvl;
                 base_def = 10000 / base_lvl;
                 base_int = 4000 / base_lvl;
@@ -521,6 +521,7 @@ public class Enemy extends Actor {
                 base_hp_max = 4500000 / base_lvl;
                 base_exp = 2475000 / base_lvl;
                 if (game_version >= 1695) base_exp /= 1.5;
+                if (game_version >= 1698) base_exp = 1620000 / base_lvl;
                 base_atk = 6750 / base_lvl;
                 base_def = 4500 / base_lvl;
                 base_int = 3600 / base_lvl;
@@ -534,7 +535,7 @@ public class Enemy extends Actor {
                 base_hp_max = 5500000 / base_lvl;
                 base_exp = 3250000 / base_lvl;
                 if (game_version >= 1695) base_exp /= 1.5;
-                if (game_version >= 1698) base_exp *= 0.9;
+                if (game_version >= 1698) base_exp = 1975000 / base_lvl;
                 base_atk = 7500 / base_lvl;
                 base_def = 5000 / base_lvl;
                 base_int = 5000 / base_lvl;

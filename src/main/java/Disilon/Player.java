@@ -28,7 +28,7 @@ public class Player extends Actor {
     double research_slots_stat;
     double rp_drain;
     double hard_reward = 1;
-    double total_exp_mult = 1;
+    double research_exp_mult = 1;
     String previous_research;
     boolean decide_research = false;
     int alchemist_lvl = 0;
@@ -539,7 +539,7 @@ public class Player extends Actor {
 
     @Override
     public double getFire() {
-        double result = gear_fire * (1 + stat_milestone);
+        double result = gear_fire;
         switch (name) {
             case "Pyromancer", "Monk" -> {
                 result += getAvgAtkInt();
@@ -562,7 +562,7 @@ public class Player extends Actor {
 
     @Override
     public double getWater() {
-        double result = gear_water * (1 + stat_milestone);
+        double result = gear_water;
         switch (name) {
             case "Pyromancer" -> {
                 result -= getAvgAtkInt();
@@ -586,7 +586,7 @@ public class Player extends Actor {
 
     @Override
     public double getWind() {
-        double result = gear_wind * (1 + stat_milestone);
+        double result = gear_wind;
         switch (name) {
             case "Sniper","Holy Archer" -> {
                 result += getAvgAtkInt();
@@ -606,7 +606,7 @@ public class Player extends Actor {
 
     @Override
     public double getEarth() {
-        double result = gear_earth * (1 + stat_milestone);
+        double result = gear_earth;
         switch (name) {
             case "Geomancer" -> {
                 result += getAvgAtkInt();
@@ -624,7 +624,7 @@ public class Player extends Actor {
 
     @Override
     public double getDark() {
-        double result = gear_dark * (1 + stat_milestone);
+        double result = gear_dark;
         switch (name) {
             case "Assassin","Ninja" -> {
                 result += getAvgAtkInt();
@@ -641,7 +641,7 @@ public class Player extends Actor {
 
     @Override
     public double getLight() {
-        double result = gear_light * (1 + stat_milestone);
+        double result = gear_light;
         switch (name) {
             case "Assassin", "Sniper" -> {
                 result -= getAvgAtkInt();
@@ -670,7 +670,6 @@ public class Player extends Actor {
                          boolean research_bonus) {
         if (research_bonus) {
             gear_stat *= 1 + 0.01 * getResearchLvl("Equip " + capitalizeFirst(label.toLowerCase()));
-            gear_stat *=  1 + stat_milestone;
         }
         sb.append(label).append(" = ");
         sb.append(Math.round(stat));
@@ -693,30 +692,29 @@ public class Player extends Actor {
         gearStat(sb, "HIT", getHit(), getHit() - base_hit * hit_mult, true, false);
         gearStat(sb, "SPD", getSpeed(), gear_speed, true, true);
         sb.append("\n");
-        double m = 1 + stat_milestone;
         if (getWater() != 0) {
-            sb.append("Water = ").append(Math.round(getWater())).append(" (").append(Math.round(gear_water * m)).append(
+            sb.append("Water = ").append(Math.round(getWater())).append(" (").append(Math.round(gear_water)).append(
                     ")\n");
         }
         if (getFire() != 0) {
-            sb.append("Fire = ").append(Math.round(getFire())).append(" (").append(Math.round(gear_fire * m)).append(")\n");
+            sb.append("Fire = ").append(Math.round(getFire())).append(" (").append(Math.round(gear_fire)).append(")\n");
         }
         if (getWind() != 0) {
-            sb.append("Wind = ").append(Math.round(getWind())).append(" (").append(Math.round(gear_wind * m)).append(")\n");
+            sb.append("Wind = ").append(Math.round(getWind())).append(" (").append(Math.round(gear_wind)).append(")\n");
         }
         if (getEarth() != 0) {
-            sb.append("Earth = ").append(Math.round(getEarth())).append(" (").append(Math.round(gear_earth * m)).append(
+            sb.append("Earth = ").append(Math.round(getEarth())).append(" (").append(Math.round(gear_earth)).append(
                     ")\n");
         }
         if (getLight() != 0) {
-            sb.append("Light = ").append(Math.round(getLight())).append(" (").append(Math.round(gear_light * m)).append(
+            sb.append("Light = ").append(Math.round(getLight())).append(" (").append(Math.round(gear_light)).append(
                     ")\n");
         }
         if (getDark() != 0) {
-            sb.append("Dark = ").append(Math.round(getDark())).append(" (").append(Math.round(gear_dark * m)).append(")\n");
+            sb.append("Dark = ").append(Math.round(getDark())).append(" (").append(Math.round(gear_dark)).append(")\n");
         }
         if (gear_no_elem != 0) {
-            sb.append("Non elem = ").append(Math.round(gear_no_elem * m)).append(" (").append(Math.round(gear_no_elem * m)).append(
+            sb.append("Non elem = ").append(Math.round(gear_no_elem)).append(" (").append(Math.round(gear_no_elem)).append(
                     ")\n");
         }
         sb.append("\n");
@@ -1057,7 +1055,7 @@ public class Player extends Actor {
     }
 
     public void apply_research_effects() {
-        total_exp_mult = exp_mult * (1 + 0.01 * research_lvls.getOrDefault("Exp gain", 0.0).intValue());
+        research_exp_mult = 1 + 0.01 * research_lvls.getOrDefault("Exp gain", 0.0).intValue();
         base_crit_chance = research_lvls.getOrDefault("Crit chance", 0.0).intValue()/100.0;
         base_crit_damage = 1.5 + research_lvls.getOrDefault("Crit damage", 0.0).intValue()/100.0;
         no_overkill_crit = research_lvls.getOrDefault("No overkill crit", 0.0).intValue()/100.0;
@@ -1182,10 +1180,15 @@ public class Player extends Actor {
         return Math.min(bonus, 0.1);
     }
 
-    public double getExpMult() {
-        double result = total_exp_mult * milestone_exp_mult * core_exp;
+    public double getExpMult(double time_reward) {
+        double result = research_exp_mult * exp_mult * milestone_exp_mult;
         result *= 1 + 0.01 * getBestiaryMedals(50000);
-        return  result;
+        if (game_version >= 1696) {
+            result *= gear_exp_mult * core_exp + time_reward - 1;
+        } else {
+            result *= gear_exp_mult * core_exp * time_reward;
+        }
+        return result;
     }
 
     public double getCraftingSpeed() {

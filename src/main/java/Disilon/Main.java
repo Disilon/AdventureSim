@@ -20,8 +20,7 @@ import java.util.Random;
 import java.util.Vector;
 
 public class Main {
-    public static Vector<Integer> availableVersions = new Vector<>(List.of(1670, 1674, 1676, 1678, 1679, 1680, 1681,
-            1682, 1690, 1694, 1695, 1696, 1697, 1698, 1699));
+    public static Vector<Integer> availableVersions = new Vector<>(List.of(1694, 1695, 1696, 1697, 1698, 1699, 1703, 1704));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;

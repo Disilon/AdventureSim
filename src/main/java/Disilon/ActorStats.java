@@ -116,6 +116,7 @@ public class ActorStats {
     public double wind_dmg_mult = 1;
     public double holy_dmg_mult = 1;
     public double dodge = 0;
+    public double ult_pill = 1;
 
     public double water_res;
     public double fire_res;
@@ -135,6 +136,7 @@ public class ActorStats {
     public double prepare_threshold;
     public double exp;
     public double exp_mult = 1;
+    public double gear_exp_mult = 1;
     public double p_mp_cost_add;
     public double p_mp_cost_mult = 1;
     public double mp_cost_mult = 1;

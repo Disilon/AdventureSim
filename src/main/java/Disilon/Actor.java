@@ -425,13 +425,6 @@ public class Actor extends ActorStats {
                 add_resist("Magic", item.magic_res * 0.01);
                 add_resist("Physical", item.phys_res * 0.01);
                 String set_type = item.displayName;
-                if (set_type.equals("Blazing")) {
-                    if (game_version >= 1591) {
-                        set_type = "Blazing";
-                    } else {
-                        set_type = "Cloth";
-                    }
-                }
                 if (set_type.equals("Windy")) set_type = "Leather";
                 if (set_type.equals("Bronze")) set_type = "Iron";
                 if (set_type.equals("Squirrel_2")) set_type = "Squirrel";
@@ -467,10 +460,12 @@ public class Actor extends ActorStats {
         dmg_taken_mult = 1;
         wind_dmg_mult = 1;
         holy_dmg_mult = 1;
+        ult_pill = 1;
         poison_mult = 1;
         ailment_res = 1;
         poison_res = 0;
         exp_mult = 1;
+        gear_exp_mult = 1;
         cast_speed_mult = 1;
         pill_cast_speed_mult = 1;
         delay_speed_mult = 1;
@@ -508,7 +503,7 @@ public class Actor extends ActorStats {
         pill_effect *= 1 + (name.equals("Alchemist") ? 0.03 : 0.01) * passives.get("Pill Inventor").lvl;
         atk_mult *= 1.0 + passives.get("Attack Boost").getBonus();
         speed_mult *= 1.0 + passives.get("Speed Boost").getBonus();
-        exp_mult *= 1.0 + passives.get("Exp Boost").getBonus();
+        gear_exp_mult *= 1.0 + passives.get("Exp Boost").getBonus();
         def_mult *= 1.0 + passives.get("Defense Boost").getBonus();
         dodge_mult *= 1.0 + passives.get("Dodge").getBonus();
         counter_strike = passives.get("Counter Strike").getBonus();
@@ -594,16 +589,16 @@ public class Actor extends ActorStats {
                 if (active.getValue().name.equals("Aura Blade")) aurablade_enabled = true;
             }
         }
-        atk = base_atk + gear_atk * (1 + 0.01 * getResearchLvl("Equip Atk")) * (1 + stat_milestone);
-        def = base_def + gear_def * (1 + 0.01 * getResearchLvl("Equip Def")) * (1 + stat_milestone);
-        intel = base_int + gear_int * (1 + 0.01 * getResearchLvl("Equip Int")) * (1 + stat_milestone);
-        resist = (base_res + gear_res * (1 + 0.01 * getResearchLvl("Equip Res")) * (1 + stat_milestone)) * set_res;
-        hit = (base_hit + gear_hit * (1 + 0.01 * getResearchLvl("Equip Hit")) * (1 + stat_milestone)) * set_hit;
-        speed = base_speed + gear_speed * (1 + 0.01 * getResearchLvl("Equip Spd")) * (1 + stat_milestone);
-        hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip HP")) * (1 + stat_milestone);
+        atk = base_atk * ult_pill + gear_atk * (1 + 0.01 * getResearchLvl("Equip Atk")) ;
+        def = base_def * ult_pill + gear_def * (1 + 0.01 * getResearchLvl("Equip Def"));
+        intel = base_int * ult_pill + gear_int * (1 + 0.01 * getResearchLvl("Equip Int"));
+        resist = (base_res * ult_pill + gear_res * (1 + 0.01 * getResearchLvl("Equip Res"))) * set_res;
+        hit = (base_hit * ult_pill + gear_hit * (1 + 0.01 * getResearchLvl("Equip Hit"))) * set_hit;
+        speed = base_speed * ult_pill + gear_speed * (1 + 0.01 * getResearchLvl("Equip Spd"));
+        hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip HP"));
         mp_max = (resist * 3 + intel) * mp_mult;
 
-        exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0, highest_cl - cl));
+        gear_exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0, highest_cl - cl));
 
         if (passives.get("Fire Resistance").enabled) {
             add_resist("Fire", passives.get("Fire Resistance").getBonus());

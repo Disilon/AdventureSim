@@ -29,6 +29,7 @@ public class Core {
     public void applyStats(Actor actor, int id) {
         if (enabled && !name.equals("None")) {
             double bonus = getBonus(actor, id);
+            double m = 1 + actor.stat_milestone;
             switch (name) {
                 case "Slime" -> {
                     actor.core_intdam += bonus / 100;
@@ -58,49 +59,49 @@ public class Core {
                     actor.core_cdr_add += bonus / 100;
                 }
                 case "Asura" -> {
-                    actor.gear_atk += bonus;
+                    actor.gear_atk += bonus * m;
                 }
                 case "Lamia" -> {
-                    actor.gear_int += bonus;
+                    actor.gear_int += bonus * m;
                 }
                 case "Imp" -> {
-                    actor.gear_fire += bonus;
+                    actor.gear_fire += bonus * m;
                 }
                 case "Ghoul" -> {
-                    actor.gear_earth += bonus;
+                    actor.gear_earth += bonus * m;
                 }
                 case "Wraith" -> {
-                    actor.gear_wind += bonus;
+                    actor.gear_wind += bonus * m;
                 }
                 case "Dagon" -> {
-                    actor.gear_water += bonus;
+                    actor.gear_water += bonus * m;
                 }
                 case "Shinigami" -> {
-                    actor.gear_dark += bonus;
+                    actor.gear_dark += bonus * m;
                 }
                 case "Astaroth" -> {
-                    actor.gear_light += bonus;
+                    actor.gear_light += bonus * m;
                 }
                 case "Raum" -> {
-                    actor.gear_no_elem += bonus;
+                    actor.gear_no_elem += bonus * m;
                 }
                 case "Tyrant" -> {
-                    actor.gear_def += bonus;
+                    actor.gear_def += bonus * m;
                 }
                 case "Amon" -> {
-                    actor.gear_res += bonus;
+                    actor.gear_res += bonus * m;
                 }
                 case "Shax" -> {
-                    actor.gear_speed += bonus;
+                    actor.gear_speed += bonus * m;
                 }
                 case "Fairy" -> {
-                    actor.gear_hit += bonus;
+                    actor.gear_hit += bonus * m;
                 }
                 case "Tree Golem" -> {
-                    actor.gear_hp += bonus;
+                    actor.gear_hp += bonus * m;
                 }
                 case "Gloom Flower" -> {
-                    actor.shield_max += bonus;
+                    actor.shield_max += bonus * m;
                 }
                 case "Dark Reaper" -> {
                     actor.gear_hp += bonus;
