@@ -1183,7 +1183,7 @@ public class Player extends Actor {
     public double getExpMult(double time_reward) {
         double result = research_exp_mult * exp_mult * milestone_exp_mult;
         result *= 1 + 0.01 * getBestiaryMedals(50000);
-        if (game_version >= 1696) {
+        if (game_version >= 1700) {
             result *= gear_exp_mult * core_exp + time_reward - 1;
         } else {
             result *= gear_exp_mult * core_exp * time_reward;

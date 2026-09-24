@@ -1389,7 +1389,7 @@ public class UserForm extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(Stat_milestone_l, gbc);
-        Stat_milestone = createCustomSpinner(0, 0, 200, 1);
+        Stat_milestone = createCustomSpinner(0, 0, 200, 0.2);
         gbc = new GridBagConstraints();
         gbc.gridx = column;
         gbc.gridy = row + 1;

@@ -651,7 +651,8 @@ public class Enemy extends Actor {
                         active_skills.get("Earth Blast");
             }
             case "Fairy" -> {
-                return (charge == 0 && roll < 60) ? active_skills.get("Charge Up") : active_skills.get("Arrow Of Light");
+                return (charge == 1 && roll < 60) ? active_skills.get("Charge Up") : active_skills.get("Arrow Of " +
+                        "Light");
             }
             case "Asura" -> {
                 if (player.hide_bonus > 0) {

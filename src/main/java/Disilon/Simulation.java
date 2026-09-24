@@ -337,7 +337,7 @@ public class Simulation {
                                                 if (player.casting.name.equals("Careful Shot") && enemy.hp <= 0) {
                                                     kills_drop += 0.5;
                                                 }
-                                                if (player.charge > 0) player.remove_charge = true;
+                                                if (player.charge > 1) player.remove_charge = true;
                                             }
                                         }
                                     }
@@ -351,7 +351,7 @@ public class Simulation {
                                                 double dmg = player.casting.attack(player, key, value, 0);
                                                 if (dmg > 0) {
                                                     key.doDamage(dmg);
-                                                    if (player.charge > 0) player.remove_charge = true;
+                                                    if (player.charge > 1) player.remove_charge = true;
                                                 }
                                             });
                                         } else {
@@ -361,7 +361,7 @@ public class Simulation {
                                                 if (player.casting.name.equals("Careful Shot") && player.target.hp <= 0) {
                                                     kills_drop += 0.5;
                                                 }
-                                                if (player.charge > 0) player.remove_charge = true;
+                                                if (player.charge > 1) player.remove_charge = true;
                                             }
                                         }
                                         player.target = null;
@@ -476,7 +476,7 @@ public class Simulation {
                                                         enemy, 0, time);
                                                 if (c_dmg > 0) {
                                                     enemy.doDamage(c_dmg);
-                                                    if (player.charge > 0) player.remove_charge = true;
+                                                    if (player.charge > 1) player.remove_charge = true;
                                                 }
                                                 player.active_skills.get("Tea Do Ken").finish_cast(player);
                                                 player.tick_buffs(true);
@@ -485,7 +485,7 @@ public class Simulation {
                                         if (dmg > 0) {
                                             player.doDamage(dmg);
                                             player.damage_taken += dmg;
-                                            if (enemy.charge > 0) enemy.remove_charge = true;
+                                            if (enemy.charge > 1) enemy.remove_charge = true;
                                         }
                                         enemy.tick_buffs(true);
 //                                System.out.println("Player: " + (int) player.hp + "/" + (int) player.getHp_max() + " " + (int) player.getMp() + "/" + (int) player.getMp_max() + "; Enemy: " + (int) enemy.hp + "/" + (int) enemy.getHp_max());
@@ -553,6 +553,8 @@ public class Simulation {
                         player.setHp(player.getHp_max());
                         player.setMp(player.getMp_max());
                         player.resetPotionCd();
+                    } else {
+                        player.remove_buff("Charge Up");
                     }
                 }
             }

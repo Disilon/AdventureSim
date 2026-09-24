@@ -150,7 +150,7 @@ public class ActorStats {
     public double smoked = 0;
     public double bound = 0;
     public boolean ambushing = false;
-    public double charge;
+    public double charge = 1;
     public boolean remove_charge = false;
     public double def_break = 0;
     public double res_break = 0;

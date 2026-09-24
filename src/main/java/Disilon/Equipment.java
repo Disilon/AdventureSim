@@ -335,7 +335,7 @@ public class Equipment {
                 case "PoisonLeather" -> {
                     addToMap(map,"R Poison Leather","amount", amount);
                     double m1 = amount / ref_c * 10;
-                    addToMap(map,"R Poison Leather","time", m1/10 * 40 / c_spd);
+                    addToMap(map,"R Poison Leather","time", m1/10 * 100 / c_spd);
                     addToMap(map,"Poison Leather","amount", m1);
                     addToMap(map,"Poison Leather","time", m1 * 20 / c_spd);
                     addToMap(map,"Lizard Skin","amount", m1*2);
@@ -344,7 +344,7 @@ public class Equipment {
                 case "EvilLeather" -> {
                     addToMap(map,"R Evil Leather","amount", amount);
                     double m1 = amount / ref_c * 10;
-                    addToMap(map,"R Evil Leather","time", m1/10 * 45 / c_spd);
+                    addToMap(map,"R Evil Leather","time", m1/10 * 120 / c_spd);
                     addToMap(map,"Evil Leather","amount", m1);
                     addToMap(map,"Evil Leather","time", m1 * 22 / c_spd);
                     addToMap(map,"Evil Hide","amount", m1*2);

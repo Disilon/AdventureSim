@@ -93,7 +93,7 @@ public class Actor extends ActorStats {
     }
 
     public void check_buffs() {
-        charge = 0;
+        charge = 1;
         blessed = 0;
         empower_hp = 0;
         elemental_buff = 0;
@@ -101,7 +101,7 @@ public class Actor extends ActorStats {
         kyrie = 0;
         for (Buff b : buffs) {
             if (b.name.equals("Kyrie Eleyson")) kyrie = b.effect;
-            if (b.name.equals("Charge Up")) charge = b.effect;
+            if (b.name.equals("Charge Up")) charge *= 1 + b.effect;
             if (b.name.equals("Bless")) blessed = b.effect;
             if (b.name.equals("Empower HP")) empower_hp = b.effect;
             if (b.name.equals("Elemental Buff")) elemental_buff = b.effect;
@@ -115,17 +115,13 @@ public class Actor extends ActorStats {
             Buff b = buff_iterator.next();
             if (log.contains("buff_duration")) System.out.println(b.name + " duration = " + b.duration);
             switch (b.name) {
-                case "Charge Up", "Elemental Buff", "Taking Notes" -> b.duration = b.duration - (attack ? 1 : 0);
+                case "Charge Up" -> {
+                    if (remove_charge) b.duration -= attack ? 1 : 0;
+                }
+                case "Elemental Buff", "Taking Notes" -> b.duration -= attack ? 1 : 0;
                 case "Stone Barrier","Kyrie Eleyson", "Tea" -> {}
                 default -> b.duration--;
             }
-//            if (!b.name.equals("Charge Up") && !b.name.contains("Barrier")) {
-//                b.duration--;
-//            }
-//            if (b.name.equals("Charge Up") && remove_charge) {
-//                b.duration--;
-//                remove_charge = false;
-//            }
             if (b.duration <= 0) {
                 if (log.contains("buff_removed")) {
                     System.out.println(b.name + " was removed from " + name);
@@ -768,7 +764,7 @@ public class Actor extends ActorStats {
     }
 
     public double getAtk() {
-        return atk * (atk_mult + blessed) + empower_hp * getHp_max();
+        return atk * atk_mult * (1 + blessed) + empower_hp * getHp_max();
     }
 
     public double getAtk_no_buffs() {
@@ -776,7 +772,7 @@ public class Actor extends ActorStats {
     }
 
     public double getDef() {
-        return def * (def_mult + blessed - def_break - mark);
+        return def * def_mult * (1 + blessed - def_break - mark);
     }
 
     public double getDef_no_buffs() {
@@ -784,7 +780,7 @@ public class Actor extends ActorStats {
     }
 
     public double getIntel() {
-        return intel * (int_mult + blessed);
+        return intel * int_mult * (1 + blessed);
     }
 
     public double getIntel_no_buffs() {
@@ -792,7 +788,11 @@ public class Actor extends ActorStats {
     }
 
     public double getResist() {
-        return resist * (res_mult - mark - res_break + blessed);
+        if (game_version >= 1705) {
+            return resist * res_mult * (1 - res_break + blessed - mark);
+        } else {
+            return resist * res_mult * (1 - res_break + blessed);
+        }
     }
 
     public double getResist_no_buffs() {
@@ -800,7 +800,11 @@ public class Actor extends ActorStats {
     }
 
     public double getGear_res() {
-        return getResist() - base_res * (res_mult - mark - res_break + blessed);
+        if (game_version >= 1705) {
+            return getResist() - base_res * res_mult * (1 - res_break + blessed - mark);
+        } else {
+            return getResist() - base_res * res_mult * (1 - res_break + blessed);
+        }
     }
 
     public double getHit() {
@@ -881,7 +885,7 @@ public class Actor extends ActorStats {
 
     public double getDmg_mult() {
         double mult = 1.0;
-        mult *= 1.0 + charge;
+        mult *= charge;
         mult *= 1.0 - weaken;
         return dmg_mult * mult;
     }
