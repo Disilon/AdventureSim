@@ -3,6 +3,7 @@ package Disilon;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.w3c.dom.ls.LSOutput;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -19,6 +20,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.font.TextAttribute;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -41,6 +44,7 @@ import static Disilon.Main.df2p;
 import static Disilon.Main.dfm;
 import static Disilon.Main.dfs;
 import static Disilon.Main.equipmentData;
+import static Disilon.Player.getTier;
 
 public class UserForm extends JFrame {
     private JPanel RootPanel;
@@ -158,7 +162,6 @@ public class UserForm extends JFrame {
     private JCheckBox SmithingProgress;
     private JCheckBox AlchemyProgress;
     private JCheckBox AlchemyConsumptionBased;
-    private JSpinner Stat_milestone;
     private JMenuBar Bar;
     private JButton New_tab;
     private JTable ActiveSkills;
@@ -168,6 +171,9 @@ public class UserForm extends JFrame {
     SkillTableModel passiveSkillsModel;
     GridBagConstraints gbc = new GridBagConstraints();
 
+    /**
+     * used for leveling data and skill list init
+     */
     public Player player;
     public Simulation simulation;
     public Setup setup;
@@ -205,12 +211,10 @@ public class UserForm extends JFrame {
 
             @Override
             public void menuDeselected(MenuEvent event) {
-//                System.out.println("menuDeselected");
             }
 
             @Override
             public void menuCanceled(MenuEvent event) {
-//                System.out.println("menuCanceled");
             }
         }
         class MenuItemActionListener implements ActionListener {
@@ -251,7 +255,7 @@ public class UserForm extends JFrame {
                 "json", "json");
         fileChooser.setFileFilter(filter);
         player = new Player();
-        setup = new Setup();
+        setup = createEmptySetup();
         simulation = new Simulation();
         RootPanel = new JPanel();
         LeftPanel = new JPanel();
@@ -275,8 +279,7 @@ public class UserForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (tabs.size() < 15) {
-                    JMenu new_tab = createTab();
-                    loadSetup(tabs.get(selected_tab));
+                    selectTab(createTab());
                 }
             }
         });
@@ -1382,19 +1385,6 @@ public class UserForm extends JFrame {
         LeftPanel.add(Hard_reward, gbc);
 
         row = 12;
-        final JLabel Stat_milestone_l = new JLabel("Stat milestone %");
-        gbc = new GridBagConstraints();
-        gbc.gridx = column;
-        gbc.gridy = row;
-        gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(5, 5, 0, 5);
-        LeftPanel.add(Stat_milestone_l, gbc);
-        Stat_milestone = createCustomSpinner(0, 0, 200, 0.2);
-        gbc = new GridBagConstraints();
-        gbc.gridx = column;
-        gbc.gridy = row + 1;
-        gbc.anchor = GridBagConstraints.NORTH;
-        LeftPanel.add(Stat_milestone, gbc);
 
         final JLabel Highest_cl_l = new JLabel("Highest CL");
         gbc = new GridBagConstraints();
@@ -1404,7 +1394,7 @@ public class UserForm extends JFrame {
         gbc.insets = new Insets(5, 5, 0, 5);
         LeftPanel.add(Highest_cl_l, gbc);
         Highest_cl = createCustomSpinner(0, 0, 200, 1);
-        Highest_cl.setToolTipText("used for Training set secondary bonus");
+        Highest_cl.setToolTipText("used for Training set secondary bonus for t3 or lower");
         gbc = new GridBagConstraints();
         gbc.gridx = column + 2;
         gbc.gridy = row + 1;
@@ -1727,17 +1717,6 @@ public class UserForm extends JFrame {
                         setup.milestone = player.milestone_exp_mult * 100;
                         setup.ml = player.ml + player.getMLpercent() / 100;
                         setup.cl = Math.min(player.getMaxCl(), player.cl + player.getCLpercent() / 100);
-                        for (String s : player.active_skills.keySet()) {
-                            setup.actives_lvls.put(s, Math.min(player.max_skill_lvl, player.active_skills.get(s).getLvl()));
-                        }
-                        for (String s : player.passives.keySet()) {
-                            int max_lvl = s.equals("Tsury Finke") ? 100 : player.max_skill_lvl;
-                            if (s.endsWith(" pill")) max_lvl = 1000;
-                            if (s.equals("Crafting") || s.equals("Smithing") || s.equals("Alchemy")) {
-                                max_lvl = 100;
-                            }
-                            setup.passives_lvls.put(s, Math.min(max_lvl, player.passives.get(s).getLvl()));
-                        }
                         setup.rp_balance = (int) player.rp_balance;
                         if (simulation != null) {
                             setup.result_essential = simulation.result_info;
@@ -1745,9 +1724,21 @@ public class UserForm extends JFrame {
                             setup.result_lvling = simulation.lvling_info;
                             setup.stats = simulation.player.getAllStats();
                             setup.alchemist_lvl = simulation.player.alchemist_lvl;
-                            setup.stat_milestone = simulation.player.stat_milestone;
                             setup.highest_cl = simulation.player.highest_cl;
                         }
+                        for (String s : player.active_skills.keySet()) {
+                            setup.actives_lvls.put(s, Math.min(player.max_skill_lvl, player.active_skills.get(s).getLvl()));
+                        }
+                        for (String s : player.passives.keySet()) {
+                            int max_lvl = s.equals("Tsury Finke") ? 100 : player.max_skill_lvl;
+                            if (!player.passives.get(s).available) max_lvl = 200;
+                            if (s.endsWith(" pill")) max_lvl = 1000;
+                            if (s.equals("Crafting") || s.equals("Smithing") || s.equals("Alchemy")) {
+                                max_lvl = 100;
+                            }
+                            setup.passives_lvls.put(s, Math.min(max_lvl, player.passives.get(s).getLvl()));
+                        }
+                        //loadSkillLvls(setup);
                         loadSetup(setup);
                     }
                 }
@@ -1771,9 +1762,11 @@ public class UserForm extends JFrame {
                                     JOptionPane.WARNING_MESSAGE);
                         }
                         try {
-                            setup = saveSetup();
+                            //setup = saveSetup();
+                            saveSetup(setup);
                             Main.game_version = (int) Double.parseDouble(setup.gameversion);
                             player = simulation.setupAndRun(setup);
+                            loadSkillLvls(setup);
                             showResult();
 //                            Stats.setText(simulation.player.getAllStats());
 //                            Stats.setCaretPosition(0);
@@ -2053,12 +2046,11 @@ public class UserForm extends JFrame {
         loadEquipment();
         ArrayList<String> load_list = loadSettings(Main.getJarPath() + "/Settings.ini").getDefault_setups();
         for (String s : load_list) {
-            selected_tab = createTab(s.replace(".json", ""));
             Setup default_setup = loadFile(Main.getJarPath() + "/" + s);
-            if (default_setup == null) default_setup = new Setup();
-            tabs.put(selected_tab, default_setup);
-            loadTab(selected_tab);
+            if (default_setup == null) default_setup = createEmptySetup();
+            selected_tab = createTab(s.replace(".json", ""), default_setup);
         }
+        loadTab(selected_tab);
     }
 
     public class StringEditor extends DefaultCellEditor {
@@ -2189,6 +2181,7 @@ public class UserForm extends JFrame {
 
     private void selectClass(String name) {
         player.setClass(name);
+        player.ml = 0;
         DefaultComboBoxModel<String> active1 =
                 new DefaultComboBoxModel<>(new Vector<>(player.getAvailableActiveSkills()));
         DefaultComboBoxModel<String> active2 =
@@ -2214,8 +2207,7 @@ public class UserForm extends JFrame {
         Pskill3.setModel(passive3);
         Pskill4.setModel(passive4);
         clearSelections();
-//        new DefaultTableModel();
-        saveSkillLvls();
+        saveSkillLvls(setup);
         activeSkillsModel.setRowCount(0);
         for (String skill : player.active_skills.keySet()) {
             if (player.active_skills.get(skill).visible) {
@@ -2230,7 +2222,7 @@ public class UserForm extends JFrame {
                         (player.passives.get(skill).getLvl() - player.passives.get(skill).lvl) * 100});
             }
         }
-        loadSkillLvls();
+        loadSkillLvls(setup);
     }
 
     private void clearSelections() {
@@ -2306,9 +2298,10 @@ public class UserForm extends JFrame {
 
     private void saveFile(String path) {
         try {
-            Setup save = saveSetup();
+            //Setup save = saveSetup(setup);
+            saveSetup(setup);
             JsonWriter writer = new JsonWriter(new FileWriter(path));
-            gson.toJson(save, Setup.class, writer);
+            gson.toJson(setup, Setup.class, writer);
             writer.close();
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
@@ -2321,8 +2314,7 @@ public class UserForm extends JFrame {
         }
     }
 
-    private Setup saveSetup() {
-        Setup data = new Setup();
+    private void saveSetup(Setup data) {
         data.accessory1_lvl = (int) Double.parseDouble(Accessory1_lvl.getValue().toString());
         data.accessory1_name = Accessory1_name.getSelectedItem().toString();
         data.accessory1_tier = (Equipment.Quality) Accessory1_tier.getSelectedItem();
@@ -2396,7 +2388,6 @@ public class UserForm extends JFrame {
         data.skill4 = Skill4.getSelectedItem().toString();
         data.skill4_mod = (SkillMod) Skill4_mod.getSelectedItem();
         data.skill4_s = (int) Double.parseDouble(Skill4_s.getValue().toString());
-//        data.stats = Stats.getText();
         if (Sim_num.isSelected()) data.sim_type = 1;
         if (Sim_time.isSelected()) data.sim_type = 2;
         if (Sim_lvl.isSelected()) data.sim_type = 3;
@@ -2406,9 +2397,8 @@ public class UserForm extends JFrame {
         data.leveling = Leveling.isSelected();
         data.offline = Offline.isSelected();
         data.enemy_min_lvl_increase = EnemyMinLvlIncrease.isSelected();
-        saveSkillLvls();
-        data.actives_lvls = actives_lvls;
-        data.passives_lvls = passives_lvls;
+        saveSkillLvls(data);
+        updateT4(data);
         data.rp_balance = (int) Double.parseDouble(Rp_balance.getValue().toString());
         for (String name : getAllResearches()) {
             JSpinner l = research_l.get(name);
@@ -2430,18 +2420,16 @@ public class UserForm extends JFrame {
         data.hard_stats = Double.parseDouble(Hard_stats.getValue().toString());
         data.hard_reward = Double.parseDouble(Hard_reward.getValue().toString());
         data.highest_cl = Integer.parseInt(Highest_cl.getValue().toString());
-        data.stat_milestone = Double.parseDouble(Stat_milestone.getValue().toString()) / 100;
-        return data;
     }
 
-    private void saveSkillLvls() {
+    private void saveSkillLvls(Setup data) {
         for (int i = 0; i < ActiveSkills.getRowCount(); i++) {
-            actives_lvls.put(ActiveSkills.getValueAt(i, 0).toString(),
+            data.actives_lvls.put(ActiveSkills.getValueAt(i, 0).toString(),
                     Double.parseDouble(ActiveSkills.getValueAt(i, 1).toString()) +
                             Double.parseDouble(ActiveSkills.getValueAt(i, 2).toString()) / 100);
         }
         for (int i = 0; i < PassiveSkills.getRowCount(); i++) {
-            passives_lvls.put(PassiveSkills.getValueAt(i, 0).toString(),
+            data.passives_lvls.put(PassiveSkills.getValueAt(i, 0).toString(),
                     Double.parseDouble(PassiveSkills.getValueAt(i, 1).toString()) +
                             Double.parseDouble(PassiveSkills.getValueAt(i, 2).toString()) / 100);
         }
@@ -2482,6 +2470,15 @@ public class UserForm extends JFrame {
             data.crafting_lvl = 0;
             data.alchemy_lvl = 0;
         }
+        if (data.playerclass.equals("Holy Archer") && !data.passives_lvls.containsKey("Holy Archer")) {
+            data.passives_lvls.put("Holy Archer", data.cl);
+        }
+        if (data.playerclass.equals("Ninja") && !data.passives_lvls.containsKey("Ninja")) {
+            data.passives_lvls.put("Ninja", data.cl);
+        }
+        if (data.playerclass.equals("Tea Rogue") && !data.passives_lvls.containsKey("Tea Rogue")) {
+            data.passives_lvls.put("Tea Rogue", data.cl);
+        }
     }
 
     private Setup loadFile(String path) {
@@ -2521,6 +2518,7 @@ public class UserForm extends JFrame {
     }
 
     private void loadSetup(Setup data) {
+        setup = data;
         CL.setValue((int) data.cl);
         CL_p.setValue((data.cl - (int) data.cl) * 100);
         Enemy.setSelectedItem(data.zone);
@@ -2555,8 +2553,10 @@ public class UserForm extends JFrame {
         Hard_hp.setValue(data.hard_hp);
         Hard_stats.setValue(data.hard_stats);
         Hard_reward.setValue(data.hard_reward);
-        loadResearch(data);
+        loadSkillLvls(data);
         PlayerClass.setSelectedItem(data.playerclass);
+        loadResearch(data);
+
         Pskill1.setSelectedItem(data.pskill1);
         Pskill2.setSelectedItem(data.pskill2);
         Pskill3.setSelectedItem(data.pskill3);
@@ -2626,12 +2626,12 @@ public class UserForm extends JFrame {
         Necklace_name.setSelectedItem(data.necklace_name);
         Necklace_tier.setSelectedItem(data.necklace_tier);
         SetSetup.setSelected(data.setsetup);
-//        Stats.setText(data.stats);
         showResult();
         Result.setCaretPosition(0);
         Result_details.setCaretPosition(0);
         Result_lvling.setCaretPosition(0);
         updateUI();
+
     }
 
     private void loadResearch(Setup data) {
@@ -2640,11 +2640,8 @@ public class UserForm extends JFrame {
         R_spd_bonus.setValue(data.r_spd_bonus);
         ML.setValue((int) data.ml);
         ML_p.setValue((data.ml - (int) data.ml) * 100);
-        actives_lvls = cloneIfPresent(actives_lvls, data.actives_lvls);
-        passives_lvls = cloneIfPresent(passives_lvls, data.passives_lvls);
         Highest_cl.setValue(data.highest_cl);
-        Stat_milestone.setValue(data.stat_milestone * 100);
-        loadSkillLvls();
+        loadSkillLvls(data);
         Rp_balance.setValue(data.rp_balance);
         for (String name : getAllResearches()) {
             JSpinner l = research_l.get(name);
@@ -2660,7 +2657,7 @@ public class UserForm extends JFrame {
     }
 
     public HashMap<String, Double> cloneIfPresent(HashMap<String, Double> original, HashMap<String, Double> new_data) {
-        HashMap<String, Double> result = new HashMap<>(64);
+        HashMap<String, Double> result = new HashMap<>(128);
         result.putAll(original);
         for (Map.Entry<String, Double> mapEntry : new_data.entrySet()) {
             result.put(mapEntry.getKey(), mapEntry.getValue());
@@ -2668,22 +2665,27 @@ public class UserForm extends JFrame {
         return result;
     }
 
-    private void loadSkillLvls() {
+    private void loadSkillLvls(Setup data) {
         for (int i = 0; i < ActiveSkills.getRowCount(); i++) {
             String name = ActiveSkills.getValueAt(i, 0).toString();
-            if (actives_lvls.containsKey(name)) {
-                double lvl = actives_lvls.get(name);
+            if (data.actives_lvls.containsKey(name)) {
+                double lvl = data.actives_lvls.get(name);
                 ActiveSkills.setValueAt((int) lvl, i, 1);
                 ActiveSkills.setValueAt(df2.format((lvl - (int) lvl) * 100), i, 2);
             }
         }
         for (int i = 0; i < PassiveSkills.getRowCount(); i++) {
             String name = PassiveSkills.getValueAt(i, 0).toString();
-            if (passives_lvls.containsKey(name)) {
-                double lvl = passives_lvls.get(name);
+            if (data.passives_lvls.containsKey(name)) {
+                double lvl = data.passives_lvls.get(name);
                 PassiveSkills.setValueAt((int) lvl, i, 1);
                 PassiveSkills.setValueAt(df2.format((lvl - (int) lvl) * 100), i, 2);
             }
+        }
+        if (getTier(data.playerclass) == 4 && data.passives_lvls.containsKey(data.playerclass)) {
+            double lvl = setup.passives_lvls.get(data.playerclass);
+            CL.setValue((int) lvl);
+            CL_p.setValue((lvl - (int) lvl) * 100);
         }
     }
 
@@ -2922,11 +2924,17 @@ public class UserForm extends JFrame {
         return createCustomSpinner(0, 0, 40, 1);
     }
 
-    private JMenu createTab() {
-        return createTab(String.valueOf(tabs.size() + 1));
+    private Setup createEmptySetup() {
+        if (activeSkillsModel != null) activeSkillsModel.setRowCount(0);
+        if (passiveSkillsModel != null) passiveSkillsModel.setRowCount(0);
+        return new Setup();
     }
 
-    private JMenu createTab(String name) {
+    private JMenu createTab() {
+        return createTab(String.valueOf(tabs.size() + 1), null);
+    }
+
+    private JMenu createTab(String name, Setup data) {
         JMenu tab = new JMenu(name);
         JMenuItem rename = new JMenuItem("Rename");
         rename.addActionListener(itemListener);
@@ -2935,17 +2943,21 @@ public class UserForm extends JFrame {
         tab.add(rename);
         tab.add(delete);
         tab.setOpaque(true);
-        tabs.put(tab, new Setup());
+        if (data == null) {
+            tabs.put(tab, createEmptySetup());
+        } else {
+            tabs.put(tab, data);
+        }
         Bar.add(tab);
         tab.addMenuListener(menuListener);
-        selectTab(tab);
         Bar.updateUI();
         return tab;
     }
 
     private void selectTab(JMenu source) {
         if (selected_tab != null) {
-            tabs.put(selected_tab, saveSetup());
+            saveSetup(setup);
+            tabs.put(selected_tab, setup);
         }
         selected_tab = source;
         loadTab(source);
@@ -2958,7 +2970,8 @@ public class UserForm extends JFrame {
         source.setBackground(Color.YELLOW);
         Setup show_setup = tabs.get(source);
         if (show_setup == null) {
-            show_setup = new Setup();
+            System.out.println("null tab, creating new setup");
+            show_setup = createEmptySetup();
         }
         loadSetup(show_setup);
     }
@@ -3000,6 +3013,14 @@ public class UserForm extends JFrame {
             core.name.setVisible(core.enabled);
             core.grade.setVisible(core.enabled);
             core.lvl.setVisible(core.enabled);
+        }
+    }
+
+    private void updateT4(Setup data) {
+        String sel = PlayerClass.getSelectedItem().toString();
+        if (data.passives_lvls.containsKey(sel)) {
+            double lvl = ((int) Double.parseDouble(CL.getValue().toString()) + Double.parseDouble(CL_p.getValue().toString()) / 100);
+            data.passives_lvls.put(sel, lvl);
         }
     }
 }

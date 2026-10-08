@@ -117,6 +117,14 @@ public class Actor extends ActorStats {
             switch (b.name) {
                 case "Charge Up" -> {
                     if (remove_charge) b.duration -= attack ? 1 : 0;
+                    double pray_b = 1;
+                    for (Buff a : buffs) {
+                        if (a.name.equals("Prayer")) pray_b = 1 + a.effect;
+                    }
+                    b.effect = (1 + b.effect) * pray_b - 1;
+                }
+                case "Prayer" -> {
+
                 }
                 case "Elemental Buff", "Taking Notes" -> b.duration -= attack ? 1 : 0;
                 case "Stone Barrier","Kyrie Eleyson", "Tea" -> {}
@@ -594,7 +602,7 @@ public class Actor extends ActorStats {
         hp_max = base_hp_max + gear_hp * (1 + 0.01 * getResearchLvl("Equip HP"));
         mp_max = (resist * 3 + intel) * mp_mult;
 
-        gear_exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0, highest_cl - cl));
+        gear_exp_mult *= 1.0 + set_exp * (1 + 0.01 * Math.max(0, getHighestCL() - cl));
 
         if (passives.get("Fire Resistance").enabled) {
             add_resist("Fire", passives.get("Fire Resistance").getBonus());
@@ -886,6 +894,7 @@ public class Actor extends ActorStats {
     public double getDmg_mult() {
         double mult = 1.0;
         mult *= charge;
+        //if (charge > 1) System.out.println(charge);
         mult *= 1.0 - weaken;
         return dmg_mult * mult;
     }
@@ -970,6 +979,18 @@ public class Actor extends ActorStats {
             return Math.clamp(Math.pow(spd1 / spd2, 0.5), 0.75, 1.5);
         } else {
             return Math.clamp((spd1 + 1000) / (spd2 + 1000), 0.75, 1.5);
+        }
+    }
+
+    public int getHighestCL() {
+        if (tier < 4) {
+            return highest_cl;
+        } else {
+            int highest = 0;
+            for (PassiveSkill p : passives.values()) {
+                if (p.class_type && p.lvl > highest) highest = p.lvl;
+            }
+            return highest;
         }
     }
 }

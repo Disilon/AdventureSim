@@ -15,6 +15,7 @@ public class PassiveSkill {
     public boolean enabled;
     public boolean available;
     public boolean visible;
+    public boolean class_type;
     public double exp;
     public double old_lvl;
 
@@ -208,6 +209,7 @@ public class PassiveSkill {
         if (name.endsWith(" pill")) {
             return 100;
         }
+        if (class_type) return 100;
         return (int) ((Math.pow(Math.max(lvl, 1), 2)) * 3000);
     }
 }

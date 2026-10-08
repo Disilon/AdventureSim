@@ -67,7 +67,7 @@ public class Player extends Actor {
         this.lvling = setup.leveling;
         this.zone = setup.zone;
         this.alchemist_lvl = setup.alchemist_lvl;
-        stat_milestone = setup.stat_milestone;
+        //stat_milestone = setup.stat_milestone;
         crafting_progress = setup.crafting_progress;
         smithing_progress = setup.smithing_progress;
         alchemy_progress = setup.alchemy_progress;
@@ -133,6 +133,10 @@ public class Player extends Actor {
         this.enablePassives(new String[]{setup.pskill1, setup.pskill2, setup.pskill3, setup.pskill4});
         apply_research_effects();
         this.zone.stats.setGradeCutoff(this);
+        stat_milestone = 0;
+        for (PassiveSkill p : passives.values()) {
+            if (p.class_type && p.lvl >= 120) stat_milestone += 0.04 + 0.002 * (p.lvl - 120);
+        }
     }
 
     public void setupPotions(int id, String type, int threshold) {
@@ -266,6 +270,9 @@ public class Player extends Actor {
     }
 
     public void setCLML(double cl, double ml) {
+        if (tier == 4) {
+            passives.get(name).setLvl(cl);
+        }
         setCLML((int) cl, (int) ml);
         double next_cl_exp = exp_to_cl((int) cl);
         double next_ml_exp = exp_to_ml((int) ml);
@@ -277,7 +284,7 @@ public class Player extends Actor {
     public void setCLML(int cl, int ml) {
         this.cl = cl;
         this.ml = ml;
-        if (cl > highest_cl) highest_cl = cl;
+        if (cl > highest_cl && tier < 4) highest_cl = cl;
         switch (name) {
             case "Assassin" -> {
                 base_hp_max = (double) (90 * (cl + 100)) / 10000 * 30 * ml;
@@ -841,6 +848,9 @@ public class Player extends Actor {
             setCLML(cl, ml);
             need_ml = exp_to_ml(ml);
         }
+        if (tier == 4) {
+            passives.get(name).setLvl(cl + cl_exp/need_cl);
+        }
     }
 
     public void disableAllActives() {
@@ -1287,7 +1297,6 @@ public class Player extends Actor {
     public void enableSkills(String name) {
         switch (name) {
             case "Newbie" -> {
-                tier = 1;
                 skills.enableActive("Basic Attack");
                 skills.enableActive("First Aid");
                 skills.enablePassive("Exp Boost");
@@ -1302,10 +1311,12 @@ public class Player extends Actor {
                 skills.makeVisible("Crafting");
                 skills.makeVisible("Smithing");
                 skills.makeVisible("Alchemy");
+                skills.makeClass("Holy Archer");
+                skills.makeClass("Ninja");
+                skills.makeClass("Tea Rogue");
             }
             case "Adventurer" -> {
                 enableSkills("Newbie");
-                tier = 1;
                 skills.enablePassive("Drop Boost");
                 skills.enablePassive("Speed Boost");
                 skills.enableActive("Bash");
@@ -1313,7 +1324,6 @@ public class Player extends Actor {
             }
             case "Squire" -> {
                 enableSkills("Newbie");
-                tier = 1;
                 skills.enablePassive("Attack Boost");
                 skills.enablePassive("Defense Boost");
                 skills.enableActive("Attack");
@@ -1321,14 +1331,12 @@ public class Player extends Actor {
             }
             case "Student" -> {
                 enableSkills("Newbie");
-                tier = 1;
                 skills.enablePassive("Int Boost");
                 skills.enablePassive("Res Boost");
                 skills.enableActive("Magic Arrow");
             }
             case "Thief" -> {
                 enableSkills("Adventurer");
-                tier = 2;
                 skills.enablePassive("Dagger Mastery");
                 skills.enablePassive("Dodge");
                 skills.enableActive("Double Attack");
@@ -1337,7 +1345,6 @@ public class Player extends Actor {
             }
             case "Archer" -> {
                 enableSkills("Adventurer");
-                tier = 2;
                 skills.enablePassive("Bow Mastery");
                 skills.enablePassive("Ambush");
                 skills.enableActive("Double Shot");
@@ -1346,7 +1353,6 @@ public class Player extends Actor {
             }
             case "Warrior" -> {
                 enableSkills("Squire");
-                tier = 2;
                 skills.enablePassive("Sword Mastery");
                 skills.enablePassive("HP Regen");
                 skills.enableActive("Aura Blade");
@@ -1355,7 +1361,6 @@ public class Player extends Actor {
             }
             case "Fighter" -> {
                 enableSkills("Squire");
-                tier = 2;
                 skills.enablePassive("Fist Mastery");
                 skills.enablePassive("Counter Strike");
                 skills.enableActive("Aura Shot");
@@ -1364,7 +1369,6 @@ public class Player extends Actor {
             }
             case "Mage" -> {
                 enableSkills("Student");
-                tier = 2;
                 skills.enablePassive("Casting Boost");
                 skills.enablePassive("Wand Mastery");
                 skills.enableActive("Elemental Blast");
@@ -1373,7 +1377,6 @@ public class Player extends Actor {
             }
             case "Cleric" -> {
                 enableSkills("Student");
-                tier = 2;
                 skills.enablePassive("Book Mastery");
                 skills.enablePassive("Ailment Res");
                 skills.enableActive("Holy Light");
@@ -1383,7 +1386,6 @@ public class Player extends Actor {
             case "Sniper" -> {
                 enableSkills("Archer");
                 enableSkills("Warrior");
-                tier = 3;
                 skills.enablePassive("Concentration");
                 skills.enablePassive("Hit Boost");
                 skills.enableActive("Sharp Shooting");
@@ -1392,7 +1394,6 @@ public class Player extends Actor {
             }
             case "Hunter" -> {
                 enableSkills("Archer");
-                tier = 3;
                 skills.enablePassive("Multi Arrows");
                 skills.enablePassive("Core Boost");
                 skills.enableActive("Careful Shot");
@@ -1402,7 +1403,6 @@ public class Player extends Actor {
             case "Rogue" -> {
                 enableSkills("Thief");
                 enableSkills("Archer");
-                tier = 3;
                 skills.enablePassive("Extra Attack");
                 skills.enablePassive("Dual Wield");
                 skills.enableActive("Throw Sand");
@@ -1412,7 +1412,6 @@ public class Player extends Actor {
             case "Assassin" -> {
                 enableSkills("Fighter");
                 enableSkills("Thief");
-                tier = 3;
                 skills.enablePassive("Stealth");
                 skills.enablePassive("Poison Boost");
                 skills.enableActive("Killing Strike");
@@ -1422,7 +1421,6 @@ public class Player extends Actor {
             case "Monk" -> {
                 enableSkills("Cleric");
                 enableSkills("Fighter");
-                tier = 3;
                 skills.enablePassive("Might Aura");
                 skills.enablePassive("Speed Aura");
                 skills.enablePassive("Fiery Aura");
@@ -1432,7 +1430,6 @@ public class Player extends Actor {
             case "Knight" -> {
                 enableSkills("Warrior");
                 enableSkills("Fighter");
-                tier = 3;
                 skills.enablePassive("Spear Mastery");
                 skills.enablePassive("HP Boost");
                 skills.enableActive("Empower HP");
@@ -1441,7 +1438,6 @@ public class Player extends Actor {
             }
             case "Pyromancer" -> {
                 enableSkills("Mage");
-                tier = 3;
                 skills.enablePassive("Fire Boost");
                 skills.enablePassive("Fire Resistance");
                 skills.enableActive("Fire Pillar");
@@ -1450,7 +1446,6 @@ public class Player extends Actor {
             }
             case "Geomancer" -> {
                 enableSkills("Mage");
-                tier = 3;
                 skills.enablePassive("Earth Boost");
                 skills.enablePassive("Earth Resistance");
                 skills.enableActive("Rock Shot");
@@ -1459,7 +1454,6 @@ public class Player extends Actor {
             }
             case "Priest" -> {
                 enableSkills("Cleric");
-                tier = 3;
                 skills.enablePassive("Light Boost");
                 skills.enablePassive("Bless Mastery");
                 skills.enableActive("Holy Ray");
@@ -1469,7 +1463,6 @@ public class Player extends Actor {
             case "Scholar" -> {
                 enableSkills("Adventurer");
                 enableSkills("Mage");
-                tier = 3;
                 skills.enableActive("Analyze");
                 skills.enableActive("Taking Notes");
                 skills.enablePassive("Safe Distance");
@@ -1478,7 +1471,6 @@ public class Player extends Actor {
             }
             case "Alchemist" -> {
                 enableSkills("Adventurer");
-                tier = 3;
                 skills.enablePassive("Potion Inventor");
                 skills.enablePassive("Potion Slots");
                 skills.enablePassive("Pill Inventor");
@@ -1500,7 +1492,6 @@ public class Player extends Actor {
             }
             case "Onion Knight" -> {
                 enableSkills("Newbie");
-                tier = 3;
                 skills.enablePassive("Attack Boost");
                 skills.enablePassive("Weapon Mastery");
                 skills.enablePassive("Tsury Finke");
@@ -1511,7 +1502,6 @@ public class Player extends Actor {
             case "Ninja" -> {
                 enableSkills("Assassin");
                 enableSkills("Rogue");
-                tier = 4;
                 skills.enableActive("Poisoned Dagger");
                 skills.enableActive("Poisoned Kunai");
                 skills.enableActive("Poison Trigger");
@@ -1522,7 +1512,6 @@ public class Player extends Actor {
             case "Holy Archer" -> {
                 enableSkills("Priest");
                 enableSkills("Sniper");
-                tier = 4;
                 skills.enableActive("Kyrie Eleyson");
                 skills.enableActive("Celestial Arrow");
                 skills.enableActive("Celestial Ray");
@@ -1537,9 +1526,19 @@ public class Player extends Actor {
                 skills.enableActive("Tea Do Ken");
                 skills.enablePassive("Tea Boost");
                 skills.enablePassive("Patient Counter");
-                tier = 4;
             }
         }
+        tier = getTier(name);
+    }
+
+    public static int getTier(String name) {
+        return switch (name) {
+            case "Newbie" -> 0;
+            case "Squire","Adventurer","Student" -> 1;
+            case "Thief","Archer","Warrior","Fighter","Mage","Cleric" -> 2;
+            case "Holy Archer","Ninja","Tea Rogue" -> 4;
+            default -> 3;
+        };
     }
 
     public String getEquipData() {

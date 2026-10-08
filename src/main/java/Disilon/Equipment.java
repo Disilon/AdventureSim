@@ -181,6 +181,7 @@ public class Equipment {
         this.barrier = equipStats.containsKey("BARRIER") ? (double) equipStats.get("BARRIER") * mult : 0;
         this.potion = equipStats.containsKey("POTION") ? (double) equipStats.get("POTION") * mult : 0;
         this.dodge = equipStats.containsKey("DODGE") ? (double) equipStats.get("DODGE") * mult : 0;
+        if (dodge > 0) dodge += 0.05;
 
         // Set name
         if (equipStats.containsKey("SET")) {

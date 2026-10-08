@@ -76,6 +76,7 @@ public class ActiveSkill {
     public String weapon_required;
     public boolean attack;
     public double enrage_mult = 1;
+    public boolean changes_mod = false;
 
     public ActiveSkill(ActorStats owner, String name) {
         this.owner = owner;
@@ -276,7 +277,7 @@ public class ActiveSkill {
             if (name.equals("Bless") && actor.blessed > 0) {
                 return false;
             }
-            if (name.equals("Charge Up") && (game_version >= 1705 && actor.charge > 2)) {
+            if (name.equals("Charge Up") && (game_version >= 1705 && actor.charge >= 2.5)) {
                 return false;
             }
             if (name.equals("Empower HP") && actor.empower_hp > 0) {
@@ -630,9 +631,13 @@ public class ActiveSkill {
         attacker.current_skill_hit = true;
         switch (name) {
             case "Hide":
-                if (attacker.passives.get("Extra Attack").enabled && Math.random() < 0.05) {
-
+                if (Math.random() < 0.05 && attacker.hasBuff("Charge Up")) {
+                    attacker.remove_buff("Charge Up");
+                    attacker.hide_bonus = this.min;
                 } else {
+                    if (game_version == 1705) {
+                        attacker.applyBuff("Charge Up", 1, this.min);
+                    }
                     attacker.hide_bonus = this.min;
                 }
                 break;
@@ -680,7 +685,12 @@ public class ActiveSkill {
                         attacker.setHp(attacker.hp + attacker.getHp_max() * power, power);
                     }
                     case buff -> {
-                        attacker.applyBuff("Charge Up", 1, power);
+                        if (game_version == 1705) {
+                            attacker.applyBuff("Prayer", 1, power);
+                            attacker.applyBuff("Charge Up", 1, power * (1 + power));
+                        } else {
+                            attacker.applyBuff("Charge Up", 1, power);
+                        }
                     }
                     default -> {}
                 }
@@ -823,6 +833,7 @@ public class ActiveSkill {
         if ((hit_chance >= 1) || (Math.random() < hit_chance) || (Math.random() < true_sight)) {
             attacker.current_skill_hit = true;
             boolean stun = false;
+            attacker.remove_buff("Prayer");
             if (debuff_to_apply != null && (!name.equals("Binding Shot") || weapon_required == null || weapon_required.equals(attacker.weapon_type))) {
                 stun = applyDebuff(debuff_to_apply, debuff_to_apply_duration, debuff_to_apply_effect, attacker,
                         defender);
@@ -840,6 +851,9 @@ public class ActiveSkill {
                 double dmg_mult1 = 1;
                 double dmg_mult2 = 1;
                 dmg_mult *= 1.0 + attacker.hide_bonus;
+                if (game_version == 1705) {
+                    dmg_mult *= 1.0 + attacker.hide_bonus;
+                }
                 dmg_mult *= 1.0 + attacker.ambush_bonus;
                 dmg_mult *= this.dmg_mult;
                 dmg_mult *= 1 + attacker.combo;
@@ -952,7 +966,7 @@ public class ActiveSkill {
                 if (name.equals("Pierce")) {
                     def = 0;
                 }
-                dmg_mult *= attacker.isMulti_hit_override(this.name) ? attacker.multi_arrows : 1;
+                if (attacker.multi_arrows > 0) dmg_mult *= attacker.multi_arrows;
                 dmg_mult *= (1 - attacker.set_training);
                 atk *= enrage_mult;
                 int calc_hits = overwrite_hits > 0 ? overwrite_hits : hits;
@@ -1375,10 +1389,12 @@ public class ActiveSkill {
             }
         } else {
             sb.append("; hit: ").append(df2.format(average_hit_chance() * 100)).append("%");
-            if (dmg_max_c > 0 || dmg_max_nc > 0) {
+            if (dmg_max_nc > 0) {
                 sb.append("; dmg: ").append(shorthand(dmg_min_nc));
                 sb.append(" - ").append(shorthand(dmg_max_nc));
                 sb.append(" (").append(shorthand(average_stat(dmg_sum_nc, hits_total-crits_total)*hits)).append(")");
+            }
+            if (dmg_max_c > 0) {
                 sb.append("; crit: ").append(shorthand(dmg_min_c));
                 sb.append(" - ").append(shorthand(dmg_max_c));
                 sb.append(" (").append(shorthand(average_stat(dmg_sum_c, crits_total)*hits)).append(")");

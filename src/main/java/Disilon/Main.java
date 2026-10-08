@@ -21,7 +21,7 @@ import java.util.Vector;
 
 public class Main {
     public static Vector<Integer> availableVersions = new Vector<>(List.of(1694, 1695, 1696, 1697, 1698, 1699, 1703,
-            1704, 1706));
+            1704, 1705, 1707));
     public static boolean balance1 = true;
     public static boolean balance2 = true;
     public static boolean balance3 = false;

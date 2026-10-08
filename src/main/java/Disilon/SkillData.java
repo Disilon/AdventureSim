@@ -93,6 +93,10 @@ public class SkillData {
         passives.get(name).visible = true;
     }
 
+    public void makeClass(String name) {
+        passives.get(name).visible = true;
+        passives.get(name).class_type = true;
+    }
 
     public void passiveSkillData() {
         addPassive("Attack Boost", 0.2, 10, 0.1);
@@ -160,6 +164,9 @@ public class SkillData {
         addPassive("Crafting", 0.0, 0, 0);
         addPassive("Smithing", 0.0, 0, 0);
         addPassive("Alchemy", 0.0, 0, 0);
+        addPassive("Holy Archer", 0.0, 0, 0);
+        addPassive("Ninja", 0.0, 0, 0);
+        addPassive("Tea Rogue", 0.0, 0, 0);
     }
 
     public void activeSkillData() {
