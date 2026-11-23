@@ -197,12 +197,10 @@ public class ActiveSkill {
                     base_min = 250 * 0.9;
                     base_max = 250 * 1.1;
                     base_delay = 2;
-//                    base_mp = 65;
                 } else {
                     base_min = 207;
                     base_max = 253;
                     base_delay = 3;
-//                    base_mp = 80;
                 }
             }
             case "Mark Target" -> {
@@ -706,10 +704,17 @@ public class ActiveSkill {
                 if (log.contains("skill_attack")) {
                     System.out.println("Drank tea for " + df2.format(eff * 100) + "% hp/mp");
                 }
-                attacker.setHp(attacker.hp + attacker.getHp_max() * eff);
-                attacker.setMp(attacker.mp + attacker.getMp_max() * eff); //bugged for now
-                eff *= attacker.passives.get("Patient Counter").getBonus(1.0);
-                attacker.applyBuff("Charge Up", 1, eff * 3);
+                if (game_version < 1715) {
+                    attacker.setHp(attacker.hp + attacker.getHp_max() * eff);
+                    attacker.setMp(attacker.mp + attacker.getMp_max() * eff); //bugged for now
+                    eff *= attacker.passives.get("Patient Counter").getBonus(1.0);
+                } else {
+                    eff *= attacker.passives.get("Patient Counter").getBonus(1.0);
+                    attacker.setHp(attacker.hp + attacker.getHp_max() * 0.05); //isn't affected by scaling
+                    attacker.setMp(attacker.mp + attacker.getMp_max() * eff);
+                }
+                attacker.buffs.add(new Buff("Charge Up", 1, eff * 3));
+                attacker.check_buffs();
                 attacker.remove_buff("Tea");
                 break;
             default:
@@ -999,6 +1004,7 @@ public class ActiveSkill {
                                     calc_hits) * dmg_mult * dmg_mult1 * dmg_mult2 * dmg_mult3;
                     dmg = dmg * (1 - enemy_resist);
                     dmg = max(1, dmg);
+//                    if (!attacker.active_skills.get("Charge Up").enabled || attacker.charge > 2) {
                     if (attacker.last_crit) {
                         dmg_sum_c += dmg;
                         if (dmg < dmg_min_c) dmg_min_c = dmg;
@@ -1017,9 +1023,6 @@ public class ActiveSkill {
                                 " to " + defender.name + " at " + df2.format(time) + "s hit chance " + df2.format(hit_chance*100) + "%");
                     }
                     if (name.equals("Careful Shot")) {
-                        dmg = Math.min(dmg, defender.hp);
-                    }
-                    if (attacker.last_crit && attacker.no_overkill_crit > Math.random()) {
                         dmg = Math.min(dmg, defender.hp);
                     }
                     if (name.equals("Aimed Shot")) {
@@ -1432,7 +1435,9 @@ public class ActiveSkill {
         if (crit_chance > 0 && Math.random() < crit_chance) {
             atk *= crit_dmg;
             attacker.last_crit = true;
-            crits_total++;
+            if (!extra) {
+                crits_total++;
+            }
             if (log.contains("skill_attack")) {
                 if (extra) {
                     System.out.println(attacker.name + " dealt crit with " + this.name + " extra attack");

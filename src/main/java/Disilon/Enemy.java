@@ -549,7 +549,7 @@ public class Enemy extends Actor {
 
             case "Dummy" -> {
                 base_lvl = 100;
-                base_hp_max = 10000000 / base_lvl;
+                base_hp_max = 100000000 / base_lvl;
                 base_exp = 100000 / base_lvl;
                 base_atk = 600 / base_lvl;
                 base_def = 600 / base_lvl;

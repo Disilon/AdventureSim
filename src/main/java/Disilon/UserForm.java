@@ -2666,6 +2666,8 @@ public class UserForm extends JFrame {
     }
 
     private void loadSkillLvls(Setup data) {
+        setup.actives_lvls = data.actives_lvls;
+        setup.passives_lvls = data.passives_lvls;
         for (int i = 0; i < ActiveSkills.getRowCount(); i++) {
             String name = ActiveSkills.getValueAt(i, 0).toString();
             if (data.actives_lvls.containsKey(name)) {
@@ -2682,8 +2684,8 @@ public class UserForm extends JFrame {
                 PassiveSkills.setValueAt(df2.format((lvl - (int) lvl) * 100), i, 2);
             }
         }
-        if (getTier(data.playerclass) == 4 && data.passives_lvls.containsKey(data.playerclass)) {
-            double lvl = setup.passives_lvls.get(data.playerclass);
+        if (getTier(setup.playerclass) == 4 && data.passives_lvls.containsKey(setup.playerclass)) {
+            double lvl = data.passives_lvls.get(setup.playerclass);
             CL.setValue((int) lvl);
             CL_p.setValue((lvl - (int) lvl) * 100);
         }

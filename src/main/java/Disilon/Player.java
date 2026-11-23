@@ -842,6 +842,7 @@ public class Player extends Actor {
             }
             need_cl = exp_to_cl(cl);
         }
+        if (cl >= getMaxCl()) cl_exp = 0;
         while (ml_exp >= need_ml) {
             ml += 1;
             ml_exp -= need_ml;

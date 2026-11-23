@@ -115,6 +115,28 @@ public class PassiveSkill {
                 this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
                 this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
             }
+            case "Killing Intent" -> {
+                if (Main.game_version >= 1715) {
+                    this.base_bonus = 0.5;
+                } else {
+                    this.base_bonus = 0.2;
+                }
+                this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                this.bonus2 = this.base_bonus2 * (1 + 0.02 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
+            case "Tea Boost" -> {
+                if (Main.game_version >= 1715) {
+                    this.base_bonus = 1;
+                } else {
+                    this.base_bonus = 0.5;
+                }
+                this.bonus = this.base_bonus * (1 + 0.02 * lvl);
+                this.bonus2 = this.base_bonus2 * (1 + 0.02 * lvl);
+                this.mp_add = this.base_mp_add * (1 + 0.02 * lvl);
+                this.mp_mult = this.base_mp_mult * (1 + 0.02 * lvl);
+            }
             default -> {
                 this.bonus = this.base_bonus * (1 + 0.02 * lvl);
                 this.bonus2 = this.base_bonus2 * (1 + 0.02 * lvl);

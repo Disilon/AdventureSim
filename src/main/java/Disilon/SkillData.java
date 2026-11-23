@@ -171,7 +171,7 @@ public class SkillData {
 
     public void activeSkillData() {
         addActive("Hide", 1, 0.3, 0, 0, 5, 0.5, 0.5, Scaling.atk, Element.none, false, false);
-        addActive("Flee", 1, 0, 0, 0, 25, 0.5, 1, Scaling.atk, Element.none, false, false);
+        addActive("Flee", 1, 0, 0, 0, 25, 0.5, 0.1, Scaling.atk, Element.none, false, false);
         addActive("Killing Strike", 1, 297, 363, 0.7, 80, 2, 2, Scaling.atk, Element.dark,
                 false, false, "dagger");
         addActive("Dragon Punch", 3, 76.5, 93.5, 0.8, 20, 1, 3, Scaling.atk, Element.phys,
@@ -381,7 +381,7 @@ public class SkillData {
         addActive("Poisoned Kunai", 1, 520*0.9, 520*1.1, 1.35, 350, 1.2, 1.5, Scaling.atkspd, Element.dark, false,
                 false, "dagger");
         active_skills.get("Poisoned Kunai").addDebuff("Poison", 3, 0.13);
-        addActive("Poisoned Dagger", 1, 54, 66, 1, 30, 0.35, 2/3.0, Scaling.atkspd, Element.dark, false,
+        addActive("Poisoned Dagger", 1, 54, 66, 1, 30, 0.35, 0.6, Scaling.atkspd, Element.dark, false,
                 false, "dagger");
         active_skills.get("Poisoned Dagger").addDebuff("Poison", 3, 0.13);
         addActive("Poison Trigger", 1, 0, 0, 1, 200, 0.6, 0.5, Scaling.atk, Element.dark,
